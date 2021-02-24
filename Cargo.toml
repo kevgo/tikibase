@@ -1,0 +1,7 @@
+[package]
+name = "tikibase"
+version = "0.0.0"
+authors = ["Kevin Goslar <kevin.goslar@gmail.com>"]
+edition = "2018"
+
+[dependencies]
