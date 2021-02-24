@@ -1,6 +1,8 @@
-use cucumber::async_trait;
 use std::{cell::RefCell, convert::Infallible};
 
+use cucumber_rust::{async_trait, given, then, when, World, WorldInit};
+
+#[derive(WorldInit)]
 pub struct MyWorld {
   // You can use this struct for mutable context in scenarios.
   foo: String,
@@ -16,7 +18,7 @@ impl MyWorld {
 }
 
 #[async_trait(?Send)]
-impl cucumber::World for MyWorld {
+impl World for MyWorld {
   type Error = Infallible;
 
   async fn new() -> Result<Self, Infallible> {
@@ -28,61 +30,39 @@ impl cucumber::World for MyWorld {
   }
 }
 
-mod example_steps {
-  use cucumber::{t, Steps};
+#[given("a thing")]
+async fn a_thing(world: &mut MyWorld) {
+  world.foo = "elho".into();
+  world.test_async_fn().await;
+}
 
-  pub fn steps() -> Steps<crate::MyWorld> {
-    let mut builder: Steps<crate::MyWorld> = Steps::new();
+#[when(regex = "something goes (.*)")]
+async fn something_goes(_: &mut MyWorld, _wrong: String) {}
 
-    builder
-      .given_async(
-        "a thing",
-        t!(|mut world, _step| {
-          world.foo = "elho".into();
-          world.test_async_fn().await;
-          world
-        }),
-      )
-      .when_regex_async("something goes (.*)", t!(|world, _matches, _step| world))
-      .given("I am trying out Cucumber", |mut world, _step| {
-        world.foo = "Some string".to_string();
-        world
-      })
-      .when("I consider what I am doing", |mut world, _step| {
-        let new_string = format!("{}.", &world.foo);
-        world.foo = new_string;
-        world
-      })
-      .then("I am interested in ATDD", |world, _step| {
-        assert_eq!(world.foo, "Some string.");
-        world
-      })
-      .then_regex(
-        r"^we can (.*) rules with regex$",
-        |world, matches, _step| {
-          // And access them as an array
-          assert_eq!(matches[1], "implement");
-          world
-        },
-      );
+#[given("I am trying out Cucumber")]
+fn i_am_trying_out(world: &mut MyWorld) {
+  world.foo = "Some string".to_string();
+}
 
-    builder
-  }
+#[when("I consider what I am doing")]
+fn i_consider(world: &mut MyWorld) {
+  let new_string = format!("{}.", &world.foo);
+  world.foo = new_string;
+}
+
+#[then("I am interested in ATDD")]
+fn i_am_interested(world: &mut MyWorld) {
+  assert_eq!(world.foo, "Some string.");
+}
+
+#[then(regex = "^we can (.*) rules with regex$")]
+fn we_can_regex(_: &mut MyWorld, action: String) {
+  // `action` can be anything implementing `FromStr`.
+  assert_eq!(action, "implement");
 }
 
 #[tokio::main]
 async fn main() {
-  // Do any setup you need to do before running the Cucumber runner.
-  // e.g. setup_some_db_thing()?;
-
-  cucumber::Cucumber::<MyWorld>::new()
-    // Specifies where our feature files exist
-    .features(&["./features"])
-    // Adds the implementation of our steps to the runner
-    .steps(example_steps::steps())
-    // Parses the command line arguments if passed
-    .cli()
-    // Runs the Cucumber tests and then exists
-    .run_and_exit()
-    .await
+  let runner = MyWorld::init(&["./features"]);
+  runner.run_and_exit().await;
 }
