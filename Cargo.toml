@@ -9,6 +9,7 @@ edition = "2018"
 [[test]]
 name = "cucumber"
 harness = false # Allows Cucumber to print output instead of libtest
+test = false
 
 [dev-dependencies]
 cucumber = { package = "cucumber_rust", version = "0.8.3" }
