@@ -1,3 +1,6 @@
+use crate::core;
+
 pub fn run() {
-  println!("statistics");
+  let tb = core::tikibase::in_dir(".");
+  println!("documents: {}", tb.docs.len());
 }

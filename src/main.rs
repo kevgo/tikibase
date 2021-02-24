@@ -1,5 +1,6 @@
 mod check;
 mod cli;
+mod core;
 mod stats;
 
 use cli::Command::{Check, Stats};
