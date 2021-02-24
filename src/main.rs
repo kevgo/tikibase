@@ -1,10 +1,12 @@
+mod check;
 mod cli;
+mod stats;
 
 use cli::Command::{Check, Stats};
 
 fn main() {
-    match cli::parse() {
-        Check => println!("checking"),
-        Stats => println!("statistics"),
+    match cli::parse_args() {
+        Check => check::run(),
+        Stats => stats::run(),
     }
 }

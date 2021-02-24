@@ -17,6 +17,6 @@ pub enum Command {
 }
 
 /// Parses the CLI args and provides the command that the user entered.
-pub fn parse() -> Command {
+pub fn parse_args() -> Command {
   Args::parse().command
 }
