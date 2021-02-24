@@ -44,13 +44,10 @@ mod example_steps {
         }),
       )
       .when_regex_async("something goes (.*)", t!(|world, _matches, _step| world))
-      .given(
-        "I am trying out Cucumber",
-        |mut world: crate::MyWorld, _step| {
-          world.foo = "Some string".to_string();
-          world
-        },
-      )
+      .given("I am trying out Cucumber", |mut world, _step| {
+        world.foo = "Some string".to_string();
+        world
+      })
       .when("I consider what I am doing", |mut world, _step| {
         let new_string = format!("{}.", &world.foo);
         world.foo = new_string;
