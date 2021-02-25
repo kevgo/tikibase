@@ -1,13 +1,16 @@
+mod args;
 mod check;
-mod cli;
 mod core;
+mod help;
 mod stats;
 
-use cli::Command::{Check, Stats};
+use args::Command::{Check, Help, Stats, Version};
 
 fn main() {
-    match cli::parse_args() {
+    match args::parse(std::env::args()) {
         Check => check::run(),
+        Help => help::run(),
         Stats => stats::run(),
+        Version => help::version(),
     }
 }
