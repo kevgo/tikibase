@@ -1,3 +1,1 @@
-pub enum Error {
-  CannotReadFile { err: String },
-}
+// pub enum Error {}

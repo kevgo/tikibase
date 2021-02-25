@@ -1,10 +1,10 @@
 use std::path::PathBuf;
 
 pub struct Document {
-  path: PathBuf,
+  // path: PathBuf,
 }
 
-pub fn new(path: PathBuf) -> Document {
-  let doc = Document { path };
+pub fn new(_path: PathBuf) -> Document {
+  let doc = Document { /*path*/ };
   doc
 }
