@@ -52,9 +52,11 @@ where
         text: line,
         line_number: line_number.try_into().unwrap(),
       };
+      // reset the section body accumulators
       section_line_number = 0;
       body = Vec::new();
     } else {
+      // accumulate this line into the body of the current section
       section_line_number += 1;
       body.push(Line {
         line_number: section_line_number,
