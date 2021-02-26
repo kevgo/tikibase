@@ -1,3 +1,5 @@
+use super::section;
+use super::section::Section;
 use std::borrow::Cow;
 use std::convert::TryInto;
 use std::io::BufRead;
@@ -6,17 +8,6 @@ use std::path::PathBuf;
 pub struct Document {
   pub path: PathBuf,
   pub sections: Vec<Section>,
-}
-
-pub struct Section {
-  pub title: Line,
-  pub body: Vec<Line>,
-}
-
-pub struct Line {
-  /// The line number relative to the section title line, 0-based.
-  pub line_number: u32,
-  pub text: String,
 }
 
 pub fn load(path: PathBuf) -> Document {
@@ -32,40 +23,25 @@ where
   I: IntoIterator,
   I::Item: Into<Cow<'a, str>>,
 {
+  // NOTE: modeling the lines argument this way to allow iterating over
+  // std::io::Lines in production efficiently (without additional allocations)
+  // and std::str::Lines in tests.
+  // See https://stackoverflow.com/a/37029631/1363753.
   let mut sections: Vec<Section> = Vec::new();
-  let mut title = Line {
-    text: "".to_string(),
-    line_number: 0,
-  };
-  let mut body: Vec<Line> = Vec::new();
-  let mut section_line_number: u32 = 0;
+  let mut section_builder = section::empty_builder();
   for (line_number, line) in lines.into_iter().enumerate() {
     let line = line.into().into_owned();
     if line.starts_with('#') {
-      // beginning of a new section
-      if !title.text.is_empty() {
-        // we have collected a section with content --> store it
-        sections.push(Section { title, body });
+      if let Some(section) = section_builder.result() {
+        sections.push(section);
       }
-      // store the new section title
-      title = Line {
-        text: line,
-        line_number: line_number.try_into().unwrap(),
-      };
-      // reset the section body accumulators
-      section_line_number = 0;
-      body = Vec::new();
+      section_builder = section::builder_with_title_line(line, line_number.try_into().unwrap());
     } else {
-      // accumulate this line into the body of the current section
-      section_line_number += 1;
-      body.push(Line {
-        line_number: section_line_number,
-        text: line,
-      });
+      section_builder.add_body_line(line);
     }
   }
-  if !title.text.is_empty() {
-    sections.push(Section { title, body });
+  if let Some(section) = section_builder.result() {
+    sections.push(section);
   }
   Document { path, sections }
 }
