@@ -1,3 +1,5 @@
+use std::borrow::Cow;
+use std::convert::TryInto;
 use std::io::BufRead;
 use std::path::PathBuf;
 
@@ -9,54 +11,85 @@ pub struct Document {
 pub struct Section {
   pub title: Line,
   pub body: Vec<Line>,
-  /// The line number where this section starts, 0-based
-  pub line_number: u32,
 }
 
 pub struct Line {
-  /// The line number relative to the section start, 0-based.
+  /// The line number relative to the section title line, 0-based.
   pub line_number: u32,
   pub text: String,
 }
 
-pub fn new(path: PathBuf) -> Document {
+pub fn load(path: PathBuf) -> Document {
   let file = std::fs::File::open(&path).unwrap();
+  new(
+    path,
+    std::io::BufReader::new(file).lines().map(|r| r.unwrap()),
+  )
+}
+
+pub fn new<'a, I>(path: PathBuf, lines: I) -> Document
+where
+  I: IntoIterator,
+  I::Item: Into<Cow<'a, str>>,
+{
   let mut sections: Vec<Section> = Vec::new();
-  let mut title = "".to_string();
+  let mut title = Line {
+    text: "".to_string(),
+    line_number: 0,
+  };
   let mut body: Vec<Line> = Vec::new();
-  let mut line_number: u32 = 0;
-  for line in std::io::BufReader::new(file).lines() {
-    let line = line.unwrap();
+  let mut section_line_number: u32 = 0;
+  for (line_number, line) in lines.into_iter().enumerate() {
+    let line = line.into().into_owned();
     if line.starts_with('#') {
-      if !title.is_empty() {
-        sections.push(Section {
-          title: Line {
-            line_number,
-            text: title,
-          },
-          body,
-          line_number,
-        });
+      // beginning of a new section
+      if !title.text.is_empty() {
+        // we have collected a section with content --> store it
+        sections.push(Section { title, body });
       }
-      title = line;
+      // store the new section title
+      title = Line {
+        text: line,
+        line_number: line_number.try_into().unwrap(),
+      };
+      section_line_number = 0;
       body = Vec::new();
     } else {
+      section_line_number += 1;
       body.push(Line {
-        line_number,
+        line_number: section_line_number,
         text: line,
       });
     }
-    line_number += 1;
   }
-  if !title.is_empty() {
-    sections.push(Section {
-      title: Line {
-        line_number,
-        text: title,
-      },
-      body,
-      line_number,
-    });
+  if !title.text.is_empty() {
+    sections.push(Section { title, body });
   }
   Document { path, sections }
+}
+
+#[cfg(test)]
+mod tests {
+  use super::*;
+
+  #[test]
+  fn parse() {
+    let content: &'static str = "# Title\ntitle text\n### Section 1\none\ntwo";
+    let path = PathBuf::new();
+    let have = super::new(path.clone(), content.lines());
+    assert_eq!(have.path, path);
+    assert_eq!(have.sections.len(), 2);
+    assert_eq!(have.sections[0].title.text, "# Title");
+    assert_eq!(have.sections[0].title.line_number, 0);
+    assert_eq!(have.sections[0].body.len(), 1);
+    assert_eq!(have.sections[0].body[0].text, "title text");
+    assert_eq!(have.sections[0].body[0].line_number, 1);
+    assert_eq!(have.sections[1].title.text, "### Section 1");
+    assert_eq!(have.sections[1].title.line_number, 2);
+    assert_eq!(have.sections[1].body.len(), 2);
+    assert_eq!(have.sections[1].body[0].text, "one");
+    assert_eq!(have.sections[1].body[0].line_number, 1);
+    assert_eq!(have.sections[1].body[1].text, "two");
+    assert_eq!(have.sections[1].body[1].line_number, 2);
+  }
 }

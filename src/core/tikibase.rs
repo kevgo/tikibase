@@ -27,7 +27,7 @@ pub fn in_dir(dir: &str) -> Tikibase {
     match path.extension() {
       None => resources.push(Resource { /* path*/ }),
       Some(ext) => match ext.to_str().unwrap() {
-        "md" => docs.push(document::new(path)),
+        "md" => docs.push(document::load(path)),
         _ => resources.push(Resource { /* path*/ }),
       },
     }
