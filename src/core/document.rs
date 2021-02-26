@@ -77,6 +77,11 @@ mod tests {
     let content: &'static str = "# Title\ntitle text\n### Section 1\none\ntwo";
     let path = PathBuf::new();
     let have = super::new(path.clone(), content.lines());
+    let want = Document {
+      path,
+      sections: vec![],
+    };
+    assert_eq!(have, want);
     assert_eq!(have.path, path);
     assert_eq!(have.sections.len(), 2);
     assert_eq!(have.sections[0].title.text, "# Title");
