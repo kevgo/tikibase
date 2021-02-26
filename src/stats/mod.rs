@@ -5,7 +5,7 @@ pub fn run() {
   println!("documents: {}", tb.docs.len());
   println!(
     " sections: {}",
-    tb.docs.iter().map(|d| d.sections.len()).sum::<usize>()
+    tb.docs.iter().map(|d| d.sections.len() - 1).sum::<usize>()
   );
   println!("resources: {}", tb.resources.len());
 }
