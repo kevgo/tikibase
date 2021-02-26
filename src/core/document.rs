@@ -2,18 +2,21 @@ use std::io::BufRead;
 use std::path::PathBuf;
 
 pub struct Document {
-  path: PathBuf,
-  sections: Vec<Section>,
+  pub path: PathBuf,
+  pub sections: Vec<Section>,
 }
 
 pub struct Section {
-  title: Line,
-  body: Vec<Line>,
+  pub title: Line,
+  pub body: Vec<Line>,
+  /// The line number where this section starts, 0-based
+  pub line_number: u32,
 }
 
 pub struct Line {
-  number: u32,
-  text: String,
+  /// The line number relative to the section start, 0-based.
+  pub line_number: u32,
+  pub text: String,
 }
 
 pub fn new(path: PathBuf) -> Document {
@@ -21,33 +24,38 @@ pub fn new(path: PathBuf) -> Document {
   let mut sections: Vec<Section> = Vec::new();
   let mut title = "".to_string();
   let mut body: Vec<Line> = Vec::new();
-  let mut number: u32 = 0;
+  let mut line_number: u32 = 0;
   for line in std::io::BufReader::new(file).lines() {
-    number += 1;
     let line = line.unwrap();
     if line.starts_with('#') {
-      if title.is_empty() {
+      if !title.is_empty() {
         sections.push(Section {
           title: Line {
-            number,
+            line_number,
             text: title,
           },
           body,
+          line_number,
         });
       }
       title = line;
       body = Vec::new();
     } else {
-      body.push(Line { number, text: line });
+      body.push(Line {
+        line_number,
+        text: line,
+      });
     }
+    line_number += 1;
   }
-  if title != "" {
+  if !title.is_empty() {
     sections.push(Section {
       title: Line {
-        number,
+        line_number,
         text: title,
       },
       body,
+      line_number,
     });
   }
   Document { path, sections }
