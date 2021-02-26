@@ -5,7 +5,8 @@ use std::path::PathBuf;
 
 pub struct Document {
   pub path: PathBuf,
-  pub sections: Vec<Section>,
+  pub title_section: Section,
+  pub content_sections: Vec<Section>,
 }
 
 pub fn load(path: PathBuf) -> Document {
@@ -26,7 +27,12 @@ pub fn load(path: PathBuf) -> Document {
   if let Some(section) = section_builder.result() {
     sections.push(section);
   }
-  Document { path, sections }
+  let content_sections = sections.split_off(1);
+  Document {
+    path,
+    title_section: sections.pop().unwrap(),
+    content_sections,
+  }
 }
 
 // -------------------------------------------------------------------------------------
@@ -51,24 +57,24 @@ foo
     let file_path = tmp_dir.path().join("file.md");
     std::fs::write(&file_path, content).unwrap();
     let have = super::load(file_path);
-    assert_eq!(have.sections.len(), 3);
-    assert_eq!(have.sections[0].title.text, "# Title");
-    assert_eq!(have.sections[0].title.line_number, 0);
-    assert_eq!(have.sections[0].body.len(), 1);
-    assert_eq!(have.sections[0].body[0].text, "title text");
-    assert_eq!(have.sections[0].body[0].line_number, 1);
-    assert_eq!(have.sections[1].title.text, "### Section 1");
-    assert_eq!(have.sections[1].title.line_number, 2);
-    assert_eq!(have.sections[1].body.len(), 2);
-    assert_eq!(have.sections[1].body[0].text, "one");
-    assert_eq!(have.sections[1].body[0].line_number, 1);
-    assert_eq!(have.sections[1].body[1].text, "two");
-    assert_eq!(have.sections[1].body[1].line_number, 2);
-    assert_eq!(have.sections[2].title.text, "### Section 2");
-    assert_eq!(have.sections[2].title.line_number, 5);
-    assert_eq!(have.sections[2].body.len(), 1);
-    assert_eq!(have.sections[2].body[0].text, "foo");
-    assert_eq!(have.sections[2].body[0].line_number, 1);
+    assert_eq!(have.title_section.title_line, "# Title");
+    assert_eq!(have.title_section.line_number, 0);
+    assert_eq!(have.title_section.body.len(), 1);
+    assert_eq!(have.title_section.body[0].text, "title text");
+    assert_eq!(have.title_section.body[0].line_number, 1);
+    assert_eq!(have.content_sections.len(), 2);
+    assert_eq!(have.content_sections[0].title_line, "### Section 1");
+    assert_eq!(have.content_sections[0].line_number, 2);
+    assert_eq!(have.content_sections[0].body.len(), 2);
+    assert_eq!(have.content_sections[0].body[0].text, "one");
+    assert_eq!(have.content_sections[0].body[0].line_number, 1);
+    assert_eq!(have.content_sections[0].body[1].text, "two");
+    assert_eq!(have.content_sections[0].body[1].line_number, 2);
+    assert_eq!(have.content_sections[1].title_line, "### Section 2");
+    assert_eq!(have.content_sections[1].line_number, 5);
+    assert_eq!(have.content_sections[1].body.len(), 1);
+    assert_eq!(have.content_sections[1].body[0].text, "foo");
+    assert_eq!(have.content_sections[1].body[0].line_number, 1);
   }
 }
 
@@ -78,7 +84,8 @@ foo
 
 /// Allows building up sections one line at a time.
 pub struct SectionBuilder {
-  title: Line,
+  line_number: u32,
+  title_line: String,
   body: Vec<Line>,
   body_line_number: u32,
   valid: bool,
@@ -87,10 +94,8 @@ pub struct SectionBuilder {
 /// Provides a builder instance loaded with the given title line.
 pub fn builder_with_title_line(text: String, number: u32) -> SectionBuilder {
   SectionBuilder {
-    title: Line {
-      text,
-      line_number: number,
-    },
+    title_line: text,
+    line_number: number,
     body: Vec::new(),
     body_line_number: 0,
     valid: true,
@@ -100,10 +105,8 @@ pub fn builder_with_title_line(text: String, number: u32) -> SectionBuilder {
 /// Null value for SectionBuilder instances
 pub fn placeholder_builder() -> SectionBuilder {
   SectionBuilder {
-    title: Line {
-      text: "".to_string(),
-      line_number: 0,
-    },
+    title_line: "".to_string(),
+    line_number: 0,
     body: Vec::new(),
     body_line_number: 0,
     valid: false,
@@ -127,7 +130,8 @@ impl SectionBuilder {
     match self.valid {
       false => None,
       true => Some(Section {
-        title: self.title,
+        title_line: self.title_line,
+        line_number: self.line_number,
         body: self.body,
       }),
     }
