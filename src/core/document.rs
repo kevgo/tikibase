@@ -74,7 +74,13 @@ mod tests {
 
   #[test]
   fn parse() {
-    let content: &'static str = "# Title\ntitle text\n### Section 1\none\ntwo";
+    let content: &'static str = "\
+# Title
+title text
+### Section 1
+one
+two
+";
     let path = PathBuf::new();
     let have = super::new(path.clone(), content.lines());
     assert_eq!(have.path, path);
