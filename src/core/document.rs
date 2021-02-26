@@ -80,11 +80,13 @@ title text
 ### Section 1
 one
 two
+### Section 2
+foo
 ";
     let path = PathBuf::new();
     let have = super::new(path.clone(), content.lines());
     assert_eq!(have.path, path);
-    assert_eq!(have.sections.len(), 2);
+    assert_eq!(have.sections.len(), 3);
     assert_eq!(have.sections[0].title.text, "# Title");
     assert_eq!(have.sections[0].title.line_number, 0);
     assert_eq!(have.sections[0].body.len(), 1);
@@ -97,5 +99,10 @@ two
     assert_eq!(have.sections[1].body[0].line_number, 1);
     assert_eq!(have.sections[1].body[1].text, "two");
     assert_eq!(have.sections[1].body[1].line_number, 2);
+    assert_eq!(have.sections[2].title.text, "### Section 2");
+    assert_eq!(have.sections[2].title.line_number, 5);
+    assert_eq!(have.sections[2].body.len(), 1);
+    assert_eq!(have.sections[2].body[0].text, "foo");
+    assert_eq!(have.sections[2].body[0].line_number, 1);
   }
 }
