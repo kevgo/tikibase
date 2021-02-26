@@ -125,11 +125,11 @@ impl SectionBuilder {
   /// Provides the content this builder has accumulated.
   pub fn result(self) -> Option<Section> {
     match self.valid {
+      false => None,
       true => Some(Section {
         title: self.title,
         body: self.body,
       }),
-      false => None,
     }
   }
 }

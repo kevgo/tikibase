@@ -10,7 +10,7 @@ pub struct Tikibase {
 
 /// A non-Markdown file stored in a Tikibase.
 pub struct Resource {
-  // path: std::path::PathBuf,
+  pub path: std::path::PathBuf,
 }
 
 /// Provides a Tikibase instance for the given directory.
@@ -20,15 +20,15 @@ pub fn in_dir(dir: &str) -> Tikibase {
   for entry in WalkDir::new(dir) {
     let entry = entry.unwrap();
     let filename = entry.file_name().to_str().unwrap();
-    if filename != "tikibase.json" && filename != "." {
+    if filename == "tikibase.json" || filename == "." {
       continue;
     }
     let path = entry.into_path();
     match path.extension() {
-      None => resources.push(Resource { /* path*/ }),
+      None => resources.push(Resource { path }),
       Some(ext) => match ext.to_str().unwrap() {
         "md" => docs.push(document::load(path)),
-        _ => resources.push(Resource { /* path*/ }),
+        _ => resources.push(Resource { path }),
       },
     }
   }
