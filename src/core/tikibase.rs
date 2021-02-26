@@ -24,17 +24,22 @@ pub fn in_dir(dir: &str) -> Tikibase {
       continue;
     }
     let path = entry.into_path();
-    match path.extension() {
-      None => resources.push(Resource { path }),
-      Some(ext) => match ext.to_str().unwrap() {
-        "md" => docs.push(document::load(path)),
-        _ => resources.push(Resource { path }),
-      },
+    if is_md(path.extension()) {
+      docs.push(document::load(path));
+    } else {
+      resources.push(Resource { path });
     }
   }
   Tikibase {
     dir: dir.to_string(),
     docs,
     resources,
+  }
+}
+
+fn is_md(ext: Option<&std::ffi::OsStr>) -> bool {
+  match ext {
+    None => false,
+    Some(ext) => ext.to_str().unwrap() == "md",
   }
 }
