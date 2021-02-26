@@ -8,8 +8,10 @@ pub fn run() {
   let section_types = collect_section_types(&tb);
   println!();
   println!("{} section types:", section_types.len());
-  for (name, count) in section_types {
-    println!("- {} ({})", name, count);
+  let mut keys: Vec<&String> = section_types.keys().collect::<Vec<&String>>();
+  keys.sort();
+  for key in keys {
+    println!("- {} ({})", key, section_types.get(key).unwrap());
   }
 }
 
