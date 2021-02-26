@@ -73,7 +73,7 @@ mod tests {
   use super::*;
 
   #[test]
-  fn parse() {
+  fn new() {
     let content: &'static str = "\
 # Title
 title text
