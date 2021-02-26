@@ -5,6 +5,7 @@ authors = ["Kevin Goslar <kevin.goslar@gmail.com>"]
 edition = "2018"
 
 [dependencies]
+tempfile = "3"
 walkdir = "2"
 
 [[test]]
