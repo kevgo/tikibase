@@ -1,9 +1,12 @@
-use super::Error;
 use crate::core::tikibase::Tikibase;
 use std::collections::{HashMap, HashSet};
 use std::iter::FromIterator;
 
-pub fn find(tb: &Tikibase) -> Vec<super::Error> {
+pub struct MixedCapSection {
+  pub variants: Vec<String>,
+}
+
+pub fn find(tb: &Tikibase) -> Vec<MixedCapSection> {
   let mut finder = MixCapSectionFinder::new();
   for doc in &tb.docs {
     finder.register(doc.title_section.section_type());
@@ -37,7 +40,7 @@ impl MixCapSectionFinder {
   }
 
   /// provides the found sections
-  fn result(self) -> Vec<Error> {
+  fn result(self) -> Vec<MixedCapSection> {
     self
       .section_types
       .into_values()
@@ -45,7 +48,7 @@ impl MixCapSectionFinder {
       .map(|variants| {
         let mut v_sorted = Vec::from_iter(variants);
         v_sorted.sort();
-        Error::MixedCapSection { variants: v_sorted }
+        MixedCapSection { variants: v_sorted }
       })
       .collect()
   }
@@ -80,7 +83,7 @@ mod tests {
     assert_eq!(have.len(), 1);
     assert_eq!(
       have[0],
-      crate::check::Error::MixedCapSection {
+      super::MixedCapSection {
         variants: vec!["Different".to_string(), "different".to_string()],
       }
     );
