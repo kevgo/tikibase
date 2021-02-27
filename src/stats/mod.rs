@@ -1,8 +1,8 @@
-use crate::core::tikibase;
+use crate::core::tikibase::Tikibase;
 use std::collections::HashMap;
 
 pub fn run() {
-  let tb = tikibase::in_dir(".");
+  let tb = Tikibase::in_dir(".");
   println!("documents: {}", tb.docs.len());
   println!("resources: {}", tb.resources.len());
   let section_types = collect_section_types(&tb);
@@ -15,7 +15,7 @@ pub fn run() {
   }
 }
 
-fn collect_section_types(tb: &tikibase::Tikibase) -> HashMap<String, u32> {
+fn collect_section_types(tb: &Tikibase) -> HashMap<String, u32> {
   let mut result: HashMap<String, u32> = HashMap::new();
   for doc in &tb.docs {
     for section in &doc.content_sections {
