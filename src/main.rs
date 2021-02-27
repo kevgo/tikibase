@@ -1,3 +1,5 @@
+#![feature(map_into_keys_values)]
+
 mod args;
 mod check;
 mod core;
