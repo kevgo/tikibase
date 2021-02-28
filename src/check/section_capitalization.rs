@@ -2,6 +2,7 @@ use crate::core::tikibase::Tikibase;
 use std::collections::{HashMap, HashSet};
 use std::iter::FromIterator;
 
+#[derive(Debug, PartialEq)]
 pub struct MixedCapSection {
   pub variants: Vec<String>,
 }
@@ -64,12 +65,9 @@ mod tests {
 
   #[test]
   fn normalize() {
-    let n1 = super::normalize("foo");
-    let n2 = super::normalize("Foo");
-    let n3 = super::normalize("FOO");
-    assert_eq!(n1, n2);
-    assert_eq!(n1, n3);
-    assert_eq!(n2, n3);
+    assert_eq!(super::normalize("foo"), "foo");
+    assert_eq!(super::normalize("Foo"), "foo");
+    assert_eq!(super::normalize("FOO"), "foo");
   }
 
   #[test]
