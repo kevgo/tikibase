@@ -2,6 +2,7 @@ use crate::core::tikibase::Tikibase;
 use std::collections::{HashMap, HashSet};
 use std::iter::FromIterator;
 
+/// describes a set of sections with mixed capitalization
 #[derive(Debug, PartialEq)]
 pub struct MixedCapSection {
   pub variants: Vec<String>,
