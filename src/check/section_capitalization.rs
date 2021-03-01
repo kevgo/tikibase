@@ -8,9 +8,9 @@ pub struct MixedCapSection {
   pub variants: Vec<String>,
 }
 
-pub fn find(tb: &Tikibase) -> Vec<MixedCapSection> {
+pub fn find(base: &Tikibase) -> Vec<MixedCapSection> {
   let mut finder = MixCapSectionFinder::new();
-  for doc in &tb.docs {
+  for doc in &base.docs {
     finder.register(doc.title_section.section_type());
     for section in &doc.content_sections {
       finder.register(section.section_type());
