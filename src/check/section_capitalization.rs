@@ -21,20 +21,20 @@ pub fn find(base: &Tikibase) -> Vec<MixedCapSection> {
 
 struct MixCapSectionFinder {
   /// the known section types (key=normalized version, value=existing variations)
-  section_types: HashMap<String, HashSet<String>>,
+  known_variants: HashMap<String, HashSet<String>>,
 }
 
 impl MixCapSectionFinder {
   fn new() -> MixCapSectionFinder {
     MixCapSectionFinder {
-      section_types: HashMap::new(),
+      known_variants: HashMap::new(),
     }
   }
 
   /// evaluates the given section type
   fn register(&mut self, section_type: String) {
     let variants = self
-      .section_types
+      .known_variants
       .entry(normalize(&section_type))
       .or_insert_with(HashSet::new);
     variants.insert(section_type);
@@ -43,7 +43,7 @@ impl MixCapSectionFinder {
   /// provides the found sections
   fn result(self) -> Vec<MixedCapSection> {
     self
-      .section_types
+      .known_variants
       .into_values()
       .filter(|variants| variants.len() > 1)
       .map(|variants| {
