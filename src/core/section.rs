@@ -14,10 +14,10 @@ impl Section {
     let pos = self
       .title_line
       .char_indices()
-      .find(|p| p.1 != '#' && p.1 != ' ');
+      .find(|(_, letter)| *letter != '#' && *letter != ' ');
     match pos {
       None => "".to_string(),
-      Some(pos) => self.title_line.clone().split_off(pos.0),
+      Some((pos, _)) => self.title_line.clone().split_off(pos),
     }
   }
 }
