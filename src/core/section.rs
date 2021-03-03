@@ -1,3 +1,5 @@
+use super::line::Line;
+
 pub struct Section {
   /// The line number at which this section starts, 0-based.
   pub line_number: u32,
@@ -42,10 +44,4 @@ mod tests {
       assert_eq!(have, want.to_string(), "want: '{}', have: '{}'", want, have);
     }
   }
-}
-
-pub struct Line {
-  /// The line number relative to the section title line, 0-based.
-  pub line_number: u32,
-  pub text: String,
 }

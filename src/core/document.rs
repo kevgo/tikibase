@@ -1,4 +1,5 @@
-use super::section::{Line, Section};
+use super::line::Line;
+use super::section::Section;
 use std::fs::File;
 use std::io::{BufRead, BufReader};
 use std::path::PathBuf;
