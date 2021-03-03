@@ -33,10 +33,9 @@ impl MixCapSectionFinder {
 
   /// evaluates the given section type
   fn register(&mut self, section_type: String) {
-    let normalized = normalize(&section_type);
     let variants = self
       .section_types
-      .entry(normalized)
+      .entry(normalize(&section_type))
       .or_insert_with(HashSet::new);
     variants.insert(section_type);
   }
