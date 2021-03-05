@@ -39,7 +39,6 @@ mod tests {
         line_number: 2,
         title_line: give.to_string(),
         body: vec![],
-        path: &PathBuf::new(),
       };
       let have = section.section_type();
       assert_eq!(have, want.to_string(), "want: '{}', have: '{}'", want, have);

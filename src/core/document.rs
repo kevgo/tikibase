@@ -4,10 +4,10 @@ use std::fs::File;
 use std::io::{BufRead, BufReader};
 use std::path::PathBuf;
 
-pub struct Document<'a> {
+pub struct Document {
   pub path: PathBuf,
-  pub title_section: Section<'a>,
-  pub content_sections: Vec<Section<'a>>,
+  pub title_section: Section,
+  pub content_sections: Vec<Section>,
 }
 
 pub fn load<'a>(path: PathBuf) -> Document {
@@ -84,12 +84,11 @@ foo
 // -------------------------------------------------------------------------------------
 
 /// Allows building up sections one line at a time.
-pub struct SectionBuilder<'a> {
+pub struct SectionBuilder {
   line_number: u32,
   title_line: String,
   body: Vec<Line>,
   body_line_number: u32,
-  path: &'a PathBuf,
   valid: bool,
 }
 
@@ -100,7 +99,6 @@ pub fn builder_with_title_line(text: String, path: &PathBuf, line_number: u32) -
     line_number,
     body: Vec::new(),
     body_line_number: 0,
-    path,
     valid: true,
   }
 }
@@ -112,7 +110,6 @@ pub fn placeholder_builder() -> SectionBuilder {
     line_number: 0,
     body: Vec::new(),
     body_line_number: 0,
-    path: &PathBuf::new(),
     valid: false,
   }
 }
@@ -137,7 +134,6 @@ impl SectionBuilder {
         title_line: self.title_line,
         line_number: self.line_number,
         body: self.body,
-        path: self.path,
       }),
     }
   }
