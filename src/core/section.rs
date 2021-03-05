@@ -1,8 +1,6 @@
-use std::path::PathBuf;
+use super::line::Line;
 
-pub struct Section<'a> {
-  /// The path of the document that contains this section.
-  pub path: &'a PathBuf,
+pub struct Section {
   /// The line number at which this section starts, 0-based.
   pub line_number: u32,
   /// Complete textual content of this section's title line, e.g. "# Title"
@@ -11,15 +9,15 @@ pub struct Section<'a> {
   pub body: Vec<Line>,
 }
 
-impl Section<'a> {
+impl Section {
   pub fn section_type(&self) -> String {
     let pos = self
       .title_line
       .char_indices()
-      .find(|p| p.1 != '#' && p.1 != ' ');
+      .find(|(_, letter)| *letter != '#' && *letter != ' ');
     match pos {
       None => "".to_string(),
-      Some(pos) => self.title_line.clone().split_off(pos.0),
+      Some((pos, _)) => self.title_line.clone().split_off(pos),
     }
   }
 }
@@ -47,10 +45,4 @@ mod tests {
       assert_eq!(have, want.to_string(), "want: '{}', have: '{}'", want, have);
     }
   }
-}
-
-pub struct Line {
-  /// The line number relative to the section title line, 0-based.
-  pub line_number: u32,
-  pub text: String,
 }

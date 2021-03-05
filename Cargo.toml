@@ -5,6 +5,9 @@ authors = ["Kevin Goslar <kevin.goslar@gmail.com>"]
 edition = "2018"
 
 [dependencies]
+heck = "0.3"
+lazy_static = "1.4.0"
+regex = "1"
 tempfile = "3"
 walkdir = "2"
 

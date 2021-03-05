@@ -1,4 +1,5 @@
-use super::section::{Line, Section};
+use super::line::Line;
+use super::section::Section;
 use std::fs::File;
 use std::io::{BufRead, BufReader};
 use std::path::PathBuf;
@@ -61,20 +62,20 @@ foo
     assert_eq!(have.title_section.line_number, 0);
     assert_eq!(have.title_section.body.len(), 1);
     assert_eq!(have.title_section.body[0].text, "title text");
-    assert_eq!(have.title_section.body[0].line_number, 1);
+    assert_eq!(have.title_section.body[0].section_offset, 1);
     assert_eq!(have.content_sections.len(), 2);
     assert_eq!(have.content_sections[0].title_line, "### Section 1");
     assert_eq!(have.content_sections[0].line_number, 2);
     assert_eq!(have.content_sections[0].body.len(), 2);
     assert_eq!(have.content_sections[0].body[0].text, "one");
-    assert_eq!(have.content_sections[0].body[0].line_number, 1);
+    assert_eq!(have.content_sections[0].body[0].section_offset, 1);
     assert_eq!(have.content_sections[0].body[1].text, "two");
-    assert_eq!(have.content_sections[0].body[1].line_number, 2);
+    assert_eq!(have.content_sections[0].body[1].section_offset, 2);
     assert_eq!(have.content_sections[1].title_line, "### Section 2");
     assert_eq!(have.content_sections[1].line_number, 5);
     assert_eq!(have.content_sections[1].body.len(), 1);
     assert_eq!(have.content_sections[1].body[0].text, "foo");
-    assert_eq!(have.content_sections[1].body[0].line_number, 1);
+    assert_eq!(have.content_sections[1].body[0].section_offset, 1);
   }
 }
 
@@ -123,7 +124,7 @@ impl SectionBuilder {
     }
     self.body_line_number += 1;
     self.body.push(Line {
-      line_number: self.body_line_number,
+      section_offset: self.body_line_number,
       text: line,
     });
   }
