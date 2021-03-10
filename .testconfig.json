@@ -1,0 +1,24 @@
+{
+  "actions": [
+    {
+      "trigger": { "command": "testAll" },
+      "run": "cargo test"
+    },
+
+    {
+      "trigger": {
+        "command": "testFile",
+        "file": "\\.rs$"
+      },
+      "run": "echo testing file {{file}}"
+    },
+
+    {
+      "trigger": {
+        "command": "testFunction",
+        "file": "\\.ext$"
+      },
+      "run": "echo testing file {{file}} at line {{line}}"
+    }
+  ]
+}
