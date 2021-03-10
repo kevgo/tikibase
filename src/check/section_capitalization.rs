@@ -2,7 +2,7 @@ use crate::core::tikibase::Tikibase;
 use std::collections::{HashMap, HashSet};
 use std::iter::FromIterator;
 
-/// describes a set of sections with mixed capitalization
+/// describes an identified set of sections with the same content but mixed capitalization
 #[derive(Debug, PartialEq)]
 pub struct MixedCapSection {
     pub variants: Vec<String>,
@@ -19,8 +19,9 @@ pub fn find(base: &Tikibase) -> Vec<MixedCapSection> {
     finder.result()
 }
 
+/// helps find sections with mixed captions
 struct MixCapSectionFinder {
-    /// the known section types (key=normalized version, value=existing variations)
+    /// the known section types (key=normalized version, value=actual variations)
     known_variants: HashMap<String, HashSet<String>>,
 }
 
