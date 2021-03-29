@@ -93,10 +93,10 @@ pub struct SectionBuilder {
 }
 
 /// Provides a builder instance loaded with the given title line.
-pub fn builder_with_title_line(text: String, number: u32) -> SectionBuilder {
+pub fn builder_with_title_line(text: String, line_number: u32) -> SectionBuilder {
     SectionBuilder {
         title_line: text,
-        line_number: number,
+        line_number,
         body: Vec::new(),
         body_line_number: 0,
         valid: true,
