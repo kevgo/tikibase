@@ -9,11 +9,12 @@ pub struct MixedCapSection {
 }
 
 pub fn check(base: &Tikibase) -> Vec<MixedCapSection> {
-  let mut finder = MixCapSectionFinder::new();
-  for doc in &base.docs {
-    finder.register(doc.title_section.section_type());
-    for section in &doc.content_sections {
-      finder.register(section.section_type());
+    let mut finder = MixCapSectionFinder::new();
+    for doc in &base.docs {
+        finder.register(doc.title_section.section_type());
+        for section in &doc.content_sections {
+            finder.register(section.section_type());
+        }
     }
     finder.result()
 }
