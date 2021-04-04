@@ -1,5 +1,5 @@
 #![feature(map_into_keys_values)]
-#[macro_use]
+// #[macro_use]
 extern crate lazy_static;
 
 mod args;
