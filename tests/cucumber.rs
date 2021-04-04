@@ -1,12 +1,8 @@
-use cucumber_rust::Steps;
-use cucumber_rust::{async_trait, Context, Cucumber, World};
+use cucumber_rust::{async_trait, Context, Cucumber, Steps, World};
 use std::convert::Infallible;
 
-pub enum MyWorld {
-    Nothing,
-    SomeString(String),
-    SuffixedString(String),
-    TwoStrings(String, String),
+pub struct MyWorld {
+    pub dir: String,
 }
 
 #[async_trait(?Send)]
@@ -14,39 +10,32 @@ impl World for MyWorld {
     type Error = Infallible;
 
     async fn new() -> Result<Self, Infallible> {
-        Ok(Self::Nothing)
+        Ok(MyWorld {
+            dir: "".to_string(),
+        })
     }
 }
 
 pub fn steps() -> Steps<crate::MyWorld> {
     let mut steps: Steps<crate::MyWorld> = Steps::new();
 
-    steps.given("a string with some particular value", |_world, _ctx| {
-        MyWorld::SomeString("hello".to_string())
+    steps.given_regex(r#"^a file "(.*)" with content:$"#, |_world, ctx| {
+        match ctx.step.docstring() {
+            None => println!("NO DOCSTRING"),
+            Some(str) => println!("FILE CONTENT: '{}'", str),
+        }
+        println!("CREATING FILE {}", ctx.matches[1]);
+
+        panic!("boom");
+        // MyWorld::SomeString("hello".to_string())
     });
 
-    steps.when(
-        "I append a known suffix to the value",
-        |world, _ctx| match world {
-            MyWorld::SomeString(_) => MyWorld::SuffixedString("two".to_string()),
-            _ => panic!("Invalid world state"),
-        },
-    );
-
-    steps.then_regex(r#"^that string is now equal to "(.*)"$"#, |world, ctx| {
-        match world {
-            MyWorld::SuffixedString(x) => assert_eq!(x, ctx.matches[1]),
-            _ => panic!("Invalid world state"),
-        }
-        MyWorld::Nothing
+    steps.when("I consider what I am doing", |_world, _ctx| {
+        panic!("implement")
     });
 
-    steps.then("we find we somehow had the same string", |world, _| {
-        match world {
-            MyWorld::TwoStrings(a, b) => assert_eq!(a, b),
-            _ => panic!("Invalid world state"),
-        }
-        MyWorld::Nothing
+    steps.then_regex(r#"^that string is now equal to "(.*)"$"#, |_world, _ctx| {
+        panic!("implement")
     });
 
     steps
