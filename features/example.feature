@@ -6,4 +6,4 @@ Feature: Example feature
       bar
       """
     When I consider what I am doing
-    Then we can implement rules with regex
+    Then that string is now equal to "foo"

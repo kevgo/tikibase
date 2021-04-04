@@ -16,26 +16,26 @@ impl World for MyWorld {
     }
 }
 
-pub fn steps() -> Steps<crate::MyWorld> {
-    let mut steps: Steps<crate::MyWorld> = Steps::new();
+pub fn steps() -> Steps<MyWorld> {
+    let mut steps: Steps<MyWorld> = Steps::new();
 
-    steps.given_regex(r#"^a file "(.*)" with content:$"#, |_world, ctx| {
+    steps.given_regex(r#"^a file "(.*)" with content:$"#, |world, ctx| {
         match ctx.step.docstring() {
             None => println!("NO DOCSTRING"),
             Some(str) => println!("FILE CONTENT: '{}'", str),
         }
         println!("CREATING FILE {}", ctx.matches[1]);
-
-        panic!("boom");
-        // MyWorld::SomeString("hello".to_string())
+        world
     });
 
-    steps.when("I consider what I am doing", |_world, _ctx| {
-        panic!("implement")
+    steps.when("I consider what I am doing", |world, _ctx| {
+        println!("considering");
+        world
     });
 
-    steps.then_regex(r#"^that string is now equal to "(.*)"$"#, |_world, _ctx| {
-        panic!("implement")
+    steps.then_regex(r#"^that string is now equal to "(.*)"$"#, |world, _ctx| {
+        println!("equal");
+        world
     });
 
     steps
