@@ -17,6 +17,6 @@ harness = false # Allows Cucumber to print output instead of libtest
 test = false
 
 [dev-dependencies]
-cucumber_rust = { package = "cucumber_rust", version = "0.8.3", features = ["macros"] }
+cucumber_rust = { git = "https://github.com/bbqsrc/cucumber-rust", branch = "main" }
 # You can use any executor you want, but we're going to use Tokio in this example.
 tokio = { version = "1", features = ["macros", "rt-multi-thread"] }
