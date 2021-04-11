@@ -11,12 +11,7 @@ pub fn find(base: &Tikibase) -> Vec<EmptySection> {
     let mut result = Vec::new();
     for doc in &base.docs {
         for section in &doc.content_sections {
-            let mut found_content = false;
-            for body_line in &section.body {
-                if !body_line.text.is_empty() {
-                    found_content = true
-                }
-            }
+            let found_content = section.body.iter().any(|l| !l.text.is_empty());
             if !found_content {
                 result.push(EmptySection {
                     path: doc.path.clone(),
@@ -97,6 +92,36 @@ mod tests {
             assert_eq!(have.len(), 1);
             assert_eq!(have[0].path.to_str().unwrap(), "test.md");
             assert_eq!(have[0].line, 12)
+        }
+
+        #[test]
+        fn section_with_content() {
+            let title_section = Section {
+                title_line: "# test document".to_string(),
+                line_number: 0,
+                body: vec![],
+            };
+            let line = Line {
+                text: "some content".to_string(),
+                section_offset: 1,
+            };
+            let section_with_content = Section {
+                title_line: "### section with content".to_string(),
+                line_number: 12,
+                body: vec![line],
+            };
+            let doc = Document {
+                path: std::path::PathBuf::from("test.md"),
+                title_section: title_section,
+                content_sections: vec![section_with_content],
+            };
+            let base = Tikibase {
+                dir: "".to_string(),
+                docs: vec![doc],
+                resources: vec![],
+            };
+            let have = super::super::find(&base);
+            assert_eq!(have.len(), 0);
         }
     }
 }
