@@ -41,11 +41,7 @@ mod tests {
 
 content";
             let doc = crate::core::document::Document::from_str(content, "test.md");
-            let base = Tikibase {
-                dir: "".to_string(),
-                docs: vec![doc],
-                resources: vec![],
-            };
+            let base = Tikibase::with_doc(doc);
             let have = super::super::find(&base);
             assert_eq!(have.len(), 1);
             assert_eq!(have[0].path.to_str().unwrap(), "test.md");
@@ -63,11 +59,7 @@ content";
 
 content";
             let doc = crate::core::document::Document::from_str(content, "test.md");
-            let base = Tikibase {
-                dir: "".to_string(),
-                docs: vec![doc],
-                resources: vec![],
-            };
+            let base = Tikibase::with_doc(doc);
             let have = super::super::find(&base);
             assert_eq!(have.len(), 1);
             assert_eq!(have[0].path.to_str().unwrap(), "test.md");
@@ -83,11 +75,7 @@ content";
 
 content";
             let doc = crate::core::document::Document::from_str(content, "test.md");
-            let base = Tikibase {
-                dir: "".to_string(),
-                docs: vec![doc],
-                resources: vec![],
-            };
+            let base = Tikibase::with_doc(doc);
             let have = super::super::find(&base);
             assert_eq!(have.len(), 0);
         }

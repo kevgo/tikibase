@@ -31,6 +31,15 @@ impl Tikibase {
             resources,
         }
     }
+
+    #[allow(dead_code)] // used in tests
+    pub fn with_doc(doc: Document) -> Tikibase {
+        Tikibase {
+            dir: "".to_string(),
+            docs: vec![doc],
+            resources: vec![],
+        }
+    }
 }
 
 /// A non-Markdown file stored in a Tikibase.
