@@ -1,4 +1,3 @@
-use super::document;
 use super::document::Document;
 use walkdir::WalkDir;
 
@@ -21,7 +20,7 @@ impl Tikibase {
             }
             let path = entry.into_path();
             if is_md(path.extension()) {
-                docs.push(document::load(path));
+                docs.push(Document::load(path));
             } else {
                 resources.push(Resource { path });
             }

@@ -10,29 +10,48 @@ pub struct Document {
     pub content_sections: Vec<Section>,
 }
 
-pub fn load(path: PathBuf) -> Document {
-    let mut sections: Vec<Section> = Vec::new();
-    let mut section_builder = placeholder_builder();
-    let file = File::open(&path).unwrap();
-    for (line, line_number) in BufReader::new(file).lines().into_iter().zip(0..) {
-        let line = line.unwrap();
-        if line.starts_with('#') {
-            if let Some(section) = section_builder.result() {
-                sections.push(section);
+impl Document {
+    /// provides a Document instance containing the content of the file at the given path
+    pub fn load(path: PathBuf) -> Document {
+        let file = File::open(&path).unwrap();
+        Document::from_lines(BufReader::new(file).lines().map(|l| l.unwrap()), path)
+    }
+
+    /// provides a Document instance containing the given text
+    pub fn from_lines<T>(lines: T, path: PathBuf) -> Document
+    where
+        T: Iterator<Item = String>,
+    {
+        let mut sections: Vec<Section> = Vec::new();
+        let mut section_builder = placeholder_builder();
+        for (line, line_number) in lines.zip(0..) {
+            if line.starts_with('#') {
+                if let Some(section) = section_builder.result() {
+                    sections.push(section);
+                }
+                section_builder = builder_with_title_line(line, line_number);
+            } else {
+                section_builder.add_body_line(line);
             }
-            section_builder = builder_with_title_line(line, line_number);
-        } else {
-            section_builder.add_body_line(line);
+        }
+        if let Some(section) = section_builder.result() {
+            sections.push(section);
+        }
+        let content_sections = sections.split_off(1);
+        Document {
+            path,
+            title_section: sections.pop().unwrap(),
+            content_sections,
         }
     }
-    if let Some(section) = section_builder.result() {
-        sections.push(section);
-    }
-    let content_sections = sections.split_off(1);
-    Document {
-        path,
-        title_section: sections.pop().unwrap(),
-        content_sections,
+
+    /// provides a Document instance containing the content of the file at the given path
+    #[allow(dead_code)] // used in tests
+    pub fn from_str(text: &str, path: &str) -> Document {
+        Document::from_lines(
+            text.lines().map(|line| line.to_string()),
+            std::path::PathBuf::from(path),
+        )
     }
 }
 
@@ -57,7 +76,7 @@ foo
         let tmp_dir = tempfile::tempdir().unwrap();
         let file_path = tmp_dir.path().join("file.md");
         std::fs::write(&file_path, content).unwrap();
-        let have = super::load(file_path);
+        let have = super::Document::load(file_path);
         assert_eq!(have.title_section.title_line, "# Title");
         assert_eq!(have.title_section.line_number, 0);
         assert_eq!(have.title_section.body.len(), 1);
