@@ -2,13 +2,7 @@ use crate::core::tikibase::Tikibase;
 use std::collections::{HashMap, HashSet};
 use std::iter::FromIterator;
 
-/// describes an identified set of sections with the same content but mixed capitalization
-#[derive(Debug, PartialEq)]
-pub struct MixedCapSection {
-    pub variants: Vec<String>,
-}
-
-pub fn check(base: &Tikibase) -> Vec<MixedCapSection> {
+pub fn check(base: &Tikibase) -> Vec<String> {
     let mut finder = MixCapSectionFinder::new();
     for doc in &base.docs {
         finder.register(doc.title_section.section_type());
@@ -42,14 +36,14 @@ impl MixCapSectionFinder {
     }
 
     /// provides the found sections
-    fn result(self) -> Vec<MixedCapSection> {
+    fn result(self) -> Vec<String> {
         self.known_variants
             .into_values()
             .filter(|variants| variants.len() > 1)
             .map(|variants| {
                 let mut v_sorted = Vec::from_iter(variants);
                 v_sorted.sort();
-                MixedCapSection { variants: v_sorted }
+                format!("mixed capitalization of sections: {}", v_sorted.join("|"))
             })
             .collect()
     }
@@ -81,9 +75,7 @@ mod tests {
         assert_eq!(have.len(), 1);
         assert_eq!(
             have[0],
-            super::MixedCapSection {
-                variants: vec!["Different".to_string(), "different".to_string()],
-            }
+            "mixed capitalization of sections: Different|different",
         );
     }
 }
