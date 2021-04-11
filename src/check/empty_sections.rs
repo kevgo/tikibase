@@ -1,22 +1,31 @@
+use super::checker::Location;
 use crate::core::tikibase::Tikibase;
-use std::path::PathBuf;
+
+use super::checker::LocalizedIssue;
 
 pub struct EmptySection {
-    pub path: PathBuf,
-    pub line: u32,
+    location: Location,
+}
+
+impl LocalizedIssue for EmptySection {
+    fn desc(&self) -> String {
+        "empty section".to_string()
+    }
+    fn location(&self) -> String {
+        self.location.to_string()
+    }
 }
 
 /// provides all empty sections in the given Tikibase
-pub fn find(base: &Tikibase) -> Vec<EmptySection> {
-    let mut result = Vec::new();
+pub fn find(base: &Tikibase) -> Vec<Box<dyn LocalizedIssue>> {
+    let mut result: Vec<Box<dyn LocalizedIssue>> = Vec::new();
     for doc in &base.docs {
         for section in &doc.content_sections {
             let has_content = section.body.iter().any(|line| !line.text.is_empty());
             if !has_content {
-                result.push(EmptySection {
-                    path: doc.path.clone(),
-                    line: section.line_number,
-                });
+                result.push(Box::new(EmptySection {
+                    location: Location::from_path(&doc.path, section.line_number),
+                }));
             }
         }
     }
@@ -44,8 +53,7 @@ content";
             let base = Tikibase::with_doc(doc);
             let have = super::super::find(&base);
             assert_eq!(have.len(), 1);
-            assert_eq!(have[0].path.to_str().unwrap(), "test.md");
-            assert_eq!(have[0].line, 2)
+            assert_eq!(have[0].location(), "test.md:2");
         }
 
         #[test]
@@ -62,8 +70,7 @@ content";
             let base = Tikibase::with_doc(doc);
             let have = super::super::find(&base);
             assert_eq!(have.len(), 1);
-            assert_eq!(have[0].path.to_str().unwrap(), "test.md");
-            assert_eq!(have[0].line, 2)
+            assert_eq!(have[0].location(), "test.md:2");
         }
 
         #[test]
