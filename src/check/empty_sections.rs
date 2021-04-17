@@ -8,9 +8,9 @@ pub fn find(base: &Tikibase) -> Vec<String> {
             let has_content = section.body.iter().any(|line| !line.text.is_empty());
             if !has_content {
                 result.push(format!(
-                    "{}:{} - section \"{}\" has no content",
-                    &doc.path.to_str().unwrap(),
-                    section.line_number,
+                    "{}:{}  section \"{}\" has no content",
+                    &doc.path.strip_prefix(&base.dir).unwrap().to_str().unwrap(),
+                    section.line_number + 1,
                     section.section_type()
                 ));
             }
@@ -42,7 +42,7 @@ content";
             assert_eq!(have.len(), 1);
             assert_eq!(
                 have[0],
-                "test.md:2 - section \"empty section\" has no content"
+                "test.md:3  section \"empty section\" has no content"
             );
         }
 
@@ -62,7 +62,7 @@ content";
             assert_eq!(have.len(), 1);
             assert_eq!(
                 have[0],
-                "test.md:2 - section \"empty section\" has no content"
+                "test.md:3  section \"empty section\" has no content"
             );
         }
 
