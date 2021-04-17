@@ -1,7 +1,7 @@
 use cucumber_rust::{async_trait, Context, Cucumber, Steps, World};
 use rand::{distributions::Alphanumeric, Rng};
-use std::convert::Infallible;
 use std::fs;
+use std::io;
 use std::io::prelude::*;
 use std::time::{SystemTime, UNIX_EPOCH};
 
@@ -11,9 +11,8 @@ pub struct MyWorld {
 
 #[async_trait(?Send)]
 impl World for MyWorld {
-    type Error = Infallible;
-
-    async fn new() -> Result<Self, Infallible> {
+    type Error = io::Error;
+    async fn new() -> Result<Self, io::Error> {
         let timestamp = SystemTime::now()
             .duration_since(UNIX_EPOCH)
             .unwrap()
@@ -24,10 +23,10 @@ impl World for MyWorld {
             .map(char::from)
             .collect();
         let dir = format!("./tmp/{}-{}", timestamp, rand);
-        if let Err(e) = fs::create_dir_all(&dir) {
-            panic!("Cannot create root dir for World: {}", e)
+        match fs::create_dir_all(&dir) {
+            Ok(_) => Ok(MyWorld { dir }),
+            Err(e) => Err(e),
         }
-        Ok(MyWorld { dir })
     }
 }
 
