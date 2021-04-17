@@ -3,10 +3,11 @@ use rand::{distributions::Alphanumeric, Rng};
 use std::fs;
 use std::io;
 use std::io::prelude::*;
+use std::path::PathBuf;
 use std::time::{SystemTime, UNIX_EPOCH};
 
 pub struct MyWorld {
-    pub dir: String,
+    pub dir: PathBuf,
 }
 
 #[async_trait(?Send)]
