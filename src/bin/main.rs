@@ -1,3 +1,20 @@
+#![feature(map_into_keys_values)]
+// #[macro_use]
+extern crate lazy_static;
+
+use tikibase::check;
+use tikibase::help;
+use tikibase::stats;
+
+fn main() {
+    match parse(std::env::args()) {
+        Command::Check => check::run(),
+        Command::Help => help::run(),
+        Command::Stats => stats::run(),
+        Command::Version => help::version(),
+    }
+}
+
 #[derive(Debug, PartialEq)]
 pub enum Command {
     Check,

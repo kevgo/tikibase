@@ -1,5 +1,8 @@
 use cucumber_rust::{async_trait, Context, Cucumber, Steps, World};
+use rand::{distributions::Alphanumeric, Rng};
 use std::convert::Infallible;
+use std::fs;
+use std::io::prelude::*;
 
 pub struct MyWorld {
     pub dir: String,
@@ -10,21 +13,27 @@ impl World for MyWorld {
     type Error = Infallible;
 
     async fn new() -> Result<Self, Infallible> {
-        Ok(MyWorld {
-            dir: "".to_string(),
-        })
+        let rand: String = rand::thread_rng()
+            .sample_iter(&Alphanumeric)
+            .take(7)
+            .map(char::from)
+            .collect();
+        let dir = format!("./tmp/{}", &rand);
+        if let Err(e) = fs::create_dir_all(&dir) {
+            panic!("Cannot create root dir for World: {}", e)
+        }
+        Ok(MyWorld { dir })
     }
 }
 
-pub fn steps() -> Steps<MyWorld> {
+fn steps() -> Steps<MyWorld> {
     let mut steps: Steps<MyWorld> = Steps::new();
 
-    steps.given_regex(r#"^a file "(.*)" with content:$"#, |world, ctx| {
-        match ctx.step.docstring() {
-            None => println!("NO DOCSTRING"),
-            Some(str) => println!("FILE CONTENT: '{}'", str),
-        }
-        println!("CREATING FILE {}", ctx.matches[1]);
+    steps.given_regex(r#"^file "(.*)" with content:$"#, |world, ctx| {
+        let filepath = format!("{}/{}", world.dir, &ctx.matches[1]);
+        let content = ctx.step.docstring().unwrap().trim_start();
+        let mut file = fs::File::create(filepath).unwrap();
+        file.write_all(content.as_bytes()).unwrap();
         world
     });
 
@@ -38,6 +47,11 @@ pub fn steps() -> Steps<MyWorld> {
         world
     });
 
+    steps.when("checking", |world, _ctx| {
+        println!("checking");
+        world
+    });
+
     steps
 }
 
@@ -46,9 +60,7 @@ async fn main() {
     let pool = "the pool";
 
     Cucumber::<MyWorld>::new()
-        // Specifies where our feature files exist
         .features(&["./features"])
-        // Adds the implementation of our steps to the runner
         .steps(steps())
         // Add some global context for all the tests, like databases.
         .context(Context::new().add(pool))

@@ -757,6 +757,7 @@ dependencies = [
  "cucumber_rust",
  "heck",
  "lazy_static",
+ "rand",
  "regex",
  "tempfile",
  "tokio",
