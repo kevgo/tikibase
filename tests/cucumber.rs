@@ -3,6 +3,7 @@ use rand::{distributions::Alphanumeric, Rng};
 use std::convert::Infallible;
 use std::fs;
 use std::io::prelude::*;
+use std::time::{SystemTime, UNIX_EPOCH};
 
 pub struct MyWorld {
     pub dir: String,
@@ -13,12 +14,16 @@ impl World for MyWorld {
     type Error = Infallible;
 
     async fn new() -> Result<Self, Infallible> {
+        let timestamp = SystemTime::now()
+            .duration_since(UNIX_EPOCH)
+            .unwrap()
+            .as_millis();
         let rand: String = rand::thread_rng()
             .sample_iter(&Alphanumeric)
-            .take(7)
+            .take(3)
             .map(char::from)
             .collect();
-        let dir = format!("./tmp/{}", &rand);
+        let dir = format!("./tmp/{}-{}", timestamp, rand);
         if let Err(e) = fs::create_dir_all(&dir) {
             panic!("Cannot create root dir for World: {}", e)
         }
