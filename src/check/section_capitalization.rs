@@ -2,7 +2,7 @@ use crate::core::tikibase::Tikibase;
 use std::collections::{HashMap, HashSet};
 use std::iter::FromIterator;
 
-pub fn check(base: &Tikibase) -> Vec<String> {
+pub fn process(base: &mut Tikibase) -> Vec<String> {
     let mut finder = MixCapSectionFinder::new();
     for doc in &base.docs {
         finder.register(doc.title_section.section_type());

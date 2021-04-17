@@ -49,7 +49,21 @@ fn steps() -> Steps<MyWorld> {
     });
 
     steps.when("checking", |mut world, _ctx| {
-        world.findings = tikibase::check::run(&Tikibase::in_dir(world.dir.clone()));
+        world.findings = tikibase::check::run(&mut Tikibase::in_dir(world.dir.clone()), false);
+        world
+    });
+
+    steps.when("fixing", |world, _ctx| {
+        tikibase::check::run(&mut Tikibase::in_dir(world.dir.clone()), true);
+        world
+    });
+
+    steps.then_regex(r#"^file "(.*)" should contain:$"#, |world, ctx| {
+        let expected = ctx.step.docstring().unwrap().trim_start();
+        let filename = ctx.matches.get(1).expect("no filename provided");
+        let filepath = world.dir.join(filename);
+        let actual = fs::read_to_string(filepath).unwrap();
+        assert_eq!(actual, expected);
         world
     });
 

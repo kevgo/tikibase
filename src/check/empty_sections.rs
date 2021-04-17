@@ -1,22 +1,29 @@
 use crate::core::tikibase::Tikibase;
 
-/// provides all empty sections in the given Tikibase
-pub fn find(base: &Tikibase) -> Vec<String> {
-    let mut result = vec![];
+/// finds all empty sections in the given Tikibase,
+/// fixes them if fix is enabled,
+/// returns the unfixed issues
+pub fn process(base: &mut Tikibase, fix: bool) -> Vec<String> {
+    let mut results = vec![];
     for doc in &base.docs {
         for section in &doc.content_sections {
             let has_content = section.body.iter().any(|line| !line.text.is_empty());
             if !has_content {
-                result.push(format!(
-                    "{}:{}  section \"{}\" has no content",
-                    &doc.path.strip_prefix(&base.dir).unwrap().to_str().unwrap(),
-                    section.line_number + 1,
-                    section.section_type()
-                ));
+                // found an empty section
+                if fix {
+                    // TODO
+                } else {
+                    results.push(format!(
+                        "{}:{}  section \"{}\" has no content",
+                        &doc.path.strip_prefix(&base.dir).unwrap().to_str().unwrap(),
+                        section.line_number + 1,
+                        section.section_type()
+                    ));
+                }
             }
         }
     }
-    result
+    results
 }
 
 #[cfg(test)]
@@ -37,8 +44,8 @@ mod tests {
 
 content";
             let doc = crate::core::document::Document::from_str(content, "test.md");
-            let base = Tikibase::with_doc(doc);
-            let have = super::super::find(&base);
+            let mut base = Tikibase::with_doc(doc);
+            let have = super::super::process(&mut base, false);
             assert_eq!(have.len(), 1);
             assert_eq!(
                 have[0],
@@ -57,8 +64,8 @@ content";
 
 content";
             let doc = crate::core::document::Document::from_str(content, "test.md");
-            let base = Tikibase::with_doc(doc);
-            let have = super::super::find(&base);
+            let mut base = Tikibase::with_doc(doc);
+            let have = super::super::process(&mut base, false);
             assert_eq!(have.len(), 1);
             assert_eq!(
                 have[0],
@@ -75,8 +82,8 @@ content";
 
 content";
             let doc = crate::core::document::Document::from_str(content, "test.md");
-            let base = Tikibase::with_doc(doc);
-            let have = super::super::find(&base);
+            let mut base = Tikibase::with_doc(doc);
+            let have = super::super::process(&mut base, false);
             assert_eq!(have.len(), 0);
         }
     }
