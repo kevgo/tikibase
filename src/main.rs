@@ -20,7 +20,7 @@ fn main() {
 }
 
 #[derive(Debug, PartialEq)]
-pub enum Command {
+enum Command {
     Check,
     Help,
     Stats,
@@ -28,7 +28,7 @@ pub enum Command {
 }
 
 /// Provides the command-line arguments as a Rust struct.
-pub fn parse<I>(mut argv: I) -> Command
+fn parse<I>(mut argv: I) -> Command
 where
     I: Iterator<Item = String>,
 {
