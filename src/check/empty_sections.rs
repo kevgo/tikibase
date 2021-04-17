@@ -31,6 +31,7 @@ mod tests {
 
     use super::process;
     use crate::core::document::Document;
+    use crate::core::tikibase::helpers;
     use crate::core::tikibase::Tikibase;
 
     #[test]
@@ -84,5 +85,33 @@ content";
         let mut base = Tikibase::with_doc(doc);
         let have = process(&mut base, false);
         assert_eq!(have.len(), 0);
+    }
+    #[test]
+    fn true_empty_section() {
+        let mut base = helpers::testbase();
+        helpers::create_doc(
+            &base,
+            "test.md",
+            "\
+# test document
+
+### empty section
+### next section
+
+content",
+        );
+        let have = process(&mut base, true);
+        assert_eq!(have.len(), 0);
+        let new_content = helpers::read_doc(&base, "test.md");
+        assert_eq!(
+            new_content,
+            "\
+# test document
+
+### next section
+
+content
+"
+        )
     }
 }

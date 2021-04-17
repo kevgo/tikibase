@@ -54,3 +54,42 @@ fn is_md(ext: Option<&std::ffi::OsStr>) -> bool {
         Some(ext) => ext.to_str().unwrap() == "md",
     }
 }
+
+// ----------------------------------------------------------------------------------------------------------------------
+// HELPERS
+// ----------------------------------------------------------------------------------------------------------------------
+
+pub mod helpers {
+    use super::Tikibase;
+    use rand::Rng;
+    use std::io::prelude::*;
+
+    /// creates a Tikibase instance for testing
+    pub fn testbase() -> Tikibase {
+        let timestamp = std::time::SystemTime::now()
+            .duration_since(std::time::UNIX_EPOCH)
+            .unwrap()
+            .as_millis();
+        let rand: String = rand::thread_rng()
+            .sample_iter(&rand::distributions::Alphanumeric)
+            .take(3)
+            .map(char::from)
+            .collect();
+        let dir = std::path::PathBuf::from(format!("./tmp/{}-{}", timestamp, rand));
+        match std::fs::create_dir_all(&dir) {
+            Ok(_) => Tikibase::in_dir(dir),
+            Err(e) => panic!("{}", e),
+        }
+    }
+
+    pub fn create_doc(base: &Tikibase, filename: &str, content: &str) {
+        let filepath = base.dir.join(filename);
+        let mut file = std::fs::File::create(filepath).unwrap();
+        file.write_all(content.as_bytes()).unwrap();
+    }
+
+    pub fn read_doc(base: &Tikibase, filename: &str) -> String {
+        let filepath = base.dir.join(filename);
+        std::fs::read_to_string(filepath).unwrap()
+    }
+}
