@@ -1,4 +1,4 @@
-Feature: Different section capitalizations
+Feature: Sections with different capitalization
 
   Background:
     Given file "1.md" with content:
@@ -9,12 +9,21 @@ Feature: Different section capitalizations
 
       ### one
       """
+    And file "2.md" with content:
+      """
+      # Title 2
 
-  Scenario: checking
+      ### ONE
+      """
+
+  Scenario: check
     When checking
-    Then it finds these sections with mixed capitalization:
-      | how it works, How it works         |
-      | what is it, What is it, WHAT IS IT |
+    Then it finds these errors:
+      """
+      mixed section capitalization: one, One, ONE
+      """
+
+  Scenario: fix
 
 
-  Scenario: different capitalizations
+  Scenario: pitstop

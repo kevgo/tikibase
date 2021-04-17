@@ -1,4 +1,4 @@
-use cucumber_rust::{async_trait, Context, Cucumber, Steps, World};
+use cucumber_rust::{async_trait, Cucumber, Steps, World};
 use rand::{distributions::Alphanumeric, Rng};
 use std::fs;
 use std::io;
@@ -42,8 +42,13 @@ fn steps() -> Steps<MyWorld> {
         world
     });
 
-    steps.when("I consider what I am doing", |world, _ctx| {
-        println!("considering");
+    steps.when("checking", |world, _ctx| {
+        println!("checking");
+        world
+    });
+
+    steps.then_regex("it finds these errors:", |world, _ctx| {
+        println!("finding errors");
         world
     });
 
@@ -52,23 +57,18 @@ fn steps() -> Steps<MyWorld> {
         world
     });
 
-    steps.when("checking", |world, _ctx| {
-        println!("checking");
-        world
-    });
-
     steps
 }
 
 #[tokio::main]
 async fn main() {
-    let pool = "the pool";
+    // let pool = "the pool";
 
     Cucumber::<MyWorld>::new()
         .features(&["./features"])
         .steps(steps())
         // Add some global context for all the tests, like databases.
-        .context(Context::new().add(pool))
+        // .context(Context::new().add(pool))
         // Add some lifecycle functions to manage our database nightmare
         // .before(feature("Example feature"), |ctx| println!("").boxed())
         // .after(feature("Example feature"), |ctx| {
