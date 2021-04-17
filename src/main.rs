@@ -1,5 +1,3 @@
-#![feature(map_into_keys_values)]
-// #[macro_use]
 extern crate lazy_static;
 
 use std::path::PathBuf;
