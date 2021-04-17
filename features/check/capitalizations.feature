@@ -29,7 +29,9 @@ Feature: Sections with different capitalization
       mixed capitalization of sections: ONE|One|one
       """
 
-  Scenario: fix
-
-
   Scenario: pitstop
+    When doing a pitstop
+    Then it finds these errors:
+      """
+      mixed capitalization of sections: ONE|One|one
+      """

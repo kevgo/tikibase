@@ -2,6 +2,7 @@ extern crate lazy_static;
 
 use std::path::PathBuf;
 use tikibase::check;
+use tikibase::fix;
 use tikibase::help;
 use tikibase::stats;
 
@@ -13,6 +14,7 @@ fn main() {
                 println!("{}", finding);
             }
         }
+        Command::Fix => fix::run(p),
         Command::Help => help::run(),
         Command::Stats => stats::run(p),
         Command::Version => help::version(),
@@ -22,6 +24,7 @@ fn main() {
 #[derive(Debug, PartialEq)]
 enum Command {
     Check,
+    Fix,
     Help,
     Stats,
     Version,
@@ -37,6 +40,7 @@ where
         None => Command::Help,
         Some(command) => match command.as_str() {
             "check" | "c" => Command::Check,
+            "fix" | "f" => Command::Fix,
             "stats" | "st" => Command::Stats,
             "version" | "v" => Command::Version,
             _ => Command::Help,
