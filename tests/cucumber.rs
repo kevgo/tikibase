@@ -23,7 +23,7 @@ impl World for MyWorld {
             .take(3)
             .map(char::from)
             .collect();
-        let dir = format!("./tmp/{}-{}", timestamp, rand);
+        let dir = PathBuf::from(format!("./tmp/{}-{}", timestamp, rand));
         match fs::create_dir_all(&dir) {
             Ok(_) => Ok(MyWorld { dir }),
             Err(e) => Err(e),
@@ -35,7 +35,7 @@ fn steps() -> Steps<MyWorld> {
     let mut steps: Steps<MyWorld> = Steps::new();
 
     steps.given_regex(r#"^file "(.*)" with content:$"#, |world, ctx| {
-        let filepath = format!("{}/{}", world.dir, &ctx.matches[1]);
+        let filepath = world.dir.join(&ctx.matches[1]);
         let content = ctx.step.docstring().unwrap().trim_start();
         let mut file = fs::File::create(filepath).unwrap();
         file.write_all(content.as_bytes()).unwrap();
