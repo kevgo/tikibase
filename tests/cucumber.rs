@@ -39,7 +39,8 @@ fn steps() -> Steps<MyWorld> {
     let mut steps: Steps<MyWorld> = Steps::new();
 
     steps.given_regex(r#"^file "(.*)" with content:$"#, |world, ctx| {
-        let filepath = world.dir.join(&ctx.matches[1]);
+        let filename = ctx.matches.get(1).expect("no filename provided");
+        let filepath = world.dir.join(filename);
         let content = ctx.step.docstring().unwrap().trim_start();
         let mut file = fs::File::create(filepath).unwrap();
         file.write_all(content.as_bytes()).unwrap();
@@ -55,11 +56,6 @@ fn steps() -> Steps<MyWorld> {
     steps.then_regex("it finds these errors:", |world, ctx| {
         let expected: Vec<&str> = ctx.step.docstring().unwrap().trim().split("\n").collect();
         assert_eq!(&world.findings, &expected);
-        world
-    });
-
-    steps.then_regex(r#"^that string is now equal to "(.*)"$"#, |world, _ctx| {
-        println!("equal");
         world
     });
 
