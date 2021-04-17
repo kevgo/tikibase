@@ -1,7 +1,6 @@
-// use crate::core::tikibase::Tikibase;
-use std::path::PathBuf;
+use crate::core::tikibase::Tikibase;
 
-pub fn run(dir: PathBuf) {
-    println!("running fix in {:?}", dir);
-    // let base = Tikibase::in_dir(dir);
+pub fn run(base: Tikibase) -> Tikibase {
+    println!("running fix in {:?}", base.dir);
+    base
 }

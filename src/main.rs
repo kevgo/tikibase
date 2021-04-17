@@ -2,21 +2,30 @@ extern crate lazy_static;
 
 use std::path::PathBuf;
 use tikibase::check;
+use tikibase::core::tikibase::Tikibase;
 use tikibase::fix;
 use tikibase::help;
+use tikibase::pitstop;
 use tikibase::stats;
 
 fn main() {
-    let p = PathBuf::from(".");
+    let base = Tikibase::in_dir(PathBuf::from("."));
     match parse(std::env::args()) {
         Command::Check => {
-            for finding in check::run(p) {
+            for finding in check::run(&base) {
                 println!("{}", finding);
             }
         }
-        Command::Fix => fix::run(p),
+        Command::Fix => {
+            let _ = fix::run(base);
+        }
         Command::Help => help::run(),
-        Command::Stats => stats::run(p),
+        Command::Pitstop => {
+            for finding in pitstop::run(base) {
+                println!("{}", finding);
+            }
+        }
+        Command::Stats => stats::run(&base),
         Command::Version => help::version(),
     }
 }
@@ -26,6 +35,7 @@ enum Command {
     Check,
     Fix,
     Help,
+    Pitstop,
     Stats,
     Version,
 }
@@ -41,6 +51,7 @@ where
         Some(command) => match command.as_str() {
             "check" | "c" => Command::Check,
             "fix" | "f" => Command::Fix,
+            "pitstop" | "ps" => Command::Pitstop,
             "stats" | "st" => Command::Stats,
             "version" | "v" => Command::Version,
             _ => Command::Help,

@@ -5,6 +5,7 @@ use std::io;
 use std::io::prelude::*;
 use std::path::PathBuf;
 use std::time::{SystemTime, UNIX_EPOCH};
+use tikibase::core::tikibase::Tikibase;
 
 pub struct MyWorld {
     pub dir: PathBuf,
@@ -48,8 +49,7 @@ fn steps() -> Steps<MyWorld> {
     });
 
     steps.when("checking", |mut world, _ctx| {
-        println!("checking");
-        world.findings = tikibase::check::run(world.dir.clone());
+        world.findings = tikibase::check::run(&Tikibase::in_dir(world.dir.clone()));
         world
     });
 

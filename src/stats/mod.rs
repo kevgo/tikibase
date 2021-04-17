@@ -1,12 +1,10 @@
 use crate::core::tikibase::Tikibase;
 use std::collections::HashMap;
-use std::path::PathBuf;
 
-pub fn run(dir: PathBuf) {
-    let tb = Tikibase::in_dir(dir);
-    println!("documents: {}", tb.docs.len());
-    println!("resources: {}", tb.resources.len());
-    let section_types = collect_section_types(&tb);
+pub fn run(base: &Tikibase) {
+    println!("documents: {}", base.docs.len());
+    println!("resources: {}", base.resources.len());
+    let section_types = collect_section_types(&base);
     println!();
     println!("{} section types:", section_types.len());
     let mut keys: Vec<&String> = section_types.keys().collect::<Vec<&String>>();
