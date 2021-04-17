@@ -1,18 +1,19 @@
 use super::document::Document;
+use std::path::PathBuf;
 use walkdir::WalkDir;
 
 pub struct Tikibase {
-    pub dir: String,
+    pub dir: PathBuf,
     pub docs: Vec<Document>,
     pub resources: Vec<Resource>,
 }
 
 impl Tikibase {
     /// Provides a Tikibase instance for the given directory.
-    pub fn in_dir(dir: &str) -> Tikibase {
+    pub fn in_dir(dir: PathBuf) -> Tikibase {
         let mut docs = Vec::new();
         let mut resources = Vec::new();
-        for entry in WalkDir::new(dir) {
+        for entry in WalkDir::new(&dir) {
             let entry = entry.unwrap();
             let filename = entry.file_name().to_str().unwrap();
             if filename == "tikibase.json" || filename == "." {
@@ -26,7 +27,7 @@ impl Tikibase {
             }
         }
         Tikibase {
-            dir: dir.to_string(),
+            dir,
             docs,
             resources,
         }
@@ -35,7 +36,7 @@ impl Tikibase {
     #[allow(dead_code)] // used in tests
     pub fn with_doc(doc: Document) -> Tikibase {
         Tikibase {
-            dir: "".to_string(),
+            dir: PathBuf::from(""),
             docs: vec![doc],
             resources: vec![],
         }

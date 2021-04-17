@@ -1,8 +1,9 @@
 use crate::core::tikibase::Tikibase;
 use std::collections::HashMap;
+use std::path::PathBuf;
 
-pub fn run() {
-    let tb = Tikibase::in_dir(".");
+pub fn run(dir: PathBuf) {
+    let tb = Tikibase::in_dir(dir);
     println!("documents: {}", tb.docs.len());
     println!("resources: {}", tb.resources.len());
     let section_types = collect_section_types(&tb);

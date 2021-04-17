@@ -7,20 +7,26 @@ Feature: Sections with different capitalization
 
       ### One
 
+      content
+
       ### one
+
+      content
       """
     And file "2.md" with content:
       """
       # Title 2
 
       ### ONE
+
+      content
       """
 
   Scenario: check
     When checking
     Then it finds these errors:
       """
-      mixed section capitalization: one, One, ONE
+      mixed capitalization of sections: ONE|One|one
       """
 
   Scenario: fix

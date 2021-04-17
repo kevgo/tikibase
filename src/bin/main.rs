@@ -2,15 +2,21 @@
 // #[macro_use]
 extern crate lazy_static;
 
+use std::path::PathBuf;
 use tikibase::check;
 use tikibase::help;
 use tikibase::stats;
 
 fn main() {
+    let p = PathBuf::from(".");
     match parse(std::env::args()) {
-        Command::Check => check::run(),
+        Command::Check => {
+            for finding in check::run(p) {
+                println!("{}", finding);
+            }
+        }
         Command::Help => help::run(),
-        Command::Stats => stats::run(),
+        Command::Stats => stats::run(p),
         Command::Version => help::version(),
     }
 }

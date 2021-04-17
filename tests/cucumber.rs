@@ -8,6 +8,7 @@ use std::time::{SystemTime, UNIX_EPOCH};
 
 pub struct MyWorld {
     pub dir: PathBuf,
+    pub findings: Vec<String>,
 }
 
 #[async_trait(?Send)]
@@ -25,7 +26,10 @@ impl World for MyWorld {
             .collect();
         let dir = PathBuf::from(format!("./tmp/{}-{}", timestamp, rand));
         match fs::create_dir_all(&dir) {
-            Ok(_) => Ok(MyWorld { dir }),
+            Ok(_) => Ok(MyWorld {
+                dir,
+                findings: vec![],
+            }),
             Err(e) => Err(e),
         }
     }
@@ -42,13 +46,15 @@ fn steps() -> Steps<MyWorld> {
         world
     });
 
-    steps.when("checking", |world, _ctx| {
+    steps.when("checking", |mut world, _ctx| {
         println!("checking");
+        world.findings = tikibase::check::run(world.dir.clone());
         world
     });
 
-    steps.then_regex("it finds these errors:", |world, _ctx| {
-        println!("finding errors");
+    steps.then_regex("it finds these errors:", |world, ctx| {
+        let expected: Vec<&str> = ctx.step.docstring().unwrap().trim().split("\n").collect();
+        assert_eq!(&world.findings, &expected);
         world
     });
 
