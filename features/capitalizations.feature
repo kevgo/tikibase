@@ -1,4 +1,4 @@
-Feature: Sections with different capitalization
+Feature: recognize sections with different capitalization
 
   Background:
     Given file "1.md" with content:

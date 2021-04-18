@@ -1,4 +1,4 @@
-Feature: Sections without content
+Feature: recognize/fix sections without content
 
   Background:
     Given file "1.md" with content:

@@ -1,4 +1,4 @@
-Feature: duplicate sections
+Feature: recognize/fix duplicate sections
 
   Background:
     Given file "1.md" with content:
