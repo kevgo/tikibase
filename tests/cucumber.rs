@@ -32,12 +32,12 @@ fn steps() -> Steps<MyWorld> {
     });
 
     steps.when("checking", |mut world, _ctx| {
-        world.findings = tikibase::check::process(&mut world.base, false);
+        world.findings = tikibase::process::run(&mut world.base, false);
         world
     });
 
     steps.when("fixing", |mut world, _ctx| {
-        tikibase::check::process(&mut world.base, true);
+        tikibase::process::run(&mut world.base, true);
         world
     });
 
