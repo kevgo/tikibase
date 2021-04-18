@@ -54,12 +54,7 @@ fn steps() -> Steps<MyWorld> {
         world
     });
 
-    steps.then_regex("it finds no errors", |world, _ctx| {
-        assert_eq!(world.findings.len(), 0);
-        world
-    });
-
-    steps.then_regex("it finds these errors:", |world, ctx| {
+    steps.then_regex("it prints:", |world, ctx| {
         let expected: Vec<&str> = ctx.step.docstring().unwrap().trim().split("\n").collect();
         assert_eq!(&world.findings, &expected);
         world

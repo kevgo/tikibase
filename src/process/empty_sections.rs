@@ -16,6 +16,12 @@ pub fn process(base: &mut Tikibase, fix: bool) -> Result {
             }
             // found an empty section
             if fix {
+                result.fixes.push(format!(
+                    "{}:{}  removed empty section \"{}\"",
+                    &filename,
+                    section.line_number + 1,
+                    section.section_type()
+                ));
                 fixed = true;
                 return false;
             }

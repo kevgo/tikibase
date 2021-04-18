@@ -10,12 +10,14 @@ fn main() {
     let mut base = persistence::load_base(PathBuf::from("."));
     match parse(std::env::args()) {
         Command::Check => {
-            for finding in process::run(&mut base, false) {
-                println!("{}", finding);
+            for message in process::run(&mut base, false) {
+                println!("{}", message);
             }
         }
         Command::Fix => {
-            let _ = process::run(&mut base, true);
+            for message in process::run(&mut base, true) {
+                println!("{}", message);
+            }
         }
         Command::Help => help::run(),
         Command::Pitstop => {

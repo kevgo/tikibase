@@ -16,14 +16,14 @@ Feature: duplicate sections
 
   Scenario: check
     When checking
-    Then it finds these errors:
+    Then it prints:
       """
       1.md  duplicate section: One
       """
 
   Scenario: pitstop
     When doing a pitstop
-    Then it finds these errors:
+    Then it prints:
       """
       1.md  duplicate section: One
       """

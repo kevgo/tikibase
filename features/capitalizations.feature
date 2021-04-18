@@ -24,14 +24,14 @@ Feature: Sections with different capitalization
 
   Scenario: check
     When checking
-    Then it finds these errors:
+    Then it prints:
       """
       mixed capitalization of sections: ONE|One|one
       """
 
   Scenario: pitstop
     When doing a pitstop
-    Then it finds these errors:
+    Then it prints:
       """
       mixed capitalization of sections: ONE|One|one
       """
