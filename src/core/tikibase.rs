@@ -1,6 +1,6 @@
 use super::document::Document;
 use std::io::prelude::*;
-use std::path::PathBuf;
+use std::path::{Path, PathBuf};
 use walkdir::WalkDir;
 
 pub struct Tikibase {
@@ -10,7 +10,7 @@ pub struct Tikibase {
 }
 
 impl Tikibase {
-    pub fn create_doc(&mut self, filename: &str, content: &str) {
+    pub fn create_doc(&mut self, filename: &Path, content: &str) {
         let filepath = self.dir.join(filename);
         let mut file = std::fs::File::create(&filepath).unwrap();
         file.write_all(content.as_bytes()).unwrap();

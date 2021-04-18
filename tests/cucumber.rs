@@ -1,5 +1,6 @@
 use cucumber_rust::{async_trait, Cucumber, Steps, World};
 use std::io;
+use std::path::PathBuf;
 use tikibase::core::tikibase::helpers;
 use tikibase::core::tikibase::Tikibase;
 
@@ -26,7 +27,7 @@ fn steps() -> Steps<MyWorld> {
     steps.given_regex(r#"^file "(.*)" with content:$"#, |mut world, ctx| {
         let filename = ctx.matches.get(1).expect("no filename provided");
         let content = ctx.step.docstring().unwrap().trim_start();
-        world.base.create_doc(filename, content);
+        world.base.create_doc(&PathBuf::from(filename), content);
         world
     });
 

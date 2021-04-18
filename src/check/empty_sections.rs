@@ -51,8 +51,8 @@ mod tests {
 ### next section
 
 content";
-        let doc = Document::from_str(content, PathBuf::from("test.md"));
-        let mut base = Tikibase::with_doc(doc);
+        let mut base = helpers::testbase();
+        base.create_doc(&PathBuf::from("test.md"), content);
         let have = process(&mut base, false);
         assert_eq!(have.len(), 1);
         assert_eq!(
@@ -98,7 +98,7 @@ content";
     fn true_empty_section() {
         let mut base = helpers::testbase();
         base.create_doc(
-            "test.md",
+            &PathBuf::from("test.md"),
             "\
 # test document
 
