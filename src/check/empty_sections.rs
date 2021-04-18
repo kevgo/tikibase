@@ -37,9 +37,7 @@ pub fn process(base: &mut Tikibase, fix: bool) -> Vec<String> {
 mod tests {
 
     use super::process;
-    use crate::core::document::Document;
     use crate::core::tikibase::helpers;
-    use crate::core::tikibase::Tikibase;
     use std::path::PathBuf;
 
     #[test]
@@ -71,8 +69,8 @@ content";
 ### next section
 
 content";
-        let doc = Document::from_str(PathBuf::from("test.md"), content);
-        let mut base = Tikibase::with_doc(doc);
+        let mut base = helpers::testbase();
+        base.create_doc(&PathBuf::from("test.md"), content);
         let have = process(&mut base, false);
         assert_eq!(have.len(), 1);
         assert_eq!(
@@ -89,8 +87,8 @@ content";
 ### section with content
 
 content";
-        let doc = Document::from_str(PathBuf::from("test.md"), content);
-        let mut base = Tikibase::with_doc(doc);
+        let mut base = helpers::testbase();
+        base.create_doc(&PathBuf::from("test.md"), content);
         let have = process(&mut base, false);
         assert_eq!(have.len(), 0);
     }
