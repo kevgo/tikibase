@@ -92,6 +92,11 @@ pub mod helpers {
 
     pub fn read_doc(base: &Tikibase, filename: &str) -> String {
         let filepath = base.dir.join(filename);
-        std::fs::read_to_string(filepath).unwrap()
+        let mut result = std::fs::read_to_string(filepath)
+            .unwrap()
+            .trim_end()
+            .to_string();
+        result.push('\n');
+        result
     }
 }

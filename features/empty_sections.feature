@@ -31,7 +31,6 @@ Feature: Sections without content
       ### Two
 
       content
-
       """
 
 
