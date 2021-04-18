@@ -36,6 +36,11 @@ fn steps() -> Steps<MyWorld> {
         world
     });
 
+    steps.when("doing a pitstop", |mut world, _ctx| {
+        world.findings = tikibase::process::run(&mut world.base, true);
+        world
+    });
+
     steps.when("fixing", |mut world, _ctx| {
         tikibase::process::run(&mut world.base, true);
         world
@@ -46,6 +51,11 @@ fn steps() -> Steps<MyWorld> {
         let filename = ctx.matches.get(1).expect("no filename provided");
         let actual = helpers::file_content(&world.base, filename);
         assert_eq!(actual, expected);
+        world
+    });
+
+    steps.then_regex("it finds no errors", |world, _ctx| {
+        assert_eq!(world.findings.len(), 0);
         world
     });
 
