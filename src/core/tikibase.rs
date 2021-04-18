@@ -10,6 +10,7 @@ pub struct Tikibase {
 }
 
 impl Tikibase {
+    /// creates a new document with the given content in this Tikibase
     pub fn create_doc(&mut self, filename: &Path, content: &str) {
         let filepath = self.dir.join(filename);
         let mut file = std::fs::File::create(&filepath).unwrap();
