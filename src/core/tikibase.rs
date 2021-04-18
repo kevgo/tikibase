@@ -14,7 +14,7 @@ impl Tikibase {
         let filepath = self.dir.join(filename);
         let mut file = std::fs::File::create(&filepath).unwrap();
         file.write_all(content.as_bytes()).unwrap();
-        let doc = Document::from_str(content, filepath);
+        let doc = Document::from_str(filepath, content);
         self.docs.push(doc);
     }
 

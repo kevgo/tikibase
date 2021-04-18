@@ -71,7 +71,7 @@ content";
 ### next section
 
 content";
-        let doc = Document::from_str(content, PathBuf::from("test.md"));
+        let doc = Document::from_str(PathBuf::from("test.md"), content);
         let mut base = Tikibase::with_doc(doc);
         let have = process(&mut base, false);
         assert_eq!(have.len(), 1);
@@ -89,7 +89,7 @@ content";
 ### section with content
 
 content";
-        let doc = Document::from_str(content, PathBuf::from("test.md"));
+        let doc = Document::from_str(PathBuf::from("test.md"), content);
         let mut base = Tikibase::with_doc(doc);
         let have = process(&mut base, false);
         assert_eq!(have.len(), 0);

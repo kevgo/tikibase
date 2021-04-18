@@ -47,7 +47,7 @@ impl Document {
     }
 
     /// provides a Document instance containing the content of the file at the given path
-    pub fn from_str(text: &str, path: PathBuf) -> Document {
+    pub fn from_str(path: PathBuf, text: &str) -> Document {
         Document::from_lines(text.lines().map(|line| line.to_string()), path)
     }
 
@@ -123,7 +123,7 @@ two
 ### Section 2
 foo
 ";
-        let doc = Document::from_str(give, PathBuf::from("test.md"));
+        let doc = Document::from_str(PathBuf::from("test.md"), give);
         let have = doc.text();
         assert_eq!(have, give);
     }
