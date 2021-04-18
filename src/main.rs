@@ -10,16 +10,16 @@ fn main() {
     let mut base = Tikibase::in_dir(PathBuf::from("."));
     match parse(std::env::args()) {
         Command::Check => {
-            for finding in check::run(&mut base, false) {
+            for finding in check::process(&mut base, false) {
                 println!("{}", finding);
             }
         }
         Command::Fix => {
-            let _ = check::run(&mut base, true);
+            let _ = check::process(&mut base, true);
         }
         Command::Help => help::run(),
         Command::Pitstop => {
-            for finding in check::run(&mut base, true) {
+            for finding in check::process(&mut base, true) {
                 println!("{}", finding);
             }
         }
