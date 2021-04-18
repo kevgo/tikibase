@@ -82,7 +82,7 @@ pub mod helpers {
         }
     }
 
-    pub fn read_doc(base: &Tikibase, filename: &str) -> String {
+    pub fn file_content(base: &Tikibase, filename: &str) -> String {
         let filepath = base.dir.join(filename);
         let mut result = std::fs::read_to_string(filepath)
             .unwrap()

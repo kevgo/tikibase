@@ -117,7 +117,7 @@ content",
         );
 
         // verify disk content
-        let new_content = helpers::read_doc(&base, "test.md");
+        let new_content = helpers::file_content(&base, "test.md");
         assert_eq!(
             new_content,
             "\

@@ -44,7 +44,7 @@ fn steps() -> Steps<MyWorld> {
     steps.then_regex(r#"^file "(.*)" should contain:$"#, |world, ctx| {
         let expected = ctx.step.docstring().unwrap().trim_start();
         let filename = ctx.matches.get(1).expect("no filename provided");
-        let actual = helpers::read_doc(&world.base, filename);
+        let actual = helpers::file_content(&world.base, filename);
         assert_eq!(actual, expected);
         world
     });
