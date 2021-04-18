@@ -1,3 +1,5 @@
+cargo-features = ["strip"]
+
 [package]
 name = "tikibase"
 version = "0.0.0"
@@ -21,3 +23,6 @@ test = false
 cucumber_rust = { git = "https://github.com/bbqsrc/cucumber-rust", branch = "main" }
 # You can use any executor you want, but we're going to use Tokio in this example.
 tokio = { version = "1", features = ["macros", "rt-multi-thread"] }
+
+[profile.release]
+strip = "symbols"
