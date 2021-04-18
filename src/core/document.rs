@@ -51,6 +51,12 @@ impl Document {
         Document::from_lines(text.lines().map(|line| line.to_string()), path)
     }
 
+    /// persists the current content of this document to disk
+    pub fn save(&self) {
+        let mut file = std::fs::File::create(&self.path).unwrap();
+        file.write_all(self.text().as_bytes()).unwrap();
+    }
+
     /// provides the complete textual content of this document
     pub fn text(&self) -> String {
         let mut result = self.title_section.text();

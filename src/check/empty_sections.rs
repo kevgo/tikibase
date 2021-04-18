@@ -27,7 +27,7 @@ pub fn process(base: &mut Tikibase, fix: bool) -> Vec<String> {
             true
         });
         if fixed {
-            crate::core::document::save(&doc.path, doc.text());
+            doc.save();
         }
     }
     results
