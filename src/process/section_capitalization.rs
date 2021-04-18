@@ -1,8 +1,9 @@
+use super::result::Result;
 use crate::core::tikibase::Tikibase;
 use std::collections::{HashMap, HashSet};
 use std::iter::FromIterator;
 
-pub fn process(base: &mut Tikibase) -> Vec<String> {
+pub fn process(base: &mut Tikibase) -> Result {
     let mut finder = MixCapSectionFinder::new();
     for doc in &base.docs {
         finder.register(doc.title_section.section_type());
@@ -36,16 +37,20 @@ impl MixCapSectionFinder {
     }
 
     /// provides the found sections
-    fn result(self) -> Vec<String> {
-        self.known_variants
-            .into_values()
-            .filter(|variants| variants.len() > 1)
-            .map(|variants| {
-                let mut v_sorted = Vec::from_iter(variants);
-                v_sorted.sort();
-                format!("mixed capitalization of sections: {}", v_sorted.join("|"))
-            })
-            .collect()
+    fn result(self) -> Result {
+        Result {
+            findings: self
+                .known_variants
+                .into_values()
+                .filter(|variants| variants.len() > 1)
+                .map(|variants| {
+                    let mut v_sorted = Vec::from_iter(variants);
+                    v_sorted.sort();
+                    format!("mixed capitalization of sections: {}", v_sorted.join("|"))
+                })
+                .collect(),
+            fixes: Vec::new(),
+        }
     }
 }
 
@@ -72,9 +77,9 @@ mod tests {
         mcsf.register("different".to_string());
         mcsf.register("Different".to_string());
         let have = mcsf.result();
-        assert_eq!(have.len(), 1);
+        assert_eq!(have.findings.len(), 1);
         assert_eq!(
-            have[0],
+            have.findings[0],
             "mixed capitalization of sections: Different|different",
         );
     }

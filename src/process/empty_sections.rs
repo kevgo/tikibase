@@ -1,10 +1,11 @@
+use super::result::Result;
 use crate::core::tikibase::Tikibase;
 
 /// finds all empty sections in the given Tikibase,
 /// fixes them if fix is enabled,
 /// returns the unfixed issues
-pub fn process(base: &mut Tikibase, fix: bool) -> Vec<String> {
-    let mut results = vec![];
+pub fn process(base: &mut Tikibase, fix: bool) -> Result {
+    let mut result = Result::new();
     for doc in &mut base.docs {
         let filename = &doc.path.strip_prefix(&base.dir).unwrap().to_str().unwrap();
         let mut fixed = false;
@@ -18,7 +19,7 @@ pub fn process(base: &mut Tikibase, fix: bool) -> Vec<String> {
                 fixed = true;
                 return false;
             }
-            results.push(format!(
+            result.findings.push(format!(
                 "{}:{}  section \"{}\" has no content",
                 &filename,
                 section.line_number + 1,
@@ -30,7 +31,7 @@ pub fn process(base: &mut Tikibase, fix: bool) -> Vec<String> {
             doc.save();
         }
     }
-    results
+    result
 }
 
 #[cfg(test)]
@@ -52,9 +53,9 @@ content";
         let mut base = persistence::tmpbase();
         base.create_doc(&PathBuf::from("test.md"), content);
         let have = process(&mut base, false);
-        assert_eq!(have.len(), 1);
+        assert_eq!(have.findings.len(), 1);
         assert_eq!(
-            have[0],
+            have.findings[0],
             "test.md:3  section \"empty section\" has no content"
         );
     }
@@ -72,9 +73,9 @@ content";
         let mut base = persistence::tmpbase();
         base.create_doc(&PathBuf::from("test.md"), content);
         let have = process(&mut base, false);
-        assert_eq!(have.len(), 1);
+        assert_eq!(have.findings.len(), 1);
         assert_eq!(
-            have[0],
+            have.findings[0],
             "test.md:3  section \"empty section\" has no content"
         );
     }
@@ -90,7 +91,7 @@ content";
         let mut base = persistence::tmpbase();
         base.create_doc(&PathBuf::from("test.md"), content);
         let have = process(&mut base, false);
-        assert_eq!(have.len(), 0);
+        assert_eq!(have.findings.len(), 0);
     }
     #[test]
     fn true_empty_section() {
@@ -106,7 +107,7 @@ content";
 content",
         );
         let result = process(&mut base, true);
-        assert_eq!(result.len(), 0);
+        assert_eq!(result.findings.len(), 0);
 
         // verify Tikibase data
         assert_eq!(base.docs.len(), 1);
