@@ -107,6 +107,16 @@ content",
         );
         let result = process(&mut base, true);
         assert_eq!(result.len(), 0);
+
+        // verify Tikibase data
+        assert_eq!(base.docs.len(), 1);
+        assert_eq!(base.docs[0].content_sections.len(), 1);
+        assert_eq!(
+            base.docs[0].content_sections[0].title_line,
+            "### next section"
+        );
+
+        // verify disk content
         let new_content = helpers::read_doc(&base, "test.md");
         assert_eq!(
             new_content,
