@@ -1,6 +1,7 @@
 use crate::core::tikibase::Tikibase;
 mod duplicate_sections;
 mod empty_sections;
+mod link_targets;
 mod result;
 mod section_capitalization;
 

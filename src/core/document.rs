@@ -51,6 +51,15 @@ impl Document {
         Document::from_lines(text.lines().map(|line| line.to_string()), path)
     }
 
+    pub fn relative_path(&self, root: &PathBuf) -> String {
+        self.path
+            .strip_prefix(root)
+            .unwrap()
+            .to_str()
+            .unwrap()
+            .to_string()
+    }
+
     /// persists the current content of this document to disk
     pub fn save(&self) {
         let mut file = std::fs::File::create(&self.path).unwrap();
