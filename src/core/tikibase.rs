@@ -1,4 +1,5 @@
 use super::document::Document;
+use std::io::prelude::*;
 use std::path::PathBuf;
 use walkdir::WalkDir;
 
@@ -9,6 +10,14 @@ pub struct Tikibase {
 }
 
 impl Tikibase {
+    pub fn create_doc(&mut self, filename: &str, content: &str) {
+        let filepath = self.dir.join(filename);
+        let mut file = std::fs::File::create(&filepath).unwrap();
+        file.write_all(content.as_bytes()).unwrap();
+        let doc = Document::from_str(content, filepath);
+        self.docs.push(doc);
+    }
+
     /// Provides a Tikibase instance for the given directory.
     pub fn in_dir(dir: PathBuf) -> Tikibase {
         let mut docs = Vec::new();
@@ -62,7 +71,6 @@ fn is_md(ext: Option<&std::ffi::OsStr>) -> bool {
 pub mod helpers {
     use super::Tikibase;
     use rand::Rng;
-    use std::io::prelude::*;
 
     /// creates a Tikibase instance for testing
     pub fn testbase() -> Tikibase {
@@ -80,12 +88,6 @@ pub mod helpers {
             Ok(_) => Tikibase::in_dir(dir),
             Err(e) => panic!("{}", e),
         }
-    }
-
-    pub fn create_doc(base: &Tikibase, filename: &str, content: &str) {
-        let filepath = base.dir.join(filename);
-        let mut file = std::fs::File::create(filepath).unwrap();
-        file.write_all(content.as_bytes()).unwrap();
     }
 
     pub fn read_doc(base: &Tikibase, filename: &str) -> String {

@@ -5,22 +5,29 @@ use crate::core::tikibase::Tikibase;
 /// returns the unfixed issues
 pub fn process(base: &mut Tikibase, fix: bool) -> Vec<String> {
     let mut results = vec![];
-    for doc in &base.docs {
-        for section in &doc.content_sections {
+    for doc in &mut base.docs {
+        let filename = &doc.path.strip_prefix(&base.dir).unwrap().to_str().unwrap();
+        let mut fixed = false;
+        doc.content_sections.retain(|section| {
             let has_content = section.body.iter().any(|line| !line.text.is_empty());
-            if !has_content {
-                // found an empty section
-                if fix {
-                    // TODO
-                } else {
-                    results.push(format!(
-                        "{}:{}  section \"{}\" has no content",
-                        &doc.path.strip_prefix(&base.dir).unwrap().to_str().unwrap(),
-                        section.line_number + 1,
-                        section.section_type()
-                    ));
-                }
+            if has_content {
+                return true;
             }
+            // found an empty section
+            if fix {
+                fixed = true;
+                return false;
+            }
+            results.push(format!(
+                "{}:{}  section \"{}\" has no content",
+                &filename,
+                section.line_number + 1,
+                section.section_type()
+            ));
+            true
+        });
+        if fixed {
+            crate::core::document::save(&doc.path, doc.text());
         }
     }
     results
@@ -33,6 +40,7 @@ mod tests {
     use crate::core::document::Document;
     use crate::core::tikibase::helpers;
     use crate::core::tikibase::Tikibase;
+    use std::path::PathBuf;
 
     #[test]
     fn false_empty_section() {
@@ -43,7 +51,7 @@ mod tests {
 ### next section
 
 content";
-        let doc = Document::from_str(content, "test.md");
+        let doc = Document::from_str(content, PathBuf::from("test.md"));
         let mut base = Tikibase::with_doc(doc);
         let have = process(&mut base, false);
         assert_eq!(have.len(), 1);
@@ -63,7 +71,7 @@ content";
 ### next section
 
 content";
-        let doc = Document::from_str(content, "test.md");
+        let doc = Document::from_str(content, PathBuf::from("test.md"));
         let mut base = Tikibase::with_doc(doc);
         let have = process(&mut base, false);
         assert_eq!(have.len(), 1);
@@ -81,7 +89,7 @@ content";
 ### section with content
 
 content";
-        let doc = Document::from_str(content, "test.md");
+        let doc = Document::from_str(content, PathBuf::from("test.md"));
         let mut base = Tikibase::with_doc(doc);
         let have = process(&mut base, false);
         assert_eq!(have.len(), 0);
@@ -89,8 +97,7 @@ content";
     #[test]
     fn true_empty_section() {
         let mut base = helpers::testbase();
-        helpers::create_doc(
-            &base,
+        base.create_doc(
             "test.md",
             "\
 # test document
@@ -100,8 +107,8 @@ content";
 
 content",
         );
-        let have = process(&mut base, true);
-        assert_eq!(have.len(), 0);
+        let result = process(&mut base, true);
+        assert_eq!(result.len(), 0);
         let new_content = helpers::read_doc(&base, "test.md");
         assert_eq!(
             new_content,

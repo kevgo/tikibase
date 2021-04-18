@@ -28,10 +28,10 @@ impl World for MyWorld {
 fn steps() -> Steps<MyWorld> {
     let mut steps: Steps<MyWorld> = Steps::new();
 
-    steps.given_regex(r#"^file "(.*)" with content:$"#, |world, ctx| {
+    steps.given_regex(r#"^file "(.*)" with content:$"#, |mut world, ctx| {
         let filename = ctx.matches.get(1).expect("no filename provided");
         let content = ctx.step.docstring().unwrap().trim_start();
-        helpers::create_doc(&world.base, filename, content);
+        world.base.create_doc(filename, content);
         world
     });
 
