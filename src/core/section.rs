@@ -71,8 +71,6 @@ mod tests {
                 },
             ],
         };
-        let want = "### welcome\n\ncontent\n";
-        let have = section.text();
-        assert_eq!(have, want);
+        assert_eq!(section.text(), "### welcome\n\ncontent\n");
     }
 }
