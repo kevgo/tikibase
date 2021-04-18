@@ -23,9 +23,25 @@ Feature: Sections without content
       """
 
   Scenario: fix
+    When fixing
+    Then file "1.md" should contain:
+      """
+      # Title 1
+
+      ### Two
+
+      content
+      """
 
 
   Scenario: pitstop
     When doing a pitstop
+    Then it finds no errors
+    And file "1.md" should contain:
       """
+      # Title 1
+
+      ### Two
+
+      content
       """

@@ -1,14 +1,11 @@
 use cucumber_rust::{async_trait, Cucumber, Steps, World};
-use rand::{distributions::Alphanumeric, Rng};
-use std::fs;
 use std::io;
-use std::io::prelude::*;
 use std::path::PathBuf;
-use std::time::{SystemTime, UNIX_EPOCH};
+use tikibase::core::tikibase::helpers;
 use tikibase::core::tikibase::Tikibase;
 
 pub struct MyWorld {
-    pub dir: PathBuf,
+    pub base: Tikibase,
     pub findings: Vec<String>,
 }
 
@@ -16,40 +13,39 @@ pub struct MyWorld {
 impl World for MyWorld {
     type Error = io::Error;
     async fn new() -> Result<Self, io::Error> {
-        let timestamp = SystemTime::now()
-            .duration_since(UNIX_EPOCH)
-            .unwrap()
-            .as_millis();
-        let rand: String = rand::thread_rng()
-            .sample_iter(&Alphanumeric)
-            .take(3)
-            .map(char::from)
-            .collect();
-        let dir = PathBuf::from(format!("./tmp/{}-{}", timestamp, rand));
-        match fs::create_dir_all(&dir) {
-            Ok(_) => Ok(MyWorld {
-                dir,
-                findings: vec![],
-            }),
-            Err(e) => Err(e),
-        }
+        let base = helpers::testbase();
+        Ok(MyWorld {
+            base,
+            findings: vec![],
+        })
     }
 }
 
 fn steps() -> Steps<MyWorld> {
     let mut steps: Steps<MyWorld> = Steps::new();
 
-    steps.given_regex(r#"^file "(.*)" with content:$"#, |world, ctx| {
+    steps.given_regex(r#"^file "(.*)" with content:$"#, |mut world, ctx| {
         let filename = ctx.matches.get(1).expect("no filename provided");
-        let filepath = world.dir.join(filename);
         let content = ctx.step.docstring().unwrap().trim_start();
-        let mut file = fs::File::create(filepath).unwrap();
-        file.write_all(content.as_bytes()).unwrap();
+        world.base.create_doc(&PathBuf::from(filename), content);
         world
     });
 
     steps.when("checking", |mut world, _ctx| {
-        world.findings = tikibase::check::run(&Tikibase::in_dir(world.dir.clone()));
+        world.findings = tikibase::check::process(&mut world.base, false);
+        world
+    });
+
+    steps.when("fixing", |mut world, _ctx| {
+        tikibase::check::process(&mut world.base, true);
+        world
+    });
+
+    steps.then_regex(r#"^file "(.*)" should contain:$"#, |world, ctx| {
+        let expected = ctx.step.docstring().unwrap().trim_start();
+        let filename = ctx.matches.get(1).expect("no filename provided");
+        let actual = helpers::file_content(&world.base, filename);
+        assert_eq!(actual, expected);
         world
     });
 

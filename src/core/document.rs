@@ -1,8 +1,9 @@
 use super::line::Line;
 use super::section::Section;
 use std::fs::File;
+use std::io::prelude::*;
 use std::io::{BufRead, BufReader};
-use std::path::PathBuf;
+use std::path::{Path, PathBuf};
 
 pub struct Document {
     pub path: PathBuf,
@@ -46,13 +47,32 @@ impl Document {
     }
 
     /// provides a Document instance containing the content of the file at the given path
-    #[allow(dead_code)] // used in tests
-    pub fn from_str(text: &str, path: &str) -> Document {
-        Document::from_lines(
-            text.lines().map(|line| line.to_string()),
-            std::path::PathBuf::from(path),
-        )
+    pub fn from_str(path: PathBuf, text: &str) -> Document {
+        Document::from_lines(text.lines().map(|line| line.to_string()), path)
     }
+
+    /// persists the current content of this document to disk
+    pub fn save(&self) {
+        let mut file = std::fs::File::create(&self.path).unwrap();
+        file.write_all(self.text().as_bytes()).unwrap();
+    }
+
+    /// provides the complete textual content of this document
+    pub fn text(&self) -> String {
+        let mut result = self.title_section.text();
+        for section in &self.content_sections {
+            result.push_str(&section.text());
+        }
+        result
+    }
+}
+
+/// writes the content of the given document to disk
+///
+/// NOTE: this exists outside of Tikibase because of borrow  checker problems
+pub fn save(filepath: &Path, text: String) {
+    let mut file = std::fs::File::create(filepath).unwrap();
+    file.write_all(text.as_bytes()).unwrap();
 }
 
 // -------------------------------------------------------------------------------------
@@ -61,6 +81,9 @@ impl Document {
 
 #[cfg(test)]
 mod tests {
+
+    use super::Document;
+    use std::path::PathBuf;
 
     #[test]
     fn load() {
@@ -95,6 +118,22 @@ foo
         assert_eq!(have.content_sections[1].body.len(), 1);
         assert_eq!(have.content_sections[1].body[0].text, "foo");
         assert_eq!(have.content_sections[1].body[0].section_offset, 1);
+    }
+
+    #[test]
+    fn text() {
+        let give = "\
+# Title
+title text
+### Section 1
+one
+two
+### Section 2
+foo
+";
+        let doc = Document::from_str(PathBuf::from("test.md"), give);
+        let have = doc.text();
+        assert_eq!(have, give);
     }
 }
 

@@ -20,6 +20,16 @@ impl Section {
             Some((pos, _)) => self.title_line.clone().split_off(pos),
         }
     }
+
+    pub fn text(&self) -> String {
+        let mut result = self.title_line.clone();
+        result.push('\n');
+        for line in &self.body {
+            result.push_str(&line.text);
+            result.push('\n');
+        }
+        result
+    }
 }
 
 #[cfg(test)]
@@ -43,5 +53,24 @@ mod tests {
             let have = section.section_type();
             assert_eq!(have, want.to_string(), "want: '{}', have: '{}'", want, have);
         }
+    }
+
+    #[test]
+    fn text() {
+        let section = Section {
+            line_number: 12,
+            title_line: "### welcome".to_string(),
+            body: vec![
+                Line {
+                    section_offset: 0,
+                    text: "".to_string(),
+                },
+                Line {
+                    section_offset: 1,
+                    text: "content".to_string(),
+                },
+            ],
+        };
+        assert_eq!(section.text(), "### welcome\n\ncontent\n");
     }
 }
