@@ -37,7 +37,7 @@ pub fn process(base: &mut Tikibase, fix: bool) -> Vec<String> {
 mod tests {
 
     use super::process;
-    use crate::core::tikibase::helpers;
+    use crate::core::persistence;
     use std::path::PathBuf;
 
     #[test]
@@ -49,7 +49,7 @@ mod tests {
 ### next section
 
 content";
-        let mut base = helpers::testbase();
+        let mut base = persistence::tmpbase();
         base.create_doc(&PathBuf::from("test.md"), content);
         let have = process(&mut base, false);
         assert_eq!(have.len(), 1);
@@ -69,7 +69,7 @@ content";
 ### next section
 
 content";
-        let mut base = helpers::testbase();
+        let mut base = persistence::tmpbase();
         base.create_doc(&PathBuf::from("test.md"), content);
         let have = process(&mut base, false);
         assert_eq!(have.len(), 1);
@@ -87,14 +87,14 @@ content";
 ### section with content
 
 content";
-        let mut base = helpers::testbase();
+        let mut base = persistence::tmpbase();
         base.create_doc(&PathBuf::from("test.md"), content);
         let have = process(&mut base, false);
         assert_eq!(have.len(), 0);
     }
     #[test]
     fn true_empty_section() {
-        let mut base = helpers::testbase();
+        let mut base = persistence::tmpbase();
         base.create_doc(
             &PathBuf::from("test.md"),
             "\
@@ -117,7 +117,7 @@ content",
         );
 
         // verify disk content
-        let new_content = helpers::file_content(&base, "test.md");
+        let new_content = persistence::load_file(&base.dir.join("test.md"));
         assert_eq!(
             new_content,
             "\

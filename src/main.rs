@@ -1,13 +1,13 @@
 extern crate lazy_static;
 
 use std::path::PathBuf;
-use tikibase::core::tikibase::Tikibase;
+use tikibase::core::persistence;
 use tikibase::help;
 use tikibase::process;
 use tikibase::stats;
 
 fn main() {
-    let mut base = Tikibase::in_dir(PathBuf::from("."));
+    let mut base = persistence::load_base(PathBuf::from("."));
     match parse(std::env::args()) {
         Command::Check => {
             for finding in process::run(&mut base, false) {

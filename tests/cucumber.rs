@@ -1,7 +1,7 @@
 use cucumber_rust::{async_trait, Cucumber, Steps, World};
 use std::io;
 use std::path::PathBuf;
-use tikibase::core::tikibase::helpers;
+use tikibase::core::persistence;
 use tikibase::core::tikibase::Tikibase;
 
 pub struct MyWorld {
@@ -13,7 +13,7 @@ pub struct MyWorld {
 impl World for MyWorld {
     type Error = io::Error;
     async fn new() -> Result<Self, io::Error> {
-        let base = helpers::testbase();
+        let base = persistence::tmpbase();
         Ok(MyWorld {
             base,
             findings: vec![],
@@ -49,7 +49,7 @@ fn steps() -> Steps<MyWorld> {
     steps.then_regex(r#"^file "(.*)" should contain:$"#, |world, ctx| {
         let expected = ctx.step.docstring().unwrap().trim_start();
         let filename = ctx.matches.get(1).expect("no filename provided");
-        let actual = helpers::file_content(&world.base, filename);
+        let actual = persistence::load_file(&world.base.dir.join(filename));
         assert_eq!(actual, expected);
         world
     });

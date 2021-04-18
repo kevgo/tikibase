@@ -25,7 +25,7 @@ pub fn process(base: &mut Tikibase) -> Vec<String> {
 mod tests {
 
     use super::process;
-    use crate::core::tikibase::helpers;
+    use crate::core::persistence;
     use std::path::PathBuf;
 
     #[test]
@@ -37,7 +37,7 @@ mod tests {
 content
 ### One
 content";
-        let mut base = helpers::testbase();
+        let mut base = persistence::tmpbase();
         base.create_doc(&PathBuf::from("test.md"), content);
         let have = process(&mut base);
         assert_eq!(have.len(), 1);
