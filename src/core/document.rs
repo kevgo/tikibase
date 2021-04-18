@@ -62,6 +62,8 @@ impl Document {
 }
 
 /// writes the content of the given document to disk
+///
+/// NOTE: this exists outside of Tikibase because of borrow  checker problems
 pub fn save(filepath: &Path, text: String) {
     let mut file = std::fs::File::create(filepath).unwrap();
     file.write_all(text.as_bytes()).unwrap();
