@@ -1,4 +1,3 @@
-use std::error::Error;
 use std::fmt;
 
 #[derive(Debug)]
@@ -6,7 +5,6 @@ use std::fmt;
 pub struct UserError {
     message: String,
     guidance: String,
-    source: dyn Error,
 }
 
 impl fmt::Display for UserError {
@@ -15,8 +13,11 @@ impl fmt::Display for UserError {
     }
 }
 
-impl Error for UserError {
-    fn source(&self) -> Option<&(dyn Error + 'static)> {
-        Some(&self.source)
+impl From<std::io::Error> for UserError {
+    fn from(error: std::io::Error) -> Self {
+        UserError {
+            message: error.to_string(),
+            guidance: "Please make sure that all files and directories are accessible.".to_string(),
+        }
     }
 }

@@ -1,5 +1,5 @@
-use super::line::Line;
 use super::section::Section;
+use super::{error::UserError, line::Line};
 use std::fs::File;
 use std::io::prelude::*;
 use std::io::{BufRead, BufReader};
@@ -13,13 +13,14 @@ pub struct Document {
 
 impl Document {
     /// provides a Document instance containing the content of the file at the given path
-    pub fn load(path: PathBuf) -> Document {
-        let file = File::open(&path).unwrap();
-        Document::from_lines(BufReader::new(file).lines().map(|l| l.unwrap()), path)
+    pub fn load(path: PathBuf) -> Result<Document, UserError> {
+        let file = File::open(&path)?;
+        let lines = BufReader::new(file).lines().map(|l| l.unwrap());
+        Document::from_lines(lines, path)
     }
 
     /// provides a Document instance containing the given text
-    pub fn from_lines<T>(lines: T, path: PathBuf) -> Document
+    pub fn from_lines<T>(lines: T, path: PathBuf) -> Result<Document, UserError>
     where
         T: Iterator<Item = String>,
     {
@@ -39,11 +40,14 @@ impl Document {
             sections.push(section);
         }
         let content_sections = sections.split_off(1);
-        Document {
+        Ok(Document {
             path,
-            title_section: sections.pop().unwrap(),
+            title_section: sections.pop().ok_or_else(|| UserError {
+                message: "document has no section".to_string(),
+                guidance: "".to_string(),
+            })?,
             content_sections,
-        }
+        })
     }
 
     /// provides a Document instance containing the content of the file at the given path
