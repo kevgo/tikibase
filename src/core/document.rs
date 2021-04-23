@@ -51,7 +51,7 @@ impl Document {
         Document::from_lines(text.lines().map(|line| line.to_string()), path)
     }
 
-    pub fn relative_path(&self, root: &PathBuf) -> String {
+    pub fn relative_path(&self, root: &Path) -> String {
         self.path
             .strip_prefix(root)
             .unwrap()

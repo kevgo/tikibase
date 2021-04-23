@@ -1,5 +1,5 @@
 use crate::core::document::Document;
-use crate::core::tikibase::Resource;
+use crate::core::resource::Resource;
 use crate::core::tikibase::Tikibase;
 use rand::Rng;
 use std::fs;
