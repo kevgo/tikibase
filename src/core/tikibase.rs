@@ -50,7 +50,11 @@ mod tests {
 
     #[test]
     fn make_anchor() {
-        let tests = vec![("foo", "#foo")];
+        let tests = vec![
+            ("foo", "#foo"),
+            ("what is it", "#what-is-it"),
+            ("A Complex Section", "#a-complex-section"),
+        ];
         for (give, want) in tests.into_iter() {
             assert_eq!(super::make_anchor(give), want);
         }
