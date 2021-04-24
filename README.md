@@ -1,5 +1,7 @@
 # Tikibase Rust
 
+![build status](https://github.com/kevgo/tikibase-rs/actions/workflows/ci.yml/badge.svg)
+
 Rust re-implementation of Tikibase.
 
 Why:
