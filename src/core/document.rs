@@ -122,18 +122,12 @@ mod tests {
         let content = "\
 # test
 ### section 1
-content
-### section 2
 content";
         let doc = Document::from_str(PathBuf::from("one.md"), content);
         let mut sections = doc.sections();
         match sections.next() {
             None => panic!("expected s1"),
             Some(s1) => assert_eq!(s1.title_line, "### section 1"),
-        }
-        match sections.next() {
-            None => panic!("expected s2"),
-            Some(s1) => assert_eq!(s1.title_line, "### section 2"),
         }
         match sections.next() {
             None => return,
