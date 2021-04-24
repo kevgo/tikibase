@@ -12,5 +12,5 @@ Feature: recognize/fix links to non-existing documents
     When checking
     Then it prints:
       """
-      1.md:3  link to non-existing document "two.md"
+      1.md:3  broken link to "two.md"
       """

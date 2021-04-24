@@ -10,9 +10,9 @@ pub fn process(base: &Tikibase) -> Result {
                 for link in line.links() {
                     if !existing_targets.contains(&link.destination) {
                         result.findings.push(format!(
-                            "{}:{}  broken link to {}",
-                            doc.filename(),
-                            section.line_number + line.section_offset,
+                            "{}:{}  broken link to \"{}\"",
+                            crate::core::document::relative_path(&doc.path, &base.dir),
+                            section.line_number + line.section_offset + 1,
                             link.destination,
                         ));
                     }
@@ -40,7 +40,7 @@ mod tests {
         base.create_doc(&PathBuf::from("one.md"), content);
         base.create_doc(&PathBuf::from("two.md"), "# Two");
         let have = super::process(&base);
-        let want = vec!["one.md:1  broken link to non-existing.md"];
+        let want = vec!["one.md:3  broken link to \"non-existing.md\""];
         assert_eq!(have.findings, want);
     }
 }

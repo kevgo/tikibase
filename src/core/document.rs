@@ -12,11 +12,6 @@ pub struct Document {
 }
 
 impl Document {
-    /// provides the filename of this document as a string
-    pub fn filename(&self) -> String {
-        self.path.to_str().unwrap().to_owned()
-    }
-
     /// provides a Document instance containing the given text
     pub fn from_lines<T>(lines: T, path: PathBuf) -> Document
     where
@@ -108,6 +103,11 @@ impl<'a> Iterator for DocIter<'a> {
             self.body_iter.next()
         }
     }
+}
+
+/// provides the relative path of the given document path inside the given Tikibase root path
+pub fn relative_path<'a>(docpath: &'a Path, base: &'a Path) -> std::path::Display<'a> {
+    Path::strip_prefix(docpath, base).unwrap().display()
 }
 
 /// writes the content of the given document to disk
