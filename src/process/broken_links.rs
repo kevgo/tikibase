@@ -6,7 +6,7 @@ pub fn process(base: &Tikibase) -> Result {
     let existing_targets = base.link_targets();
     for doc in &base.docs {
         println!("DOC: {}", doc.filename());
-        for section in &doc.content_sections {
+        for section in doc.sections() {
             for line in &section.body {
                 for link in line.links() {
                     if !existing_targets.contains(&link.destination) {
