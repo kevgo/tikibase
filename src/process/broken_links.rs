@@ -1,5 +1,6 @@
 use super::result::Result;
 use super::Tikibase;
+use crate::core::document::relative_path;
 
 pub fn process(base: &Tikibase) -> Result {
     let mut result = Result::new();
@@ -11,7 +12,7 @@ pub fn process(base: &Tikibase) -> Result {
                     if !existing_targets.contains(&link.destination) {
                         result.findings.push(format!(
                             "{}:{}  broken link to \"{}\"",
-                            crate::core::document::relative_path(&doc.path, &base.dir),
+                            relative_path(&doc.path, &base.dir),
                             section.line_number + line.section_offset + 1,
                             link.destination,
                         ));
