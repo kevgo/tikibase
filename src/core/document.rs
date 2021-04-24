@@ -1,9 +1,9 @@
 use super::line::Line;
 use super::section::Section;
-use std::fs::File;
 use std::io::prelude::*;
 use std::io::{BufRead, BufReader};
 use std::path::{Path, PathBuf};
+use std::{fs::File, slice::Iter};
 
 pub struct Document {
     pub path: PathBuf,
@@ -12,10 +12,9 @@ pub struct Document {
 }
 
 impl Document {
-    /// provides a Document instance containing the content of the file at the given path
-    pub fn load(path: PathBuf) -> Document {
-        let file = File::open(&path).unwrap();
-        Document::from_lines(BufReader::new(file).lines().map(|l| l.unwrap()), path)
+    /// provides the filename of this document as a string
+    pub fn filename(&self) -> String {
+        self.path.to_str().unwrap().to_owned()
     }
 
     /// provides a Document instance containing the given text
@@ -51,6 +50,12 @@ impl Document {
         Document::from_lines(text.lines().map(|line| line.to_string()), path)
     }
 
+    /// provides a Document instance containing the content of the file at the given path
+    pub fn load(path: PathBuf) -> Document {
+        let file = File::open(&path).unwrap();
+        Document::from_lines(BufReader::new(file).lines().map(|l| l.unwrap()), path)
+    }
+
     pub fn relative_path(&self, root: &Path) -> String {
         self.path
             .strip_prefix(root)
@@ -66,6 +71,12 @@ impl Document {
         file.write_all(self.text().as_bytes()).unwrap();
     }
 
+    pub fn sections(&self) -> DocIter {
+        DocIter {
+            body_iter: self.content_sections.iter(),
+        }
+    }
+
     /// provides the complete textual content of this document
     pub fn text(&self) -> String {
         let mut result = self.title_section.text();
@@ -73,6 +84,18 @@ impl Document {
             result.push_str(&section.text());
         }
         result
+    }
+}
+
+pub struct DocIter<'a> {
+    body_iter: std::slice::Iter<'a, Section>,
+}
+
+impl<'a> Iterator for DocIter<'a> {
+    type Item = &'a Section;
+
+    fn next(&mut self) -> Option<Self::Item> {
+        self.body_iter.next()
     }
 }
 
@@ -93,6 +116,30 @@ mod tests {
 
     use super::Document;
     use std::path::PathBuf;
+
+    #[test]
+    fn sections() {
+        let content = "\
+# test
+### section 1
+content
+### section 2
+content";
+        let doc = Document::from_str(PathBuf::from("one.md"), content);
+        let mut sections = doc.sections();
+        match sections.next() {
+            None => panic!("expected s1"),
+            Some(s1) => assert_eq!(s1.title_line, "### section 1"),
+        }
+        match sections.next() {
+            None => panic!("expected s2"),
+            Some(s1) => assert_eq!(s1.title_line, "### section 2"),
+        }
+        match sections.next() {
+            None => return,
+            Some(_) => panic!("unexpected section"),
+        }
+    }
 
     #[test]
     fn load() {

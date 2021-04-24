@@ -1,4 +1,5 @@
 use crate::core::tikibase::Tikibase;
+mod broken_links;
 mod duplicate_sections;
 mod empty_sections;
 mod result;
