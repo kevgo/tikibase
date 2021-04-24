@@ -19,7 +19,7 @@ jobs:
         with:
           toolchain: nightly
           profile: minimal
-          # override: true
+          override: true
           # components: rustfmt, clippy
       - name: Rust Cache
         uses: Swatinem/rust-cache@v1.2.0
