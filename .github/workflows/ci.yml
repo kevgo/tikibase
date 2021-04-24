@@ -2,23 +2,23 @@ name: Rust
 
 on:
   push:
-    branches: [ main ]
+    branches: [main]
   pull_request:
-    branches: [ main ]
+    branches: [main]
 
 env:
   CARGO_TERM_COLOR: always
 
 jobs:
-  build:
-
+  test:
     runs-on: ubuntu-latest
+    rust: nightly
 
     steps:
-    - uses: actions/checkout@v2
-    - name: Clippy
-      run: cargo clippy
-    - name: Unit tests
-      run: cargo test
-    - name: Cucumber
-      run: make cuke
+      - uses: actions/checkout@v2
+      - name: Clippy
+        run: cargo clippy
+      - name: Unit tests
+        run: cargo test
+      - name: Cucumber
+        run: make cuke
