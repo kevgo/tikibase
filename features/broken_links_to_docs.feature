@@ -8,7 +8,7 @@ Feature: recognize/fix links to non-existing documents
       [two](two.md)
       """
 
-  Scenario: checkthis
+  Scenario: checking
     When checking
     Then it prints:
       """
