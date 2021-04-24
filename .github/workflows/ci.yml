@@ -12,10 +12,12 @@ env:
 jobs:
   test:
     runs-on: ubuntu-latest
-    rust: nightly
-
     steps:
       - uses: actions/checkout@v2
+      - name: Set up Rust
+        uses: hecrj/setup-rust-action@v1.3.4
+        with:
+          rust-version: nightly
       - name: Clippy
         run: cargo clippy
       - name: Unit tests
