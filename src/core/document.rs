@@ -67,8 +67,8 @@ impl Document {
     }
 
     /// provides a non-consuming iterator for all sections in this document
-    pub fn sections(&self) -> DocIter {
-        DocIter {
+    pub fn sections(&self) -> DocIterator {
+        DocIterator {
             title_section: &self.title_section,
             body_iter: self.content_sections.iter(),
             emitted_title: false,
@@ -86,13 +86,13 @@ impl Document {
 }
 
 /// iterates all sections of a document
-pub struct DocIter<'a> {
+pub struct DocIterator<'a> {
     title_section: &'a Section,
     body_iter: std::slice::Iter<'a, Section>,
     emitted_title: bool,
 }
 
-impl<'a> Iterator for DocIter<'a> {
+impl<'a> Iterator for DocIterator<'a> {
     type Item = &'a Section;
 
     fn next(&mut self) -> Option<Self::Item> {

@@ -11,20 +11,20 @@ pub struct Section {
 }
 
 impl Section {
-    /// converts the given link title into a GitHub-compatible link anchor
+    /// provides an link anchor for this section, in GitHub format
     pub fn anchor(&self) -> String {
         format!("#{}", self.section_type().to_kebab_case())
     }
 
-    pub fn lines(&self) -> LinesIter {
-        LinesIter {
+    /// provides a non-consuming iterator for all lines in this section
+    pub fn lines(&self) -> LinesIterator {
+        LinesIterator {
             title_line: &self.title_line,
             body_iter: self.body.iter(),
             emitted_title: false,
         }
     }
 
-    /// provides a non-consuming iterator for all lines in this section
     pub fn section_type(&self) -> String {
         let pos = self
             .title_line
@@ -37,6 +37,7 @@ impl Section {
         }
     }
 
+    /// provides the complete text of this section
     pub fn text(&self) -> String {
         let mut result = self.title_line.text.clone();
         result.push('\n');
@@ -48,14 +49,14 @@ impl Section {
     }
 }
 
-/// an iterator that emits Lines
-pub struct LinesIter<'a> {
+/// an iterator for Lines
+pub struct LinesIterator<'a> {
     title_line: &'a Line,
     body_iter: std::slice::Iter<'a, Line>,
     emitted_title: bool,
 }
 
-impl<'a> Iterator for LinesIter<'a> {
+impl<'a> Iterator for LinesIterator<'a> {
     type Item = &'a Line;
 
     fn next(&mut self) -> Option<Self::Item> {
