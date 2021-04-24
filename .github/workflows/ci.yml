@@ -14,10 +14,15 @@ jobs:
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v2
-      - name: Set up Rust
-        uses: hecrj/setup-rust-action@v1.3.4
+      - name: Install latest nightly
+        uses: actions-rs/toolchain@v1
         with:
-          rust-version: nightly
+          toolchain: nightly
+          profile: minimal
+          # override: true
+          # components: rustfmt, clippy
+      - name: Rust Cache
+        uses: Swatinem/rust-cache@v1.2.0
       - name: Unit tests
         run: cargo test
       - name: Cucumber
