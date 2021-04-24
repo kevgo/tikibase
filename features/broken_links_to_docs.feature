@@ -14,3 +14,10 @@ Feature: recognize/fix links to non-existing documents
       """
       1.md:3  broken link to "two.md"
       """
+
+  Scenario: pitstop
+    When doing a pitstop
+    Then it prints:
+      """
+      1.md:3  broken link to "two.md"
+      """
