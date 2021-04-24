@@ -18,6 +18,8 @@ jobs:
         uses: hecrj/setup-rust-action@v1.3.4
         with:
           rust-version: nightly
+      - name: install clippy
+        run: rustup component add clippy
       - name: Clippy
         run: cargo clippy
       - name: Unit tests
