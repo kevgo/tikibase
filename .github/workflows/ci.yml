@@ -19,6 +19,6 @@ jobs:
     - name: Clippy
       run: cargo clippy
     - name: Unit tests
-      run: make unit
+      run: cargo test
     - name: Cucumber
       run: make cuke
