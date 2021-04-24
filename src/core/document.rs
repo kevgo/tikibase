@@ -1,9 +1,9 @@
 use super::line::Line;
 use super::section::Section;
+use std::fs::File;
 use std::io::prelude::*;
 use std::io::{BufRead, BufReader};
 use std::path::{Path, PathBuf};
-use std::{fs::File, slice::Iter};
 
 pub struct Document {
     pub path: PathBuf,
@@ -73,7 +73,9 @@ impl Document {
 
     pub fn sections(&self) -> DocIter {
         DocIter {
+            title_section: &self.title_section,
             body_iter: self.content_sections.iter(),
+            emitted_title: false,
         }
     }
 
@@ -87,15 +89,23 @@ impl Document {
     }
 }
 
+/// iterates all sections of a document
 pub struct DocIter<'a> {
+    title_section: &'a Section,
     body_iter: std::slice::Iter<'a, Section>,
+    emitted_title: bool,
 }
 
 impl<'a> Iterator for DocIter<'a> {
     type Item = &'a Section;
 
     fn next(&mut self) -> Option<Self::Item> {
-        self.body_iter.next()
+        if !self.emitted_title {
+            self.emitted_title = true;
+            Some(self.title_section)
+        } else {
+            self.body_iter.next()
+        }
     }
 }
 
@@ -125,6 +135,10 @@ mod tests {
 content";
         let doc = Document::from_str(PathBuf::from("one.md"), content);
         let mut sections = doc.sections();
+        match sections.next() {
+            None => panic!("expected title section"),
+            Some(s1) => assert_eq!(s1.title_line, "# test"),
+        }
         match sections.next() {
             None => panic!("expected s1"),
             Some(s1) => assert_eq!(s1.title_line, "### section 1"),
