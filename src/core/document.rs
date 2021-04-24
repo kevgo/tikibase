@@ -12,12 +12,6 @@ pub struct Document {
 }
 
 impl Document {
-    /// provides a Document instance containing the content of the file at the given path
-    pub fn load(path: PathBuf) -> Document {
-        let file = File::open(&path).unwrap();
-        Document::from_lines(BufReader::new(file).lines().map(|l| l.unwrap()), path)
-    }
-
     /// provides a Document instance containing the given text
     pub fn from_lines<T>(lines: T, path: PathBuf) -> Document
     where
@@ -51,10 +45,33 @@ impl Document {
         Document::from_lines(text.lines().map(|line| line.to_string()), path)
     }
 
+    /// provides a Document instance containing the content of the file at the given path
+    pub fn load(path: PathBuf) -> Document {
+        let file = File::open(&path).unwrap();
+        Document::from_lines(BufReader::new(file).lines().map(|l| l.unwrap()), path)
+    }
+
+    pub fn relative_path(&self, root: &Path) -> String {
+        self.path
+            .strip_prefix(root)
+            .unwrap()
+            .to_string_lossy()
+            .to_string()
+    }
+
     /// persists the current content of this document to disk
     pub fn save(&self) {
         let mut file = std::fs::File::create(&self.path).unwrap();
         file.write_all(self.text().as_bytes()).unwrap();
+    }
+
+    /// provides a non-consuming iterator for all sections in this document
+    pub fn sections(&self) -> SectionIterator {
+        SectionIterator {
+            title_section: &self.title_section,
+            body_iter: self.content_sections.iter(),
+            emitted_title: false,
+        }
     }
 
     /// provides the complete textual content of this document
@@ -65,6 +82,31 @@ impl Document {
         }
         result
     }
+}
+
+/// iterates all sections of a document
+pub struct SectionIterator<'a> {
+    title_section: &'a Section,
+    body_iter: std::slice::Iter<'a, Section>,
+    emitted_title: bool,
+}
+
+impl<'a> Iterator for SectionIterator<'a> {
+    type Item = &'a Section;
+
+    fn next(&mut self) -> Option<Self::Item> {
+        if !self.emitted_title {
+            self.emitted_title = true;
+            Some(self.title_section)
+        } else {
+            self.body_iter.next()
+        }
+    }
+}
+
+/// provides the relative path of the given document path inside the given Tikibase root path
+pub fn relative_path<'a>(docpath: &'a Path, base: &'a Path) -> std::path::Display<'a> {
+    Path::strip_prefix(docpath, base).unwrap().display()
 }
 
 /// writes the content of the given document to disk
@@ -86,6 +128,28 @@ mod tests {
     use std::path::PathBuf;
 
     #[test]
+    fn sections() {
+        let content = "\
+# test
+### section 1
+content";
+        let doc = Document::from_str(PathBuf::from("one.md"), content);
+        let mut sections = doc.sections();
+        match sections.next() {
+            None => panic!("expected title section"),
+            Some(s1) => assert_eq!(s1.title_line.text, "# test"),
+        }
+        match sections.next() {
+            None => panic!("expected s1"),
+            Some(s1) => assert_eq!(s1.title_line.text, "### section 1"),
+        }
+        match sections.next() {
+            None => return,
+            Some(_) => panic!("unexpected section"),
+        }
+    }
+
+    #[test]
     fn load() {
         let content = "\
 # Title
@@ -100,20 +164,20 @@ foo
         let file_path = tmp_dir.path().join("file.md");
         std::fs::write(&file_path, content).unwrap();
         let have = super::Document::load(file_path);
-        assert_eq!(have.title_section.title_line, "# Title");
+        assert_eq!(have.title_section.title_line.text, "# Title");
         assert_eq!(have.title_section.line_number, 0);
         assert_eq!(have.title_section.body.len(), 1);
         assert_eq!(have.title_section.body[0].text, "title text");
         assert_eq!(have.title_section.body[0].section_offset, 1);
         assert_eq!(have.content_sections.len(), 2);
-        assert_eq!(have.content_sections[0].title_line, "### Section 1");
+        assert_eq!(have.content_sections[0].title_line.text, "### Section 1");
         assert_eq!(have.content_sections[0].line_number, 2);
         assert_eq!(have.content_sections[0].body.len(), 2);
         assert_eq!(have.content_sections[0].body[0].text, "one");
         assert_eq!(have.content_sections[0].body[0].section_offset, 1);
         assert_eq!(have.content_sections[0].body[1].text, "two");
         assert_eq!(have.content_sections[0].body[1].section_offset, 2);
-        assert_eq!(have.content_sections[1].title_line, "### Section 2");
+        assert_eq!(have.content_sections[1].title_line.text, "### Section 2");
         assert_eq!(have.content_sections[1].line_number, 5);
         assert_eq!(have.content_sections[1].body.len(), 1);
         assert_eq!(have.content_sections[1].body[0].text, "foo");
@@ -189,7 +253,10 @@ impl SectionBuilder {
         match self.valid {
             false => None,
             true => Some(Section {
-                title_line: self.title_line,
+                title_line: Line {
+                    text: self.title_line,
+                    section_offset: 0,
+                },
                 line_number: self.line_number,
                 body: self.body,
             }),

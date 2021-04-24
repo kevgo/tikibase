@@ -119,7 +119,7 @@ content",
         assert_eq!(base.docs.len(), 1);
         assert_eq!(base.docs[0].content_sections.len(), 1);
         assert_eq!(
-            base.docs[0].content_sections[0].title_line,
+            base.docs[0].content_sections[0].title_line.text,
             "### next section"
         );
 
