@@ -55,8 +55,7 @@ impl Document {
         self.path
             .strip_prefix(root)
             .unwrap()
-            .to_str()
-            .unwrap()
+            .to_string_lossy()
             .to_string()
     }
 
