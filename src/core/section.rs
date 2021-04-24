@@ -1,4 +1,5 @@
 use super::line::Line;
+use heck::KebabCase;
 
 pub struct Section {
     /// The line number at which this section starts, 0-based.
@@ -10,6 +11,11 @@ pub struct Section {
 }
 
 impl Section {
+    /// converts the given link title into a GitHub-compatible link anchor
+    pub fn anchor(&self) -> String {
+        format!("#{}", self.section_type().to_kebab_case())
+    }
+
     pub fn lines(&self) -> LinesIter {
         LinesIter {
             title_line: &self.title_line,
@@ -67,6 +73,26 @@ mod tests {
     use super::super::document::Document;
     use super::*;
     use std::path::PathBuf;
+
+    #[test]
+    fn anchor() {
+        let tests = vec![
+            ("foo", "#foo"),
+            ("what is it", "#what-is-it"),
+            ("A Complex Section", "#a-complex-section"),
+        ];
+        for (give, want) in tests.into_iter() {
+            let section = Section {
+                title_line: Line {
+                    text: give.to_string(),
+                    section_offset: 0,
+                },
+                body: vec![],
+                line_number: 0,
+            };
+            assert_eq!(section.anchor(), want);
+        }
+    }
 
     #[test]
     fn lines() {

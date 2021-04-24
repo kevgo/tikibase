@@ -1,7 +1,6 @@
 use super::document::Document;
 use super::persistence;
 use super::resource::Resource;
-use heck::KebabCase;
 use std::path::{Path, PathBuf};
 
 pub struct Tikibase {
@@ -23,17 +22,9 @@ impl Tikibase {
         let mut result: Vec<String> = Vec::new();
         for doc in &self.docs {
             let filename = doc.relative_path(&self.dir);
-            result.push(format!(
-                "{}{}",
-                &filename,
-                make_anchor(&doc.title_section.title_line.text)
-            ));
+            result.push(format!("{}{}", &filename, doc.title_section.anchor()));
             for section in &doc.content_sections {
-                result.push(format!(
-                    "{}{}",
-                    &filename,
-                    make_anchor(&section.title_line.text)
-                ));
+                result.push(format!("{}{}", &filename, section.anchor()));
             }
             result.push(filename);
         }
@@ -42,27 +33,10 @@ impl Tikibase {
     }
 }
 
-/// converts the given link title into a GitHub-compatible link anchor
-fn make_anchor(title: &str) -> String {
-    format!("#{}", title.to_kebab_case())
-}
-
 #[cfg(test)]
 mod tests {
     use crate::core::persistence;
     use std::path::PathBuf;
-
-    #[test]
-    fn make_anchor() {
-        let tests = vec![
-            ("foo", "#foo"),
-            ("what is it", "#what-is-it"),
-            ("A Complex Section", "#a-complex-section"),
-        ];
-        for (give, want) in tests.into_iter() {
-            assert_eq!(super::make_anchor(give), want);
-        }
-    }
 
     #[test]
     fn link_targets() {
