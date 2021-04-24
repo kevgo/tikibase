@@ -26,10 +26,14 @@ impl Tikibase {
             result.push(format!(
                 "{}{}",
                 &filename,
-                make_anchor(&doc.title_section.title_line)
+                make_anchor(&doc.title_section.title_line.text)
             ));
             for section in &doc.content_sections {
-                result.push(format!("{}{}", &filename, make_anchor(&section.title_line)));
+                result.push(format!(
+                    "{}{}",
+                    &filename,
+                    make_anchor(&section.title_line.text)
+                ));
             }
             result.push(filename);
         }

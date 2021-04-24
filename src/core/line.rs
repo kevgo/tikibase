@@ -2,6 +2,7 @@ use super::link::Link;
 use lazy_static::lazy_static;
 use regex::Regex;
 
+#[derive(Debug, PartialEq)]
 pub struct Line {
     /// The line number relative to the section title line, 0-based.
     pub section_offset: u32,

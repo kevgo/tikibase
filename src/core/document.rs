@@ -71,6 +71,7 @@ impl Document {
         file.write_all(self.text().as_bytes()).unwrap();
     }
 
+    /// provides a non-consuming iterator for all sections in this document
     pub fn sections(&self) -> DocIter {
         DocIter {
             title_section: &self.title_section,
@@ -137,11 +138,11 @@ content";
         let mut sections = doc.sections();
         match sections.next() {
             None => panic!("expected title section"),
-            Some(s1) => assert_eq!(s1.title_line, "# test"),
+            Some(s1) => assert_eq!(s1.title_line.text, "# test"),
         }
         match sections.next() {
             None => panic!("expected s1"),
-            Some(s1) => assert_eq!(s1.title_line, "### section 1"),
+            Some(s1) => assert_eq!(s1.title_line.text, "### section 1"),
         }
         match sections.next() {
             None => return,
@@ -164,20 +165,20 @@ foo
         let file_path = tmp_dir.path().join("file.md");
         std::fs::write(&file_path, content).unwrap();
         let have = super::Document::load(file_path);
-        assert_eq!(have.title_section.title_line, "# Title");
+        assert_eq!(have.title_section.title_line.text, "# Title");
         assert_eq!(have.title_section.line_number, 0);
         assert_eq!(have.title_section.body.len(), 1);
         assert_eq!(have.title_section.body[0].text, "title text");
         assert_eq!(have.title_section.body[0].section_offset, 1);
         assert_eq!(have.content_sections.len(), 2);
-        assert_eq!(have.content_sections[0].title_line, "### Section 1");
+        assert_eq!(have.content_sections[0].title_line.text, "### Section 1");
         assert_eq!(have.content_sections[0].line_number, 2);
         assert_eq!(have.content_sections[0].body.len(), 2);
         assert_eq!(have.content_sections[0].body[0].text, "one");
         assert_eq!(have.content_sections[0].body[0].section_offset, 1);
         assert_eq!(have.content_sections[0].body[1].text, "two");
         assert_eq!(have.content_sections[0].body[1].section_offset, 2);
-        assert_eq!(have.content_sections[1].title_line, "### Section 2");
+        assert_eq!(have.content_sections[1].title_line.text, "### Section 2");
         assert_eq!(have.content_sections[1].line_number, 5);
         assert_eq!(have.content_sections[1].body.len(), 1);
         assert_eq!(have.content_sections[1].body[0].text, "foo");
@@ -253,7 +254,10 @@ impl SectionBuilder {
         match self.valid {
             false => None,
             true => Some(Section {
-                title_line: self.title_line,
+                title_line: Line {
+                    text: self.title_line,
+                    section_offset: 0,
+                },
                 line_number: self.line_number,
                 body: self.body,
             }),

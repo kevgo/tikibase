@@ -5,9 +5,8 @@ pub fn process(base: &Tikibase) -> Result {
     let mut result = Result::new();
     let existing_targets = base.link_targets();
     for doc in &base.docs {
-        println!("DOC: {}", doc.filename());
         for section in doc.sections() {
-            for line in &section.body {
+            for line in section.lines() {
                 for link in line.links() {
                     if !existing_targets.contains(&link.destination) {
                         result.findings.push(format!(
