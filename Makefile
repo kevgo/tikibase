@@ -5,6 +5,9 @@ cuke:  # runs the integration tests
 cukethis:  # tests only the scenario named "this"
 	cargo test --test cucumber -- -e this
 
+install:  # installs the binary in the system
+	cargo install --path .
+
 test: unit cuke  # runs all tests
 
 unit:  # runs the unit tests
