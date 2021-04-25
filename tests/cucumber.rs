@@ -32,17 +32,17 @@ fn steps() -> Steps<MyWorld> {
     });
 
     steps.when("checking", |mut world, _ctx| {
-        world.findings = tikibase::process::run(&mut world.base, false);
+        world.findings = tikibase::probes::run(&mut world.base, false);
         world
     });
 
     steps.when("doing a pitstop", |mut world, _ctx| {
-        world.findings = tikibase::process::run(&mut world.base, true);
+        world.findings = tikibase::probes::run(&mut world.base, true);
         world
     });
 
     steps.when("fixing", |mut world, _ctx| {
-        tikibase::process::run(&mut world.base, true);
+        tikibase::probes::run(&mut world.base, true);
         world
     });
 
