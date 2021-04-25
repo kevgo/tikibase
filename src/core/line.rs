@@ -1,4 +1,3 @@
-use super::link::Link;
 use lazy_static::lazy_static;
 use regex::Regex;
 
@@ -9,23 +8,40 @@ pub struct Line {
     pub text: String,
 }
 
+pub enum Reference {
+    Link { destination: String, title: String },
+    Image { src: String },
+}
+
 impl Line {
-    pub fn links(&self) -> Vec<Link> {
+    pub fn references(&self) -> Vec<Reference> {
         lazy_static! {
-            static ref MD_LINK_RE: Regex = Regex::new("\\[(.*)\\]\\((.*)\\)").unwrap();
-            static ref HTML_LINK_RE: Regex = Regex::new(r#"<a href="(.*)">(.*)</a>"#).unwrap();
+            static ref MD_RE: Regex = Regex::new("(!?)\\[(.*)\\]\\((.*)\\)").unwrap();
+            static ref A_HTML_RE: Regex = Regex::new(r#"<a href="(.*)">(.*)</a>"#).unwrap();
+            static ref IMG_HTML_RE: Regex = Regex::new(r#"<img src="(.*)"\s*/?>"#).unwrap();
         }
         let mut result = Vec::new();
-        for cap in MD_LINK_RE.captures_iter(&self.text) {
-            result.push(Link {
-                title: cap[1].to_string(),
-                destination: cap[2].to_string(),
-            });
+        for cap in MD_RE.captures_iter(&self.text) {
+            match &cap[1] {
+                "!" => result.push(Reference::Image {
+                    src: cap[3].to_string(),
+                }),
+                "" => result.push(Reference::Link {
+                    title: cap[2].to_string(),
+                    destination: cap[3].to_string(),
+                }),
+                _ => panic!("unexpected capture: '{}'", &cap[1]),
+            }
         }
-        for cap in HTML_LINK_RE.captures_iter(&self.text) {
-            result.push(Link {
+        for cap in A_HTML_RE.captures_iter(&self.text) {
+            result.push(Reference::Link {
                 title: cap[2].to_string(),
                 destination: cap[1].to_string(),
+            });
+        }
+        for cap in IMG_HTML_RE.captures_iter(&self.text) {
+            result.push(Reference::Image {
+                src: cap[1].to_string(),
             });
         }
         result
@@ -34,29 +50,108 @@ impl Line {
 
 #[cfg(test)]
 mod tests {
-    use super::*;
 
-    #[test]
-    fn links() {
-        let line = Line {
-            section_offset: 0,
-            text: r#"[one](one.md) and <a href="two.md">two</a>"#.to_string(),
-        };
-        let links = line.links();
-        assert_eq!(links.len(), 2);
-        assert_eq!(
-            links[0],
-            Link {
-                title: "one".to_string(),
-                destination: "one.md".to_string()
-            }
-        );
-        assert_eq!(
-            links[1],
-            Link {
-                title: "two".to_string(),
-                destination: "two.md".to_string()
-            }
-        );
+    mod references {
+        use super::super::*;
+        #[test]
+        fn link_md() {
+            let line = Line {
+                text: r#"an MD link: [one](one.md)"#.to_string(),
+                section_offset: 0,
+            };
+            let have = line.references();
+            assert_eq!(have.len(), 1);
+            match &have[0] {
+                Reference::Link { destination, title } => {
+                    assert_eq!(destination, "one.md");
+                    assert_eq!(title, "one");
+                }
+                Reference::Image { src: _ } => panic!("unexpected image"),
+            };
+        }
+
+        #[test]
+        fn link_html() {
+            let line = Line {
+                text: r#"an HTML link: <a href="two.md">two</a>"#.to_string(),
+                section_offset: 0,
+            };
+            let have = line.references();
+            assert_eq!(have.len(), 1);
+            match &have[0] {
+                Reference::Link { destination, title } => {
+                    assert_eq!(destination, "two.md");
+                    assert_eq!(title, "two");
+                }
+                Reference::Image { src: _ } => panic!("unexpected image"),
+            };
+        }
+
+        #[test]
+        fn img_md() {
+            let line = Line {
+                text: r#"an MD image: ![zonk](zonk.md)"#.to_string(),
+                section_offset: 0,
+            };
+            let have = line.references();
+            assert_eq!(have.len(), 1);
+            match &have[0] {
+                Reference::Link {
+                    destination: _,
+                    title: _,
+                } => panic!("unexpected link"),
+                Reference::Image { src } => {
+                    assert_eq!(src, "zonk.md");
+                }
+            };
+        }
+
+        #[test]
+        fn img_html() {
+            let line = Line {
+                text: r#"<img src="zonk.md">"#.to_string(),
+                section_offset: 0,
+            };
+            let have = line.references();
+            assert_eq!(have.len(), 1);
+            match &have[0] {
+                Reference::Image { src } => {
+                    assert_eq!(src, "zonk.md");
+                }
+                _ => panic!("expected image"),
+            };
+        }
+
+        #[test]
+        fn img_xml_nospace() {
+            let line = Line {
+                text: r#"<img src="zonk.md"/>"#.to_string(),
+                section_offset: 0,
+            };
+            let have = line.references();
+            assert_eq!(have.len(), 1);
+            match &have[0] {
+                Reference::Image { src } => {
+                    assert_eq!(src, "zonk.md");
+                }
+                _ => panic!("expected image"),
+            };
+        }
+
+        #[test]
+        fn img_xml_space() {
+            let line = Line {
+                text: r#"<img src="zonk.md" />"#.to_string(),
+                section_offset: 0,
+            };
+            let have = line.references();
+            assert_eq!(have.len(), 1);
+            match &have[0] {
+                Reference::Image { src } => {
+                    assert_eq!(src, "zonk.md");
+                }
+                _ => panic!("expected image"),
+            };
+        }
     }
 }
