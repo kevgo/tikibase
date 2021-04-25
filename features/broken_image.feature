@@ -19,5 +19,5 @@ Feature: recognize/fix broken images
     When doing a pitstop
     Then it prints:
       """
-      1.md:3  broken image "zonk.md"
+      1.md:3  broken image "zonk.png"
       """
