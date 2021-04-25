@@ -9,8 +9,8 @@ pub fn process(base: &Tikibase) -> Result {
     for doc in &base.docs {
         for section in doc.sections() {
             for line in section.lines() {
-                for link in line.references() {
-                    match link {
+                for reference in line.references() {
+                    match reference {
                         Reference::Link { destination, title } => {
                             if !existing_targets.contains(&destination) {
                                 result.findings.push(format!(
