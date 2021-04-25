@@ -63,8 +63,8 @@ mod tests {
             assert_eq!(have.len(), 1);
             match &have[0] {
                 Reference::Link { destination, title } => {
-                    assert_eq!(title, "one");
                     assert_eq!(destination, "one.md");
+                    assert_eq!(title, "one");
                 }
                 Reference::Image { src: _ } => panic!("unexpected image"),
             };
@@ -80,8 +80,8 @@ mod tests {
             assert_eq!(have.len(), 1);
             match &have[0] {
                 Reference::Link { destination, title } => {
-                    assert_eq!(title, "two");
                     assert_eq!(destination, "two.md");
+                    assert_eq!(title, "two");
                 }
                 Reference::Image { src: _ } => panic!("unexpected image"),
             };
