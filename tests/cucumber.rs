@@ -54,7 +54,7 @@ fn steps() -> Steps<MyWorld> {
         world
     });
 
-    steps.then_regex("it prints:", |world, ctx| {
+    steps.then("it prints:", |world, ctx| {
         let expected: Vec<&str> = ctx.step.docstring().unwrap().trim().split("\n").collect();
         assert_eq!(&world.findings, &expected);
         world
