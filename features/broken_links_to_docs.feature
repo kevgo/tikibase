@@ -5,19 +5,19 @@ Feature: recognize/fix links to non-existing documents
       """
       # Title
 
-      [broken](zonk.md)
+      [zonk](non-existing.md)
       """
 
   Scenario: checking
     When checking
     Then it prints:
       """
-      1.md:3  broken link to "zonk.md"
+      1.md:3  broken link "zonk" to "non-existing.md"
       """
 
   Scenario: pitstop
     When doing a pitstop
     Then it prints:
       """
-      1.md:3  broken link to "zonk.md"
+      1.md:3  broken link "zonk" to "non-existing.md"
       """
