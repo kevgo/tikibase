@@ -56,8 +56,8 @@ mod tests {
         #[test]
         fn link_md() {
             let line = Line {
-                section_offset: 0,
                 text: r#"an MD link: [one](one.md)"#.to_string(),
+                section_offset: 0,
             };
             let have = line.references();
             assert_eq!(have.len(), 1);
@@ -73,8 +73,8 @@ mod tests {
         #[test]
         fn link_html() {
             let line = Line {
-                section_offset: 0,
                 text: r#"an HTML link: <a href="two.md">two</a>"#.to_string(),
+                section_offset: 0,
             };
             let have = line.references();
             assert_eq!(have.len(), 1);
@@ -90,8 +90,8 @@ mod tests {
         #[test]
         fn img_md() {
             let line = Line {
-                section_offset: 0,
                 text: r#"an MD image: ![zonk](zonk.md)"#.to_string(),
+                section_offset: 0,
             };
             let have = line.references();
             assert_eq!(have.len(), 1);
@@ -109,8 +109,8 @@ mod tests {
         #[test]
         fn img_html() {
             let line = Line {
-                section_offset: 0,
                 text: r#"<img src="zonk.md">"#.to_string(),
+                section_offset: 0,
             };
             let have = line.references();
             assert_eq!(have.len(), 1);
@@ -125,8 +125,8 @@ mod tests {
         #[test]
         fn img_xml_nospace() {
             let line = Line {
-                section_offset: 0,
                 text: r#"<img src="zonk.md"/>"#.to_string(),
+                section_offset: 0,
             };
             let have = line.references();
             assert_eq!(have.len(), 1);
@@ -141,8 +141,8 @@ mod tests {
         #[test]
         fn img_xml_space() {
             let line = Line {
-                section_offset: 0,
                 text: r#"<img src="zonk.md" />"#.to_string(),
+                section_offset: 0,
             };
             let have = line.references();
             assert_eq!(have.len(), 1);
