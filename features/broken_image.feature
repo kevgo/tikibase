@@ -5,7 +5,7 @@ Feature: recognize/fix broken images
       """
       # Title
 
-      <img src="zonk.png">broken image</img>
+      <img src="zonk.png">
       """
 
   Scenario: this

@@ -105,5 +105,53 @@ mod tests {
                 }
             };
         }
+
+        #[test]
+        fn img_html() {
+            let line = Line {
+                section_offset: 0,
+                text: r#"<img src="zonk.md">"#.to_string(),
+            };
+            let have = line.references();
+            assert_eq!(have.len(), 1);
+            match &have[0] {
+                Reference::Image { src } => {
+                    assert_eq!(src, "zonk.md");
+                }
+                _ => panic!("expected image"),
+            };
+        }
+
+        #[test]
+        fn img_xml_nospace() {
+            let line = Line {
+                section_offset: 0,
+                text: r#"<img src="zonk.md"/>"#.to_string(),
+            };
+            let have = line.references();
+            assert_eq!(have.len(), 1);
+            match &have[0] {
+                Reference::Image { src } => {
+                    assert_eq!(src, "zonk.md");
+                }
+                _ => panic!("expected image"),
+            };
+        }
+
+        #[test]
+        fn img_xml_space() {
+            let line = Line {
+                section_offset: 0,
+                text: r#"<img src="zonk.md" />"#.to_string(),
+            };
+            let have = line.references();
+            assert_eq!(have.len(), 1);
+            match &have[0] {
+                Reference::Image { src } => {
+                    assert_eq!(src, "zonk.md");
+                }
+                _ => panic!("expected image"),
+            };
+        }
     }
 }
