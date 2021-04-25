@@ -60,6 +60,12 @@ fn steps() -> Steps<MyWorld> {
         world
     });
 
+    steps.then("it finds no issues", |world, _ctx| {
+        let expected: Vec<&str> = vec![];
+        assert_eq!(world.findings, expected);
+        world
+    });
+
     steps
 }
 

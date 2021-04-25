@@ -12,7 +12,9 @@ pub fn process(base: &Tikibase) -> Result {
                 for reference in line.references() {
                     match reference {
                         Reference::Link { destination, title } => {
-                            if !existing_targets.contains(&destination) {
+                            if !destination.starts_with("http")
+                                && !existing_targets.contains(&destination)
+                            {
                                 result.findings.push(format!(
                                     "{}:{}  broken link \"{}\" to \"{}\"",
                                     document::relative_path(&doc.path, &base.dir),
