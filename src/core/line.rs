@@ -17,8 +17,8 @@ impl Line {
     pub fn references(&self) -> Vec<Reference> {
         lazy_static! {
             static ref MD_RE: Regex = Regex::new("(!?)\\[(.*)\\]\\((.*)\\)").unwrap();
-            static ref A_RE: Regex = Regex::new(r#"<a href="(.*)">(.*)</a>"#).unwrap();
-            static ref IMG_RE: Regex = Regex::new(r#"<img src="(.*)"\s*/?>"#).unwrap();
+            static ref A_HTML_RE: Regex = Regex::new(r#"<a href="(.*)">(.*)</a>"#).unwrap();
+            static ref IMG_HTML_RE: Regex = Regex::new(r#"<img src="(.*)"\s*/?>"#).unwrap();
         }
         let mut result = Vec::new();
         for cap in MD_RE.captures_iter(&self.text) {
@@ -33,13 +33,13 @@ impl Line {
                 _ => panic!("unexpected capture: '{}'", &cap[1]),
             }
         }
-        for cap in A_RE.captures_iter(&self.text) {
+        for cap in A_HTML_RE.captures_iter(&self.text) {
             result.push(Reference::Link {
                 title: cap[2].to_string(),
                 destination: cap[1].to_string(),
             });
         }
-        for cap in IMG_RE.captures_iter(&self.text) {
+        for cap in IMG_HTML_RE.captures_iter(&self.text) {
             result.push(Reference::Image {
                 src: cap[1].to_string(),
             });
