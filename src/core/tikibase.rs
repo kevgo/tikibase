@@ -17,6 +17,21 @@ impl Tikibase {
         self.docs.push(Document::from_str(filepath, content));
     }
 
+    /// creates a new document with the given content in this Tikibase
+    pub fn create_resource(&mut self, filename: &Path, content: &str) {
+        let filepath = self.dir.join(filename);
+        persistence::save_file(&filepath, content);
+        self.resources.push(Resource { path: filepath });
+    }
+
+    /// indicates whether this Tikibase contains a resource with the given path
+    pub fn has_resource(&self, filename: &Path) -> bool {
+        let filepath = self.dir.join(filename);
+        self.resources
+            .iter()
+            .any(|resource| resource.path == filepath)
+    }
+
     /// provides all valid link targets in this Tikibase
     pub fn link_targets(&self) -> Vec<String> {
         let mut result: Vec<String> = Vec::new();
@@ -37,6 +52,25 @@ impl Tikibase {
 mod tests {
     use crate::core::persistence;
     use std::path::PathBuf;
+
+    mod has_resource {
+
+        use crate::core::persistence;
+        use std::path::PathBuf;
+
+        #[test]
+        fn empty() {
+            let base = persistence::tmpbase();
+            assert_eq!(base.has_resource(&PathBuf::from("foo.png")), false);
+        }
+
+        #[test]
+        fn matching_resource() {
+            let mut base = persistence::tmpbase();
+            base.create_resource(&PathBuf::from("foo.png"), "content");
+            assert_eq!(base.has_resource(&PathBuf::from("foo.png")), true);
+        }
+    }
 
     #[test]
     fn link_targets() {
