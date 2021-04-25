@@ -16,16 +16,22 @@ pub enum Reference {
 impl Line {
     pub fn references(&self) -> Vec<Reference> {
         lazy_static! {
-            static ref MD_RE: Regex = Regex::new("!?\\[(.*)\\]\\((.*)\\)").unwrap();
+            static ref MD_RE: Regex = Regex::new("(!?)\\[(.*)\\]\\((.*)\\)").unwrap();
             static ref A_RE: Regex = Regex::new(r#"<a href="(.*)">(.*)</a>"#).unwrap();
             static ref IMG_RE: Regex = Regex::new(r#"<img src="(.*)"\s*/?>"#).unwrap();
         }
         let mut result = Vec::new();
         for cap in MD_RE.captures_iter(&self.text) {
-            result.push(Reference::Link {
-                title: cap[1].to_string(),
-                destination: cap[2].to_string(),
-            });
+            match &cap[1] {
+                "!" => result.push(Reference::Image {
+                    src: cap[3].to_string(),
+                }),
+                "" => result.push(Reference::Link {
+                    title: cap[2].to_string(),
+                    destination: cap[3].to_string(),
+                }),
+                _ => panic!("unexpected capture: '{}'", &cap[1]),
+            }
         }
         for cap in A_RE.captures_iter(&self.text) {
             result.push(Reference::Link {
@@ -95,7 +101,7 @@ mod tests {
                     title: _,
                 } => panic!("unexpected link"),
                 Reference::Image { src } => {
-                    assert_eq!(src, "two.md");
+                    assert_eq!(src, "zonk.md");
                 }
             };
         }
