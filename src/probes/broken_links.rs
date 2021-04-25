@@ -11,15 +11,14 @@ pub fn process(base: &Tikibase) -> Result {
             for line in section.lines() {
                 for reference in line.references() {
                     match reference {
-                        Reference::Link { destination, title } => {
+                        Reference::Link { destination } => {
                             if !destination.starts_with("http")
                                 && !existing_targets.contains(&destination)
                             {
                                 result.findings.push(format!(
-                                    "{}:{}  broken link \"{}\" to \"{}\"",
+                                    "{}:{}  broken link to \"{}\"",
                                     document::relative_path(&doc.path, &base.dir),
                                     section.line_number + line.section_offset + 1,
-                                    title,
                                     destination,
                                 ));
                             }
@@ -59,7 +58,7 @@ mod tests {
         base.create_doc(&PathBuf::from("one.md"), content);
         base.create_doc(&PathBuf::from("two.md"), "# Two");
         let have = super::process(&base);
-        let want = vec!["one.md:3  broken link \"invalid\" to \"non-existing.md\""];
+        let want = vec!["one.md:3  broken link to \"non-existing.md\""];
         assert_eq!(have.findings, want);
     }
 }
