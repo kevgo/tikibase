@@ -9,7 +9,7 @@ pub fn process(base: &mut Tikibase) -> Result {
         for section in &doc.content_sections {
             let section_type = section.section_type();
             if known_sections.contains(&section_type) {
-                let filename = &doc.path.strip_prefix(&base.dir).unwrap().to_str().unwrap();
+                let filename = &doc.path.to_string_lossy();
                 result.findings.push(format!(
                     "{}  duplicate section: {}",
                     &filename, &section_type
@@ -39,7 +39,7 @@ content
 ### One
 content";
         let mut base = persistence::tmpbase();
-        base.create_doc(&PathBuf::from("test.md"), content);
+        base.create_doc(PathBuf::from("test.md"), content);
         let have = process(&mut base);
         assert_eq!(have.findings.len(), 1);
         assert_eq!(have.findings[0], "test.md  duplicate section: One");

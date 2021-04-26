@@ -41,7 +41,7 @@ fn steps() -> Steps<MyWorld> {
         let filename = ctx.matches.get(1).expect("no filename provided");
         world
             .base
-            .create_resource(&PathBuf::from(filename), "binary content");
+            .create_resource(PathBuf::from(filename), "binary content");
         world
     });
 
