@@ -65,7 +65,10 @@ mod tests {
         fn exists() {
             let mut base = persistence::tmpbase();
             base.create_doc(PathBuf::from("one.md"), "# test doc");
-            assert_eq!(base.has_resource(PathBuf::from("foo.png")), false);
+            let doc = base
+                .get_doc(&PathBuf::from("one.md"))
+                .expect("document not found");
+            assert_eq!(doc.title_section.title_line.text, "# test doc");
         }
     }
 
