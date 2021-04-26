@@ -11,17 +11,17 @@ pub struct Tikibase {
 
 impl Tikibase {
     /// creates a new document with the given content in this Tikibase
-    pub fn create_doc(&mut self, filename: &Path, content: &str) {
-        let filepath = self.dir.join(filename);
-        persistence::save_file(&filepath, content);
-        self.docs.push(Document::from_str(filepath, content));
+    pub fn create_doc(&mut self, filename: PathBuf, content: &str) {
+        persistence::save_file(&self.dir.join(&filename), content);
+        self.docs.push(Document::from_str(filename, content));
     }
 
     /// creates a new document with the given content in this Tikibase
-    pub fn create_resource(&mut self, filename: &Path, content: &str) {
-        let filepath = self.dir.join(filename);
-        persistence::save_file(&filepath, content);
-        self.resources.push(Resource { path: filepath });
+    pub fn create_resource(&mut self, filename: PathBuf, content: &str) {
+        persistence::save_file(&self.dir.join(&filename), content);
+        self.resources.push(Resource { path: filename });
+    }
+
     }
 
     /// indicates whether this Tikibase contains a resource with the given path
