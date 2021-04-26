@@ -70,6 +70,15 @@ mod tests {
                 .expect("document not found");
             assert_eq!(doc.title_section.title_line.text, "# test doc");
         }
+
+        #[test]
+        fn missing() {
+            let base = persistence::tmpbase();
+            match base.get_doc(&PathBuf::from("zonk.md")) {
+                None => return,
+                Some(_) => panic!("should have found nothing"),
+            }
+        }
     }
 
     mod has_resource {
