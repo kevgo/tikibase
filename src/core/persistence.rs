@@ -18,10 +18,9 @@ pub fn load_base(dir: PathBuf) -> Tikibase {
             continue;
         }
         let path = entry.into_path();
-        if is_md(path.extension()) {
-            docs.push(Document::load(path));
-        } else {
-            resources.push(Resource { path });
+        match doc_type(path.extension()) {
+            DocType::Document => docs.push(Document::load(path)),
+            DocType::Resource => resources.push(Resource { path }),
         }
     }
     Tikibase {
@@ -63,9 +62,17 @@ pub fn tmpbase() -> Tikibase {
     }
 }
 
-fn is_md(ext: Option<&std::ffi::OsStr>) -> bool {
+enum DocType {
+    Document,
+    Resource,
+}
+
+fn doc_type(ext: Option<&std::ffi::OsStr>) -> DocType {
     match ext {
-        None => false,
-        Some(ext) => ext.to_str().unwrap() == "md",
+        None => DocType::Resource,
+        Some(ext) => match ext.to_str() {
+            Some("md") => DocType::Document,
+            _ => DocType::Resource,
+        },
     }
 }
