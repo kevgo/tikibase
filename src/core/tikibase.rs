@@ -22,10 +22,8 @@ impl Tikibase {
         self.resources.push(Resource { path: filename });
     }
 
-    }
-
     /// indicates whether this Tikibase contains a resource with the given path
-    pub fn has_resource(&self, filename: &Path) -> bool {
+    pub fn has_resource(&self, filename: PathBuf) -> bool {
         let filepath = self.dir.join(filename);
         self.resources
             .iter()
@@ -61,14 +59,14 @@ mod tests {
         #[test]
         fn empty() {
             let base = persistence::tmpbase();
-            assert_eq!(base.has_resource(&PathBuf::from("foo.png")), false);
+            assert_eq!(base.has_resource(PathBuf::from("foo.png")), false);
         }
 
         #[test]
         fn matching_resource() {
             let mut base = persistence::tmpbase();
-            base.create_resource(&PathBuf::from("foo.png"), "content");
-            assert_eq!(base.has_resource(&PathBuf::from("foo.png")), true);
+            base.create_resource(PathBuf::from("foo.png"), "content");
+            assert_eq!(base.has_resource(PathBuf::from("foo.png")), true);
         }
     }
 
@@ -82,8 +80,8 @@ mod tests {
 ### Beta
 
 content";
-        base.create_doc(&PathBuf::from("one.md"), content);
-        base.create_doc(&PathBuf::from("two.md"), content);
+        base.create_doc(PathBuf::from("one.md"), content);
+        base.create_doc(PathBuf::from("two.md"), content);
         let have = base.link_targets();
         let want = vec![
             "one.md",

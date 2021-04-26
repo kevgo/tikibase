@@ -39,7 +39,7 @@ content
 ### One
 content";
         let mut base = persistence::tmpbase();
-        base.create_doc(&PathBuf::from("test.md"), content);
+        base.create_doc(PathBuf::from("test.md"), content);
         let have = process(&mut base);
         assert_eq!(have.findings.len(), 1);
         assert_eq!(have.findings[0], "test.md  duplicate section: One");

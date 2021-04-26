@@ -57,7 +57,7 @@ mod tests {
 
 content";
         let mut base = persistence::tmpbase();
-        base.create_doc(&PathBuf::from("test.md"), content);
+        base.create_doc(PathBuf::from("test.md"), content);
         let have = process(&mut base, false);
         assert_eq!(have.findings.len(), 1);
         assert_eq!(
@@ -77,7 +77,7 @@ content";
 
 content";
         let mut base = persistence::tmpbase();
-        base.create_doc(&PathBuf::from("test.md"), content);
+        base.create_doc(PathBuf::from("test.md"), content);
         let have = process(&mut base, false);
         assert_eq!(have.findings.len(), 1);
         assert_eq!(
@@ -95,7 +95,7 @@ content";
 
 content";
         let mut base = persistence::tmpbase();
-        base.create_doc(&PathBuf::from("test.md"), content);
+        base.create_doc(PathBuf::from("test.md"), content);
         let have = process(&mut base, false);
         assert_eq!(have.findings.len(), 0);
     }
@@ -103,7 +103,7 @@ content";
     fn true_empty_section() {
         let mut base = persistence::tmpbase();
         base.create_doc(
-            &PathBuf::from("test.md"),
+            PathBuf::from("test.md"),
             "\
 # test document
 
