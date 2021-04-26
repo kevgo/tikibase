@@ -49,6 +49,7 @@ impl Tikibase {
 mod tests {
     use crate::core::persistence;
     use std::path::PathBuf;
+
     mod has_resource {
 
         use crate::core::persistence;
