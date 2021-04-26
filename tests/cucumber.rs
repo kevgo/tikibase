@@ -30,7 +30,7 @@ fn steps() -> Steps<MyWorld> {
         let filename = ctx.matches.get(1).expect("no filename provided");
         let content = ctx.step.docstring().unwrap().trim_start();
         let filepath = PathBuf::from(filename);
-        world.base.create_doc(&filepath, content);
+        world.base.create_doc(filepath.clone(), content);
         world
             .original_contents
             .insert(filepath, content.to_string());
