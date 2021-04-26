@@ -1,7 +1,7 @@
 use super::document::Document;
 use super::persistence;
 use super::resource::Resource;
-use std::path::{Path, PathBuf};
+use std::path::PathBuf;
 
 pub struct Tikibase {
     pub dir: PathBuf,
