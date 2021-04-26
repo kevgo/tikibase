@@ -1,6 +1,5 @@
 use super::result::Result;
 use super::Tikibase;
-use crate::core::document;
 use crate::core::line::Reference;
 use std::path::PathBuf;
 
@@ -18,18 +17,17 @@ pub fn process(base: &Tikibase) -> Result {
                             {
                                 result.findings.push(format!(
                                     "{}:{}  broken link to \"{}\"",
-                                    document::relative_path(&doc.path, &base.dir),
+                                    &doc.path.to_string_lossy(),
                                     section.line_number + line.section_offset + 1,
                                     destination,
                                 ));
                             }
                         }
                         Reference::Image { src } => {
-                            if !src.starts_with("http") && !base.has_resource(&PathBuf::from(&src))
-                            {
+                            if !src.starts_with("http") && !base.has_resource(PathBuf::from(&src)) {
                                 result.findings.push(format!(
                                     "{}:{}  broken image \"{}\"",
-                                    document::relative_path(&doc.path, &base.dir),
+                                    &doc.path.to_string_lossy(),
                                     section.line_number + line.section_offset + 1,
                                     src,
                                 ));
@@ -59,8 +57,8 @@ mod tests {
 [invalid](non-existing.md)
 [valid](two.md)
 ";
-            base.create_doc(&PathBuf::from("one.md"), content);
-            base.create_doc(&PathBuf::from("two.md"), "# Two");
+            base.create_doc(PathBuf::from("one.md"), content);
+            base.create_doc(PathBuf::from("two.md"), "# Two");
             let have = super::super::process(&base);
             let want = vec!["one.md:3  broken link to \"non-existing.md\""];
             assert_eq!(have.findings, want);
@@ -75,8 +73,8 @@ mod tests {
 [external site](https://google.com)
 ![external image](https://google.com/foo.png)
 ";
-            base.create_doc(&PathBuf::from("one.md"), content);
-            base.create_doc(&PathBuf::from("two.md"), "# Two");
+            base.create_doc(PathBuf::from("one.md"), content);
+            base.create_doc(PathBuf::from("two.md"), "# Two");
             let have = super::super::process(&base);
             let want: Vec<&str> = vec![];
             assert_eq!(have.findings, want);
