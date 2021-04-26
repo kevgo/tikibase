@@ -22,6 +22,11 @@ impl Tikibase {
         self.resources.push(Resource { path: filename });
     }
 
+    /// provides the document with the given filename
+    pub fn get_doc(&self, filename: PathBuf) -> Option<&Document> {
+        self.docs.iter().find(|doc| doc.path == filename)
+    }
+
     /// indicates whether this Tikibase contains a resource with the given path
     pub fn has_resource(&self, filename: PathBuf) -> bool {
         self.resources
