@@ -25,8 +25,8 @@ impl Tikibase {
     /// provides the current content of the document with the given name
     pub fn doc_content(&self, filename: &Path) -> String {
         match self.docs.iter().find(|doc| doc.path == filename) {
-            None => panic!("document not found: {:?}", &filename),
             Some(doc) => doc.text(),
+            None => panic!("document not found: {:?}", &filename),
         }
     }
 
