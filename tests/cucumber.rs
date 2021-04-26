@@ -31,6 +31,14 @@ fn steps() -> Steps<MyWorld> {
         world
     });
 
+    steps.given_regex(r#"^resource file "(.*)"$"#, |mut world, ctx| {
+        let filename = ctx.matches.get(1).expect("no filename provided");
+        world
+            .base
+            .create_resource(&PathBuf::from(filename), "binary content");
+        world
+    });
+
     steps.when("checking", |mut world, _ctx| {
         world.findings = tikibase::probes::run(&mut world.base, false);
         world

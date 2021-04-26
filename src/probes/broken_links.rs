@@ -2,6 +2,7 @@ use super::result::Result;
 use super::Tikibase;
 use crate::core::document;
 use crate::core::line::Reference;
+use std::path::PathBuf;
 
 pub fn process(base: &Tikibase) -> Result {
     let mut result = Result::new();
@@ -11,21 +12,21 @@ pub fn process(base: &Tikibase) -> Result {
             for line in section.lines() {
                 for reference in line.references() {
                     match reference {
-                        Reference::Link { destination, title } => {
+                        Reference::Link { destination } => {
                             if !destination.starts_with("http")
                                 && !existing_targets.contains(&destination)
                             {
                                 result.findings.push(format!(
-                                    "{}:{}  broken link \"{}\" to \"{}\"",
+                                    "{}:{}  broken link to \"{}\"",
                                     document::relative_path(&doc.path, &base.dir),
                                     section.line_number + line.section_offset + 1,
-                                    title,
                                     destination,
                                 ));
                             }
                         }
                         Reference::Image { src } => {
-                            if !existing_targets.contains(&src) {
+                            if !src.starts_with("http") && !base.has_resource(&PathBuf::from(&src))
+                            {
                                 result.findings.push(format!(
                                     "{}:{}  broken image \"{}\"",
                                     document::relative_path(&doc.path, &base.dir),
@@ -44,22 +45,41 @@ pub fn process(base: &Tikibase) -> Result {
 
 #[cfg(test)]
 mod tests {
-    use crate::core::persistence;
-    use std::path::PathBuf;
 
-    #[test]
-    fn process() {
-        let mut base = persistence::tmpbase();
-        let content = "\
+    mod process {
+        use crate::core::persistence;
+        use std::path::PathBuf;
+
+        #[test]
+        fn link_to_non_existing_file() {
+            let mut base = persistence::tmpbase();
+            let content = "\
 # One
 
 [invalid](non-existing.md)
 [valid](two.md)
 ";
-        base.create_doc(&PathBuf::from("one.md"), content);
-        base.create_doc(&PathBuf::from("two.md"), "# Two");
-        let have = super::process(&base);
-        let want = vec!["one.md:3  broken link \"invalid\" to \"non-existing.md\""];
-        assert_eq!(have.findings, want);
+            base.create_doc(&PathBuf::from("one.md"), content);
+            base.create_doc(&PathBuf::from("two.md"), "# Two");
+            let have = super::super::process(&base);
+            let want = vec!["one.md:3  broken link to \"non-existing.md\""];
+            assert_eq!(have.findings, want);
+        }
+
+        #[test]
+        fn ignore_external_urls() {
+            let mut base = persistence::tmpbase();
+            let content = "\
+# One
+
+[external site](https://google.com)
+![external image](https://google.com/foo.png)
+";
+            base.create_doc(&PathBuf::from("one.md"), content);
+            base.create_doc(&PathBuf::from("two.md"), "# Two");
+            let have = super::super::process(&base);
+            let want: Vec<&str> = vec![];
+            assert_eq!(have.findings, want);
+        }
     }
 }
