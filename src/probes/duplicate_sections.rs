@@ -9,7 +9,7 @@ pub fn process(base: &mut Tikibase) -> Result {
         for section in &doc.content_sections {
             let section_type = section.section_type();
             if known_sections.contains(&section_type) {
-                let filename = &doc.path.strip_prefix(&base.dir).unwrap().to_str().unwrap();
+                let filename = &doc.path.to_string_lossy();
                 result.findings.push(format!(
                     "{}  duplicate section: {}",
                     &filename, &section_type

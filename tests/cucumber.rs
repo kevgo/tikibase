@@ -27,7 +27,7 @@ fn steps() -> Steps<MyWorld> {
     steps.given_regex(r#"^file "(.*)" with content:$"#, |mut world, ctx| {
         let filename = ctx.matches.get(1).expect("no filename provided");
         let content = ctx.step.docstring().unwrap().trim_start();
-        world.base.create_doc(&PathBuf::from(filename), content);
+        world.base.create_doc(PathBuf::from(filename), content);
         world
     });
 
@@ -35,7 +35,7 @@ fn steps() -> Steps<MyWorld> {
         let filename = ctx.matches.get(1).expect("no filename provided");
         world
             .base
-            .create_resource(&PathBuf::from(filename), "binary content");
+            .create_resource(PathBuf::from(filename), "binary content");
         world
     });
 

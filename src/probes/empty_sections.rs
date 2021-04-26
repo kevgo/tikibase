@@ -7,7 +7,7 @@ use crate::core::tikibase::Tikibase;
 pub fn process(base: &mut Tikibase, fix: bool) -> Result {
     let mut result = Result::new();
     for doc in &mut base.docs {
-        let filename = &doc.path.strip_prefix(&base.dir).unwrap().to_str().unwrap();
+        let filename = &doc.path.to_string_lossy();
         let mut fixed = false;
         doc.content_sections.retain(|section| {
             let has_content = section.body.iter().any(|line| !line.text.is_empty());
@@ -34,7 +34,7 @@ pub fn process(base: &mut Tikibase, fix: bool) -> Result {
             true
         });
         if fixed {
-            doc.save();
+            doc.save(&base.dir);
         }
     }
     result
@@ -122,18 +122,5 @@ content",
             base.docs[0].content_sections[0].title_line.text,
             "### next section"
         );
-
-        // verify disk content
-        let new_content = persistence::load_file(&base.dir.join("test.md"));
-        assert_eq!(
-            new_content,
-            "\
-# test document
-
-### next section
-
-content
-"
-        )
     }
 }

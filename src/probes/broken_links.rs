@@ -1,6 +1,5 @@
 use super::result::Result;
 use super::Tikibase;
-use crate::core::document;
 use crate::core::line::Reference;
 use std::path::PathBuf;
 
@@ -18,7 +17,7 @@ pub fn process(base: &Tikibase) -> Result {
                             {
                                 result.findings.push(format!(
                                     "{}:{}  broken link to \"{}\"",
-                                    document::relative_path(&doc.path, &base.dir),
+                                    &doc.path.to_string_lossy(),
                                     section.line_number + line.section_offset + 1,
                                     destination,
                                 ));
@@ -28,7 +27,7 @@ pub fn process(base: &Tikibase) -> Result {
                             if !src.starts_with("http") && !base.has_resource(PathBuf::from(&src)) {
                                 result.findings.push(format!(
                                     "{}:{}  broken image \"{}\"",
-                                    document::relative_path(&doc.path, &base.dir),
+                                    &doc.path.to_string_lossy(),
                                     section.line_number + line.section_offset + 1,
                                     src,
                                 ));

@@ -24,22 +24,21 @@ impl Tikibase {
 
     /// indicates whether this Tikibase contains a resource with the given path
     pub fn has_resource(&self, filename: PathBuf) -> bool {
-        let filepath = self.dir.join(filename);
         self.resources
             .iter()
-            .any(|resource| resource.path == filepath)
+            .any(|resource| resource.path == filename)
     }
 
     /// provides all valid link targets in this Tikibase
     pub fn link_targets(&self) -> Vec<String> {
         let mut result: Vec<String> = Vec::new();
         for doc in &self.docs {
-            let filename = doc.relative_path(&self.dir);
+            let filename = doc.path.to_string_lossy();
             result.push(format!("{}{}", &filename, doc.title_section.anchor()));
             for section in &doc.content_sections {
                 result.push(format!("{}{}", &filename, section.anchor()));
             }
-            result.push(filename);
+            result.push(filename.to_string());
         }
         result.sort();
         result
