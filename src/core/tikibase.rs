@@ -1,7 +1,7 @@
 use super::document::Document;
 use super::persistence;
 use super::resource::Resource;
-use std::path::{Path, PathBuf};
+use std::path::PathBuf;
 
 pub struct Tikibase {
     pub dir: PathBuf,
@@ -20,14 +20,6 @@ impl Tikibase {
     pub fn create_resource(&mut self, filename: PathBuf, content: &str) {
         persistence::save_file(&self.dir.join(&filename), content);
         self.resources.push(Resource { path: filename });
-    }
-
-    /// provides the current content of the document with the given name
-    pub fn doc_content(&self, filename: &Path) -> String {
-        match self.docs.iter().find(|doc| doc.path == filename) {
-            Some(doc) => doc.text(),
-            None => panic!("document not found: {:?}", &filename),
-        }
     }
 
     /// indicates whether this Tikibase contains a resource with the given path
@@ -57,22 +49,6 @@ impl Tikibase {
 mod tests {
     use crate::core::persistence;
     use std::path::PathBuf;
-
-    mod doc_content {
-
-        use crate::core::persistence;
-        use std::path::PathBuf;
-
-        #[test]
-        fn doc_content() {
-            let mut base = persistence::tmpbase();
-            let content = "# Test\ncontent\n";
-            base.create_doc(PathBuf::from("1.md"), &content);
-            let have = base.doc_content(&PathBuf::from("1.md"));
-            assert_eq!(have, content)
-        }
-    }
-
     mod has_resource {
 
         use crate::core::persistence;
