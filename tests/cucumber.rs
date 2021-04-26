@@ -1,12 +1,13 @@
 use cucumber_rust::{async_trait, Cucumber, Steps, World};
-use std::io;
 use std::path::PathBuf;
+use std::{collections::HashMap, io};
 use tikibase::core::persistence;
 use tikibase::core::tikibase::Tikibase;
 
 pub struct MyWorld {
     pub base: Tikibase,
     pub findings: Vec<String>,
+    pub original_contents: HashMap<PathBuf, String>,
 }
 
 #[async_trait(?Send)]
@@ -17,6 +18,7 @@ impl World for MyWorld {
         Ok(MyWorld {
             base,
             findings: vec![],
+            original_contents: HashMap::new(),
         })
     }
 }
@@ -27,7 +29,11 @@ fn steps() -> Steps<MyWorld> {
     steps.given_regex(r#"^file "(.*)" with content:$"#, |mut world, ctx| {
         let filename = ctx.matches.get(1).expect("no filename provided");
         let content = ctx.step.docstring().unwrap().trim_start();
-        world.base.create_doc(&PathBuf::from(filename), content);
+        let filepath = PathBuf::from(filename);
+        world.base.create_doc(&filepath, content);
+        world
+            .original_contents
+            .insert(filepath, content.to_string());
         world
     });
 
@@ -51,6 +57,14 @@ fn steps() -> Steps<MyWorld> {
 
     steps.when("fixing", |mut world, _ctx| {
         tikibase::probes::run(&mut world.base, true);
+        world
+    });
+
+    steps.then("all files are unchanged", |world, _ctx| {
+        for (filepath, original_content) in &world.original_contents {
+            let current_content = world.base.doc_content(filepath);
+            assert_eq!(&current_content, original_content);
+        }
         world
     });
 
