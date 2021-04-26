@@ -52,8 +52,22 @@ impl Tikibase {
 
 #[cfg(test)]
 mod tests {
+
     use crate::core::persistence;
     use std::path::PathBuf;
+
+    mod get_doc {
+
+        use crate::core::persistence;
+        use std::path::PathBuf;
+
+        #[test]
+        fn exists() {
+            let mut base = persistence::tmpbase();
+            base.create_doc(PathBuf::from("one.md"), "# test doc");
+            assert_eq!(base.has_resource(PathBuf::from("foo.png")), false);
+        }
+    }
 
     mod has_resource {
 
