@@ -1,6 +1,7 @@
 use cucumber_rust::{async_trait, Cucumber, Steps, World};
+use std::collections::HashMap;
+use std::io;
 use std::path::PathBuf;
-use std::{collections::HashMap, io};
 use tikibase::core::persistence;
 use tikibase::core::tikibase::Tikibase;
 
