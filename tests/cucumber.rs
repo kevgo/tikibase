@@ -63,10 +63,7 @@ fn steps() -> Steps<MyWorld> {
 
     steps.then("all files are unchanged", |world, _ctx| {
         for (filename, original_content) in &world.original_contents {
-            let current_content = match world.base.docs.iter().find(|doc| &doc.path == filename) {
-                Some(doc) => doc.text(),
-                None => panic!("no original content for document: {:?}", &filename),
-            };
+            let current_content = world.base.get_doc(filename).unwrap().text();
             assert_eq!(&current_content, original_content);
         }
         world

@@ -1,7 +1,7 @@
 use super::document::Document;
 use super::persistence;
 use super::resource::Resource;
-use std::path::PathBuf;
+use std::path::{Path, PathBuf};
 
 pub struct Tikibase {
     pub dir: PathBuf,
@@ -23,7 +23,7 @@ impl Tikibase {
     }
 
     /// provides the document with the given filename
-    pub fn get_doc(&self, filename: PathBuf) -> Option<&Document> {
+    pub fn get_doc(&self, filename: &Path) -> Option<&Document> {
         self.docs.iter().find(|doc| doc.path == filename)
     }
 
