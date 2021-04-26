@@ -22,7 +22,7 @@ impl Tikibase {
         self.resources.push(Resource { path: filename });
     }
 
-    /// provides the document with the given filename
+    /// provides the document with the given relative filename
     pub fn get_doc(&self, filename: &Path) -> Option<&Document> {
         self.docs.iter().find(|doc| doc.path == filename)
     }
