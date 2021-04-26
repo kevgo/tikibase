@@ -17,7 +17,7 @@ pub fn load_base(dir: PathBuf) -> Tikibase {
         if filename == "." || filename == "tikibase.json" {
             continue;
         }
-        let path = entry.into_path();
+        let path = entry.into_path().strip_prefix(&dir).unwrap().to_owned();
         match doc_type(path.extension()) {
             DocType::Document => docs.push(Document::load(path)),
             DocType::Resource => resources.push(Resource { path }),
