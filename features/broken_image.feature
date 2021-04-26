@@ -8,7 +8,12 @@ Feature: recognize/fix broken images
       <img src="non-existing.png">
       <img src="non-existing.png" />
       ![broken image](non-existing.png)
+
+      <img src="existing.png">
+      <img src="existing.png" />
+      ![valid image](existing.png)
       """
+    And resource file "existing.png"
 
   Scenario: this
     When checking

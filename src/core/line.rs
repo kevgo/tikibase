@@ -18,7 +18,7 @@ impl Line {
         lazy_static! {
             static ref MD_RE: Regex = Regex::new("(!?)\\[[^\\]]*\\]\\(([^)]*)\\)").unwrap();
             static ref A_HTML_RE: Regex = Regex::new(r#"<a href="(.*)">(.*)</a>"#).unwrap();
-            static ref IMG_HTML_RE: Regex = Regex::new(r#"<img src="(.*)"\s*/?>"#).unwrap();
+            static ref IMG_HTML_RE: Regex = Regex::new(r#"<img src="([^"]*)"[^>]*>"#).unwrap();
         }
         let mut result = Vec::new();
         for cap in MD_RE.captures_iter(&self.text) {
@@ -103,6 +103,22 @@ mod tests {
         fn img_html() {
             let line = Line {
                 text: r#"<img src="zonk.md">"#.to_string(),
+                section_offset: 0,
+            };
+            let have = line.references();
+            assert_eq!(have.len(), 1);
+            match &have[0] {
+                Reference::Image { src } => {
+                    assert_eq!(src, "zonk.md");
+                }
+                _ => panic!("expected image"),
+            };
+        }
+
+        #[test]
+        fn img_html_extra_attributes() {
+            let line = Line {
+                text: r#"<img src="zonk.md" width="10" height="10">"#.to_string(),
                 section_offset: 0,
             };
             let have = line.references();

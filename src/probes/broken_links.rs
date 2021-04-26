@@ -2,6 +2,7 @@ use super::result::Result;
 use super::Tikibase;
 use crate::core::document;
 use crate::core::line::Reference;
+use std::path::PathBuf;
 
 pub fn process(base: &Tikibase) -> Result {
     let mut result = Result::new();
@@ -24,7 +25,7 @@ pub fn process(base: &Tikibase) -> Result {
                             }
                         }
                         Reference::Image { src } => {
-                            if !existing_targets.contains(&src) {
+                            if !base.has_resource(&PathBuf::from(&src)) {
                                 result.findings.push(format!(
                                     "{}:{}  broken image \"{}\"",
                                     document::relative_path(&doc.path, &base.dir),
