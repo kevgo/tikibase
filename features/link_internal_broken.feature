@@ -14,6 +14,7 @@ Feature: recognize/fix links to non-existing documents
       """
       1.md:3  broken link to "non-existing.md"
       """
+    And all files are unchanged
 
   Scenario: pitstop
     When doing a pitstop
@@ -21,3 +22,4 @@ Feature: recognize/fix links to non-existing documents
       """
       1.md:3  broken link to "non-existing.md"
       """
+    And all files are unchanged

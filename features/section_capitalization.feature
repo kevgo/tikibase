@@ -28,6 +28,7 @@ Feature: recognize sections with different capitalization
       """
       mixed capitalization of sections: ONE|One|one
       """
+    And all files are unchanged
 
   Scenario: pitstop
     When doing a pitstop
@@ -35,3 +36,4 @@ Feature: recognize sections with different capitalization
       """
       mixed capitalization of sections: ONE|One|one
       """
+    And all files are unchanged

@@ -20,6 +20,7 @@ Feature: recognize/fix duplicate sections
       """
       1.md  duplicate section: One
       """
+    And all files are unchanged
 
   Scenario: pitstop
     When doing a pitstop
@@ -27,3 +28,4 @@ Feature: recognize/fix duplicate sections
       """
       1.md  duplicate section: One
       """
+    And all files are unchanged

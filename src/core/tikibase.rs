@@ -1,7 +1,7 @@
 use super::document::Document;
 use super::persistence;
 use super::resource::Resource;
-use std::path::PathBuf;
+use std::path::{Path, PathBuf};
 
 pub struct Tikibase {
     pub dir: PathBuf,
@@ -20,6 +20,11 @@ impl Tikibase {
     pub fn create_resource(&mut self, filename: PathBuf, content: &str) {
         persistence::save_file(&self.dir.join(&filename), content);
         self.resources.push(Resource { path: filename });
+    }
+
+    /// provides the document with the given relative filename
+    pub fn get_doc(&self, filename: &Path) -> Option<&Document> {
+        self.docs.iter().find(|doc| doc.path == filename)
     }
 
     /// indicates whether this Tikibase contains a resource with the given path
@@ -47,8 +52,34 @@ impl Tikibase {
 
 #[cfg(test)]
 mod tests {
+
     use crate::core::persistence;
     use std::path::PathBuf;
+
+    mod get_doc {
+
+        use crate::core::persistence;
+        use std::path::PathBuf;
+
+        #[test]
+        fn exists() {
+            let mut base = persistence::tmpbase();
+            base.create_doc(PathBuf::from("one.md"), "# test doc");
+            let doc = base
+                .get_doc(&PathBuf::from("one.md"))
+                .expect("document not found");
+            assert_eq!(doc.title_section.title_line.text, "# test doc");
+        }
+
+        #[test]
+        fn missing() {
+            let base = persistence::tmpbase();
+            match base.get_doc(&PathBuf::from("zonk.md")) {
+                None => return,
+                Some(_) => panic!("should have found nothing"),
+            }
+        }
+    }
 
     mod has_resource {
 

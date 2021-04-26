@@ -11,3 +11,4 @@ Feature: recognize/fix links to non-existing documents
   Scenario: checking
     When checking
     Then it finds no issues
+    And all files are unchanged
