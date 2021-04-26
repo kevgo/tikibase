@@ -66,7 +66,7 @@ mod tests {
         #[test]
         fn doc_content() {
             let mut base = persistence::tmpbase();
-            let content = "# Test\ncontent";
+            let content = "# Test\ncontent\n";
             base.create_doc(PathBuf::from("1.md"), &content);
             let have = base.doc_content(&PathBuf::from("1.md"));
             assert_eq!(have, content)
