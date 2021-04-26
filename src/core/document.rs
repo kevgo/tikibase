@@ -6,6 +6,7 @@ use std::io::{BufRead, BufReader};
 use std::path::{Path, PathBuf};
 
 pub struct Document {
+    /// the path relative to the Tikibase root directory
     pub path: PathBuf,
     pub title_section: Section,
     pub content_sections: Vec<Section>,
