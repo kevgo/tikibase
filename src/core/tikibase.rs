@@ -18,10 +18,17 @@ impl Tikibase {
     }
 
     /// creates a new document with the given content in this Tikibase
-    pub fn create_resource(&mut self, filename: &Path, content: &str) {
-        let filepath = self.dir.join(filename);
-        persistence::save_file(&filepath, content);
-        self.resources.push(Resource { path: filepath });
+    pub fn create_resource(&mut self, filename: PathBuf, content: &str) {
+        persistence::save_file(&self.dir.join(&filename), content);
+        self.resources.push(Resource { path: filename });
+    }
+
+    /// provides the current content of the document with the given name
+    pub fn doc_content(&self, filename: &Path) -> String {
+        match self.docs.iter().find(|doc| doc.path == filename) {
+            None => panic!("document not found: {:?}", &filename),
+            Some(doc) => doc.text(),
+        }
     }
 
     /// indicates whether this Tikibase contains a resource with the given path
@@ -52,6 +59,21 @@ impl Tikibase {
 mod tests {
     use crate::core::persistence;
     use std::path::PathBuf;
+
+    mod doc_content {
+
+        use crate::core::persistence;
+        use std::path::PathBuf;
+
+        #[test]
+        fn doc_content() {
+            let mut base = persistence::tmpbase();
+            let content = "# Test\ncontent";
+            base.create_doc(&PathBuf::from("1.md"), &content);
+            let have = base.doc_content(&PathBuf::from("1.md"));
+            assert_eq!(have, content)
+        }
+    }
 
     mod has_resource {
 
