@@ -25,7 +25,8 @@ pub fn process(base: &Tikibase) -> Result {
                             }
                         }
                         Reference::Image { src } => {
-                            if !base.has_resource(&PathBuf::from(&src)) {
+                            if !src.starts_with("http") && !base.has_resource(&PathBuf::from(&src))
+                            {
                                 result.findings.push(format!(
                                     "{}:{}  broken image \"{}\"",
                                     document::relative_path(&doc.path, &base.dir),
@@ -44,22 +45,41 @@ pub fn process(base: &Tikibase) -> Result {
 
 #[cfg(test)]
 mod tests {
-    use crate::core::persistence;
-    use std::path::PathBuf;
 
-    #[test]
-    fn process() {
-        let mut base = persistence::tmpbase();
-        let content = "\
+    mod process {
+        use crate::core::persistence;
+        use std::path::PathBuf;
+
+        #[test]
+        fn link_to_non_existing_file() {
+            let mut base = persistence::tmpbase();
+            let content = "\
 # One
 
 [invalid](non-existing.md)
 [valid](two.md)
 ";
-        base.create_doc(&PathBuf::from("one.md"), content);
-        base.create_doc(&PathBuf::from("two.md"), "# Two");
-        let have = super::process(&base);
-        let want = vec!["one.md:3  broken link to \"non-existing.md\""];
-        assert_eq!(have.findings, want);
+            base.create_doc(&PathBuf::from("one.md"), content);
+            base.create_doc(&PathBuf::from("two.md"), "# Two");
+            let have = super::super::process(&base);
+            let want = vec!["one.md:3  broken link to \"non-existing.md\""];
+            assert_eq!(have.findings, want);
+        }
+
+        #[test]
+        fn ignore_external_urls() {
+            let mut base = persistence::tmpbase();
+            let content = "\
+# One
+
+[external site](https://google.com)
+![external image](https://google.com/foo.png)
+";
+            base.create_doc(&PathBuf::from("one.md"), content);
+            base.create_doc(&PathBuf::from("two.md"), "# Two");
+            let have = super::super::process(&base);
+            let want: Vec<&str> = vec![];
+            assert_eq!(have.findings, want);
+        }
     }
 }
