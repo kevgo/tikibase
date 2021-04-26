@@ -6,6 +6,7 @@ use std::io::{BufRead, BufReader};
 use std::path::{Path, PathBuf};
 
 pub struct Document {
+    /// the path relative to the Tikibase root directory
     pub path: PathBuf,
     pub title_section: Section,
     pub content_sections: Vec<Section>,
@@ -54,17 +55,9 @@ impl Document {
         Document::from_lines(BufReader::new(file).lines().map(|l| l.unwrap()), path)
     }
 
-    pub fn relative_path(&self, root: &Path) -> String {
-        self.path
-            .strip_prefix(root)
-            .unwrap()
-            .to_string_lossy()
-            .to_string()
-    }
-
     /// persists the current content of this document to disk
-    pub fn save(&self) {
-        let mut file = std::fs::File::create(&self.path).unwrap();
+    pub fn save(&self, root: &Path) {
+        let mut file = std::fs::File::create(root.join(&self.path)).unwrap();
         file.write_all(self.text().as_bytes()).unwrap();
     }
 
@@ -105,11 +98,6 @@ impl<'a> Iterator for SectionIterator<'a> {
             self.body_iter.next()
         }
     }
-}
-
-/// provides the relative path of the given document path inside the given Tikibase root path
-pub fn relative_path<'a>(docpath: &'a Path, base: &'a Path) -> std::path::Display<'a> {
-    Path::strip_prefix(docpath, base).unwrap().display()
 }
 
 /// writes the content of the given document to disk

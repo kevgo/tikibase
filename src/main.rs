@@ -3,25 +3,25 @@ extern crate lazy_static;
 use std::path::PathBuf;
 use tikibase::core::persistence;
 use tikibase::help;
-use tikibase::process;
+use tikibase::probes;
 use tikibase::stats;
 
 fn main() {
     let mut base = persistence::load_base(PathBuf::from("."));
     match parse(std::env::args()) {
         Command::Check => {
-            for message in process::run(&mut base, false) {
+            for message in probes::run(&mut base, false) {
                 println!("{}", message);
             }
         }
         Command::Fix => {
-            for message in process::run(&mut base, true) {
+            for message in probes::run(&mut base, true) {
                 println!("{}", message);
             }
         }
         Command::Help => help::run(),
         Command::Pitstop => {
-            for finding in process::run(&mut base, true) {
+            for finding in probes::run(&mut base, true) {
                 println!("{}", finding);
             }
         }

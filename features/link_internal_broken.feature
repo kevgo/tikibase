@@ -12,12 +12,12 @@ Feature: recognize/fix links to non-existing documents
     When checking
     Then it prints:
       """
-      1.md:3  broken link "zonk" to "non-existing.md"
+      1.md:3  broken link to "non-existing.md"
       """
 
   Scenario: pitstop
     When doing a pitstop
     Then it prints:
       """
-      1.md:3  broken link "zonk" to "non-existing.md"
+      1.md:3  broken link to "non-existing.md"
       """
