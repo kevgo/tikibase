@@ -18,6 +18,7 @@ Feature: recognize/fix broken images
       1.md:4  broken image "non-existing.png"
       1.md:5  broken image "non-existing.png"
       """
+    And all files are unchanged
 
   Scenario: pitstop
     When doing a pitstop
@@ -27,3 +28,4 @@ Feature: recognize/fix broken images
       1.md:4  broken image "non-existing.png"
       1.md:5  broken image "non-existing.png"
       """
+    And all files are unchanged
