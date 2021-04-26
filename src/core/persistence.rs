@@ -14,7 +14,7 @@ pub fn load_base(dir: PathBuf) -> Tikibase {
     for entry in WalkDir::new(&dir) {
         let entry = entry.unwrap();
         let filename = entry.file_name().to_str().unwrap();
-        if filename == "tikibase.json" || filename == "." {
+        if filename == "." || filename == "tikibase.json" {
             continue;
         }
         let path = entry.into_path();

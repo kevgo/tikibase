@@ -1,7 +1,7 @@
 use super::document::Document;
 use super::persistence;
 use super::resource::Resource;
-use std::path::{Path, PathBuf};
+use std::path::PathBuf;
 
 pub struct Tikibase {
     pub dir: PathBuf,
@@ -11,37 +11,34 @@ pub struct Tikibase {
 
 impl Tikibase {
     /// creates a new document with the given content in this Tikibase
-    pub fn create_doc(&mut self, filename: &Path, content: &str) {
-        let filepath = self.dir.join(filename);
-        persistence::save_file(&filepath, content);
-        self.docs.push(Document::from_str(filepath, content));
+    pub fn create_doc(&mut self, filename: PathBuf, content: &str) {
+        persistence::save_file(&self.dir.join(&filename), content);
+        self.docs.push(Document::from_str(filename, content));
     }
 
     /// creates a new document with the given content in this Tikibase
-    pub fn create_resource(&mut self, filename: &Path, content: &str) {
-        let filepath = self.dir.join(filename);
-        persistence::save_file(&filepath, content);
-        self.resources.push(Resource { path: filepath });
+    pub fn create_resource(&mut self, filename: PathBuf, content: &str) {
+        persistence::save_file(&self.dir.join(&filename), content);
+        self.resources.push(Resource { path: filename });
     }
 
     /// indicates whether this Tikibase contains a resource with the given path
-    pub fn has_resource(&self, filename: &Path) -> bool {
-        let filepath = self.dir.join(filename);
+    pub fn has_resource(&self, filename: PathBuf) -> bool {
         self.resources
             .iter()
-            .any(|resource| resource.path == filepath)
+            .any(|resource| resource.path == filename)
     }
 
     /// provides all valid link targets in this Tikibase
     pub fn link_targets(&self) -> Vec<String> {
         let mut result: Vec<String> = Vec::new();
         for doc in &self.docs {
-            let filename = doc.relative_path(&self.dir);
+            let filename = doc.path.to_string_lossy();
             result.push(format!("{}{}", &filename, doc.title_section.anchor()));
             for section in &doc.content_sections {
                 result.push(format!("{}{}", &filename, section.anchor()));
             }
-            result.push(filename);
+            result.push(filename.to_string());
         }
         result.sort();
         result
@@ -61,14 +58,14 @@ mod tests {
         #[test]
         fn empty() {
             let base = persistence::tmpbase();
-            assert_eq!(base.has_resource(&PathBuf::from("foo.png")), false);
+            assert_eq!(base.has_resource(PathBuf::from("foo.png")), false);
         }
 
         #[test]
         fn matching_resource() {
             let mut base = persistence::tmpbase();
-            base.create_resource(&PathBuf::from("foo.png"), "content");
-            assert_eq!(base.has_resource(&PathBuf::from("foo.png")), true);
+            base.create_resource(PathBuf::from("foo.png"), "content");
+            assert_eq!(base.has_resource(PathBuf::from("foo.png")), true);
         }
     }
 
@@ -82,8 +79,8 @@ mod tests {
 ### Beta
 
 content";
-        base.create_doc(&PathBuf::from("one.md"), content);
-        base.create_doc(&PathBuf::from("two.md"), content);
+        base.create_doc(PathBuf::from("one.md"), content);
+        base.create_doc(PathBuf::from("two.md"), content);
         let have = base.link_targets();
         let want = vec![
             "one.md",
