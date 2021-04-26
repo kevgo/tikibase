@@ -39,7 +39,7 @@ pub fn load_file(filepath: &Path) -> String {
     result
 }
 
-pub fn save_file(filepath: &Path, content: &str) {
+pub fn create_file(filepath: &Path, content: &str) {
     let mut file = fs::File::create(&filepath).unwrap();
     file.write_all(content.as_bytes()).unwrap();
 }

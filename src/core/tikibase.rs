@@ -12,13 +12,13 @@ pub struct Tikibase {
 impl Tikibase {
     /// creates a new document with the given content in this Tikibase
     pub fn create_doc(&mut self, filename: PathBuf, content: &str) {
-        persistence::save_file(&self.dir.join(&filename), content);
+        persistence::create_file(&self.dir.join(&filename), content);
         self.docs.push(Document::from_str(filename, content));
     }
 
     /// creates a new document with the given content in this Tikibase
     pub fn create_resource(&mut self, filename: PathBuf, content: &str) {
-        persistence::save_file(&self.dir.join(&filename), content);
+        persistence::create_file(&self.dir.join(&filename), content);
         self.resources.push(Resource { path: filename });
     }
 
