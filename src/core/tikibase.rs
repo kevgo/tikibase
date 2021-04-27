@@ -17,13 +17,15 @@ pub struct Tikibase {
 impl Tikibase {
     /// creates a new document with the given content in this Tikibase
     pub fn create_doc(&mut self, filename: PathBuf, content: &str) {
-        create_file(&self.dir.join(&filename), content);
+        let mut file = fs::File::create(&self.dir.join(&filename)).unwrap();
+        file.write_all(content.as_bytes()).unwrap();
         self.docs.push(Document::from_str(filename, content));
     }
 
     /// creates a new document with the given content in this Tikibase
     pub fn create_resource(&mut self, filename: PathBuf, content: &str) {
-        create_file(&self.dir.join(&filename), content);
+        let mut file = fs::File::create(&self.dir.join(&filename)).unwrap();
+        file.write_all(content.as_bytes()).unwrap();
         self.resources.push(Resource { path: filename });
     }
 
@@ -64,10 +66,17 @@ impl Tikibase {
             if filename == "." || filename == "tikibase.json" {
                 continue;
             }
-            let path = entry.into_path().strip_prefix(&dir).unwrap().to_owned();
+            let path = entry.path();
+            let filepath = path.strip_prefix(&dir).unwrap().to_owned();
             match DocType::from_ext(path.extension()) {
-                DocType::Document => docs.push(load_doc(path)),
-                DocType::Resource => resources.push(Resource { path }),
+                DocType::Document => {
+                    let file = File::open(&path).unwrap();
+                    docs.push(Document::from_lines(
+                        BufReader::new(file).lines().map(|l| l.unwrap()),
+                        filepath,
+                    ));
+                }
+                DocType::Resource => resources.push(Resource { path: filepath }),
             }
         }
         Tikibase {
@@ -111,17 +120,6 @@ impl DocType {
             },
         }
     }
-}
-
-fn create_file(filepath: &Path, content: &str) {
-    let mut file = fs::File::create(&filepath).unwrap();
-    file.write_all(content.as_bytes()).unwrap();
-}
-
-/// provides a Document instance containing the content of the file at the given path
-fn load_doc(path: PathBuf) -> Document {
-    let file = File::open(&path).unwrap();
-    Document::from_lines(BufReader::new(file).lines().map(|l| l.unwrap()), path)
 }
 
 /// persists the current content of this document to disk
@@ -211,7 +209,7 @@ content";
     }
 
     #[test]
-    fn load() {
+    fn load_base() {
         let content = "\
 # Title
 title text
@@ -224,24 +222,27 @@ foo
         let tmp_dir = tempfile::tempdir().unwrap();
         let file_path = tmp_dir.path().join("file.md");
         std::fs::write(&file_path, content).unwrap();
-        let have = super::load_doc(file_path);
-        assert_eq!(have.title_section.title_line.text, "# Title");
-        assert_eq!(have.title_section.line_number, 0);
-        assert_eq!(have.title_section.body.len(), 1);
-        assert_eq!(have.title_section.body[0].text, "title text");
-        assert_eq!(have.title_section.body[0].section_offset, 1);
-        assert_eq!(have.content_sections.len(), 2);
-        assert_eq!(have.content_sections[0].title_line.text, "### Section 1");
-        assert_eq!(have.content_sections[0].line_number, 2);
-        assert_eq!(have.content_sections[0].body.len(), 2);
-        assert_eq!(have.content_sections[0].body[0].text, "one");
-        assert_eq!(have.content_sections[0].body[0].section_offset, 1);
-        assert_eq!(have.content_sections[0].body[1].text, "two");
-        assert_eq!(have.content_sections[0].body[1].section_offset, 2);
-        assert_eq!(have.content_sections[1].title_line.text, "### Section 2");
-        assert_eq!(have.content_sections[1].line_number, 5);
-        assert_eq!(have.content_sections[1].body.len(), 1);
-        assert_eq!(have.content_sections[1].body[0].text, "foo");
-        assert_eq!(have.content_sections[1].body[0].section_offset, 1);
+        let base = Tikibase::load_base(tmp_dir.into_path());
+        assert_eq!(base.docs.len(), 1);
+        let doc = &base.docs[0];
+        assert_eq!(doc.path.to_string_lossy(), "file.md");
+        assert_eq!(doc.title_section.title_line.text, "# Title");
+        assert_eq!(doc.title_section.line_number, 0);
+        assert_eq!(doc.title_section.body.len(), 1);
+        assert_eq!(doc.title_section.body[0].text, "title text");
+        assert_eq!(doc.title_section.body[0].section_offset, 1);
+        assert_eq!(doc.content_sections.len(), 2);
+        assert_eq!(doc.content_sections[0].title_line.text, "### Section 1");
+        assert_eq!(doc.content_sections[0].line_number, 2);
+        assert_eq!(doc.content_sections[0].body.len(), 2);
+        assert_eq!(doc.content_sections[0].body[0].text, "one");
+        assert_eq!(doc.content_sections[0].body[0].section_offset, 1);
+        assert_eq!(doc.content_sections[0].body[1].text, "two");
+        assert_eq!(doc.content_sections[0].body[1].section_offset, 2);
+        assert_eq!(doc.content_sections[1].title_line.text, "### Section 2");
+        assert_eq!(doc.content_sections[1].line_number, 5);
+        assert_eq!(doc.content_sections[1].body.len(), 1);
+        assert_eq!(doc.content_sections[1].body[0].text, "foo");
+        assert_eq!(doc.content_sections[1].body[0].section_offset, 1);
     }
 }
