@@ -34,7 +34,7 @@ pub fn process(base: &mut Tikibase, fix: bool) -> Result {
             true
         });
         if fixed {
-            doc.save(&base.dir);
+            doc.flush(&base.dir);
         }
     }
     result
@@ -44,7 +44,7 @@ pub fn process(base: &mut Tikibase, fix: bool) -> Result {
 mod tests {
 
     use super::process;
-    use crate::core::persistence;
+    use crate::core::tikibase::Tikibase;
     use std::path::PathBuf;
 
     #[test]
@@ -56,7 +56,7 @@ mod tests {
 ### next section
 
 content";
-        let mut base = persistence::tmpbase();
+        let mut base = Tikibase::tmp();
         base.create_doc(PathBuf::from("test.md"), content);
         let have = process(&mut base, false);
         assert_eq!(have.findings.len(), 1);
@@ -76,7 +76,7 @@ content";
 ### next section
 
 content";
-        let mut base = persistence::tmpbase();
+        let mut base = Tikibase::tmp();
         base.create_doc(PathBuf::from("test.md"), content);
         let have = process(&mut base, false);
         assert_eq!(have.findings.len(), 1);
@@ -94,14 +94,14 @@ content";
 ### section with content
 
 content";
-        let mut base = persistence::tmpbase();
+        let mut base = Tikibase::tmp();
         base.create_doc(PathBuf::from("test.md"), content);
         let have = process(&mut base, false);
         assert_eq!(have.findings.len(), 0);
     }
     #[test]
     fn true_empty_section() {
-        let mut base = persistence::tmpbase();
+        let mut base = Tikibase::tmp();
         base.create_doc(
             PathBuf::from("test.md"),
             "\
