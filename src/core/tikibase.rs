@@ -1,6 +1,5 @@
 use super::document::Document;
 use super::resource::Resource;
-use super::tikibase;
 use rand::Rng;
 use std::fs;
 use std::fs::File;
@@ -67,7 +66,7 @@ impl Tikibase {
             }
             let path = entry.into_path().strip_prefix(&dir).unwrap().to_owned();
             match DocType::from_ext(path.extension()) {
-                DocType::Document => docs.push(tikibase::load_doc(path)),
+                DocType::Document => docs.push(load_doc(path)),
                 DocType::Resource => resources.push(Resource { path }),
             }
         }
@@ -138,7 +137,6 @@ pub fn save_doc(doc: &Document, root: &Path) {
 #[cfg(test)]
 mod tests {
 
-    use super::tikibase;
     use super::Tikibase;
     use std::path::PathBuf;
 
@@ -226,7 +224,7 @@ foo
         let tmp_dir = tempfile::tempdir().unwrap();
         let file_path = tmp_dir.path().join("file.md");
         std::fs::write(&file_path, content).unwrap();
-        let have = tikibase::load_doc(file_path);
+        let have = super::load_doc(file_path);
         assert_eq!(have.title_section.title_line.text, "# Title");
         assert_eq!(have.title_section.line_number, 0);
         assert_eq!(have.title_section.body.len(), 1);
