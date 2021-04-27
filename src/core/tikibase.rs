@@ -1,7 +1,8 @@
 use super::document::Document;
-use super::persistence;
 use super::resource::Resource;
 use rand::Rng;
+use std::fs;
+use std::io::prelude::*;
 use std::path::{Path, PathBuf};
 use walkdir::WalkDir;
 
@@ -14,13 +15,13 @@ pub struct Tikibase {
 impl Tikibase {
     /// creates a new document with the given content in this Tikibase
     pub fn create_doc(&mut self, filename: PathBuf, content: &str) {
-        persistence::create_file(&self.dir.join(&filename), content);
+        create_file(&self.dir.join(&filename), content);
         self.docs.push(Document::from_str(filename, content));
     }
 
     /// creates a new document with the given content in this Tikibase
     pub fn create_resource(&mut self, filename: PathBuf, content: &str) {
-        persistence::create_file(&self.dir.join(&filename), content);
+        create_file(&self.dir.join(&filename), content);
         self.resources.push(Resource { path: filename });
     }
 
@@ -108,6 +109,11 @@ impl DocType {
             },
         }
     }
+}
+
+fn create_file(filepath: &Path, content: &str) {
+    let mut file = fs::File::create(&filepath).unwrap();
+    file.write_all(content.as_bytes()).unwrap();
 }
 
 #[cfg(test)]

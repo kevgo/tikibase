@@ -1,8 +1,7 @@
 use cucumber_rust::{async_trait, Cucumber, Steps, World};
 use std::collections::HashMap;
 use std::io;
-use std::path::PathBuf;
-use tikibase::core::persistence;
+use std::path::{Path, PathBuf};
 use tikibase::core::tikibase::Tikibase;
 
 pub struct MyWorld {
@@ -72,7 +71,7 @@ fn steps() -> Steps<MyWorld> {
     steps.then_regex(r#"^file "(.*)" should contain:$"#, |world, ctx| {
         let expected = ctx.step.docstring().unwrap().trim_start();
         let filename = ctx.matches.get(1).expect("no filename provided");
-        let actual = persistence::load_file(&world.base.dir.join(filename));
+        let actual = load_file(&world.base.dir.join(filename));
         assert_eq!(actual, expected);
         world
     });
@@ -90,6 +89,15 @@ fn steps() -> Steps<MyWorld> {
     });
 
     steps
+}
+
+pub fn load_file(filepath: &Path) -> String {
+    let mut result = std::fs::read_to_string(filepath)
+        .unwrap()
+        .trim_end()
+        .to_string();
+    result.push('\n');
+    result
 }
 
 #[tokio::main]
