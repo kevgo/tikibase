@@ -125,12 +125,12 @@ impl FileType {
 #[cfg(test)]
 mod tests {
 
-    use super::Tikibase;
+    use super::*;
     use std::path::PathBuf;
 
     mod get_doc {
 
-        use super::super::Tikibase;
+        use super::super::*;
         use std::path::PathBuf;
 
         #[test]
