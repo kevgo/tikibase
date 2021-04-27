@@ -2,7 +2,9 @@ use super::document::Document;
 use super::resource::Resource;
 use rand::Rng;
 use std::fs;
+use std::fs::File;
 use std::io::prelude::*;
+use std::io::{BufRead, BufReader};
 use std::path::{Path, PathBuf};
 use walkdir::WalkDir;
 
@@ -64,7 +66,7 @@ impl Tikibase {
             }
             let path = entry.into_path().strip_prefix(&dir).unwrap().to_owned();
             match DocType::from_ext(path.extension()) {
-                DocType::Document => docs.push(Document::load(path)),
+                DocType::Document => docs.push(Tikibase::load_doc(path)),
                 DocType::Resource => resources.push(Resource { path }),
             }
         }
@@ -73,6 +75,12 @@ impl Tikibase {
             docs,
             resources,
         }
+    }
+
+    /// provides a Document instance containing the content of the file at the given path
+    fn load_doc(path: PathBuf) -> Document {
+        let file = File::open(&path).unwrap();
+        Document::from_lines(BufReader::new(file).lines().map(|l| l.unwrap()), path)
     }
 
     /// creates a Tikibase instance for testing in the './tmp' directory
@@ -190,5 +198,40 @@ content";
             "two.md#one",
         ];
         assert_eq!(have, want);
+    }
+
+    #[test]
+    fn load() {
+        let content = "\
+# Title
+title text
+### Section 1
+one
+two
+### Section 2
+foo
+";
+        let tmp_dir = tempfile::tempdir().unwrap();
+        let file_path = tmp_dir.path().join("file.md");
+        std::fs::write(&file_path, content).unwrap();
+        let have = Tikibase::load_doc(file_path);
+        assert_eq!(have.title_section.title_line.text, "# Title");
+        assert_eq!(have.title_section.line_number, 0);
+        assert_eq!(have.title_section.body.len(), 1);
+        assert_eq!(have.title_section.body[0].text, "title text");
+        assert_eq!(have.title_section.body[0].section_offset, 1);
+        assert_eq!(have.content_sections.len(), 2);
+        assert_eq!(have.content_sections[0].title_line.text, "### Section 1");
+        assert_eq!(have.content_sections[0].line_number, 2);
+        assert_eq!(have.content_sections[0].body.len(), 2);
+        assert_eq!(have.content_sections[0].body[0].text, "one");
+        assert_eq!(have.content_sections[0].body[0].section_offset, 1);
+        assert_eq!(have.content_sections[0].body[1].text, "two");
+        assert_eq!(have.content_sections[0].body[1].section_offset, 2);
+        assert_eq!(have.content_sections[1].title_line.text, "### Section 2");
+        assert_eq!(have.content_sections[1].line_number, 5);
+        assert_eq!(have.content_sections[1].body.len(), 1);
+        assert_eq!(have.content_sections[1].body[0].text, "foo");
+        assert_eq!(have.content_sections[1].body[0].section_offset, 1);
     }
 }
