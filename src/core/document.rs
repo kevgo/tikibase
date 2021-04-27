@@ -1,8 +1,6 @@
 use super::line::Line;
 use super::section::Section;
-use std::fs::File;
 use std::io::prelude::*;
-use std::io::{BufRead, BufReader};
 use std::path::{Path, PathBuf};
 
 pub struct Document {
@@ -46,14 +44,8 @@ impl Document {
         Document::from_lines(text.lines().map(|line| line.to_string()), path)
     }
 
-    /// provides a Document instance containing the content of the file at the given path
-    pub fn load(path: PathBuf) -> Document {
-        let file = File::open(&path).unwrap();
-        Document::from_lines(BufReader::new(file).lines().map(|l| l.unwrap()), path)
-    }
-
-    /// persists the current content of this document to disk
-    pub fn save(&self, root: &Path) {
+    /// persists the changes made to this document to disk
+    pub fn flush(&self, root: &Path) {
         let mut file = std::fs::File::create(root.join(&self.path)).unwrap();
         file.write_all(self.text().as_bytes()).unwrap();
     }
@@ -97,14 +89,6 @@ impl<'a> Iterator for SectionIterator<'a> {
     }
 }
 
-/// writes the content of the given document to disk
-///
-/// NOTE: this exists outside of Tikibase because of borrow  checker problems
-pub fn save(filepath: &Path, text: String) {
-    let mut file = std::fs::File::create(filepath).unwrap();
-    file.write_all(text.as_bytes()).unwrap();
-}
-
 // -------------------------------------------------------------------------------------
 // TESTS
 // -------------------------------------------------------------------------------------
@@ -135,41 +119,6 @@ content";
             None => return,
             Some(_) => panic!("unexpected section"),
         }
-    }
-
-    #[test]
-    fn load() {
-        let content = "\
-# Title
-title text
-### Section 1
-one
-two
-### Section 2
-foo
-";
-        let tmp_dir = tempfile::tempdir().unwrap();
-        let file_path = tmp_dir.path().join("file.md");
-        std::fs::write(&file_path, content).unwrap();
-        let have = super::Document::load(file_path);
-        assert_eq!(have.title_section.title_line.text, "# Title");
-        assert_eq!(have.title_section.line_number, 0);
-        assert_eq!(have.title_section.body.len(), 1);
-        assert_eq!(have.title_section.body[0].text, "title text");
-        assert_eq!(have.title_section.body[0].section_offset, 1);
-        assert_eq!(have.content_sections.len(), 2);
-        assert_eq!(have.content_sections[0].title_line.text, "### Section 1");
-        assert_eq!(have.content_sections[0].line_number, 2);
-        assert_eq!(have.content_sections[0].body.len(), 2);
-        assert_eq!(have.content_sections[0].body[0].text, "one");
-        assert_eq!(have.content_sections[0].body[0].section_offset, 1);
-        assert_eq!(have.content_sections[0].body[1].text, "two");
-        assert_eq!(have.content_sections[0].body[1].section_offset, 2);
-        assert_eq!(have.content_sections[1].title_line.text, "### Section 2");
-        assert_eq!(have.content_sections[1].line_number, 5);
-        assert_eq!(have.content_sections[1].body.len(), 1);
-        assert_eq!(have.content_sections[1].body[0].text, "foo");
-        assert_eq!(have.content_sections[1].body[0].section_offset, 1);
     }
 
     #[test]
