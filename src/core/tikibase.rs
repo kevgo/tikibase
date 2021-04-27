@@ -1,7 +1,9 @@
 use super::document::Document;
 use super::persistence;
 use super::resource::Resource;
+use rand::Rng;
 use std::path::{Path, PathBuf};
+use walkdir::WalkDir;
 
 pub struct Tikibase {
     pub dir: PathBuf,
@@ -48,22 +50,80 @@ impl Tikibase {
         result.sort();
         result
     }
+
+    /// Provides a Tikibase instance for the given directory.
+    pub fn load_base(dir: PathBuf) -> Tikibase {
+        let mut docs = Vec::new();
+        let mut resources = Vec::new();
+        for entry in WalkDir::new(&dir) {
+            let entry = entry.unwrap();
+            let filename = entry.file_name().to_str().unwrap();
+            if filename == "." || filename == "tikibase.json" {
+                continue;
+            }
+            let path = entry.into_path().strip_prefix(&dir).unwrap().to_owned();
+            match DocType::from_ext(path.extension()) {
+                DocType::Document => docs.push(Document::load(path)),
+                DocType::Resource => resources.push(Resource { path }),
+            }
+        }
+        Tikibase {
+            dir,
+            docs,
+            resources,
+        }
+    }
+
+    /// creates a Tikibase instance for testing in the './tmp' directory
+    pub fn tmpbase() -> Tikibase {
+        let timestamp = std::time::SystemTime::now()
+            .duration_since(std::time::UNIX_EPOCH)
+            .unwrap()
+            .as_millis();
+        let rand: String = rand::thread_rng()
+            .sample_iter(&rand::distributions::Alphanumeric)
+            .take(3)
+            .map(char::from)
+            .collect();
+        let dir = std::path::PathBuf::from(format!("./tmp/{}-{}", timestamp, rand));
+        match std::fs::create_dir_all(&dir) {
+            Ok(_) => Tikibase::load_base(dir),
+            Err(e) => panic!("{}", e),
+        }
+    }
+}
+
+enum DocType {
+    Document,
+    Resource,
+}
+
+impl DocType {
+    fn from_ext(ext: Option<&std::ffi::OsStr>) -> DocType {
+        match ext {
+            None => DocType::Resource,
+            Some(ext) => match ext.to_str() {
+                Some("md") => DocType::Document,
+                _ => DocType::Resource,
+            },
+        }
+    }
 }
 
 #[cfg(test)]
 mod tests {
 
-    use crate::core::persistence;
+    use super::Tikibase;
     use std::path::PathBuf;
 
     mod get_doc {
 
-        use crate::core::persistence;
+        use super::super::Tikibase;
         use std::path::PathBuf;
 
         #[test]
         fn exists() {
-            let mut base = persistence::tmpbase();
+            let mut base = Tikibase::tmpbase();
             base.create_doc(PathBuf::from("one.md"), "# test doc");
             let doc = base
                 .get_doc(&PathBuf::from("one.md"))
@@ -73,7 +133,7 @@ mod tests {
 
         #[test]
         fn missing() {
-            let base = persistence::tmpbase();
+            let base = Tikibase::tmpbase();
             match base.get_doc(&PathBuf::from("zonk.md")) {
                 None => return,
                 Some(_) => panic!("should have found nothing"),
@@ -83,18 +143,18 @@ mod tests {
 
     mod has_resource {
 
-        use crate::core::persistence;
+        use super::super::Tikibase;
         use std::path::PathBuf;
 
         #[test]
         fn empty() {
-            let base = persistence::tmpbase();
+            let base = Tikibase::tmpbase();
             assert_eq!(base.has_resource(PathBuf::from("foo.png")), false);
         }
 
         #[test]
         fn matching_resource() {
-            let mut base = persistence::tmpbase();
+            let mut base = Tikibase::tmpbase();
             base.create_resource(PathBuf::from("foo.png"), "content");
             assert_eq!(base.has_resource(PathBuf::from("foo.png")), true);
         }
@@ -102,7 +162,7 @@ mod tests {
 
     #[test]
     fn link_targets() {
-        let mut base = persistence::tmpbase();
+        let mut base = Tikibase::tmpbase();
         let content = "\
 # One
 

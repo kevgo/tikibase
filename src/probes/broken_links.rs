@@ -45,12 +45,12 @@ pub fn process(base: &Tikibase) -> Result {
 mod tests {
 
     mod process {
-        use crate::core::persistence;
+        use crate::core::tikibase::Tikibase;
         use std::path::PathBuf;
 
         #[test]
         fn link_to_non_existing_file() {
-            let mut base = persistence::tmpbase();
+            let mut base = Tikibase::tmpbase();
             let content = "\
 # One
 
@@ -66,7 +66,7 @@ mod tests {
 
         #[test]
         fn ignore_external_urls() {
-            let mut base = persistence::tmpbase();
+            let mut base = Tikibase::tmpbase();
             let content = "\
 # One
 
