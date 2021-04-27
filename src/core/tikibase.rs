@@ -68,15 +68,15 @@ impl Tikibase {
             }
             let path = entry.path();
             let filepath = path.strip_prefix(&dir).unwrap().to_owned();
-            match DocType::from_ext(path.extension()) {
-                DocType::Document => {
+            match FileType::from_ext(path.extension()) {
+                FileType::Document => {
                     let file = File::open(&path).unwrap();
                     docs.push(Document::from_lines(
                         BufReader::new(file).lines().map(|l| l.unwrap()),
                         filepath,
                     ));
                 }
-                DocType::Resource => resources.push(Resource { path: filepath }),
+                FileType::Resource => resources.push(Resource { path: filepath }),
             }
         }
         Tikibase {
@@ -105,18 +105,18 @@ impl Tikibase {
     }
 }
 
-enum DocType {
+enum FileType {
     Document,
     Resource,
 }
 
-impl DocType {
-    fn from_ext(ext: Option<&std::ffi::OsStr>) -> DocType {
+impl FileType {
+    fn from_ext(ext: Option<&std::ffi::OsStr>) -> FileType {
         match ext {
-            None => DocType::Resource,
+            None => FileType::Resource,
             Some(ext) => match ext.to_str() {
-                Some("md") => DocType::Document,
-                _ => DocType::Resource,
+                Some("md") => FileType::Document,
+                _ => FileType::Resource,
             },
         }
     }
