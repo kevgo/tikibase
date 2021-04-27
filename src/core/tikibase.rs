@@ -155,7 +155,7 @@ mod tests {
 
     mod has_resource {
 
-        use super::super::Tikibase;
+        use super::super::*;
         use std::path::PathBuf;
 
         #[test]
