@@ -10,6 +10,7 @@ pub fn run(base: &mut Tikibase, fix: bool) -> Vec<String> {
     results.append(&mut section_duplicate::process(base));
     results.append(&mut section_empty::process(base, fix));
     results.append(&mut section_capitalization::process(base));
-    results.append(&mut link_broken::process(base));
+    let links_result = &mut link_broken::process(base);
+    results.append(&mut links_result.result);
     results.sorted()
 }

@@ -1,12 +1,12 @@
 Feature: orphaned resource
 
     Background:
-        Given binary file "image.png"
+        Given binary file "orphan.png"
 
     Scenario: this
         When checking
         Then it prints:
             """
-            orphaned image "image.png"
+            unused image "image.png"
             """
         And all files are unchanged
