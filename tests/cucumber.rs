@@ -37,7 +37,7 @@ fn steps() -> Steps<MyWorld> {
         world
     });
 
-    steps.given_regex(r#"^resource file "(.*)"$"#, |mut world, ctx| {
+    steps.given_regex(r#"^binary file "(.*)"$"#, |mut world, ctx| {
         let filename = ctx.matches.get(1).expect("no filename provided");
         world
             .base
