@@ -1,5 +1,5 @@
 use super::result::Result;
-use crate::core::tikibase::Tikibase;
+use crate::core::tikibase::{self, Tikibase};
 
 /// finds all empty sections in the given Tikibase,
 /// fixes them if fix is enabled,
@@ -34,7 +34,7 @@ pub fn process(base: &mut Tikibase, fix: bool) -> Result {
             true
         });
         if fixed {
-            doc.save(&base.dir);
+            tikibase::save_doc(&doc, &base.dir);
         }
     }
     result

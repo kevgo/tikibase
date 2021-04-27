@@ -1,7 +1,6 @@
 use super::line::Line;
 use super::section::Section;
-use std::io::prelude::*;
-use std::path::{Path, PathBuf};
+use std::path::PathBuf;
 
 pub struct Document {
     /// the path relative to the Tikibase root directory
@@ -44,12 +43,6 @@ impl Document {
         Document::from_lines(text.lines().map(|line| line.to_string()), path)
     }
 
-    /// persists the current content of this document to disk
-    pub fn save(&self, root: &Path) {
-        let mut file = std::fs::File::create(root.join(&self.path)).unwrap();
-        file.write_all(self.text().as_bytes()).unwrap();
-    }
-
     /// provides a non-consuming iterator for all sections in this document
     pub fn sections(&self) -> SectionIterator {
         SectionIterator {
@@ -87,14 +80,6 @@ impl<'a> Iterator for SectionIterator<'a> {
             self.body_iter.next()
         }
     }
-}
-
-/// writes the content of the given document to disk
-///
-/// NOTE: this exists outside of Tikibase because of borrow  checker problems
-pub fn save(filepath: &Path, text: String) {
-    let mut file = std::fs::File::create(filepath).unwrap();
-    file.write_all(text.as_bytes()).unwrap();
 }
 
 // -------------------------------------------------------------------------------------

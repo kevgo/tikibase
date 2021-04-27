@@ -1,5 +1,6 @@
 use super::document::Document;
 use super::resource::Resource;
+use super::tikibase;
 use rand::Rng;
 use std::fs;
 use std::fs::File;
@@ -66,7 +67,7 @@ impl Tikibase {
             }
             let path = entry.into_path().strip_prefix(&dir).unwrap().to_owned();
             match DocType::from_ext(path.extension()) {
-                DocType::Document => docs.push(Tikibase::load_doc(path)),
+                DocType::Document => docs.push(tikibase::load_doc(path)),
                 DocType::Resource => resources.push(Resource { path }),
             }
         }
@@ -75,12 +76,6 @@ impl Tikibase {
             docs,
             resources,
         }
-    }
-
-    /// provides a Document instance containing the content of the file at the given path
-    fn load_doc(path: PathBuf) -> Document {
-        let file = File::open(&path).unwrap();
-        Document::from_lines(BufReader::new(file).lines().map(|l| l.unwrap()), path)
     }
 
     /// creates a Tikibase instance for testing in the './tmp' directory
@@ -124,9 +119,26 @@ fn create_file(filepath: &Path, content: &str) {
     file.write_all(content.as_bytes()).unwrap();
 }
 
+/// provides a Document instance containing the content of the file at the given path
+fn load_doc(path: PathBuf) -> Document {
+    let file = File::open(&path).unwrap();
+    Document::from_lines(BufReader::new(file).lines().map(|l| l.unwrap()), path)
+}
+
+/// persists the current content of this document to disk
+///
+/// NOTE: this exists outside of Tikibase because of borrow  checker issues.
+/// No point in borrowing the entire Tikibase object when we just need its root directory.
+/// Also, this doesn't really belong into the Tikibase object nor the document object.
+pub fn save_doc(doc: &Document, root: &Path) {
+    let mut file = std::fs::File::create(root.join(&doc.path)).unwrap();
+    file.write_all(doc.text().as_bytes()).unwrap();
+}
+
 #[cfg(test)]
 mod tests {
 
+    use super::tikibase;
     use super::Tikibase;
     use std::path::PathBuf;
 
@@ -214,7 +226,7 @@ foo
         let tmp_dir = tempfile::tempdir().unwrap();
         let file_path = tmp_dir.path().join("file.md");
         std::fs::write(&file_path, content).unwrap();
-        let have = Tikibase::load_doc(file_path);
+        let have = tikibase::load_doc(file_path);
         assert_eq!(have.title_section.title_line.text, "# Title");
         assert_eq!(have.title_section.line_number, 0);
         assert_eq!(have.title_section.body.len(), 1);
