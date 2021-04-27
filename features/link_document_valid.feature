@@ -1,4 +1,4 @@
-Feature: accept valid internal links
+Feature: accept links to existing documents
 
   Background:
     Given file "1.md" with content:
