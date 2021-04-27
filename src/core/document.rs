@@ -1,6 +1,7 @@
 use super::line::Line;
 use super::section::Section;
-use std::path::PathBuf;
+use std::io::prelude::*;
+use std::path::{Path, PathBuf};
 
 pub struct Document {
     /// the path relative to the Tikibase root directory
@@ -41,6 +42,12 @@ impl Document {
     /// provides a Document instance containing the content of the file at the given path
     pub fn from_str(path: PathBuf, text: &str) -> Document {
         Document::from_lines(text.lines().map(|line| line.to_string()), path)
+    }
+
+    /// persists the changes made to this document to disk
+    pub fn flush(&self, root: &Path) {
+        let mut file = std::fs::File::create(root.join(&self.path)).unwrap();
+        file.write_all(self.text().as_bytes()).unwrap();
     }
 
     /// provides a non-consuming iterator for all sections in this document

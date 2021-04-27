@@ -7,7 +7,7 @@ use tikibase::probes;
 use tikibase::stats;
 
 fn main() {
-    let mut base = Tikibase::load_base(PathBuf::from("."));
+    let mut base = Tikibase::load(PathBuf::from("."));
     match parse(std::env::args()) {
         Command::Check => {
             for message in probes::run(&mut base, false) {

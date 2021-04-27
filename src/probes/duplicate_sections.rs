@@ -38,7 +38,7 @@ mod tests {
 content
 ### One
 content";
-        let mut base = Tikibase::tmpbase();
+        let mut base = Tikibase::tmp();
         base.create_doc(PathBuf::from("test.md"), content);
         let have = process(&mut base);
         assert_eq!(have.findings.len(), 1);

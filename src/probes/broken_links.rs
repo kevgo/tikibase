@@ -50,7 +50,7 @@ mod tests {
 
         #[test]
         fn link_to_non_existing_file() {
-            let mut base = Tikibase::tmpbase();
+            let mut base = Tikibase::tmp();
             let content = "\
 # One
 
@@ -66,7 +66,7 @@ mod tests {
 
         #[test]
         fn ignore_external_urls() {
-            let mut base = Tikibase::tmpbase();
+            let mut base = Tikibase::tmp();
             let content = "\
 # One
 

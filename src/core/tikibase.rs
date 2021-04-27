@@ -57,7 +57,7 @@ impl Tikibase {
     }
 
     /// Provides a Tikibase instance for the given directory.
-    pub fn load_base(dir: PathBuf) -> Tikibase {
+    pub fn load(dir: PathBuf) -> Tikibase {
         let mut docs = Vec::new();
         let mut resources = Vec::new();
         for entry in WalkDir::new(&dir) {
@@ -87,7 +87,7 @@ impl Tikibase {
     }
 
     /// creates a Tikibase instance for testing in the './tmp' directory
-    pub fn tmpbase() -> Tikibase {
+    pub fn tmp() -> Tikibase {
         let timestamp = std::time::SystemTime::now()
             .duration_since(std::time::UNIX_EPOCH)
             .unwrap()
@@ -99,7 +99,7 @@ impl Tikibase {
             .collect();
         let dir = std::path::PathBuf::from(format!("./tmp/{}-{}", timestamp, rand));
         match std::fs::create_dir_all(&dir) {
-            Ok(_) => Tikibase::load_base(dir),
+            Ok(_) => Tikibase::load(dir),
             Err(e) => panic!("{}", e),
         }
     }
@@ -122,16 +122,6 @@ impl DocType {
     }
 }
 
-/// persists the current content of this document to disk
-///
-/// NOTE: this exists outside of Tikibase because of borrow  checker issues.
-/// No point in borrowing the entire Tikibase object when we just need its root directory.
-/// Also, this doesn't really belong into the Tikibase object nor the document object.
-pub fn save_doc(doc: &Document, root: &Path) {
-    let mut file = std::fs::File::create(root.join(&doc.path)).unwrap();
-    file.write_all(doc.text().as_bytes()).unwrap();
-}
-
 #[cfg(test)]
 mod tests {
 
@@ -145,7 +135,7 @@ mod tests {
 
         #[test]
         fn exists() {
-            let mut base = Tikibase::tmpbase();
+            let mut base = Tikibase::tmp();
             base.create_doc(PathBuf::from("one.md"), "# test doc");
             let doc = base
                 .get_doc(&PathBuf::from("one.md"))
@@ -155,7 +145,7 @@ mod tests {
 
         #[test]
         fn missing() {
-            let base = Tikibase::tmpbase();
+            let base = Tikibase::tmp();
             match base.get_doc(&PathBuf::from("zonk.md")) {
                 None => return,
                 Some(_) => panic!("should have found nothing"),
@@ -170,13 +160,13 @@ mod tests {
 
         #[test]
         fn empty() {
-            let base = Tikibase::tmpbase();
+            let base = Tikibase::tmp();
             assert_eq!(base.has_resource(PathBuf::from("foo.png")), false);
         }
 
         #[test]
         fn matching_resource() {
-            let mut base = Tikibase::tmpbase();
+            let mut base = Tikibase::tmp();
             base.create_resource(PathBuf::from("foo.png"), "content");
             assert_eq!(base.has_resource(PathBuf::from("foo.png")), true);
         }
@@ -184,7 +174,7 @@ mod tests {
 
     #[test]
     fn link_targets() {
-        let mut base = Tikibase::tmpbase();
+        let mut base = Tikibase::tmp();
         let content = "\
 # One
 
@@ -222,7 +212,7 @@ foo
         let tmp_dir = tempfile::tempdir().unwrap();
         let file_path = tmp_dir.path().join("file.md");
         std::fs::write(&file_path, content).unwrap();
-        let base = Tikibase::load_base(tmp_dir.into_path());
+        let base = Tikibase::load(tmp_dir.into_path());
         assert_eq!(base.docs.len(), 1);
         let doc = &base.docs[0];
         assert_eq!(doc.path.to_string_lossy(), "file.md");

@@ -14,7 +14,7 @@ pub struct MyWorld {
 impl World for MyWorld {
     type Error = io::Error;
     async fn new() -> Result<Self, io::Error> {
-        let base = Tikibase::tmpbase();
+        let base = Tikibase::tmp();
         Ok(MyWorld {
             base,
             findings: vec![],
