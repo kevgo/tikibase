@@ -5,6 +5,7 @@ use std::path::PathBuf;
 
 pub struct LinksResult {
     pub result: Result,
+    /// all resources that are linked to from the given Tikibase
     pub resource_links: Vec<String>,
 }
 
