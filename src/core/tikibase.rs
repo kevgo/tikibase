@@ -48,7 +48,8 @@ impl Tikibase {
             if entry.path() == dir {
                 continue;
             }
-            if entry.file_name().to_str().unwrap() == "tikibase.json" {
+            let filename = entry.file_name().to_str().unwrap();
+            if filename == "tikibase.json" || filename.starts_with(".") {
                 continue;
             }
             let path = entry.path();
@@ -207,6 +208,14 @@ foo
         assert_eq!(doc.content_sections[1].body.len(), 1);
         assert_eq!(doc.content_sections[1].body[0].text, "foo");
         assert_eq!(doc.content_sections[1].body[0].section_offset, 1);
+    }
+
+    #[test]
+    fn load_hidden_file() {
+        let dir = testhelpers::tmp_dir();
+        testhelpers::create_file(".prettierrc", "semi: false", &dir);
+        let base = Tikibase::load(dir);
+        assert_eq!(base.resources.len(), 0);
     }
 
     #[test]
