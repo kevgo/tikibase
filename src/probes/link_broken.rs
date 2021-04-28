@@ -35,15 +35,15 @@ pub fn process(base: &Tikibase) -> LinksResult {
                             if src.starts_with("http") {
                                 continue;
                             }
-
                             if !base.has_resource(PathBuf::from(&src)) {
                                 result.result.findings.push(format!(
                                     "{}:{}  broken image \"{}\"",
                                     &doc.path.to_string_lossy(),
                                     section.line_number + line.section_offset + 1,
-                                    src,
+                                    &src,
                                 ));
                             }
+                            result.resource_links.push(src);
                         }
                     }
                 }
@@ -90,6 +90,39 @@ mod tests {
             let have = super::super::process(&base);
             let want: Vec<&str> = vec![];
             assert_eq!(have.result.findings, want);
+        }
+
+        #[test]
+        fn link_to_existing_image() {
+            let mut base = Tikibase::tmp();
+            let content = "\
+# One
+
+![image](foo.png)
+";
+            base.create_doc(PathBuf::from("1.md"), content);
+            base.create_resource(PathBuf::from("foo.png"), "image content");
+            let have = super::super::process(&base);
+            assert_eq!(have.result.findings.len(), 0);
+            assert_eq!(have.resource_links.len(), 1);
+            assert_eq!(have.resource_links[0], "foo.png")
+        }
+
+        #[test]
+        fn link_to_non_existing_image() {
+            let mut base = Tikibase::tmp();
+            let content = "\
+# One
+
+![image](zonk.png)
+";
+            base.create_doc(PathBuf::from("1.md"), content);
+            let have = super::super::process(&base);
+            assert_eq!(have.result.findings.len(), 1);
+            assert_eq!(have.result.findings[0], "1.md:3  broken image \"zonk.png\"");
+            assert_eq!(have.resource_links.len(), 1);
+            assert_eq!(have.resource_links[0], "zonk.png")
+            //
         }
     }
 }
