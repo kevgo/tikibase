@@ -47,20 +47,20 @@ fn steps() -> Steps<MyWorld> {
     });
 
     steps.when("checking", |mut world, _ctx| {
-        let mut base = Tikibase::load(world.dir.clone());
-        world.findings = tikibase::probes::run(&mut base, false);
+        let mut base = Tikibase::load(world.dir.clone()).unwrap();
+        world.findings = tikibase::probes::run(&mut base, false).unwrap();
         world
     });
 
     steps.when("doing a pitstop", |mut world, _ctx| {
-        let mut base = Tikibase::load(world.dir.clone());
-        world.findings = tikibase::probes::run(&mut base, true);
+        let mut base = Tikibase::load(world.dir.clone()).unwrap();
+        world.findings = tikibase::probes::run(&mut base, true).unwrap();
         world
     });
 
     steps.when("fixing", |world, _ctx| {
-        let mut base = Tikibase::load(world.dir.clone());
-        tikibase::probes::run(&mut base, true);
+        let mut base = Tikibase::load(world.dir.clone()).unwrap();
+        tikibase::probes::run(&mut base, true).unwrap();
         world
     });
 
