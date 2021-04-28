@@ -20,7 +20,6 @@ pub fn tmp_dir() -> PathBuf {
     dir
 }
 
-#[allow(dead_code)]
 pub fn create_file(filename: &str, content: &str, dir: &Path) {
     let mut file = File::create(dir.join(filename)).unwrap();
     file.write_all(content.as_bytes()).unwrap();
