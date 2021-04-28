@@ -11,7 +11,7 @@ Feature: accept valid images
       """
     And binary file "existing.png"
 
-  Scenario: this
+  Scenario: check
     When checking
     Then it finds no issues
     And all files are unchanged
