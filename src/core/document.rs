@@ -1,5 +1,6 @@
+use super::error::UserError;
+use super::line::Line;
 use super::section::Section;
-use super::{error::UserError, line::Line};
 use std::io::prelude::*;
 use std::path::{Path, PathBuf};
 
