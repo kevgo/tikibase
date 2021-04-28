@@ -25,13 +25,11 @@ impl Document {
                     sections.push(section);
                 }
                 section_builder = builder_with_title_line(line, line_number);
-            } else {
-                if !section_builder.add_body_line(line) {
-                    return Err(UserError(format!(
-                        "\"{}\"  has no title section",
-                        path.to_string_lossy()
-                    )));
-                }
+            } else if !section_builder.add_body_line(line) {
+                return Err(UserError(format!(
+                    "\"{}\"  has no title section",
+                    path.to_string_lossy()
+                )));
             }
         }
         if let Some(section) = section_builder.result() {
@@ -114,7 +112,7 @@ mod tests {
 # test
 ### section 1
 content";
-        let doc = Document::from_str(PathBuf::from("one.md"), content);
+        let doc = Document::from_str(PathBuf::from("one.md"), content).unwrap();
         let mut sections = doc.sections();
         match sections.next() {
             None => panic!("expected title section"),
@@ -141,7 +139,7 @@ two
 ### Section 2
 foo
 ";
-        let doc = Document::from_str(PathBuf::from("test.md"), give);
+        let doc = Document::from_str(PathBuf::from("test.md"), give).unwrap();
         let have = doc.text();
         assert_eq!(have, give);
     }

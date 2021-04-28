@@ -73,7 +73,7 @@ mod tests {
 ";
             testhelpers::create_file("one.md", content, &dir);
             testhelpers::create_file("two.md", "# Two", &dir);
-            let base = Tikibase::load(dir);
+            let base = Tikibase::load(dir).unwrap();
             let have = super::super::process(&base);
             let want = vec!["one.md:3  broken link to \"non-existing.md\""];
             assert_eq!(have.outcome.findings, want);
@@ -90,7 +90,7 @@ mod tests {
 ";
             testhelpers::create_file("one.md", content, &dir);
             testhelpers::create_file("two.md", "# Two", &dir);
-            let base = Tikibase::load(dir);
+            let base = Tikibase::load(dir).unwrap();
             let have = super::super::process(&base);
             let want: Vec<&str> = vec![];
             assert_eq!(have.outcome.findings, want);
