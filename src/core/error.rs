@@ -12,6 +12,6 @@ impl UserError {
 
 impl fmt::Display for UserError {
     fn fmt(&self, f: &mut fmt::Formatter<'_>) -> fmt::Result {
-        write!(f, "{}", &self)
+        write!(f, "{}", &self.0)
     }
 }
