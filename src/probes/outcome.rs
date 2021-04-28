@@ -1,12 +1,12 @@
 /// The result of a processor.
-pub struct Result {
+pub struct Outcome {
     pub findings: Vec<String>,
     pub fixes: Vec<String>,
 }
 
-impl Result {
-    pub fn new() -> Result {
-        Result {
+impl Outcome {
+    pub fn new() -> Outcome {
+        Outcome {
             findings: vec![],
             fixes: vec![],
         }
@@ -14,6 +14,7 @@ impl Result {
 }
 
 /// provides all given findings and fixes sorted alphabetically
+// TODO: make a type alias
 pub struct SortedResults {
     items: Vec<String>,
 }
@@ -24,7 +25,7 @@ impl SortedResults {
     }
 
     /// registers the given results
-    pub fn append(&mut self, items: &mut Result) {
+    pub fn append(&mut self, items: &mut Outcome) {
         self.items.append(&mut items.findings);
         self.items.append(&mut items.fixes);
     }

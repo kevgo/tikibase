@@ -1,11 +1,11 @@
-use super::result::Result;
+use super::outcome::Outcome;
 use crate::core::tikibase::Tikibase;
 
 /// finds all empty sections in the given Tikibase,
 /// fixes them if fix is enabled,
 /// returns the unfixed issues
-pub fn process(base: &mut Tikibase, fix: bool) -> Result {
-    let mut result = Result::new();
+pub fn process(base: &mut Tikibase, fix: bool) -> Outcome {
+    let mut result = Outcome::new();
     for doc in &mut base.docs {
         let filename = &doc.path.to_string_lossy();
         let mut fixed = false;

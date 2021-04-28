@@ -1,9 +1,9 @@
-use super::result::Result;
+use super::outcome::Outcome;
 use crate::core::tikibase::Tikibase;
 
 /// finds all duplicate sections in the given Tikibase
-pub fn process(base: &mut Tikibase) -> Result {
-    let mut result = Result::new();
+pub fn process(base: &mut Tikibase) -> Outcome {
+    let mut result = Outcome::new();
     for doc in &mut base.docs {
         let mut known_sections = vec![];
         for section in &doc.content_sections {
