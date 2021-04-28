@@ -3,10 +3,14 @@ use std::collections::HashMap;
 use std::io;
 use std::path::{Path, PathBuf};
 use tikibase::core::tikibase::Tikibase;
+use tikibase::testhelpers;
 
 pub struct MyWorld {
-    pub base: Tikibase,
+    /// the directory in which the Tikibase under test is located
+    pub dir: PathBuf,
+    /// results of the Tikibase run
     pub findings: Vec<String>,
+    /// content of the files before the Tikibase command ran
     pub original_contents: HashMap<PathBuf, String>,
 }
 
@@ -14,9 +18,8 @@ pub struct MyWorld {
 impl World for MyWorld {
     type Error = io::Error;
     async fn new() -> Result<Self, io::Error> {
-        let base = Tikibase::tmp();
         Ok(MyWorld {
-            base,
+            dir: testhelpers::tmp_dir(),
             findings: vec![],
             original_contents: HashMap::new(),
         })
@@ -30,39 +33,40 @@ fn steps() -> Steps<MyWorld> {
         let filename = ctx.matches.get(1).expect("no filename provided");
         let content = ctx.step.docstring().unwrap().trim_start();
         let filepath = PathBuf::from(filename);
-        world.base.create_doc(filepath.clone(), content);
+        testhelpers::create_file(filename, content, &world.dir);
         world
             .original_contents
             .insert(filepath, content.to_string());
         world
     });
 
-    steps.given_regex(r#"^resource file "(.*)"$"#, |mut world, ctx| {
+    steps.given_regex(r#"^binary file "(.*)"$"#, |world, ctx| {
         let filename = ctx.matches.get(1).expect("no filename provided");
-        world
-            .base
-            .create_resource(PathBuf::from(filename), "binary content");
+        testhelpers::create_file(filename, "binary content", &world.dir);
         world
     });
 
     steps.when("checking", |mut world, _ctx| {
-        world.findings = tikibase::probes::run(&mut world.base, false);
+        let mut base = Tikibase::load(world.dir.clone());
+        world.findings = tikibase::probes::run(&mut base, false);
         world
     });
 
     steps.when("doing a pitstop", |mut world, _ctx| {
-        world.findings = tikibase::probes::run(&mut world.base, true);
+        let mut base = Tikibase::load(world.dir.clone());
+        world.findings = tikibase::probes::run(&mut base, true);
         world
     });
 
-    steps.when("fixing", |mut world, _ctx| {
-        tikibase::probes::run(&mut world.base, true);
+    steps.when("fixing", |world, _ctx| {
+        let mut base = Tikibase::load(world.dir.clone());
+        tikibase::probes::run(&mut base, true);
         world
     });
 
     steps.then("all files are unchanged", |world, _ctx| {
         for (filename, original_content) in &world.original_contents {
-            let current_content = world.base.get_doc(filename).unwrap().text();
+            let current_content = load_file(&world.dir.join(filename));
             assert_eq!(&current_content, original_content);
         }
         world
@@ -71,7 +75,7 @@ fn steps() -> Steps<MyWorld> {
     steps.then_regex(r#"^file "(.*)" should contain:$"#, |world, ctx| {
         let expected = ctx.step.docstring().unwrap().trim_start();
         let filename = ctx.matches.get(1).expect("no filename provided");
-        let actual = load_file(&world.base.dir.join(filename));
+        let actual = load_file(&world.dir.join(filename));
         assert_eq!(actual, expected);
         world
     });

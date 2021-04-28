@@ -45,10 +45,11 @@ mod tests {
 
     use super::process;
     use crate::core::tikibase::Tikibase;
-    use std::path::PathBuf;
+    use crate::testhelpers;
 
     #[test]
     fn false_empty_section() {
+        let dir = testhelpers::tmp_dir();
         let content = "\
 # test document
 
@@ -56,8 +57,8 @@ mod tests {
 ### next section
 
 content";
-        let mut base = Tikibase::tmp();
-        base.create_doc(PathBuf::from("test.md"), content);
+        testhelpers::create_file("test.md", content, &dir);
+        let mut base = Tikibase::load(dir);
         let have = process(&mut base, false);
         assert_eq!(have.findings.len(), 1);
         assert_eq!(
@@ -68,6 +69,7 @@ content";
 
     #[test]
     fn false_empty_line() {
+        let dir = testhelpers::tmp_dir();
         let content = "\
 # test document
 
@@ -76,8 +78,8 @@ content";
 ### next section
 
 content";
-        let mut base = Tikibase::tmp();
-        base.create_doc(PathBuf::from("test.md"), content);
+        testhelpers::create_file("test.md", content, &dir);
+        let mut base = Tikibase::load(dir);
         let have = process(&mut base, false);
         assert_eq!(have.findings.len(), 1);
         assert_eq!(
@@ -88,22 +90,24 @@ content";
 
     #[test]
     fn false_content() {
+        let dir = testhelpers::tmp_dir();
         let content = "\
 # test document
 
 ### section with content
 
 content";
-        let mut base = Tikibase::tmp();
-        base.create_doc(PathBuf::from("test.md"), content);
+        testhelpers::create_file("test.md", content, &dir);
+        let mut base = Tikibase::load(dir);
         let have = process(&mut base, false);
         assert_eq!(have.findings.len(), 0);
     }
+
     #[test]
     fn true_empty_section() {
-        let mut base = Tikibase::tmp();
-        base.create_doc(
-            PathBuf::from("test.md"),
+        let dir = testhelpers::tmp_dir();
+        testhelpers::create_file(
+            "test.md",
             "\
 # test document
 
@@ -111,7 +115,9 @@ content";
 ### next section
 
 content",
+            &dir,
         );
+        let mut base = Tikibase::load(dir);
         let result = process(&mut base, true);
         assert_eq!(result.findings.len(), 0);
 

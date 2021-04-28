@@ -10,7 +10,7 @@ Feature: recognize/fix broken images
       ![broken image](non-existing.png)
       """
 
-  Scenario: this
+  Scenario: check
     When checking
     Then it prints:
       """
