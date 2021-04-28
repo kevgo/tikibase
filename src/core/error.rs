@@ -1,4 +1,4 @@
-// use std::fmt;
+use std::fmt;
 
 #[derive(Debug)]
 /// an error made by the user
@@ -10,8 +10,8 @@ impl UserError {
     }
 }
 
-// impl fmt::Display for UserError {
-//     fn fmt(&self, f: &mut fmt::Formatter<'_>) -> fmt::Result {
-//         write!(f, "{}", &self)
-//     }
-// }
+impl fmt::Display for UserError {
+    fn fmt(&self, f: &mut fmt::Formatter<'_>) -> fmt::Result {
+        write!(f, "{}", &self)
+    }
+}

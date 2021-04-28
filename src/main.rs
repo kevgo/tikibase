@@ -6,7 +6,13 @@ use tikibase::help;
 use tikibase::probes;
 use tikibase::stats;
 
-fn main() -> Result<(), UserError> {
+fn main() {
+    if let Err(user_err) = run() {
+        println!("{}", user_err);
+    }
+}
+
+fn run() -> Result<(), UserError> {
     let mut base = Tikibase::load(PathBuf::from("."))?;
     match parse(std::env::args()) {
         Command::Check => {
