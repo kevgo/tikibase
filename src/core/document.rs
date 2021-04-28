@@ -1,6 +1,7 @@
 use super::error::UserError;
 use super::line::Line;
 use super::section::Section;
+use std::fs::File;
 use std::io::prelude::*;
 use std::path::{Path, PathBuf};
 
@@ -52,9 +53,21 @@ impl Document {
     }
 
     /// persists the changes made to this document to disk
-    pub fn flush(&self, root: &Path) {
-        let mut file = std::fs::File::create(root.join(&self.path)).unwrap();
-        file.write_all(self.text().as_bytes()).unwrap();
+    pub fn flush(&self, root: &Path) -> Result<(), UserError> {
+        let filename = root.join(&self.path);
+        let mut file = File::create(&filename).map_err(|_| {
+            UserError(format!(
+                "cannot create file \"{}\"",
+                filename.to_string_lossy()
+            ))
+        })?;
+        file.write_all(self.text().as_bytes()).map_err(|_| {
+            UserError(format!(
+                "cannot write file \"{}\"",
+                filename.to_string_lossy()
+            ))
+        })?;
+        Ok(())
     }
 
     /// provides a non-consuming iterator for all sections in this document

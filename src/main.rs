@@ -10,18 +10,18 @@ fn main() -> Result<(), UserError> {
     let mut base = Tikibase::load(PathBuf::from("."))?;
     match parse(std::env::args()) {
         Command::Check => {
-            for message in probes::run(&mut base, false) {
+            for message in probes::run(&mut base, false)? {
                 println!("{}", message);
             }
         }
         Command::Fix => {
-            for message in probes::run(&mut base, true) {
+            for message in probes::run(&mut base, true)? {
                 println!("{}", message);
             }
         }
         Command::Help => help::run(),
         Command::Pitstop => {
-            for finding in probes::run(&mut base, true) {
+            for finding in probes::run(&mut base, true)? {
                 println!("{}", finding);
             }
         }

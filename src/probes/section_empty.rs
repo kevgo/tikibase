@@ -1,10 +1,11 @@
 use super::outcome::Outcome;
+use crate::core::error::UserError;
 use crate::core::tikibase::Tikibase;
 
 /// finds all empty sections in the given Tikibase,
 /// fixes them if fix is enabled,
 /// returns the unfixed issues
-pub fn process(base: &mut Tikibase, fix: bool) -> Outcome {
+pub fn process(base: &mut Tikibase, fix: bool) -> Result<Outcome, UserError> {
     let mut result = Outcome::new();
     for doc in &mut base.docs {
         let filename = &doc.path.to_string_lossy();
@@ -34,10 +35,10 @@ pub fn process(base: &mut Tikibase, fix: bool) -> Outcome {
             true
         });
         if fixed {
-            doc.flush(&base.dir);
+            doc.flush(&base.dir)?;
         }
     }
-    result
+    Ok(result)
 }
 
 #[cfg(test)]
@@ -59,7 +60,7 @@ mod tests {
 content";
         testhelpers::create_file("test.md", content, &dir);
         let mut base = Tikibase::load(dir)?;
-        let have = process(&mut base, false);
+        let have = process(&mut base, false).unwrap();
         assert_eq!(have.findings.len(), 1);
         assert_eq!(
             have.findings[0],
@@ -81,7 +82,7 @@ content";
 content";
         testhelpers::create_file("test.md", content, &dir);
         let mut base = Tikibase::load(dir)?;
-        let have = process(&mut base, false);
+        let have = process(&mut base, false).unwrap();
         assert_eq!(have.findings.len(), 1);
         assert_eq!(
             have.findings[0],
@@ -101,7 +102,7 @@ content";
 content";
         testhelpers::create_file("test.md", content, &dir);
         let mut base = Tikibase::load(dir)?;
-        let have = process(&mut base, false);
+        let have = process(&mut base, false).unwrap();
         assert_eq!(have.findings.len(), 0);
         Ok(())
     }
@@ -121,7 +122,7 @@ content",
             &dir,
         );
         let mut base = Tikibase::load(dir)?;
-        let result = process(&mut base, true);
+        let result = process(&mut base, true).unwrap();
         assert_eq!(result.findings.len(), 0);
 
         // verify Tikibase data
