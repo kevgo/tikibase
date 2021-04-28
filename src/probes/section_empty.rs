@@ -44,11 +44,11 @@ pub fn process(base: &mut Tikibase, fix: bool) -> Result {
 mod tests {
 
     use super::process;
-    use crate::core::tikibase::Tikibase;
+    use crate::core::{error::UserError, tikibase::Tikibase};
     use crate::testhelpers;
 
     #[test]
-    fn false_empty_section() {
+    fn false_empty_section() -> Result<(), UserError> {
         let dir = testhelpers::tmp_dir();
         let content = "\
 # test document
@@ -58,17 +58,18 @@ mod tests {
 
 content";
         testhelpers::create_file("test.md", content, &dir);
-        let mut base = Tikibase::load(dir);
+        let mut base = Tikibase::load(dir)?;
         let have = process(&mut base, false);
         assert_eq!(have.findings.len(), 1);
         assert_eq!(
             have.findings[0],
             "test.md:3  section \"empty section\" has no content"
         );
+        Ok(())
     }
 
     #[test]
-    fn false_empty_line() {
+    fn false_empty_line() -> Result<(), UserError> {
         let dir = testhelpers::tmp_dir();
         let content = "\
 # test document
@@ -79,17 +80,18 @@ content";
 
 content";
         testhelpers::create_file("test.md", content, &dir);
-        let mut base = Tikibase::load(dir);
+        let mut base = Tikibase::load(dir)?;
         let have = process(&mut base, false);
         assert_eq!(have.findings.len(), 1);
         assert_eq!(
             have.findings[0],
             "test.md:3  section \"empty section\" has no content"
         );
+        Ok(())
     }
 
     #[test]
-    fn false_content() {
+    fn false_content() -> Result<(), UserError> {
         let dir = testhelpers::tmp_dir();
         let content = "\
 # test document
@@ -98,13 +100,14 @@ content";
 
 content";
         testhelpers::create_file("test.md", content, &dir);
-        let mut base = Tikibase::load(dir);
+        let mut base = Tikibase::load(dir)?;
         let have = process(&mut base, false);
         assert_eq!(have.findings.len(), 0);
+        Ok(())
     }
 
     #[test]
-    fn true_empty_section() {
+    fn true_empty_section() -> Result<(), UserError> {
         let dir = testhelpers::tmp_dir();
         testhelpers::create_file(
             "test.md",
@@ -117,7 +120,7 @@ content";
 content",
             &dir,
         );
-        let mut base = Tikibase::load(dir);
+        let mut base = Tikibase::load(dir)?;
         let result = process(&mut base, true);
         assert_eq!(result.findings.len(), 0);
 
@@ -128,5 +131,6 @@ content",
             base.docs[0].content_sections[0].title_line.text,
             "### next section"
         );
+        Ok(())
     }
 }

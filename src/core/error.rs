@@ -1,23 +1,17 @@
-use std::fmt;
+// use std::fmt;
 
 #[derive(Debug)]
 /// an error made by the user
-pub struct UserError {
-    message: String,
-    guidance: String,
-}
+pub struct UserError(pub String);
 
-impl fmt::Display for UserError {
-    fn fmt(&self, f: &mut fmt::Formatter<'_>) -> fmt::Result {
-        write!(f, "{}\n\n{}", &self.message, &self.guidance)
+impl UserError {
+    pub fn new(message: &str) -> UserError {
+        UserError(message.to_string())
     }
 }
 
-impl From<std::io::Error> for UserError {
-    fn from(error: std::io::Error) -> Self {
-        UserError {
-            message: error.to_string(),
-            guidance: "Please make sure that all files and directories are accessible.".to_string(),
-        }
-    }
-}
+// impl fmt::Display for UserError {
+//     fn fmt(&self, f: &mut fmt::Formatter<'_>) -> fmt::Result {
+//         write!(f, "{}", &self)
+//     }
+// }

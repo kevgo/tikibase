@@ -25,25 +25,30 @@ impl Document {
                 }
                 section_builder = builder_with_title_line(line, line_number);
             } else {
-                section_builder.add_body_line(line);
+                if !section_builder.add_body_line(line) {
+                    return Err(UserError(format!(
+                        "\"{}\"  has no title section",
+                        path.to_string_lossy()
+                    )));
+                }
             }
         }
         if let Some(section) = section_builder.result() {
             sections.push(section);
         }
         let content_sections = sections.split_off(1);
+        let title_section = sections.pop().ok_or_else(|| UserError::new("foo"))?;
+        //     format!("\"{}\" has no title section", path.to_string_lossy())
+        // )?;
         Ok(Document {
             path,
-            title_section: sections.pop().ok_or_else(|| UserError {
-                message: "document has no section".to_string(),
-                guidance: "".to_string(),
-            })?,
+            title_section,
             content_sections,
         })
     }
 
     /// provides a Document instance containing the content of the file at the given path
-    pub fn from_str(path: PathBuf, text: &str) -> Document {
+    pub fn from_str(path: PathBuf, text: &str) -> Result<Document, UserError> {
         Document::from_lines(text.lines().map(|line| line.to_string()), path)
     }
 
@@ -177,15 +182,16 @@ pub fn placeholder_builder() -> SectionBuilder {
 }
 
 impl SectionBuilder {
-    pub fn add_body_line(&mut self, line: String) {
+    pub fn add_body_line(&mut self, line: String) -> bool {
         if !self.valid {
-            panic!("cannot add to an invalid builder");
+            return false;
         }
         self.body_line_number += 1;
         self.body.push(Line {
             section_offset: self.body_line_number,
             text: line,
         });
+        true
     }
 
     /// Provides the content this builder has accumulated.

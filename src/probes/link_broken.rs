@@ -1,10 +1,9 @@
-use super::result::Result;
 use super::Tikibase;
 use crate::core::line::Reference;
 use std::path::PathBuf;
 
 pub struct LinksResult {
-    pub result: Result,
+    pub result: result::Result,
     /// all resources that are linked to from the given Tikibase
     pub resource_links: Vec<String>,
 }
@@ -58,6 +57,7 @@ pub fn process(base: &Tikibase) -> LinksResult {
 mod tests {
 
     mod process {
+        use crate::core::error::UserError;
         use crate::core::tikibase::Tikibase;
         use crate::testhelpers;
 
@@ -96,7 +96,7 @@ mod tests {
         }
 
         #[test]
-        fn link_to_existing_image() {
+        fn link_to_existing_image() -> Result<(), UserError> {
             let dir = testhelpers::tmp_dir();
             let content = "\
 # One
@@ -105,15 +105,16 @@ mod tests {
 ";
             testhelpers::create_file("1.md", content, &dir);
             testhelpers::create_file("foo.png", "image content", &dir);
-            let base = Tikibase::load(dir);
+            let base = Tikibase::load(dir)?;
             let have = super::super::process(&base);
             assert_eq!(have.result.findings.len(), 0);
             assert_eq!(have.resource_links.len(), 1);
-            assert_eq!(have.resource_links[0], "foo.png")
+            assert_eq!(have.resource_links[0], "foo.png");
+            Ok(())
         }
 
         #[test]
-        fn link_to_non_existing_image() {
+        fn link_to_non_existing_image() -> Result<(), UserError> {
             let dir = testhelpers::tmp_dir();
             let content = "\
 # One
@@ -121,13 +122,13 @@ mod tests {
 ![image](zonk.png)
 ";
             testhelpers::create_file("1.md", content, &dir);
-            let base = Tikibase::load(dir);
+            let base = Tikibase::load(dir)?;
             let have = super::super::process(&base);
             assert_eq!(have.result.findings.len(), 1);
             assert_eq!(have.result.findings[0], "1.md:3  broken image \"zonk.png\"");
             assert_eq!(have.resource_links.len(), 1);
-            assert_eq!(have.resource_links[0], "zonk.png")
-            //
+            assert_eq!(have.resource_links[0], "zonk.png");
+            Ok(())
         }
     }
 }

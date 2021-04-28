@@ -1,13 +1,13 @@
 extern crate lazy_static;
 
 use std::path::PathBuf;
-use tikibase::core::tikibase::Tikibase;
+use tikibase::core::{error::UserError, tikibase::Tikibase};
 use tikibase::help;
 use tikibase::probes;
 use tikibase::stats;
 
-fn main() {
-    let mut base = Tikibase::load(PathBuf::from("."));
+fn main() -> Result<(), UserError> {
+    let mut base = Tikibase::load(PathBuf::from("."))?;
     match parse(std::env::args()) {
         Command::Check => {
             for message in probes::run(&mut base, false) {
@@ -28,6 +28,7 @@ fn main() {
         Command::Stats => stats::run(&base),
         Command::Version => help::version(),
     }
+    Ok(())
 }
 
 #[derive(Debug, PartialEq)]

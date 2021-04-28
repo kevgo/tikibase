@@ -1,5 +1,5 @@
-use super::document::Document;
 use super::resource::Resource;
+use super::{document::Document, error::UserError};
 use std::fs::File;
 use std::io::{BufRead, BufReader};
 use std::path::{Path, PathBuf};
@@ -40,7 +40,7 @@ impl Tikibase {
     }
 
     /// Provides a Tikibase instance for the given directory.
-    pub fn load(dir: PathBuf) -> Tikibase {
+    pub fn load(dir: PathBuf) -> Result<Tikibase, UserError> {
         let mut docs = Vec::new();
         let mut resources = Vec::new();
         for entry in WalkDir::new(&dir) {
@@ -60,16 +60,16 @@ impl Tikibase {
                     docs.push(Document::from_lines(
                         BufReader::new(file).lines().map(|l| l.unwrap()),
                         filepath,
-                    ));
+                    )?);
                 }
                 FileType::Resource => resources.push(Resource { path: filepath }),
             }
         }
-        Tikibase {
+        Ok(Tikibase {
             dir,
             docs,
             resources,
-        }
+        })
     }
 }
 
@@ -103,14 +103,13 @@ mod tests {
         use std::path::PathBuf;
 
         #[test]
-        fn exists() {
+        fn exists() -> Result<(), UserError> {
             let dir = testhelpers::tmp_dir();
             testhelpers::create_file("one.md", "# test doc", &dir);
-            let base = Tikibase::load(dir);
-            let doc = base
-                .get_doc(&PathBuf::from("one.md"))
-                .expect("document not found");
+            let base = Tikibase::load(dir)?;
+            let doc = base.get_doc(&PathBuf::from("one.md"))?;
             assert_eq!(doc.title_section.title_line.text, "# test doc");
+            Ok(())
         }
 
         #[test]
