@@ -1,9 +1,9 @@
-use super::result::Result;
+use super::outcome::Outcome;
 use crate::core::tikibase::Tikibase;
 use std::collections::{HashMap, HashSet};
 use std::iter::FromIterator;
 
-pub fn process(base: &mut Tikibase) -> Result {
+pub fn process(base: &mut Tikibase) -> Outcome {
     let mut finder = MixCapSectionFinder::new();
     for doc in &base.docs {
         finder.register(doc.title_section.section_type());
@@ -37,8 +37,8 @@ impl MixCapSectionFinder {
     }
 
     /// provides the found sections
-    fn result(self) -> Result {
-        Result {
+    fn result(self) -> Outcome {
+        Outcome {
             findings: self
                 .known_variants
                 .into_values()
