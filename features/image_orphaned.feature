@@ -7,6 +7,6 @@ Feature: orphaned resource
         When checking
         Then it prints:
             """
-            unused image "image.png"
+            unused image "orphan.png"
             """
         And all files are unchanged

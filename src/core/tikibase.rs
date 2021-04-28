@@ -62,8 +62,10 @@ impl Tikibase {
         let mut resources = Vec::new();
         for entry in WalkDir::new(&dir) {
             let entry = entry.unwrap();
-            let filename = entry.file_name().to_str().unwrap();
-            if filename == "." || filename == "tikibase.json" {
+            if entry.path() == dir {
+                continue;
+            }
+            if entry.file_name().to_str().unwrap() == "tikibase.json" {
                 continue;
             }
             let path = entry.path();
@@ -199,7 +201,7 @@ content";
     }
 
     #[test]
-    fn load_base() {
+    fn load() {
         let content = "\
 # Title
 title text
@@ -234,5 +236,12 @@ foo
         assert_eq!(doc.content_sections[1].body.len(), 1);
         assert_eq!(doc.content_sections[1].body[0].text, "foo");
         assert_eq!(doc.content_sections[1].body[0].section_offset, 1);
+    }
+
+    #[test]
+    fn tmp() {
+        let base = Tikibase::tmp();
+        assert_eq!(base.docs.len(), 0);
+        assert_eq!(base.resources.len(), 0);
     }
 }
