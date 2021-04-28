@@ -37,9 +37,12 @@ impl Document {
             sections.push(section);
         }
         let content_sections = sections.split_off(1);
-        let title_section = sections.pop().ok_or_else(|| UserError::new("foo"))?;
-        //     format!("\"{}\" has no title section", path.to_string_lossy())
-        // )?;
+        let title_section = sections.pop().ok_or_else(|| {
+            UserError(format!(
+                "\"{}\" has no title section",
+                path.to_string_lossy()
+            ))
+        })?;
         Ok(Document {
             path,
             title_section,
