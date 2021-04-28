@@ -27,10 +27,11 @@ mod tests {
 
     use super::process;
     use crate::core::tikibase::Tikibase;
-    use std::path::PathBuf;
+    use crate::testhelpers;
 
     #[test]
     fn duplicate_sections() {
+        let dir = testhelpers::tmp_dir();
         let content = "\
 # test document
 
@@ -38,8 +39,8 @@ mod tests {
 content
 ### One
 content";
-        let mut base = Tikibase::tmp();
-        base.create_doc(PathBuf::from("test.md"), content);
+        testhelpers::create_file("test.md", content, &dir);
+        let mut base = Tikibase::load(dir);
         let have = process(&mut base);
         assert_eq!(have.findings.len(), 1);
         assert_eq!(have.findings[0], "test.md  duplicate section: One");

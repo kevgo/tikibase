@@ -1,9 +1,6 @@
 use super::document::Document;
 use super::resource::Resource;
-use rand::Rng;
-use std::fs;
 use std::fs::File;
-use std::io::prelude::*;
 use std::io::{BufRead, BufReader};
 use std::path::{Path, PathBuf};
 use walkdir::WalkDir;
@@ -15,20 +12,6 @@ pub struct Tikibase {
 }
 
 impl Tikibase {
-    /// creates a new document with the given content in this Tikibase
-    pub fn create_doc(&mut self, filename: PathBuf, content: &str) {
-        let mut file = fs::File::create(&self.dir.join(&filename)).unwrap();
-        file.write_all(content.as_bytes()).unwrap();
-        self.docs.push(Document::from_str(filename, content));
-    }
-
-    /// creates a new document with the given content in this Tikibase
-    pub fn create_resource(&mut self, filename: PathBuf, content: &str) {
-        let mut file = fs::File::create(&self.dir.join(&filename)).unwrap();
-        file.write_all(content.as_bytes()).unwrap();
-        self.resources.push(Resource { path: filename });
-    }
-
     /// provides the document with the given relative filename
     pub fn get_doc(&self, filename: &Path) -> Option<&Document> {
         self.docs.iter().find(|doc| doc.path == filename)
@@ -87,24 +70,6 @@ impl Tikibase {
             resources,
         }
     }
-
-    /// creates a Tikibase instance for testing in the './tmp' directory
-    pub fn tmp() -> Tikibase {
-        let timestamp = std::time::SystemTime::now()
-            .duration_since(std::time::UNIX_EPOCH)
-            .unwrap()
-            .as_millis();
-        let rand: String = rand::thread_rng()
-            .sample_iter(&rand::distributions::Alphanumeric)
-            .take(3)
-            .map(char::from)
-            .collect();
-        let dir = std::path::PathBuf::from(format!("./tmp/{}-{}", timestamp, rand));
-        match std::fs::create_dir_all(&dir) {
-            Ok(_) => Tikibase::load(dir),
-            Err(e) => panic!("{}", e),
-        }
-    }
 }
 
 enum FileType {
@@ -128,17 +93,19 @@ impl FileType {
 mod tests {
 
     use super::*;
-    use std::path::PathBuf;
+    use crate::testhelpers;
 
     mod get_doc {
 
         use super::super::*;
+        use crate::testhelpers;
         use std::path::PathBuf;
 
         #[test]
         fn exists() {
-            let mut base = Tikibase::tmp();
-            base.create_doc(PathBuf::from("one.md"), "# test doc");
+            let dir = testhelpers::tmp_dir();
+            testhelpers::create_file("one.md", "# test doc", &dir);
+            let base = Tikibase::load(dir);
             let doc = base
                 .get_doc(&PathBuf::from("one.md"))
                 .expect("document not found");
@@ -147,7 +114,8 @@ mod tests {
 
         #[test]
         fn missing() {
-            let base = Tikibase::tmp();
+            let dir = testhelpers::tmp_dir();
+            let base = Tikibase::load(dir);
             match base.get_doc(&PathBuf::from("zonk.md")) {
                 None => return,
                 Some(_) => panic!("should have found nothing"),
@@ -158,25 +126,28 @@ mod tests {
     mod has_resource {
 
         use super::super::*;
+        use crate::testhelpers;
         use std::path::PathBuf;
 
         #[test]
         fn empty() {
-            let base = Tikibase::tmp();
+            let dir = testhelpers::tmp_dir();
+            let base = Tikibase::load(dir);
             assert_eq!(base.has_resource(PathBuf::from("foo.png")), false);
         }
 
         #[test]
         fn matching_resource() {
-            let mut base = Tikibase::tmp();
-            base.create_resource(PathBuf::from("foo.png"), "content");
+            let dir = testhelpers::tmp_dir();
+            testhelpers::create_file("foo.png", "content", &dir);
+            let base = Tikibase::load(dir);
             assert_eq!(base.has_resource(PathBuf::from("foo.png")), true);
         }
     }
 
     #[test]
     fn link_targets() {
-        let mut base = Tikibase::tmp();
+        let dir = testhelpers::tmp_dir();
         let content = "\
 # One
 
@@ -184,8 +155,9 @@ mod tests {
 ### Beta
 
 content";
-        base.create_doc(PathBuf::from("one.md"), content);
-        base.create_doc(PathBuf::from("two.md"), content);
+        testhelpers::create_file("one.md", content, &dir);
+        testhelpers::create_file("two.md", content, &dir);
+        let base = Tikibase::load(dir);
         let have = base.link_targets();
         let want = vec![
             "one.md",
@@ -202,6 +174,7 @@ content";
 
     #[test]
     fn load() {
+        let dir = testhelpers::tmp_dir();
         let content = "\
 # Title
 title text
@@ -211,10 +184,8 @@ two
 ### Section 2
 foo
 ";
-        let tmp_dir = tempfile::tempdir().unwrap();
-        let file_path = tmp_dir.path().join("file.md");
-        std::fs::write(&file_path, content).unwrap();
-        let base = Tikibase::load(tmp_dir.into_path());
+        testhelpers::create_file("file.md", content, &dir);
+        let base = Tikibase::load(dir);
         assert_eq!(base.docs.len(), 1);
         let doc = &base.docs[0];
         assert_eq!(doc.path.to_string_lossy(), "file.md");
@@ -239,8 +210,9 @@ foo
     }
 
     #[test]
-    fn tmp() {
-        let base = Tikibase::tmp();
+    fn empty() {
+        let dir = testhelpers::tmp_dir();
+        let base = Tikibase::load(dir);
         assert_eq!(base.docs.len(), 0);
         assert_eq!(base.resources.len(), 0);
     }

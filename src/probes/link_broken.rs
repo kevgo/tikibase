@@ -59,19 +59,20 @@ mod tests {
 
     mod process {
         use crate::core::tikibase::Tikibase;
-        use std::path::PathBuf;
+        use crate::testhelpers;
 
         #[test]
         fn link_to_non_existing_file() {
-            let mut base = Tikibase::tmp();
+            let dir = testhelpers::tmp_dir();
             let content = "\
 # One
 
 [invalid](non-existing.md)
 [valid](two.md)
 ";
-            base.create_doc(PathBuf::from("one.md"), content);
-            base.create_doc(PathBuf::from("two.md"), "# Two");
+            testhelpers::create_file("one.md", content, &dir);
+            testhelpers::create_file("two.md", "# Two", &dir);
+            let base = Tikibase::load(dir);
             let have = super::super::process(&base);
             let want = vec!["one.md:3  broken link to \"non-existing.md\""];
             assert_eq!(have.result.findings, want);
@@ -79,15 +80,16 @@ mod tests {
 
         #[test]
         fn ignore_external_urls() {
-            let mut base = Tikibase::tmp();
+            let dir = testhelpers::tmp_dir();
             let content = "\
 # One
 
 [external site](https://google.com)
 ![external image](https://google.com/foo.png)
 ";
-            base.create_doc(PathBuf::from("one.md"), content);
-            base.create_doc(PathBuf::from("two.md"), "# Two");
+            testhelpers::create_file("one.md", content, &dir);
+            testhelpers::create_file("two.md", "# Two", &dir);
+            let base = Tikibase::load(dir);
             let have = super::super::process(&base);
             let want: Vec<&str> = vec![];
             assert_eq!(have.result.findings, want);
@@ -95,14 +97,15 @@ mod tests {
 
         #[test]
         fn link_to_existing_image() {
-            let mut base = Tikibase::tmp();
+            let dir = testhelpers::tmp_dir();
             let content = "\
 # One
 
 ![image](foo.png)
 ";
-            base.create_doc(PathBuf::from("1.md"), content);
-            base.create_resource(PathBuf::from("foo.png"), "image content");
+            testhelpers::create_file("1.md", content, &dir);
+            testhelpers::create_file("foo.png", "image content", &dir);
+            let base = Tikibase::load(dir);
             let have = super::super::process(&base);
             assert_eq!(have.result.findings.len(), 0);
             assert_eq!(have.resource_links.len(), 1);
@@ -111,13 +114,14 @@ mod tests {
 
         #[test]
         fn link_to_non_existing_image() {
-            let mut base = Tikibase::tmp();
+            let dir = testhelpers::tmp_dir();
             let content = "\
 # One
 
 ![image](zonk.png)
 ";
-            base.create_doc(PathBuf::from("1.md"), content);
+            testhelpers::create_file("1.md", content, &dir);
+            let base = Tikibase::load(dir);
             let have = super::super::process(&base);
             assert_eq!(have.result.findings.len(), 1);
             assert_eq!(have.result.findings[0], "1.md:3  broken image \"zonk.png\"");

@@ -3,3 +3,4 @@ pub mod core;
 pub mod help;
 pub mod probes;
 pub mod stats;
+pub mod testhelpers;
