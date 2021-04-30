@@ -7,16 +7,13 @@ use tikibase::probes;
 use tikibase::stats;
 
 fn main() {
-    if let Err(user_err) = run() {
-        println!("{}", user_err);
+    let (mut base, errors) = Tikibase::load(PathBuf::from("."));
+    for error in errors {
+        println!("{}", error);
     }
-}
-
-fn run() -> Result<(), UserError> {
-    let mut base = Tikibase::load(PathBuf::from("."))?;
     match parse(std::env::args()) {
         Command::Check => {
-            for message in probes::run(&mut base, false)? {
+            for message in probes::run(&mut base, false) {
                 println!("{}", message);
             }
         }
@@ -34,7 +31,6 @@ fn run() -> Result<(), UserError> {
         Command::Stats => stats::run(&base),
         Command::Version => help::version(),
     }
-    Ok(())
 }
 
 #[derive(Debug, PartialEq)]

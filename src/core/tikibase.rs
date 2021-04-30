@@ -1,5 +1,6 @@
+use super::document::Document;
+use super::error::UserError;
 use super::resource::Resource;
-use super::{document::Document, error::UserError};
 use std::fs::File;
 use std::io::{BufRead, BufReader};
 use std::path::{Path, PathBuf};
@@ -40,36 +41,48 @@ impl Tikibase {
     }
 
     /// Provides a Tikibase instance for the given directory.
-    pub fn load(dir: PathBuf) -> Result<Tikibase, UserError> {
+    /// Also, any recoverable errors encountered while loading the Tikibase into memory.
+    /// Unrecoverable errors trigger a panic.
+    pub fn load(dir: PathBuf) -> (Tikibase, Vec<UserError>) {
         let mut docs = Vec::new();
         let mut resources = Vec::new();
+        let mut errors = Vec::new();
         for entry in WalkDir::new(&dir) {
             let entry = entry.unwrap();
             if entry.path() == dir {
                 continue;
             }
-            let filename = entry.file_name().to_str().unwrap();
+            let filename = entry.file_name().to_string_lossy();
             if filename == "tikibase.json" || filename.starts_with('.') {
                 continue;
             }
             let path = entry.path();
             let filepath = path.strip_prefix(&dir).unwrap().to_owned();
             match FileType::from_ext(path.extension()) {
-                FileType::Document => {
-                    let file = File::open(&path).unwrap();
-                    docs.push(Document::from_lines(
-                        BufReader::new(file).lines().map(|l| l.unwrap()),
-                        filepath,
-                    )?);
-                }
+                FileType::Document => match File::open(&path) {
+                    Ok(file) => {
+                        let lines = BufReader::new(file).lines().map(|l| l.unwrap());
+                        match Document::from_lines(lines, filepath) {
+                            Ok(doc) => docs.push(doc),
+                            Err(e) => errors.push(e),
+                        }
+                    }
+                    Err(_) => errors.push(UserError(format!(
+                        "{}  cannot open file",
+                        &path.to_string_lossy()
+                    ))),
+                },
                 FileType::Resource => resources.push(Resource { path: filepath }),
             }
         }
-        Ok(Tikibase {
-            dir,
-            docs,
-            resources,
-        })
+        (
+            Tikibase {
+                dir,
+                docs,
+                resources,
+            },
+            errors,
+        )
     }
 }
 
@@ -106,7 +119,8 @@ mod tests {
         fn exists() {
             let dir = testhelpers::tmp_dir();
             testhelpers::create_file("one.md", "# test doc", &dir);
-            let base = Tikibase::load(dir).unwrap();
+            let (base, err) = Tikibase::load(dir);
+            assert_eq!(err.len(), 0);
             let doc = base.get_doc(&PathBuf::from("one.md")).unwrap();
             assert_eq!(doc.title_section.title_line.text, "# test doc");
         }
@@ -114,7 +128,8 @@ mod tests {
         #[test]
         fn missing() {
             let dir = testhelpers::tmp_dir();
-            let base = Tikibase::load(dir).unwrap();
+            let (base, err) = Tikibase::load(dir);
+            assert_eq!(err.len(), 0);
             match base.get_doc(&PathBuf::from("zonk.md")) {
                 None => return,
                 Some(_) => panic!("should have found nothing"),
@@ -131,7 +146,8 @@ mod tests {
         #[test]
         fn empty() {
             let dir = testhelpers::tmp_dir();
-            let base = Tikibase::load(dir).unwrap();
+            let (base, err) = Tikibase::load(dir);
+            assert_eq!(err.len(), 0);
             assert_eq!(base.has_resource(PathBuf::from("foo.png")), false);
         }
 
@@ -139,7 +155,8 @@ mod tests {
         fn matching_resource() {
             let dir = testhelpers::tmp_dir();
             testhelpers::create_file("foo.png", "content", &dir);
-            let base = Tikibase::load(dir).unwrap();
+            let (base, err) = Tikibase::load(dir);
+            assert_eq!(err.len(), 0);
             assert_eq!(base.has_resource(PathBuf::from("foo.png")), true);
         }
     }
@@ -156,7 +173,8 @@ mod tests {
 content";
         testhelpers::create_file("one.md", content, &dir);
         testhelpers::create_file("two.md", content, &dir);
-        let base = Tikibase::load(dir).unwrap();
+        let (base, err) = Tikibase::load(dir);
+        assert_eq!(err.len(), 0);
         let have = base.link_targets();
         let want = vec![
             "one.md",
@@ -184,7 +202,7 @@ two
 foo
 ";
         testhelpers::create_file("file.md", content, &dir);
-        let base = Tikibase::load(dir).unwrap();
+        let (base, err) = Tikibase::load(dir);
         assert_eq!(base.docs.len(), 1);
         let doc = &base.docs[0];
         assert_eq!(doc.path.to_string_lossy(), "file.md");
@@ -212,14 +230,14 @@ foo
     fn load_hidden_file() {
         let dir = testhelpers::tmp_dir();
         testhelpers::create_file(".prettierrc", "semi: false", &dir);
-        let base = Tikibase::load(dir).unwrap();
+        let (base, err) = Tikibase::load(dir);
         assert_eq!(base.resources.len(), 0);
     }
 
     #[test]
     fn empty() {
         let dir = testhelpers::tmp_dir();
-        let base = Tikibase::load(dir).unwrap();
+        let (base, err) = Tikibase::load(dir);
         assert_eq!(base.docs.len(), 0);
         assert_eq!(base.resources.len(), 0);
     }

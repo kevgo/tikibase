@@ -1,17 +1,17 @@
-use super::outcome::Outcome;
 use super::Tikibase;
+use crate::core::error::{Outcome, Outcomes};
 use crate::core::line::Reference;
 use std::path::PathBuf;
 
 pub struct LinksResult {
-    pub outcome: Outcome,
+    pub outcomes: Outcomes,
     /// all resources that are linked to from the given Tikibase
     pub resource_links: Vec<String>,
 }
 
 pub fn process(base: &Tikibase) -> LinksResult {
     let mut result = LinksResult {
-        outcome: Outcome::new(),
+        outcomes: Outcomes::new(),
         resource_links: Vec::new(),
     };
     let existing_targets = base.link_targets();
@@ -24,12 +24,12 @@ pub fn process(base: &Tikibase) -> LinksResult {
                             if !destination.starts_with("http")
                                 && !existing_targets.contains(&destination)
                             {
-                                result.outcome.findings.push(format!(
+                                result.outcomes.push(Outcome::UserError(format!(
                                     "{}:{}  broken link to \"{}\"",
                                     &doc.path.to_string_lossy(),
                                     section.line_number + line.section_offset + 1,
                                     destination,
-                                ));
+                                )));
                             }
                         }
                         Reference::Image { src } => {
@@ -37,12 +37,12 @@ pub fn process(base: &Tikibase) -> LinksResult {
                                 continue;
                             }
                             if !base.has_resource(PathBuf::from(&src)) {
-                                result.outcome.findings.push(format!(
+                                result.outcomes.push(Outcome::UserError(format!(
                                     "{}:{}  broken image \"{}\"",
                                     &doc.path.to_string_lossy(),
                                     section.line_number + line.section_offset + 1,
                                     &src,
-                                ));
+                                )));
                             }
                             result.resource_links.push(src);
                         }
@@ -58,7 +58,7 @@ pub fn process(base: &Tikibase) -> LinksResult {
 mod tests {
 
     mod process {
-        use crate::core::error::UserError;
+        use crate::core::error::{Outcome, Outcomes};
         use crate::core::tikibase::Tikibase;
         use crate::testhelpers;
 
@@ -73,10 +73,16 @@ mod tests {
 ";
             testhelpers::create_file("one.md", content, &dir);
             testhelpers::create_file("two.md", "# Two", &dir);
-            let base = Tikibase::load(dir).unwrap();
+            let (base, outcomes) = Tikibase::load(dir);
+            assert_eq!(outcomes.len(), 0);
             let have = super::super::process(&base);
-            let want = vec!["one.md:3  broken link to \"non-existing.md\""];
-            assert_eq!(have.outcome.findings, want);
+            assert_eq!(have.outcomes.len(), 1);
+            match have.outcomes[0] {
+                Outcome::UserError(e) => {
+                    assert_eq!(e, "one.md:3  broken link to \"non-existing.md\"")
+                }
+                Outcome::Notification(_) => panic!("unexpected notification"),
+            };
         }
 
         #[test]
@@ -90,14 +96,14 @@ mod tests {
 ";
             testhelpers::create_file("one.md", content, &dir);
             testhelpers::create_file("two.md", "# Two", &dir);
-            let base = Tikibase::load(dir).unwrap();
+            let (base, outcomes) = Tikibase::load(dir);
+            assert_eq!(outcomes.len(), 0);
             let have = super::super::process(&base);
-            let want: Vec<&str> = vec![];
-            assert_eq!(have.outcome.findings, want);
+            assert_eq!(have.outcomes.len(), 0);
         }
 
         #[test]
-        fn link_to_existing_image() -> Result<(), UserError> {
+        fn link_to_existing_image() {
             let dir = testhelpers::tmp_dir();
             let content = "\
 # One
@@ -106,16 +112,15 @@ mod tests {
 ";
             testhelpers::create_file("1.md", content, &dir);
             testhelpers::create_file("foo.png", "image content", &dir);
-            let base = Tikibase::load(dir)?;
+            let (base, outcome) = Tikibase::load(dir);
             let have = super::super::process(&base);
-            assert_eq!(have.outcome.findings.len(), 0);
+            assert_eq!(have.outcomes.len(), 0);
             assert_eq!(have.resource_links.len(), 1);
             assert_eq!(have.resource_links[0], "foo.png");
-            Ok(())
         }
 
         #[test]
-        fn link_to_non_existing_image() -> Result<(), UserError> {
+        fn link_to_non_existing_image() {
             let dir = testhelpers::tmp_dir();
             let content = "\
 # One
@@ -123,16 +128,16 @@ mod tests {
 ![image](zonk.png)
 ";
             testhelpers::create_file("1.md", content, &dir);
-            let base = Tikibase::load(dir)?;
+            let (base, outcomes) = Tikibase::load(dir);
+            assert_eq!(outcomes.len(), 0);
             let have = super::super::process(&base);
-            assert_eq!(have.outcome.findings.len(), 1);
-            assert_eq!(
-                have.outcome.findings[0],
-                "1.md:3  broken image \"zonk.png\""
-            );
+            assert_eq!(have.outcomes.len(), 1);
+            match have.outcomes[0] {
+                Outcome::UserError(e) => assert_eq!(e, "1.md:3  broken image \"zonk.png\""),
+                Outcome::Notification(_) => panic!(),
+            }
             assert_eq!(have.resource_links.len(), 1);
             assert_eq!(have.resource_links[0], "zonk.png");
-            Ok(())
         }
     }
 }

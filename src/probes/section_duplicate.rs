@@ -2,7 +2,7 @@ use super::outcome::Outcome;
 use crate::core::tikibase::Tikibase;
 
 /// finds all duplicate sections in the given Tikibase
-pub fn process(base: &mut Tikibase) -> Outcome {
+pub fn process(base: &mut Tikibase) -> Vec<Finding> {
     let mut result = Outcome::new();
     for doc in &mut base.docs {
         let mut known_sections = vec![];

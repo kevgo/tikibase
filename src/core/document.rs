@@ -28,7 +28,7 @@ impl Document {
                 section_builder = builder_with_title_line(line, line_number);
             } else if !section_builder.add_body_line(line) {
                 return Err(UserError(format!(
-                    "\"{}\"  has no title section",
+                    "{}  no title section",
                     path.to_string_lossy()
                 )));
             }
@@ -37,12 +37,9 @@ impl Document {
             sections.push(section);
         }
         let content_sections = sections.split_off(1);
-        let title_section = sections.pop().ok_or_else(|| {
-            UserError(format!(
-                "\"{}\" has no title section",
-                path.to_string_lossy()
-            ))
-        })?;
+        let title_section = sections
+            .pop()
+            .ok_or_else(|| UserError(format!("{}  no title section", path.to_string_lossy())))?;
         Ok(Document {
             path,
             title_section,
