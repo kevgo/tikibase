@@ -1,18 +1,22 @@
 use super::outcome::Outcome;
 use super::Tikibase;
 use crate::core::line::Reference;
+use std::collections::HashMap;
 use std::path::PathBuf;
 
-pub struct LinksResult {
+pub struct LinksResult<'a> {
     pub outcome: Outcome,
     /// all resources that are linked to from the given Tikibase
     pub resource_links: Vec<String>,
+    /// all internal links from source file --> destination document
+    pub doc_links: HashMap<&'a PathBuf, String>,
 }
 
 pub fn process(base: &Tikibase) -> LinksResult {
     let mut result = LinksResult {
         outcome: Outcome::new(),
         resource_links: Vec::new(),
+        doc_links: HashMap::new(),
     };
     let existing_targets = base.link_targets();
     for doc in &base.docs {
@@ -21,9 +25,10 @@ pub fn process(base: &Tikibase) -> LinksResult {
                 for reference in line.references() {
                     match reference {
                         Reference::Link { destination } => {
-                            if !destination.starts_with("http")
-                                && !existing_targets.contains(&destination)
-                            {
+                            if destination.starts_with("http") {
+                                continue;
+                            }
+                            if !existing_targets.contains(&destination) {
                                 result.outcome.findings.push(format!(
                                     "{}:{}  broken link to \"{}\"",
                                     &doc.path.to_string_lossy(),
@@ -31,6 +36,7 @@ pub fn process(base: &Tikibase) -> LinksResult {
                                     destination,
                                 ));
                             }
+                            result.doc_links.insert(&doc.path, destination);
                         }
                         Reference::Image { src } => {
                             if src.starts_with("http") {

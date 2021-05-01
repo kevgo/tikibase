@@ -1,6 +1,7 @@
 use crate::core::tikibase::Tikibase;
 mod image_orphaned;
 mod link_broken;
+mod occurrences;
 mod outcome;
 mod section_capitalization;
 mod section_duplicate;
@@ -17,5 +18,6 @@ pub fn run(base: &mut Tikibase, fix: bool) -> Vec<String> {
         base,
         links_result.resource_links,
     ));
+    results.append(&mut occurrences::process(base, links_result.doc_links, fix));
     results.sorted()
 }
