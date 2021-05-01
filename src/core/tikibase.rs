@@ -48,8 +48,8 @@ impl Tikibase {
             if entry.path() == dir {
                 continue;
             }
-            let filename = entry.file_name().to_str().unwrap();
-            if filename == "tikibase.json" || filename.starts_with(".") {
+            let filename = entry.file_name().to_string_lossy();
+            if filename == "tikibase.json" || filename.starts_with('.') {
                 continue;
             }
             let path = entry.path();
