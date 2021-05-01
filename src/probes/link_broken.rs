@@ -1,15 +1,15 @@
 use super::outcome::Outcome;
 use super::Tikibase;
 use crate::core::line::Reference;
-use std::collections::HashMap;
 use std::path::PathBuf;
+use std::{collections::HashMap, ops::Index};
 
 pub struct LinksResult<'a> {
     pub outcome: Outcome,
     /// all resources that are linked to from the given Tikibase
     pub resource_links: Vec<String>,
     /// all internal links from source file --> destination document
-    pub doc_links: HashMap<&'a PathBuf, String>,
+    pub doc_links: HashMap<&'a PathBuf, PathBuf>,
 }
 
 pub fn process(base: &Tikibase) -> LinksResult {
@@ -24,9 +24,12 @@ pub fn process(base: &Tikibase) -> LinksResult {
             for line in section.lines() {
                 for reference in line.references() {
                     match reference {
-                        Reference::Link { destination } => {
+                        Reference::Link { mut destination } => {
                             if destination.starts_with("http") {
                                 continue;
+                            }
+                            if let Some(index) = destination.find('#') {
+                                destination.replace_range(..index, "");
                             }
                             if !existing_targets.contains(&destination) {
                                 result.outcome.findings.push(format!(
@@ -35,8 +38,11 @@ pub fn process(base: &Tikibase) -> LinksResult {
                                     section.line_number + line.section_offset + 1,
                                     destination,
                                 ));
+                            } else {
+                                result
+                                    .doc_links
+                                    .insert(&doc.path, PathBuf::from(destination));
                             }
-                            result.doc_links.insert(&doc.path, destination);
                         }
                         Reference::Image { src } => {
                             if src.starts_with("http") {
@@ -81,8 +87,11 @@ mod tests {
             let (base, errs) = Tikibase::load(dir);
             assert_eq!(errs.len(), 0);
             let have = super::super::process(&base);
-            let want = vec!["one.md:3  broken link to \"non-existing.md\""];
-            assert_eq!(have.outcome.findings, want);
+            assert_eq!(
+                have.outcome.findings,
+                vec!["one.md:3  broken link to \"non-existing.md\""]
+            );
+            assert_eq!(have.doc_links.len(), 0);
         }
 
         #[test]
@@ -101,6 +110,7 @@ mod tests {
             let have = super::super::process(&base);
             let want: Vec<&str> = vec![];
             assert_eq!(have.outcome.findings, want);
+            assert_eq!(have.doc_links.len(), 0);
         }
 
         #[test]
@@ -118,7 +128,8 @@ mod tests {
             let have = super::super::process(&base);
             assert_eq!(have.outcome.findings.len(), 0);
             assert_eq!(have.resource_links.len(), 1);
-            assert_eq!(have.resource_links[0], "foo.png")
+            assert_eq!(have.resource_links[0], "foo.png");
+            assert_eq!(have.doc_links.len(), 0);
         }
 
         #[test]
@@ -139,8 +150,8 @@ mod tests {
                 "1.md:3  broken image \"zonk.png\""
             );
             assert_eq!(have.resource_links.len(), 1);
-            assert_eq!(have.resource_links[0], "zonk.png")
-            //
+            assert_eq!(have.resource_links[0], "zonk.png");
+            assert_eq!(have.doc_links.len(), 0);
         }
     }
 }
