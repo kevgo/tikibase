@@ -40,7 +40,8 @@ content
 ### One
 content";
         testhelpers::create_file("test.md", content, &dir);
-        let mut base = Tikibase::load(dir);
+        let (mut base, errs) = Tikibase::load(dir);
+        assert_eq!(errs.len(), 0);
         let have = process(&mut base);
         assert_eq!(have.findings.len(), 1);
         assert_eq!(have.findings[0], "test.md  duplicate section: One");

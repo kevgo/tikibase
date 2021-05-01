@@ -72,7 +72,8 @@ mod tests {
 ";
             testhelpers::create_file("one.md", content, &dir);
             testhelpers::create_file("two.md", "# Two", &dir);
-            let base = Tikibase::load(dir);
+            let (base, errs) = Tikibase::load(dir);
+            assert_eq!(errs.len(), 0);
             let have = super::super::process(&base);
             let want = vec!["one.md:3  broken link to \"non-existing.md\""];
             assert_eq!(have.outcome.findings, want);
@@ -89,7 +90,8 @@ mod tests {
 ";
             testhelpers::create_file("one.md", content, &dir);
             testhelpers::create_file("two.md", "# Two", &dir);
-            let base = Tikibase::load(dir);
+            let (base, errs) = Tikibase::load(dir);
+            assert_eq!(errs.len(), 0);
             let have = super::super::process(&base);
             let want: Vec<&str> = vec![];
             assert_eq!(have.outcome.findings, want);
@@ -105,7 +107,8 @@ mod tests {
 ";
             testhelpers::create_file("1.md", content, &dir);
             testhelpers::create_file("foo.png", "image content", &dir);
-            let base = Tikibase::load(dir);
+            let (base, errs) = Tikibase::load(dir);
+            assert_eq!(errs.len(), 0);
             let have = super::super::process(&base);
             assert_eq!(have.outcome.findings.len(), 0);
             assert_eq!(have.resource_links.len(), 1);
@@ -121,7 +124,8 @@ mod tests {
 ![image](zonk.png)
 ";
             testhelpers::create_file("1.md", content, &dir);
-            let base = Tikibase::load(dir);
+            let (base, errs) = Tikibase::load(dir);
+            assert_eq!(errs.len(), 0);
             let have = super::super::process(&base);
             assert_eq!(have.outcome.findings.len(), 1);
             assert_eq!(

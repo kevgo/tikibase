@@ -12,7 +12,7 @@ pub struct Document {
 
 impl Document {
     /// provides a Document instance containing the given text
-    pub fn from_lines<T>(lines: T, path: PathBuf) -> Document
+    pub fn from_lines<T>(lines: T, path: PathBuf) -> Result<Document, String>
     where
         T: Iterator<Item = String>,
     {
@@ -24,23 +24,25 @@ impl Document {
                     sections.push(section);
                 }
                 section_builder = builder_with_title_line(line, line_number);
-            } else {
+            } else if section_builder.valid {
                 section_builder.add_body_line(line);
+            } else {
+                return Err(format!("{}  no title section", path.to_string_lossy()));
             }
         }
         if let Some(section) = section_builder.result() {
             sections.push(section);
         }
         let content_sections = sections.split_off(1);
-        Document {
+        Ok(Document {
             path,
             title_section: sections.pop().unwrap(),
             content_sections,
-        }
+        })
     }
 
     /// provides a Document instance containing the content of the file at the given path
-    pub fn from_str(path: PathBuf, text: &str) -> Document {
+    pub fn from_str(path: PathBuf, text: &str) -> Result<Document, String> {
         Document::from_lines(text.lines().map(|line| line.to_string()), path)
     }
 
@@ -100,12 +102,12 @@ mod tests {
     use std::path::PathBuf;
 
     #[test]
-    fn sections() {
+    fn from_str_valid() {
         let content = "\
 # test
 ### section 1
 content";
-        let doc = Document::from_str(PathBuf::from("one.md"), content);
+        let doc = Document::from_str(PathBuf::from("one.md"), content).unwrap();
         let mut sections = doc.sections();
         match sections.next() {
             None => panic!("expected title section"),
@@ -122,6 +124,14 @@ content";
     }
 
     #[test]
+    fn from_str_invalid() {
+        match Document::from_str(PathBuf::from("one.md"), "content") {
+            Err(e) => assert_eq!(e, "one.md  no title section"),
+            Ok(_) => panic!(),
+        }
+    }
+
+    #[test]
     fn text() {
         let give = "\
 # Title
@@ -132,7 +142,7 @@ two
 ### Section 2
 foo
 ";
-        let doc = Document::from_str(PathBuf::from("test.md"), give);
+        let doc = Document::from_str(PathBuf::from("test.md"), give).unwrap();
         let have = doc.text();
         assert_eq!(have, give);
     }

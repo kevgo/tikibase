@@ -100,7 +100,7 @@ mod tests {
         let content = "\
 # test
 title content";
-        let doc = Document::from_str(PathBuf::from("foo"), content);
+        let doc = Document::from_str(PathBuf::from("foo"), content).unwrap();
         let mut lines = doc.title_section.lines();
         match lines.next() {
             None => panic!("expected title line"),
