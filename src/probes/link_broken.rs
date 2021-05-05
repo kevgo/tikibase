@@ -1,8 +1,8 @@
 use super::outcome::Outcome;
 use super::Tikibase;
 use crate::core::line::Reference;
+use std::collections::HashMap;
 use std::path::PathBuf;
-use std::{collections::HashMap, ops::Index};
 
 pub struct LinksResult<'a> {
     pub outcome: Outcome,

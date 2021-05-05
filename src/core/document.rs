@@ -154,7 +154,7 @@ foo
 
 /// Allows building up sections one line at a time.
 pub struct SectionBuilder {
-    line_number: u32,
+    pub line_number: u32,
     title_line: String,
     body: Vec<Line>,
     body_line_number: u32,
