@@ -4,6 +4,7 @@ use regex::Regex;
 #[derive(Debug, PartialEq)]
 pub struct Line {
     /// The line number relative to the section title line, 0-based.
+    // TODO: remove?
     pub section_offset: u32,
     pub text: String,
 }

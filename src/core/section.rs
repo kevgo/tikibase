@@ -25,6 +25,11 @@ impl Section {
         }
     }
 
+    /// provides the number of the last line in this section
+    pub fn last_line(&self) -> u32 {
+        self.line_number + (self.body.len() as u32)
+    }
+
     pub fn section_type(&self) -> String {
         let pos = self
             .title_line
@@ -92,6 +97,40 @@ mod tests {
                 line_number: 0,
             };
             assert_eq!(section.anchor(), want);
+        }
+    }
+
+    mod last_line {
+
+        use super::super::super::line::Line;
+        use super::super::Section;
+
+        #[test]
+        fn no_body() {
+            let section = Section {
+                line_number: 12,
+                title_line: Line {
+                    section_offset: 0,
+                    text: "".to_string(),
+                },
+                body: Vec::new(),
+            };
+            assert_eq!(section.last_line(), 12);
+        }
+
+        fn with_body() {
+            let section = Section {
+                line_number: 12,
+                title_line: Line {
+                    section_offset: 0,
+                    text: "".to_string(),
+                },
+                body: vec![Line {
+                    section_offset: 1,
+                    text: "".to_string(),
+                }],
+            };
+            assert_eq!(section.last_line(), 13);
         }
     }
 

@@ -52,6 +52,15 @@ impl Document {
         file.write_all(self.text().as_bytes()).unwrap();
     }
 
+    pub fn last_line(&self) -> u32 {
+        let sections_count = self.content_sections.len();
+        if sections_count == 0 {
+            sections_count as u32
+        } else {
+            self.content_sections[sections_count - 1].last_line()
+        }
+    }
+
     /// provides a non-consuming iterator for all sections in this document
     pub fn sections(&self) -> SectionIterator {
         SectionIterator {
@@ -129,6 +138,21 @@ content";
             Err(e) => assert_eq!(e, "one.md  no title section"),
             Ok(_) => panic!(),
         }
+    }
+
+    #[test]
+    fn last_line() {
+        let give = "\
+# Title
+title text
+### Section 1
+one
+two
+### Section 2
+foo
+";
+        let doc = Document::from_str(PathBuf::from("test.md"), give).unwrap();
+        assert_eq!(doc.last_line(), 6);
     }
 
     #[test]

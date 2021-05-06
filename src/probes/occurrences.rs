@@ -18,7 +18,7 @@ pub fn process(base: &Tikibase, doc_links: HashMap<&PathBuf, PathBuf>, fix: bool
             .collect();
 
         // determine all links to this document
-        let incoming: HashSet<&&PathBuf> = doc_links
+        let incoming: HashSet<&PathBuf> = doc_links
             .iter()
             .filter(|link| link.1 == &doc.path)
             .map(|link| link.0)
@@ -43,7 +43,7 @@ pub fn process(base: &Tikibase, doc_links: HashMap<&PathBuf, PathBuf>, fix: bool
                 section_builder.add_body_line(format!("- {}", missing.to_string_lossy()));
             }
             doc.content_sections.push(section_builder.result().unwrap());
-            base.save(&doc);
+            doc.flush(&base.dir);
             result.fixes.push(format!(
                 "{}:{}  added occurrences section",
                 doc.path.to_string_lossy(),
