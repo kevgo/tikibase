@@ -14,7 +14,7 @@ Feature: add occurrence sections
       # Two
       """
 
-  Scenario: check
+  Scenario: this
     When checking
     Then it prints:
       """
