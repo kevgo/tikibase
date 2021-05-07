@@ -13,7 +13,7 @@ struct MissingOccurrence {
 pub fn process(mut base: Tikibase, doc_links: HashMap<PathBuf, PathBuf>, fix: bool) -> Outcome {
     let mut result = Outcome::new();
 
-    let mut missing_occurrences = HashMap::<PathBuf, Vec<MissingOccurrence>>::new();
+    let mut missings = HashMap::<PathBuf, Vec<MissingOccurrence>>::new();
 
     for doc in &base.docs {
         // determine outgoing links
@@ -46,13 +46,13 @@ pub fn process(mut base: Tikibase, doc_links: HashMap<PathBuf, PathBuf>, fix: bo
 
         // register missing occurrences
         m.sort();
-        missing_occurrences.insert(
+        missings.insert(
             doc.path.clone(),
             missing_outgoing
                 .into_iter()
                 .map(|path| base.get_doc(path).unwrap())
                 .map(|doc| MissingOccurrence {
-                    path: doc.path,
+                    path: doc.path.clone(),
                     title: doc.title(),
                 })
                 .collect(),
@@ -60,35 +60,34 @@ pub fn process(mut base: Tikibase, doc_links: HashMap<PathBuf, PathBuf>, fix: bo
     }
 
     if fix {
-        for missing_occurrence in missing_occurrences {
-            let doc = base.get_doc_mut(&missing_occurrence.0).unwrap();
+        let base_dir = &base.dir.clone();
+        for (filepath, missing_occurrences) in missings {
+            let doc = base.get_doc_mut(&filepath).unwrap();
             let mut section_builder =
                 builder_with_title_line("### occurrences".to_string(), doc.last_line() + 1);
-            for missing in missing_occurrence.1 {
-                let missing_doc = base.get_doc_mut(missing).unwrap();
+            for missing_occurrence in missing_occurrences {
                 section_builder.add_body_line(format!(
                     "- [{}]({})",
-                    missing_doc.title(),
-                    &missing.to_string_lossy()
+                    missing_occurrence.title,
+                    &missing_occurrence.path.to_string_lossy()
                 ));
             }
             let occurrences_section = section_builder.result().unwrap();
-            let line = occurrences_section.line_number;
-            doc.content_sections.push(occurrences_section);
-            doc.flush(&base.dir);
             result.fixes.push(format!(
                 "{}:{}  added occurrences section",
                 doc.path.to_string_lossy(),
-                line
+                occurrences_section.line_number
             ));
+            doc.content_sections.push(occurrences_section);
+            doc.flush(base_dir);
         }
     } else {
-        for missing_occurrence in missing_occurrences {
-            for missing_file in missing_occurrence.1 {
+        for (filepath, missing_occurrences) in missings {
+            for missing_occurrence in missing_occurrences {
                 result.findings.push(format!(
-                    "{}  missing link to {}",
-                    missing_occurrence.0.to_string_lossy(),
-                    missing_file.to_string_lossy()
+                    "{}  missing link to \"{}\"",
+                    filepath.to_string_lossy(),
+                    missing_occurrence.title,
                 ));
             }
         }
@@ -122,7 +121,7 @@ mod tests {
         doc_links.insert(PathBuf::from("1.md"), PathBuf::from("2.md"));
         let have = super::process(base, doc_links, false);
         assert_eq!(have.fixes.len(), 0);
-        assert_eq!(have.findings, vec!["2.md  missing link to 1.md"]);
+        assert_eq!(have.findings, vec!["2.md  missing link to \"One\""]);
     }
 
     #[test]

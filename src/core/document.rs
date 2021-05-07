@@ -185,7 +185,7 @@ one
 ";
         let doc = Document::from_str(PathBuf::from("test.md"), give).unwrap();
         let have = doc.title();
-        assert_eq!(have, give);
+        assert_eq!(have, "Title");
     }
 }
 
