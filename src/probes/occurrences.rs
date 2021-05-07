@@ -5,11 +5,11 @@ use std::{
     path::PathBuf,
 };
 
-pub fn process(base: &Tikibase, doc_links: HashMap<&PathBuf, PathBuf>, fix: bool) -> Outcome {
-    let result = Outcome::new();
+pub fn process(base: &mut Tikibase, doc_links: HashMap<&PathBuf, PathBuf>, fix: bool) -> Outcome {
+    let mut result = Outcome::new();
 
     // determine all links to this document
-    for doc in &base.docs {
+    for doc in &mut base.docs {
         // determine all links in this document
         let outgoing: HashSet<&PathBuf> = doc_links
             .iter()
@@ -21,12 +21,13 @@ pub fn process(base: &Tikibase, doc_links: HashMap<&PathBuf, PathBuf>, fix: bool
         let incoming: HashSet<&PathBuf> = doc_links
             .iter()
             .filter(|link| link.1 == &doc.path)
-            .map(|link| link.0)
+            .map(|link| *link.0)
             .collect();
 
         // determine missing links in this document
-        let missing_outgoing: HashSet<&&PathBuf> = outgoing.intersection(&incoming).collect();
-        let m: Vec<&&PathBuf> = missing_outgoing.into_iter().collect();
+        let missing_outgoing: HashSet<&PathBuf> =
+            outgoing.intersection(&incoming).map(|path| *path).collect();
+        let mut m: Vec<&PathBuf> = missing_outgoing.iter().map(|path| *path).collect();
 
         // no missing links --> done here
         if m.len() == 0 {
@@ -37,7 +38,7 @@ pub fn process(base: &Tikibase, doc_links: HashMap<&PathBuf, PathBuf>, fix: bool
 
         // optionally add occurrences section
         if fix {
-            let section_builder =
+            let mut section_builder =
                 builder_with_title_line("### occurrences".to_string(), doc.last_line() + 1);
             for missing in missing_outgoing {
                 section_builder.add_body_line(format!("- {}", missing.to_string_lossy()));

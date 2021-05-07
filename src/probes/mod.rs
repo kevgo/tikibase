@@ -18,6 +18,10 @@ pub fn run(base: &mut Tikibase, fix: bool) -> Vec<String> {
         base,
         links_result.resource_links,
     ));
-    results.append(&mut occurrences::process(base, links_result.doc_links, fix));
+    results.append(&mut occurrences::process(
+        &mut base,
+        links_result.doc_links,
+        fix,
+    ));
     results.sorted()
 }
