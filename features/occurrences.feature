@@ -18,7 +18,7 @@ Feature: add occurrence sections
     When checking
     Then it prints:
       """
-      2.md  missing link to 1.md
+      2.md  missing link to X 1.md
       """
 
   Scenario: fix
