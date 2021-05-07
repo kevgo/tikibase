@@ -5,11 +5,7 @@ use std::{
     path::PathBuf,
 };
 
-pub fn process(
-    mut base: Tikibase,
-    doc_links: HashMap<PathBuf, PathBuf>,
-    fix: bool,
-) -> (Outcome, Tikibase) {
+pub fn process(mut base: Tikibase, doc_links: HashMap<PathBuf, PathBuf>, fix: bool) -> Outcome {
     let mut result = Outcome::new();
 
     // determine all links to this document
@@ -35,7 +31,7 @@ pub fn process(
 
         // no missing links --> done here
         if m.is_empty() {
-            return (result, base);
+            return result;
         }
 
         m.sort();
@@ -67,5 +63,5 @@ pub fn process(
         }
     }
 
-    (result, base)
+    result
 }
