@@ -1,13 +1,18 @@
 use super::outcome::Outcome;
 use crate::core::{document::builder_with_title_line, tikibase::Tikibase};
-use std::{
-    collections::{HashMap, HashSet},
-    path::PathBuf,
-};
+use std::cmp::{Ord, Ordering};
+use std::collections::{HashMap, HashSet};
+use std::path::PathBuf;
 
 struct MissingOccurrence {
     path: PathBuf,
     title: String,
+}
+
+impl Ord for MissingOccurrence {
+    fn cmp(&self, other: &Self) -> Ordering {
+        self.path.cmp(&other.path)
+    }
 }
 
 pub fn process(mut base: Tikibase, doc_links: HashMap<PathBuf, PathBuf>, fix: bool) -> Outcome {
@@ -60,7 +65,7 @@ pub fn process(mut base: Tikibase, doc_links: HashMap<PathBuf, PathBuf>, fix: bo
     }
 
     if fix {
-        let base_dir = &base.dir.clone();
+        let base_dir = base.dir.clone();
         for (filepath, missing_occurrences) in missings {
             let doc = base.get_doc_mut(&filepath).unwrap();
             let mut section_builder =
@@ -79,10 +84,11 @@ pub fn process(mut base: Tikibase, doc_links: HashMap<PathBuf, PathBuf>, fix: bo
                 occurrences_section.line_number + 1
             ));
             doc.content_sections.push(occurrences_section);
-            doc.flush(base_dir);
+            doc.flush(&base_dir);
         }
     } else {
         for (filepath, missing_occurrences) in missings {
+            missing_occurrences.sort();
             for missing_occurrence in missing_occurrences {
                 result.findings.push(format!(
                     "{}  missing link to \"{}\"",
