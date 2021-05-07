@@ -140,7 +140,7 @@ mod tests {
         let mut doc_links: HashMap<PathBuf, PathBuf> = HashMap::new();
         doc_links.insert(PathBuf::from("1.md"), PathBuf::from("2.md"));
         let have = super::process(base, doc_links, true);
-        assert_eq!(have.fixes, vec!["2.md:1  added occurrences section"]);
+        assert_eq!(have.fixes, vec!["2.md:2  added occurrences section"]);
         assert_eq!(have.findings.len(), 0);
     }
 }
