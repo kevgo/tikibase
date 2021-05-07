@@ -79,9 +79,22 @@ fn steps() -> Steps<MyWorld> {
         world
     });
 
+    steps.then_regex(r#"^file "(.*)" is unchanged$"#, |world, ctx| {
+        let filename = ctx.matches.get(1).expect("no filename provided");
+        let have = &load_file(&world.dir.join(&filename));
+        let want = world
+            .original_contents
+            .get(&PathBuf::from(filename))
+            .unwrap();
+        assert_eq!(have, want);
+        world
+    });
+
     steps.then_regex(r#"^file "(.*)" should contain:$"#, |world, ctx| {
+        // TODO: rename to want
         let expected = ctx.step.docstring().unwrap().trim_start();
         let filename = ctx.matches.get(1).expect("no filename provided");
+        // TODO: rename to have
         let actual = load_file(&world.dir.join(filename));
         assert_eq!(actual, expected);
         world
@@ -90,6 +103,11 @@ fn steps() -> Steps<MyWorld> {
     steps.then("it prints:", |world, ctx| {
         let expected: Vec<&str> = ctx.step.docstring().unwrap().trim().split("\n").collect();
         assert_eq!(&world.findings, &expected);
+        world
+    });
+
+    steps.then("it prints nothing", |world, _ctx| {
+        assert_eq!(world.findings, Vec::<String>::new());
         world
     });
 

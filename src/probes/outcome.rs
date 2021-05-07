@@ -25,6 +25,7 @@ impl SortedResults {
     }
 
     /// registers the given results
+    // TODO: take ownership of items
     pub fn append(&mut self, items: &mut Outcome) {
         self.items.append(&mut items.findings);
         self.items.append(&mut items.fixes);

@@ -78,6 +78,10 @@ impl Document {
         }
         result
     }
+
+    pub fn title(&self) -> String {
+        self.title_section.section_type()
+    }
 }
 
 /// iterates all sections of a document
@@ -168,6 +172,19 @@ foo
 ";
         let doc = Document::from_str(PathBuf::from("test.md"), give).unwrap();
         let have = doc.text();
+        assert_eq!(have, give);
+    }
+
+    #[test]
+    fn title() {
+        let give = "\
+# Title
+title text
+### Section 1
+one
+";
+        let doc = Document::from_str(PathBuf::from("test.md"), give).unwrap();
+        let have = doc.title();
         assert_eq!(have, give);
     }
 }

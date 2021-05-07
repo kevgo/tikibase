@@ -14,18 +14,22 @@ Feature: add occurrence sections
       # Two
       """
 
-  Scenario: this
+  Scenario: check
     When checking
     Then it prints:
       """
       2.md  missing link to 1.md
       """
 
-  Scenario: fix
+  Scenario: this
     When fixing
-    Then it prints:
+    Then it prints nothing
+    And file "1.md" is unchanged
+    And file "2.md" should contain:
       """
-      2.md:3  added occurrences section
+      # two
+      ### occurrences
+      - [Title 1](1.md)
       """
 
   Scenario: pitstop

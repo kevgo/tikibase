@@ -18,9 +18,7 @@ fn main() {
             }
         }
         Command::Fix => {
-            for message in probes::run(base, true) {
-                println!("{}", message);
-            }
+            probes::run(base, true);
         }
         Command::Help => help::run(),
         Command::Pitstop => {
