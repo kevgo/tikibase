@@ -144,9 +144,14 @@ content";
         }
     }
 
-    #[test]
-    fn last_line() {
-        let give = "\
+    mod last_line {
+
+        use super::super::Document;
+        use std::path::PathBuf;
+
+        #[test]
+        fn with_content_sections() {
+            let give = "\
 # Title
 title text
 ### Section 1
@@ -155,8 +160,19 @@ two
 ### Section 2
 foo
 ";
-        let doc = Document::from_str(PathBuf::from("test.md"), give).unwrap();
-        assert_eq!(doc.last_line(), 6);
+            let doc = Document::from_str(PathBuf::from("test.md"), give).unwrap();
+            assert_eq!(doc.last_line(), 6);
+        }
+
+        #[test]
+        fn no_content_sections() {
+            let give = "\
+# Title
+title text
+";
+            let doc = Document::from_str(PathBuf::from("test.md"), give).unwrap();
+            assert_eq!(doc.last_line(), 1);
+        }
     }
 
     #[test]

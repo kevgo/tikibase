@@ -30,12 +30,9 @@ impl PartialEq for MissingOccurrence {
 
 pub fn process(mut base: Tikibase, doc_links: HashMap<PathBuf, PathBuf>, fix: bool) -> Outcome {
     let mut result = Outcome::new();
-
     let mut missings = HashMap::<PathBuf, Vec<MissingOccurrence>>::new();
-
     for doc in &base.docs {
         // determine outgoing links
-        println!("processing doc {:?}", &doc.path);
         let outgoing: HashSet<&PathBuf> = doc_links
             .iter()
             .filter(|link| link.0 == &doc.path)
@@ -51,7 +48,6 @@ pub fn process(mut base: Tikibase, doc_links: HashMap<PathBuf, PathBuf>, fix: bo
 
         // determine missing links in this document
         let missing_outgoing: HashSet<&PathBuf> = incoming.difference(&outgoing).copied().collect();
-        println!("missing: {:?}", missing_outgoing);
         let mut m: Vec<&PathBuf> = missing_outgoing.iter().copied().collect();
 
         // no missing links --> done here
