@@ -5,7 +5,11 @@ use std::{
     path::PathBuf,
 };
 
-pub fn process(base: &mut Tikibase, doc_links: HashMap<&PathBuf, PathBuf>, fix: bool) -> Outcome {
+pub fn process(
+    mut base: Tikibase,
+    doc_links: HashMap<PathBuf, PathBuf>,
+    fix: bool,
+) -> (Outcome, Tikibase) {
     let mut result = Outcome::new();
 
     // determine all links to this document
@@ -13,7 +17,7 @@ pub fn process(base: &mut Tikibase, doc_links: HashMap<&PathBuf, PathBuf>, fix: 
         // determine all links in this document
         let outgoing: HashSet<&PathBuf> = doc_links
             .iter()
-            .filter(|link| link.0 == &&doc.path)
+            .filter(|link| link.0 == &doc.path)
             .map(|link| link.1)
             .collect();
 
@@ -21,7 +25,7 @@ pub fn process(base: &mut Tikibase, doc_links: HashMap<&PathBuf, PathBuf>, fix: 
         let incoming: HashSet<&PathBuf> = doc_links
             .iter()
             .filter(|link| link.1 == &doc.path)
-            .map(|link| *link.0)
+            .map(|link| link.0)
             .collect();
 
         // determine missing links in this document
@@ -31,7 +35,7 @@ pub fn process(base: &mut Tikibase, doc_links: HashMap<&PathBuf, PathBuf>, fix: 
 
         // no missing links --> done here
         if m.len() == 0 {
-            return result;
+            return (result, base);
         }
 
         m.sort();
@@ -43,12 +47,14 @@ pub fn process(base: &mut Tikibase, doc_links: HashMap<&PathBuf, PathBuf>, fix: 
             for missing in missing_outgoing {
                 section_builder.add_body_line(format!("- {}", missing.to_string_lossy()));
             }
-            doc.content_sections.push(section_builder.result().unwrap());
+            let occurrences_section = section_builder.result().unwrap();
+            let line = occurrences_section.line_number;
+            doc.content_sections.push(occurrences_section);
             doc.flush(&base.dir);
             result.fixes.push(format!(
                 "{}:{}  added occurrences section",
                 doc.path.to_string_lossy(),
-                section_builder.line_number
+                line
             ));
         } else {
             for missing in missing_outgoing {
@@ -61,5 +67,5 @@ pub fn process(base: &mut Tikibase, doc_links: HashMap<&PathBuf, PathBuf>, fix: 
         }
     }
 
-    result
+    (result, base)
 }

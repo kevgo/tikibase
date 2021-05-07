@@ -4,12 +4,12 @@ use crate::core::line::Reference;
 use std::collections::HashMap;
 use std::path::PathBuf;
 
-pub struct LinksResult<'a> {
+pub struct LinksResult {
     pub outcome: Outcome,
     /// all resources that are linked to from the given Tikibase
     pub resource_links: Vec<String>,
     /// all internal links from source file --> destination document
-    pub doc_links: HashMap<&'a PathBuf, PathBuf>,
+    pub doc_links: HashMap<PathBuf, PathBuf>,
 }
 
 pub fn process(base: &Tikibase) -> LinksResult {
@@ -41,7 +41,7 @@ pub fn process(base: &Tikibase) -> LinksResult {
                             } else {
                                 result
                                     .doc_links
-                                    .insert(&doc.path, PathBuf::from(destination));
+                                    .insert(doc.path.clone(), PathBuf::from(destination));
                             }
                         }
                         Reference::Image { src } => {
