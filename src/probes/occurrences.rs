@@ -76,7 +76,7 @@ pub fn process(mut base: Tikibase, doc_links: HashMap<PathBuf, PathBuf>, fix: bo
             result.fixes.push(format!(
                 "{}:{}  added occurrences section",
                 doc.path.to_string_lossy(),
-                occurrences_section.line_number
+                occurrences_section.line_number + 1
             ));
             doc.content_sections.push(occurrences_section);
             doc.flush(base_dir);

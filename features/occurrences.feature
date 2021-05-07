@@ -14,20 +14,20 @@ Feature: add occurrence sections
       # Two
       """
 
-  Scenario: check
+  Scenario: this
     When checking
     Then it prints:
       """
-      2.md  missing link to 1.md
+      2.md  missing link to "Title 1"
       """
 
-  Scenario: this
+  Scenario: fix
     When fixing
     Then it prints nothing
     And file "1.md" is unchanged
     And file "2.md" should contain:
       """
-      # two
+      # Two
       ### occurrences
       - [Title 1](1.md)
       """
@@ -36,5 +36,5 @@ Feature: add occurrence sections
     When doing a pitstop
     Then it prints:
       """
-      2.md:3  added occurrences section
+      2.md:2  added occurrences section
       """
