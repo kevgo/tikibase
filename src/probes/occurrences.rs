@@ -38,11 +38,9 @@ pub fn process(mut base: Tikibase, doc_links: HashMap<PathBuf, PathBuf>, fix: bo
         println!("processing doc {:?}", &doc.path);
         let outgoing: HashSet<&PathBuf> = doc_links
             .iter()
-            .inspect(|link| println!("link: {:?}", link.0))
             .filter(|link| link.0 == &doc.path)
             .map(|link| link.1)
             .collect();
-        println!("OUT: {:?}", &outgoing);
 
         // determine incoming links
         let incoming: HashSet<&PathBuf> = doc_links
@@ -50,7 +48,6 @@ pub fn process(mut base: Tikibase, doc_links: HashMap<PathBuf, PathBuf>, fix: bo
             .filter(|link| link.1 == &doc.path)
             .map(|link| link.0)
             .collect();
-        println!("IN: {:?}", &incoming);
 
         // determine missing links in this document
         let missing_outgoing: HashSet<&PathBuf> = incoming.difference(&outgoing).copied().collect();
