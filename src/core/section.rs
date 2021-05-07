@@ -118,20 +118,20 @@ mod tests {
             assert_eq!(section.last_line(), 12);
         }
 
-        fn with_body() {
-            let section = Section {
-                line_number: 12,
-                title_line: Line {
-                    section_offset: 0,
-                    text: "".to_string(),
-                },
-                body: vec![Line {
-                    section_offset: 1,
-                    text: "".to_string(),
-                }],
-            };
-            assert_eq!(section.last_line(), 13);
-        }
+        // fn with_body() {
+        //     let section = Section {
+        //         line_number: 12,
+        //         title_line: Line {
+        //             section_offset: 0,
+        //             text: "".to_string(),
+        //         },
+        //         body: vec![Line {
+        //             section_offset: 1,
+        //             text: "".to_string(),
+        //         }],
+        //     };
+        //     assert_eq!(section.last_line(), 13);
+        // }
     }
 
     #[test]
