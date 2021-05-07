@@ -30,11 +30,11 @@ pub fn process(
 
         // determine missing links in this document
         let missing_outgoing: HashSet<&PathBuf> =
-            outgoing.intersection(&incoming).map(|path| *path).collect();
-        let mut m: Vec<&PathBuf> = missing_outgoing.iter().map(|path| *path).collect();
+            outgoing.intersection(&incoming).copied().collect();
+        let mut m: Vec<&PathBuf> = missing_outgoing.iter().copied().collect();
 
         // no missing links --> done here
-        if m.len() == 0 {
+        if m.is_empty() {
             return (result, base);
         }
 
