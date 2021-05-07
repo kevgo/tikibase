@@ -1,9 +1,10 @@
 use super::outcome::Outcome;
 use crate::core::{document::builder_with_title_line, tikibase::Tikibase};
-use std::cmp::{Ord, Ordering};
+use std::cmp::{Eq, Ord, Ordering, PartialEq};
 use std::collections::{HashMap, HashSet};
 use std::path::PathBuf;
 
+#[derive(Eq)]
 struct MissingOccurrence {
     path: PathBuf,
     title: String,
@@ -12,6 +13,18 @@ struct MissingOccurrence {
 impl Ord for MissingOccurrence {
     fn cmp(&self, other: &Self) -> Ordering {
         self.path.cmp(&other.path)
+    }
+}
+
+impl PartialOrd for MissingOccurrence {
+    fn partial_cmp(&self, other: &Self) -> Option<Ordering> {
+        Some(self.cmp(other))
+    }
+}
+
+impl PartialEq for MissingOccurrence {
+    fn eq(&self, other: &Self) -> bool {
+        self.path == other.path
     }
 }
 
@@ -87,7 +100,7 @@ pub fn process(mut base: Tikibase, doc_links: HashMap<PathBuf, PathBuf>, fix: bo
             doc.flush(&base_dir);
         }
     } else {
-        for (filepath, missing_occurrences) in missings {
+        for (filepath, mut missing_occurrences) in missings {
             missing_occurrences.sort();
             for missing_occurrence in missing_occurrences {
                 result.findings.push(format!(
