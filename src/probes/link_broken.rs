@@ -70,6 +70,8 @@ pub fn process(base: &Tikibase) -> LinksResult {
 mod tests {
 
     mod process {
+        use std::path::PathBuf;
+
         use crate::core::tikibase::Tikibase;
         use crate::testhelpers;
 
@@ -91,7 +93,11 @@ mod tests {
                 have.outcome.findings,
                 vec!["one.md:3  broken link to \"non-existing.md\""]
             );
-            assert_eq!(have.doc_links.len(), 0);
+            assert_eq!(have.doc_links.len(), 1);
+            assert_eq!(
+                have.doc_links.get(&PathBuf::from("one.md")).unwrap(),
+                &PathBuf::from("two.md")
+            )
         }
 
         #[test]
