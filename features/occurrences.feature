@@ -4,6 +4,10 @@ Feature: add occurrence sections
     Given file "1.md" with content:
       """
       # Title 1
+
+      ### section 1
+
+      text
       """
     And file "2.md" with content:
       """
@@ -19,7 +23,7 @@ Feature: add occurrence sections
 
       ### Bar
 
-      [one](1.md)
+      [one](1.md#section-1)
       """
 
   Scenario: check
@@ -36,6 +40,10 @@ Feature: add occurrence sections
     And file "1.md" should contain:
       """
       # Title 1
+
+      ### section 1
+
+      text
       ### occurrences
       - [Title 2](2.md)
       - [Title 3](3.md)
@@ -47,5 +55,5 @@ Feature: add occurrence sections
     When doing a pitstop
     Then it prints:
       """
-      1.md:2  added occurrences section
+      1.md:6  added occurrences section
       """
