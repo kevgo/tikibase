@@ -1,7 +1,6 @@
 use super::outcome::Outcome;
 use super::Tikibase;
 use crate::core::line::Reference;
-use std::collections::HashMap;
 use std::path::PathBuf;
 
 pub struct LinksResult {
@@ -9,14 +8,21 @@ pub struct LinksResult {
     /// all resources that are linked to from the given Tikibase
     pub resource_links: Vec<String>,
     /// all internal links from source file --> destination document
-    pub doc_links: HashMap<PathBuf, PathBuf>,
+    pub doc_links: DocLinks,
 }
+
+pub struct DocLink {
+    pub from: PathBuf,
+    pub to: PathBuf,
+}
+
+pub type DocLinks = Vec<DocLink>;
 
 pub fn process(base: &Tikibase) -> LinksResult {
     let mut result = LinksResult {
         outcome: Outcome::new(),
         resource_links: Vec::new(),
-        doc_links: HashMap::new(),
+        doc_links: Vec::new(),
     };
     let existing_targets = base.link_targets();
     for doc in &base.docs {
@@ -39,9 +45,10 @@ pub fn process(base: &Tikibase) -> LinksResult {
                                     destination,
                                 ));
                             } else {
-                                result
-                                    .doc_links
-                                    .insert(doc.path.clone(), PathBuf::from(destination));
+                                result.doc_links.push(DocLink {
+                                    from: doc.path.clone(),
+                                    to: PathBuf::from(destination),
+                                });
                             }
                         }
                         Reference::Image { src } => {
@@ -93,17 +100,34 @@ mod tests {
         #[test]
         fn link_to_existing_file() {
             let dir = testhelpers::tmp_dir();
-            testhelpers::create_file("1.md", "# One\n\n[Two](2.md)\n", &dir);
+            let content = "\
+# One
+
+Here is a link to [Two](2.md) that works.
+
+### section
+
+Here is a link to [Three](3.md) that also works.
+
+### another section
+
+Here is a link to [Four](4.md) that also works.
+";
+            testhelpers::create_file("1.md", content, &dir);
             testhelpers::create_file("2.md", "# Two", &dir);
+            testhelpers::create_file("3.md", "# Three", &dir);
+            testhelpers::create_file("4.md", "# Four", &dir);
             let (base, errs) = Tikibase::load(dir);
             assert_eq!(errs.len(), 0);
             let have = super::super::process(&base);
             assert_eq!(have.outcome.findings.len(), 0);
-            assert_eq!(have.doc_links.len(), 1);
-            assert_eq!(
-                have.doc_links.get(&PathBuf::from("1.md")).unwrap(),
-                &PathBuf::from("2.md")
-            )
+            assert_eq!(have.doc_links.len(), 3);
+            assert_eq!(have.doc_links[0].from, PathBuf::from("1.md"));
+            assert_eq!(have.doc_links[0].to, PathBuf::from("2.md"));
+            assert_eq!(have.doc_links[1].from, PathBuf::from("1.md"));
+            assert_eq!(have.doc_links[1].to, PathBuf::from("3.md"));
+            assert_eq!(have.doc_links[2].from, PathBuf::from("1.md"));
+            assert_eq!(have.doc_links[2].to, PathBuf::from("4.md"));
         }
 
         #[test]

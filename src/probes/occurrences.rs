@@ -1,7 +1,8 @@
-use super::outcome::Outcome;
+use super::{link_broken::DocLinks, outcome::Outcome};
 use crate::core::{document::builder_with_title_line, tikibase::Tikibase};
 use std::cmp::{Eq, Ord, Ordering, PartialEq};
 use std::collections::{HashMap, HashSet};
+use std::iter::FromIterator;
 use std::path::PathBuf;
 
 #[derive(Eq)]
@@ -28,23 +29,25 @@ impl PartialEq for MissingOccurrence {
     }
 }
 
-pub fn process(mut base: Tikibase, doc_links: HashMap<PathBuf, PathBuf>, fix: bool) -> Outcome {
+pub fn process(mut base: Tikibase, doc_links: DocLinks, fix: bool) -> Outcome {
     let mut result = Outcome::new();
     let mut missings = HashMap::<PathBuf, Vec<MissingOccurrence>>::new();
     for doc in &base.docs {
         // determine outgoing links
-        let outgoing: HashSet<&PathBuf> = doc_links
-            .iter()
-            .filter(|link| link.0 == &doc.path)
-            .map(|link| link.1)
-            .collect();
+        let outgoing: HashSet<&PathBuf> = HashSet::from_iter(
+            doc_links
+                .iter()
+                .filter(|doclink| &doclink.from == &doc.path)
+                .map(|doclink| &doclink.to),
+        );
 
         // determine incoming links
-        let incoming: HashSet<&PathBuf> = doc_links
-            .iter()
-            .filter(|link| link.1 == &doc.path)
-            .map(|link| link.0)
-            .collect();
+        let incoming = HashSet::from_iter(
+            doc_links
+                .iter()
+                .filter(|doclink| &doclink.to == &doc.path)
+                .map(|doclink| &doclink.from),
+        );
 
         // determine missing links in this document
         let missing_outgoing: HashSet<&PathBuf> = incoming.difference(&outgoing).copied().collect();
@@ -112,10 +115,11 @@ pub fn process(mut base: Tikibase, doc_links: HashMap<PathBuf, PathBuf>, fix: bo
 #[cfg(test)]
 mod tests {
 
-    use std::{collections::HashMap, path::PathBuf};
+    use std::path::PathBuf;
 
     use crate::core::tikibase::Tikibase;
-    use crate::testhelpers;
+    use crate::probes::link_broken::DocLinks;
+    use crate::{probes::link_broken::DocLink, testhelpers};
 
     #[test]
     fn process_false() {
@@ -125,9 +129,15 @@ mod tests {
         testhelpers::create_file("3.md", "# Three\n\n[one](1.md)\n", &dir);
         let (base, errs) = Tikibase::load(dir);
         assert_eq!(errs.len(), 0);
-        let mut doc_links: HashMap<PathBuf, PathBuf> = HashMap::new();
-        doc_links.insert(PathBuf::from("3.md"), PathBuf::from("1.md"));
-        doc_links.insert(PathBuf::from("2.md"), PathBuf::from("1.md"));
+        let mut doc_links: DocLinks = Vec::new();
+        doc_links.push(DocLink {
+            from: PathBuf::from("3.md"),
+            to: PathBuf::from("1.md"),
+        });
+        doc_links.push(DocLink {
+            from: PathBuf::from("2.md"),
+            to: PathBuf::from("1.md"),
+        });
         let have = super::process(base, doc_links, false);
         assert_eq!(have.fixes.len(), 0);
         assert_eq!(
@@ -147,9 +157,15 @@ mod tests {
         testhelpers::create_file("3.md", "# Three\n\n[one](1.md)\n", &dir);
         let (base, errs) = Tikibase::load(dir.clone());
         assert_eq!(errs.len(), 0);
-        let mut doc_links: HashMap<PathBuf, PathBuf> = HashMap::new();
-        doc_links.insert(PathBuf::from("3.md"), PathBuf::from("1.md"));
-        doc_links.insert(PathBuf::from("2.md"), PathBuf::from("1.md"));
+        let mut doc_links: DocLinks = Vec::new();
+        doc_links.push(DocLink {
+            from: PathBuf::from("3.md"),
+            to: PathBuf::from("1.md"),
+        });
+        doc_links.push(DocLink {
+            from: PathBuf::from("2.md"),
+            to: PathBuf::from("1.md"),
+        });
         let have = super::process(base, doc_links, true);
         assert_eq!(have.fixes, vec!["1.md:2  added occurrences section"]);
         assert_eq!(have.findings.len(), 0);
