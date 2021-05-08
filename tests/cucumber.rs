@@ -1,7 +1,7 @@
 use cucumber_rust::{async_trait, Cucumber, Steps, World};
 use std::collections::HashMap;
 use std::io;
-use std::path::{Path, PathBuf};
+use std::path::PathBuf;
 use tikibase::core::tikibase::Tikibase;
 use tikibase::testhelpers;
 
@@ -73,7 +73,7 @@ fn steps() -> Steps<MyWorld> {
 
     steps.then("all files are unchanged", |world, _ctx| {
         for (filename, original_content) in &world.original_contents {
-            let current_content = load_file(&world.dir.join(filename));
+            let current_content = testhelpers::load_file(filename, &world.dir);
             assert_eq!(&current_content, original_content);
         }
         world
@@ -81,7 +81,7 @@ fn steps() -> Steps<MyWorld> {
 
     steps.then_regex(r#"^file "(.*)" is unchanged$"#, |world, ctx| {
         let filename = ctx.matches.get(1).expect("no filename provided");
-        let have = &load_file(&world.dir.join(&filename));
+        let have = &testhelpers::load_file(&filename, &world.dir);
         let want = world
             .original_contents
             .get(&PathBuf::from(filename))
@@ -95,7 +95,7 @@ fn steps() -> Steps<MyWorld> {
         let expected = ctx.step.docstring().unwrap().trim_start();
         let filename = ctx.matches.get(1).expect("no filename provided");
         // TODO: rename to have
-        let actual = load_file(&world.dir.join(filename));
+        let actual = testhelpers::load_file(&filename, &world.dir);
         assert_eq!(actual, expected);
         world
     });
@@ -118,15 +118,6 @@ fn steps() -> Steps<MyWorld> {
     });
 
     steps
-}
-
-pub fn load_file(filepath: &Path) -> String {
-    let mut result = std::fs::read_to_string(filepath)
-        .unwrap()
-        .trim_end()
-        .to_string();
-    result.push('\n');
-    result
 }
 
 #[tokio::main]

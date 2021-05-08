@@ -18,7 +18,7 @@ impl Ord for MissingOccurrence {
 
 impl PartialOrd for MissingOccurrence {
     fn partial_cmp(&self, other: &Self) -> Option<Ordering> {
-        Some(self.cmp(other))
+        Some(self.path.cmp(&other.path))
     }
 }
 
@@ -72,7 +72,8 @@ pub fn process(mut base: Tikibase, doc_links: HashMap<PathBuf, PathBuf>, fix: bo
 
     if fix {
         let base_dir = base.dir.clone();
-        for (filepath, missing_occurrences) in missings {
+        for (filepath, mut missing_occurrences) in missings {
+            missing_occurrences.sort();
             let doc = base.get_doc_mut(&filepath).unwrap();
             let mut section_builder =
                 builder_with_title_line("### occurrences".to_string(), doc.last_line() + 1);
@@ -119,40 +120,43 @@ mod tests {
     #[test]
     fn process_false() {
         let dir = testhelpers::tmp_dir();
-        let content = "\
-# One
-
-[two](two.md)
-";
-        testhelpers::create_file("1.md", content, &dir);
-        let content = "# Two\n";
-        testhelpers::create_file("2.md", content, &dir);
+        testhelpers::create_file("1.md", "# One\n", &dir);
+        testhelpers::create_file("2.md", "# Two\n\n[one](1.md)\n", &dir);
+        testhelpers::create_file("3.md", "# Three\n\n[one](1.md)\n", &dir);
         let (base, errs) = Tikibase::load(dir);
         assert_eq!(errs.len(), 0);
         let mut doc_links: HashMap<PathBuf, PathBuf> = HashMap::new();
-        doc_links.insert(PathBuf::from("1.md"), PathBuf::from("2.md"));
+        doc_links.insert(PathBuf::from("3.md"), PathBuf::from("1.md"));
+        doc_links.insert(PathBuf::from("2.md"), PathBuf::from("1.md"));
         let have = super::process(base, doc_links, false);
         assert_eq!(have.fixes.len(), 0);
-        assert_eq!(have.findings, vec!["2.md  missing link to \"One\""]);
+        assert_eq!(
+            have.findings,
+            vec![
+                "1.md  missing link to \"Two\"",
+                "1.md  missing link to \"Three\"",
+            ]
+        );
     }
 
     #[test]
     fn process_true() {
         let dir = testhelpers::tmp_dir();
-        let content = "\
-# One
-
-[two](two.md)
-";
-        testhelpers::create_file("1.md", content, &dir);
-        let content = "# Two\n";
-        testhelpers::create_file("2.md", content, &dir);
-        let (base, errs) = Tikibase::load(dir);
+        testhelpers::create_file("1.md", "# One\n", &dir);
+        testhelpers::create_file("2.md", "# Two\n\n[one](1.md)\n", &dir);
+        testhelpers::create_file("3.md", "# Three\n\n[one](1.md)\n", &dir);
+        let (base, errs) = Tikibase::load(dir.clone());
         assert_eq!(errs.len(), 0);
         let mut doc_links: HashMap<PathBuf, PathBuf> = HashMap::new();
-        doc_links.insert(PathBuf::from("1.md"), PathBuf::from("2.md"));
+        doc_links.insert(PathBuf::from("3.md"), PathBuf::from("1.md"));
+        doc_links.insert(PathBuf::from("2.md"), PathBuf::from("1.md"));
         let have = super::process(base, doc_links, true);
-        assert_eq!(have.fixes, vec!["2.md:2  added occurrences section"]);
+        assert_eq!(have.fixes, vec!["1.md:2  added occurrences section"]);
         assert_eq!(have.findings.len(), 0);
+        let content_one = testhelpers::load_file("1.md", &dir);
+        assert_eq!(
+            content_one,
+            "# One\n### occurrences\n- [Two](2.md)\n- [Three](3.md)\n"
+        )
     }
 }
