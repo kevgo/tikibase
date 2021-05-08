@@ -32,11 +32,10 @@ fn steps() -> Steps<MyWorld> {
     steps.given_regex(r#"^file "(.*)" with content:$"#, |mut world, ctx| {
         let filename = ctx.matches.get(1).expect("no filename provided");
         let content = ctx.step.docstring().unwrap().trim_start();
-        let filepath = PathBuf::from(filename);
         testhelpers::create_file(filename, content, &world.dir);
         world
             .original_contents
-            .insert(filepath, content.to_string());
+            .insert(PathBuf::from(filename), content.to_string());
         world
     });
 
