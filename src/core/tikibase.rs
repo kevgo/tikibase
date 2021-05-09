@@ -136,6 +136,36 @@ mod tests {
         }
     }
 
+    mod get_doc_mut {
+
+        use super::super::*;
+        use crate::testhelpers;
+        use std::path::PathBuf;
+
+        #[test]
+        fn exists() {
+            let dir = testhelpers::tmp_dir();
+            testhelpers::create_file("one.md", "# test doc", &dir);
+            let (mut base, errs) = Tikibase::load(dir);
+            assert_eq!(errs.len(), 0);
+            let doc = base
+                .get_doc_mut(&PathBuf::from("one.md"))
+                .expect("document not found");
+            assert_eq!(doc.title_section.title_line.text, "# test doc");
+        }
+
+        #[test]
+        fn missing() {
+            let dir = testhelpers::tmp_dir();
+            let (mut base, errs) = Tikibase::load(dir);
+            assert_eq!(errs.len(), 0);
+            match base.get_doc_mut(&PathBuf::from("zonk.md")) {
+                None => return,
+                Some(_) => panic!("should have found nothing"),
+            }
+        }
+    }
+
     mod has_resource {
 
         use super::super::*;
