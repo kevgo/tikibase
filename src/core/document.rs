@@ -53,11 +53,9 @@ impl Document {
     }
 
     pub fn last_line(&self) -> u32 {
-        let sections_count = self.content_sections.len();
-        if sections_count == 0 {
-            self.title_section.last_line()
-        } else {
-            self.content_sections[sections_count - 1].last_line()
+        match self.content_sections.len() {
+            0 => self.title_section.last_line(),
+            cnt => self.content_sections[cnt - 1].last_line(),
         }
     }
 
