@@ -78,7 +78,7 @@ pub fn process(mut base: Tikibase, doc_links: DocLinks, fix: bool) -> Outcome {
             missing_occurrences.sort();
             let doc = base.get_doc_mut(&filepath).unwrap();
             // insert a newline into the section before
-            let last_section = doc.last_section_mut().unwrap();
+            let last_section = doc.last_section_mut();
             last_section.push_line("");
 
             // insert occurrences section

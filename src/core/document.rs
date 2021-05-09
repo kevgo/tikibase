@@ -198,12 +198,8 @@ title text
 text
 ";
             let mut doc = Document::from_str(PathBuf::from("test.md"), give).unwrap();
-            match doc.last_section_mut() {
-                None => panic!(),
-                Some(section) => {
-                    assert_eq!(section.title_line.text, "### s1");
-                }
-            }
+            let have = doc.last_section_mut();
+            assert_eq!(have.title_line.text, "### s1");
         }
 
         #[test]
@@ -213,12 +209,8 @@ text
 title text
 ";
             let mut doc = Document::from_str(PathBuf::from("test.md"), give).unwrap();
-            match doc.last_section_mut() {
-                None => panic!(),
-                Some(section) => {
-                    assert_eq!(section.title_line.text, "# Title");
-                }
-            }
+            let have = doc.last_section_mut();
+            assert_eq!(have.title_line.text, "# Title");
         }
     }
 
