@@ -1,5 +1,5 @@
-use super::outcome::Outcome;
-use super::Tikibase;
+use super::{doc_links::DocLink, outcome::Outcome};
+use super::{doc_links::DocLinks, Tikibase};
 use crate::core::line::Reference;
 use std::path::PathBuf;
 
@@ -11,19 +11,11 @@ pub struct LinksResult {
     pub doc_links: DocLinks,
 }
 
-/// a link from an internal document to another internal document
-pub struct DocLink {
-    pub from: PathBuf,
-    pub to: PathBuf,
-}
-
-pub type DocLinks = Vec<DocLink>;
-
 pub fn process(base: &Tikibase) -> LinksResult {
     let mut result = LinksResult {
         outcome: Outcome::new(),
         resource_links: Vec::new(),
-        doc_links: Vec::new(),
+        doc_links: DocLinks { links: Vec::new() },
     };
     let existing_targets = base.link_targets();
     for doc in &base.docs {

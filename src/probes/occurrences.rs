@@ -1,9 +1,9 @@
-use super::link_broken::DocLinks;
+use super::doc_links::DocLinks;
 use super::outcome::Outcome;
 use crate::core::document::builder_with_title_line;
 use crate::core::tikibase::Tikibase;
 use std::cmp::{Eq, Ord, Ordering, PartialEq};
-use std::collections::{HashMap, HashSet};
+use std::collections::HashMap;
 use std::path::PathBuf;
 
 #[derive(Eq)]
@@ -34,31 +34,15 @@ pub fn process(mut base: Tikibase, doc_links: DocLinks, fix: bool) -> Outcome {
     let mut result = Outcome::new();
     let mut missings = HashMap::<PathBuf, Vec<MissingOccurrence>>::new();
     for doc in &base.docs {
-        // determine outgoing links
-        let outgoing: HashSet<&PathBuf> = doc_links
-            .iter()
-            .filter(|doclink| doclink.from == doc.path)
-            .map(|doclink| &doclink.to)
-            .collect();
-
-        // determine incoming links
-        let incoming: HashSet<&PathBuf> = doc_links
-            .iter()
-            .filter(|doclink| doclink.to == doc.path)
-            .map(|doclink| &doclink.from)
-            .collect();
-
-        // determine missing links in this document
-        let missing_outgoing: HashSet<&PathBuf> = incoming.difference(&outgoing).copied().collect();
-        let mut m: Vec<&PathBuf> = missing_outgoing.iter().copied().collect();
+        let missing_outgoing = doc_links.missing_from_file(&doc.path);
 
         // no missing links --> done here
-        if m.is_empty() {
+        if missing_outgoing.is_empty() {
             continue;
         }
 
         // register missing occurrences
-        m.sort();
+        // missing_outgoing.sort();
         missings.insert(
             doc.path.clone(),
             missing_outgoing
@@ -123,8 +107,8 @@ mod tests {
     use std::path::PathBuf;
 
     use crate::core::tikibase::Tikibase;
-    use crate::probes::link_broken::DocLinks;
-    use crate::{probes::link_broken::DocLink, testhelpers};
+    use crate::probes::doc_links::DocLinks;
+    use crate::{probes::doc_links::DocLink, testhelpers};
 
     #[test]
     fn process_false() {
@@ -134,7 +118,7 @@ mod tests {
         testhelpers::create_file("3.md", "# Three\n\n[one](1.md)\n", &dir);
         let (base, errs) = Tikibase::load(dir);
         assert_eq!(errs.len(), 0);
-        let mut doc_links: DocLinks = Vec::new();
+        let mut doc_links: DocLinks = DocLinks { links: vec![] };
         doc_links.push(DocLink {
             from: PathBuf::from("3.md"),
             to: PathBuf::from("1.md"),
@@ -162,7 +146,7 @@ mod tests {
         testhelpers::create_file("3.md", "# Three\n\n[one](1.md)\n", &dir);
         let (base, errs) = Tikibase::load(dir.clone());
         assert_eq!(errs.len(), 0);
-        let mut doc_links: DocLinks = Vec::new();
+        let mut doc_links: DocLinks = DocLinks { links: Vec::new() };
         doc_links.push(DocLink {
             from: PathBuf::from("3.md"),
             to: PathBuf::from("1.md"),

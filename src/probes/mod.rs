@@ -1,4 +1,5 @@
 use crate::core::tikibase::Tikibase;
+mod doc_links;
 mod image_orphaned;
 mod link_broken;
 mod occurrences;
