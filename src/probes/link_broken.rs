@@ -7,7 +7,7 @@ pub struct LinksResult {
     pub outcome: Outcome,
     /// all resources that are linked to from the given Tikibase
     pub resource_links: Vec<String>,
-    /// all internal links from source file --> destination document
+    /// all links between internal documents
     pub doc_links: DocLinks,
 }
 
