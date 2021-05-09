@@ -110,8 +110,8 @@ mod tests {
 
     mod last_line {
 
-        use super::super::super::line::Line;
-        use super::super::Section;
+        use crate::core::line::Line;
+        use crate::core::section::Section;
 
         #[test]
         fn no_body() {
