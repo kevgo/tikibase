@@ -11,6 +11,7 @@ pub struct LinksResult {
     pub doc_links: DocLinks,
 }
 
+/// a link from an internal document to another internal document
 pub struct DocLink {
     pub from: PathBuf,
     pub to: PathBuf,
