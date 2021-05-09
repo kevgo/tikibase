@@ -26,7 +26,7 @@ impl Section {
     }
 
     /// provides the absolute line number of the last line in this section
-    pub fn last_line(&self) -> u32 {
+    pub fn last_line_abs(&self) -> u32 {
         self.line_number + (self.body.len() as u32)
     }
 
@@ -123,7 +123,7 @@ mod tests {
                 },
                 body: Vec::new(),
             };
-            assert_eq!(section.last_line(), 12);
+            assert_eq!(section.last_line_abs(), 12);
         }
 
         // fn with_body() {

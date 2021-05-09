@@ -63,8 +63,8 @@ impl Document {
     /// provides the number of lines in this document
     pub fn lines_count(&self) -> u32 {
         match self.content_sections.len() {
-            0 => self.title_section.last_line(),
-            cnt => self.content_sections[cnt - 1].last_line(),
+            0 => self.title_section.last_line_abs(),
+            cnt => self.content_sections[cnt - 1].last_line_abs(),
         }
     }
 
