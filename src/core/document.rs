@@ -52,7 +52,8 @@ impl Document {
         file.write_all(self.text().as_bytes()).unwrap();
     }
 
-    pub fn last_line(&self) -> u32 {
+    /// provides the number of lines in this document
+    pub fn lines_count(&self) -> u32 {
         match self.content_sections.len() {
             0 => self.title_section.last_line(),
             cnt => self.content_sections[cnt - 1].last_line(),
@@ -167,7 +168,7 @@ two
 foo
 ";
             let doc = Document::from_str(PathBuf::from("test.md"), give).unwrap();
-            assert_eq!(doc.last_line(), 6);
+            assert_eq!(doc.lines_count(), 6);
         }
 
         #[test]
@@ -177,7 +178,7 @@ foo
 title text
 ";
             let doc = Document::from_str(PathBuf::from("test.md"), give).unwrap();
-            assert_eq!(doc.last_line(), 1);
+            assert_eq!(doc.lines_count(), 1);
         }
     }
 

@@ -83,7 +83,7 @@ pub fn process(mut base: Tikibase, doc_links: DocLinks, fix: bool) -> Outcome {
 
             // insert occurrences section
             let mut section_builder =
-                builder_with_title_line("### occurrences".to_string(), doc.last_line() + 1);
+                builder_with_title_line("### occurrences".to_string(), doc.lines_count() + 1);
             section_builder.add_body_line("".to_string());
             for missing_occurrence in missing_occurrences {
                 section_builder.add_body_line(format!(
