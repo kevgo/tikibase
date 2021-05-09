@@ -4,7 +4,7 @@ use regex::Regex;
 #[derive(Debug, PartialEq)]
 pub struct Line {
     /// The line number relative to the section title line, 0-based.
-    // TODO: remove?
+    // TODO: remove because it is redundant with the index of this line in the section?
     pub section_offset: u32,
     pub text: String,
 }
