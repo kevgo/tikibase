@@ -53,10 +53,10 @@ impl Document {
     }
 
     /// provides the last section in this document
-    pub fn last_section_mut(&mut self) -> Option<&mut Section> {
+    pub fn last_section_mut(&mut self) -> &mut Section {
         match self.content_sections.len() {
-            0 => Some(&mut self.title_section),
-            index => self.content_sections.get_mut(index - 1),
+            0 => &mut self.title_section,
+            index => self.content_sections.get_mut(index - 1).unwrap(),
         }
     }
 
