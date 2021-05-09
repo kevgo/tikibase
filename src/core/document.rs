@@ -52,19 +52,19 @@ impl Document {
         file.write_all(self.text().as_bytes()).unwrap();
     }
 
-    /// provides the number of lines in this document
-    pub fn lines_count(&self) -> u32 {
-        match self.content_sections.len() {
-            0 => self.title_section.last_line(),
-            cnt => self.content_sections[cnt - 1].last_line(),
-        }
-    }
-
     /// provides the last section
     pub fn last_section_mut(&mut self) -> Option<&mut Section> {
         match self.content_sections.len() {
             0 => Some(&mut self.title_section),
             index => self.content_sections.get_mut(index - 1),
+        }
+    }
+
+    /// provides the number of lines in this document
+    pub fn lines_count(&self) -> u32 {
+        match self.content_sections.len() {
+            0 => self.title_section.last_line(),
+            cnt => self.content_sections[cnt - 1].last_line(),
         }
     }
 
