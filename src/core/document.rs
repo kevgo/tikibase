@@ -52,7 +52,7 @@ impl Document {
         file.write_all(self.text().as_bytes()).unwrap();
     }
 
-    /// provides the last section
+    /// provides the last section in this document
     pub fn last_section_mut(&mut self) -> Option<&mut Section> {
         match self.content_sections.len() {
             0 => Some(&mut self.title_section),
