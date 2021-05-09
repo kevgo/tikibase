@@ -45,6 +45,7 @@ Feature: add occurrence sections
 
       text
       ### occurrences
+
       - [Title 2](2.md)
       - [Title 3](3.md)
       """

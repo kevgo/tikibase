@@ -29,10 +29,9 @@ impl Line {
                 }),
                 "" => {
                     let mut destination = cap[2].to_string();
-                    match destination.find('#') {
-                        Some(idx) => destination.truncate(idx),
-                        None => {}
-                    };
+                    if let Some(idx) = destination.find('#') {
+                        destination.truncate(idx);
+                    }
                     result.push(Reference::Link { destination })
                 }
                 _ => panic!("unexpected capture: '{}'", &cap[1]),

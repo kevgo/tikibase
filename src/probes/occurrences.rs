@@ -2,7 +2,6 @@ use super::{link_broken::DocLinks, outcome::Outcome};
 use crate::core::{document::builder_with_title_line, tikibase::Tikibase};
 use std::cmp::{Eq, Ord, Ordering, PartialEq};
 use std::collections::{HashMap, HashSet};
-use std::iter::FromIterator;
 use std::path::PathBuf;
 
 #[derive(Eq)]
@@ -34,20 +33,18 @@ pub fn process(mut base: Tikibase, doc_links: DocLinks, fix: bool) -> Outcome {
     let mut missings = HashMap::<PathBuf, Vec<MissingOccurrence>>::new();
     for doc in &base.docs {
         // determine outgoing links
-        let outgoing: HashSet<&PathBuf> = HashSet::from_iter(
-            doc_links
-                .iter()
-                .filter(|doclink| &doclink.from == &doc.path)
-                .map(|doclink| &doclink.to),
-        );
+        let outgoing: HashSet<&PathBuf> = doc_links
+            .iter()
+            .filter(|doclink| doclink.from == doc.path)
+            .map(|doclink| &doclink.to)
+            .collect();
 
         // determine incoming links
-        let incoming = HashSet::from_iter(
-            doc_links
-                .iter()
-                .filter(|doclink| &doclink.to == &doc.path)
-                .map(|doclink| &doclink.from),
-        );
+        let incoming: HashSet<&PathBuf> = doc_links
+            .iter()
+            .filter(|doclink| doclink.to == doc.path)
+            .map(|doclink| &doclink.from)
+            .collect();
 
         // determine missing links in this document
         let missing_outgoing: HashSet<&PathBuf> = incoming.difference(&outgoing).copied().collect();
@@ -80,6 +77,7 @@ pub fn process(mut base: Tikibase, doc_links: DocLinks, fix: bool) -> Outcome {
             let doc = base.get_doc_mut(&filepath).unwrap();
             let mut section_builder =
                 builder_with_title_line("### occurrences".to_string(), doc.last_line() + 1);
+            section_builder.add_body_line("".to_string());
             for missing_occurrence in missing_occurrences {
                 section_builder.add_body_line(format!(
                     "- [{}]({})",
@@ -172,7 +170,7 @@ mod tests {
         let content_one = testhelpers::load_file("1.md", &dir);
         assert_eq!(
             content_one,
-            "# One\n### occurrences\n- [Two](2.md)\n- [Three](3.md)\n"
+            "# One\n### occurrences\n\n- [Two](2.md)\n- [Three](3.md)\n"
         )
     }
 }
