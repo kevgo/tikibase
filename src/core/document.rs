@@ -86,6 +86,7 @@ impl Document {
         result
     }
 
+    /// provides the human-readable title of this document
     pub fn title(&self) -> String {
         self.title_section.section_type()
     }
