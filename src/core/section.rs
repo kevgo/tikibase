@@ -25,7 +25,7 @@ impl Section {
         }
     }
 
-    /// provides the line number of the last line in this section
+    /// provides the absolute line number of the last line in this section
     pub fn last_line(&self) -> u32 {
         self.line_number + (self.body.len() as u32)
     }

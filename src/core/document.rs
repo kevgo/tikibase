@@ -55,7 +55,7 @@ impl Document {
     pub fn last_line(&self) -> u32 {
         let sections_count = self.content_sections.len();
         if sections_count == 0 {
-            self.title_section.body.len() as u32
+            self.title_section.last_line()
         } else {
             self.content_sections[sections_count - 1].last_line()
         }
