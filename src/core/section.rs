@@ -25,9 +25,17 @@ impl Section {
         }
     }
 
-    /// provides the number of the last line in this section
+    /// provides the line number of the last line in this section
     pub fn last_line(&self) -> u32 {
         self.line_number + (self.body.len() as u32)
+    }
+
+    /// adds a new line with the given text to this section
+    pub fn push_line<S: Into<String>>(&mut self, text: S) {
+        self.body.push(Line {
+            section_offset: self.body.len() as u32 + 1,
+            text: text.into(),
+        });
     }
 
     pub fn section_type(&self) -> String {
@@ -152,6 +160,48 @@ title content";
         match lines.next() {
             None => return,
             Some(_) => panic!("unexpected line"),
+        }
+    }
+
+    mod push_line {
+        use crate::core::line::Line;
+        use crate::core::section::Section;
+
+        #[test]
+        fn no_body() {
+            let mut section = Section {
+                line_number: 10,
+                title_line: Line {
+                    section_offset: 0,
+                    text: "foo".to_string(),
+                },
+                body: vec![],
+            };
+            section.push_line("new line");
+            assert_eq!(section.body.len(), 1);
+            assert_eq!(section.body[0].text, "new line");
+            assert_eq!(section.body[0].section_offset, 1);
+        }
+
+        #[test]
+        fn with_body() {
+            let mut section = Section {
+                line_number: 10,
+                title_line: Line {
+                    section_offset: 0,
+                    text: "foo".to_string(),
+                },
+                body: vec![Line {
+                    section_offset: 1,
+                    text: "l1".to_string(),
+                }],
+            };
+            section.push_line("new line");
+            assert_eq!(section.body.len(), 2);
+            assert_eq!(section.body[0].text, "l1");
+            assert_eq!(section.body[0].section_offset, 1);
+            assert_eq!(section.body[1].text, "new line");
+            assert_eq!(section.body[1].section_offset, 2);
         }
     }
 

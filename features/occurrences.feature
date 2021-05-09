@@ -44,6 +44,7 @@ Feature: add occurrence sections
       ### section 1
 
       text
+
       ### occurrences
 
       - [Title 2](2.md)
@@ -56,5 +57,5 @@ Feature: add occurrence sections
     When doing a pitstop
     Then it prints:
       """
-      1.md:6  added occurrences section
+      1.md:7  added occurrences section
       """

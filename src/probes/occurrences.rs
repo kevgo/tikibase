@@ -1,5 +1,7 @@
-use super::{link_broken::DocLinks, outcome::Outcome};
-use crate::core::{document::builder_with_title_line, tikibase::Tikibase};
+use super::link_broken::DocLinks;
+use super::outcome::Outcome;
+use crate::core::document::builder_with_title_line;
+use crate::core::tikibase::Tikibase;
 use std::cmp::{Eq, Ord, Ordering, PartialEq};
 use std::collections::{HashMap, HashSet};
 use std::path::PathBuf;
@@ -75,6 +77,11 @@ pub fn process(mut base: Tikibase, doc_links: DocLinks, fix: bool) -> Outcome {
         for (filepath, mut missing_occurrences) in missings {
             missing_occurrences.sort();
             let doc = base.get_doc_mut(&filepath).unwrap();
+            // insert a newline into the section before
+            let last_section = doc.last_section_mut().unwrap();
+            last_section.push_line("");
+
+            // insert occurrences section
             let mut section_builder =
                 builder_with_title_line("### occurrences".to_string(), doc.last_line() + 1);
             section_builder.add_body_line("".to_string());
@@ -165,12 +172,12 @@ mod tests {
             to: PathBuf::from("1.md"),
         });
         let have = super::process(base, doc_links, true);
-        assert_eq!(have.fixes, vec!["1.md:2  added occurrences section"]);
+        assert_eq!(have.fixes, vec!["1.md:3  added occurrences section"]);
         assert_eq!(have.findings.len(), 0);
         let content_one = testhelpers::load_file("1.md", &dir);
         assert_eq!(
             content_one,
-            "# One\n### occurrences\n\n- [Two](2.md)\n- [Three](3.md)\n"
+            "# One\n\n### occurrences\n\n- [Two](2.md)\n- [Three](3.md)\n"
         )
     }
 }
