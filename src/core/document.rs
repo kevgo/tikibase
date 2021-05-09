@@ -152,7 +152,7 @@ content";
         }
     }
 
-    mod last_line {
+    mod lines_count {
 
         use super::super::Document;
         use std::path::PathBuf;
