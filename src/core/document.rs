@@ -61,6 +61,14 @@ impl Document {
         }
     }
 
+    /// provides the last section
+    pub fn last_section_mut(&mut self) -> Option<&mut Section> {
+        match self.content_sections.len() {
+            0 => Some(&mut self.title_section),
+            index => self.content_sections.get_mut(index - 1),
+        }
+    }
+
     /// provides a non-consuming iterator for all sections in this document
     pub fn sections(&self) -> SectionIterator {
         SectionIterator {
@@ -172,6 +180,46 @@ title text
 ";
             let doc = Document::from_str(PathBuf::from("test.md"), give).unwrap();
             assert_eq!(doc.last_line(), 1);
+        }
+    }
+
+    mod last_section {
+
+        use super::Document;
+        use std::path::PathBuf;
+
+        #[test]
+        fn has_content_section() {
+            let give = "\
+# Title
+title text
+
+### s1
+
+text
+";
+            let mut doc = Document::from_str(PathBuf::from("test.md"), give).unwrap();
+            match doc.last_section_mut() {
+                None => panic!(),
+                Some(section) => {
+                    assert_eq!(section.title_line.text, "### s1");
+                }
+            }
+        }
+
+        #[test]
+        fn no_content_sections() {
+            let give = "\
+# Title
+title text
+";
+            let mut doc = Document::from_str(PathBuf::from("test.md"), give).unwrap();
+            match doc.last_section_mut() {
+                None => panic!(),
+                Some(section) => {
+                    assert_eq!(section.title_line.text, "# Title");
+                }
+            }
         }
     }
 
