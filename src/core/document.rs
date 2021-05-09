@@ -183,7 +183,7 @@ title text
         }
     }
 
-    mod last_section {
+    mod last_section_mut {
 
         use super::Document;
         use std::path::PathBuf;
