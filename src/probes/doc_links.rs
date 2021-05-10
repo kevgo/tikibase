@@ -1,41 +1,45 @@
-use std::{
-    collections::HashSet,
-    path::{Path, PathBuf},
-};
+use std::collections::{HashMap, HashSet};
+use std::path::PathBuf;
 
-/// a link from an internal document to another internal document
-pub struct DocLink {
-    pub from: PathBuf,
-    pub to: PathBuf,
-}
-
+/// manages links to/from a document
 pub struct DocLinks {
-    links: Vec<DocLink>,
+    data: HashMap<PathBuf, HashSet<PathBuf>>,
 }
 
 impl DocLinks {
-    /// provides the number of Links
-    pub fn len(&self) -> usize {
-        self.links.len()
+    /// registers an association between doc and other_doc
+    pub fn add<P: Into<PathBuf>>(&mut self, doc: P, other_doc: P) {
+        let doc_path = doc.into();
+        let mut data = match self.data.get_mut(&doc_path) {
+            None => {
+                // TODO: use https://crates.io/crates/ahash as the hashing function here
+                let mut docs = HashSet::new();
+                self.data.insert(doc_path, docs);
+                &mut docs
+            }
+            Some(docs) => docs,
+        };
+        data.insert(other_doc.into());
     }
 
-    pub fn missing_from_file(&self, path: &Path) -> Vec<&PathBuf> {
-        let mut incoming = HashSet::new();
-        let mut outgoing = HashSet::new();
-        for link in &self.links {
-            if link.from == path {
-                outgoing.insert(link.from.clone());
-            }
-            if link.to == path {
-                incoming.insert(link.from.clone());
-            }
+    pub fn get<P: AsRef<PathBuf>>(&self, doc: P) -> &HashSet<PathBuf> {
+        match self.data.get(doc.as_ref()) {
+            None => &HashSet::new(),
+            Some(result) => result,
         }
-        let missing = incoming.difference(&outgoing);
-        missing.into_iter().collect()
     }
 
-    pub fn push(&mut self, link: DocLink) {
-        self.links.push(link)
+    /// provides the number of registered documents
+    pub fn len(&self) -> usize {
+        self.data.len()
+    }
+
+    /// provides an empty DocLinks instance
+    pub fn new() -> DocLinks {
+        // TODO: use https://crates.io/crates/ahash as the hashing function here
+        DocLinks {
+            data: HashMap::new(),
+        }
     }
 }
 
@@ -43,25 +47,40 @@ impl DocLinks {
 mod tests {
     use std::path::PathBuf;
 
-    use crate::probes::doc_links::DocLink;
-
     use super::DocLinks;
 
     #[test]
-    fn links_from_file() {
-        let doc_links = DocLinks { links: vec![] };
-        doc_links.push(DocLink {
-            from: PathBuf::from("1.md"),
-            to: PathBuf::from("2.md"),
-        });
-        doc_links.push(DocLink {
-            from: PathBuf::from("1.md"),
-            to: PathBuf::from("3.md"),
-        });
-        doc_links.push(DocLink {
-            from: PathBuf::from("2.md"),
-            to: PathBuf::from("3.md"),
-        });
+    fn new() {
+        let doc_links = DocLinks::new();
+        assert_eq!(doc_links.len(), 0);
+    }
+
+    mod get {
+        use crate::probes::doc_links::DocLinks;
+
+        #[test]
+        fn exists() {
+            let doc_links = DocLinks::new();
+            doc_links.add("1.md", "2.md");
+            let have = doc_links.get("1.md");
+            assert_eq!(have.len(), 1);
+            assert!(have.contains("2.md"));
+        }
+
+        #[test]
+        fn doesnt_exist() {
+            let doc_links = DocLinks::new();
+            let have = doc_links.get("zonk.md");
+            assert_eq!(have.len(), 0);
+        }
+    }
+
+    #[test]
+    fn usage() {
+        let doc_links = DocLinks::new();
+        doc_links.add("1.md", "2.md");
+        doc_links.push("1.md", "3.md");
+        doc_links.push("2.md", "3.md");
         let have = doc_links.links_from_file(&PathBuf::from("1.md"));
         assert_eq!(have.len(), 2);
         assert_eq!(have[0].to_string_lossy(), "2.md");

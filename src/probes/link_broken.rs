@@ -1,21 +1,27 @@
-use super::{doc_links::DocLink, outcome::Outcome};
-use super::{doc_links::DocLinks, Tikibase};
+use super::Tikibase;
+use super::{doc_links::DocLinks, outcome::Outcome};
 use crate::core::line::Reference;
 use std::path::PathBuf;
 
 pub struct LinksResult {
     pub outcome: Outcome,
+
+    /// all links to documents
+    pub incoming_doc_links: DocLinks,
+
+    /// all links from documents
+    pub outgoing_doc_links: DocLinks,
+
     /// all resources that are linked to from the given Tikibase
-    pub resource_links: Vec<String>,
-    /// all links between internal documents
-    pub doc_links: DocLinks,
+    pub outgoing_resource_links: Vec<String>,
 }
 
 pub fn process(base: &Tikibase) -> LinksResult {
     let mut result = LinksResult {
         outcome: Outcome::new(),
-        resource_links: Vec::new(),
-        doc_links: DocLinks { links: Vec::new() },
+        incoming_doc_links: DocLinks::new(),
+        outgoing_doc_links: DocLinks::new(),
+        outgoing_resource_links: Vec::new(),
     };
     let existing_targets = base.link_targets();
     for doc in &base.docs {
@@ -38,10 +44,12 @@ pub fn process(base: &Tikibase) -> LinksResult {
                                     destination,
                                 ));
                             } else {
-                                result.doc_links.push(DocLink {
-                                    from: doc.path.clone(),
-                                    to: PathBuf::from(destination),
-                                });
+                                result
+                                    .incoming_doc_links
+                                    .add(PathBuf::from(destination), doc.path.clone());
+                                result
+                                    .outgoing_doc_links
+                                    .add(doc.path.clone(), PathBuf::from(destination));
                             }
                         }
                         Reference::Image { src } => {
@@ -56,7 +64,7 @@ pub fn process(base: &Tikibase) -> LinksResult {
                                     &src,
                                 ));
                             }
-                            result.resource_links.push(src);
+                            result.outgoing_resource_links.push(src);
                         }
                     }
                 }
@@ -87,7 +95,9 @@ mod tests {
                 have.outcome.findings,
                 vec!["one.md:3  broken link to \"non-existing.md\""]
             );
-            assert_eq!(have.doc_links.len(), 0);
+            assert_eq!(have.incoming_doc_links.len(), 0);
+            assert_eq!(have.outgoing_doc_links.len(), 0);
+            assert_eq!(have.outgoing_resource_links.len(), 0);
         }
 
         #[test]
@@ -101,26 +111,33 @@ Here is a link to [Two](2.md) that works.
 ### section
 
 Here is a link to [Three](3.md) that also works.
-
-### another section
-
-Here is a link to [Four](4.md) that also works.
 ";
             testhelpers::create_file("1.md", content, &dir);
             testhelpers::create_file("2.md", "# Two", &dir);
             testhelpers::create_file("3.md", "# Three", &dir);
-            testhelpers::create_file("4.md", "# Four", &dir);
             let (base, errs) = Tikibase::load(dir);
             assert_eq!(errs.len(), 0);
             let have = super::super::process(&base);
             assert_eq!(have.outcome.findings.len(), 0);
-            assert_eq!(have.doc_links.len(), 3);
-            assert_eq!(have.doc_links[0].from, PathBuf::from("1.md"));
-            assert_eq!(have.doc_links[0].to, PathBuf::from("2.md"));
-            assert_eq!(have.doc_links[1].from, PathBuf::from("1.md"));
-            assert_eq!(have.doc_links[1].to, PathBuf::from("3.md"));
-            assert_eq!(have.doc_links[2].from, PathBuf::from("1.md"));
-            assert_eq!(have.doc_links[2].to, PathBuf::from("4.md"));
+            assert_eq!(have.outgoing_doc_links.len(), 3);
+            let out_one = have.outgoing_doc_links.get(&PathBuf::from("1.md")).unwrap();
+            assert_eq!(out_one.len(), 2);
+            assert!(out_one.contains(&PathBuf::from("2.md")));
+            assert!(out_one.contains(&PathBuf::from("3.md")));
+            let out_two = have.outgoing_doc_links.get(&PathBuf::from("2.md")).unwrap();
+            assert_eq!(out_two.len(), 0);
+            let out_three = have.outgoing_doc_links.get(&PathBuf::from("2.md")).unwrap();
+            assert_eq!(out_three.len(), 0);
+
+            assert_eq!(have.incoming_doc_links.len(), 3);
+            let in_one = have.incoming_doc_links.get(&PathBuf::from("1.md")).unwrap();
+            assert_eq!(in_one.len(), 0);
+            let in_two = have.incoming_doc_links.get(&PathBuf::from("2.md")).unwrap();
+            assert_eq!(in_two.len(), 1);
+            assert!(in_one.contains(&PathBuf::from("1.md")));
+            let in_three = have.incoming_doc_links.get(&PathBuf::from("3.md")).unwrap();
+            assert_eq!(in_three.len(), 1);
+            assert!(in_one.contains(&PathBuf::from("1.md")));
         }
 
         #[test]
@@ -137,9 +154,10 @@ Here is a link to [Four](4.md) that also works.
             let (base, errs) = Tikibase::load(dir);
             assert_eq!(errs.len(), 0);
             let have = super::super::process(&base);
-            let want: Vec<&str> = vec![];
-            assert_eq!(have.outcome.findings, want);
-            assert_eq!(have.doc_links.len(), 0);
+            assert_eq!(have.outcome.findings, Vec::<String>::new());
+            assert_eq!(have.incoming_doc_links.len(), 0);
+            assert_eq!(have.outgoing_doc_links.len(), 0);
+            assert_eq!(have.outgoing_resource_links.len(), 0);
         }
 
         #[test]
@@ -151,9 +169,10 @@ Here is a link to [Four](4.md) that also works.
             assert_eq!(errs.len(), 0);
             let have = super::super::process(&base);
             assert_eq!(have.outcome.findings.len(), 0);
-            assert_eq!(have.resource_links.len(), 1);
-            assert_eq!(have.resource_links[0], "foo.png");
-            assert_eq!(have.doc_links.len(), 0);
+            assert_eq!(have.outgoing_resource_links.len(), 1);
+            assert_eq!(have.outgoing_resource_links[0], "foo.png");
+            assert_eq!(have.incoming_doc_links.len(), 0);
+            assert_eq!(have.outgoing_doc_links.len(), 0);
         }
 
         #[test]
@@ -168,9 +187,10 @@ Here is a link to [Four](4.md) that also works.
                 have.outcome.findings[0],
                 "1.md:3  broken image \"zonk.png\""
             );
-            assert_eq!(have.resource_links.len(), 1);
-            assert_eq!(have.resource_links[0], "zonk.png");
-            assert_eq!(have.doc_links.len(), 0);
+            assert_eq!(have.outgoing_resource_links.len(), 1);
+            assert_eq!(have.outgoing_resource_links[0], "zonk.png");
+            assert_eq!(have.incoming_doc_links.len(), 0);
+            assert_eq!(have.outgoing_doc_links.len(), 0);
         }
     }
 }

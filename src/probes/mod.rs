@@ -17,9 +17,14 @@ pub fn run(mut base: Tikibase, fix: bool) -> Vec<String> {
     results.append(&mut links_result.outcome);
     results.append(&mut image_orphaned::process(
         &base,
-        links_result.resource_links,
+        links_result.outgoing_resource_links,
     ));
-    let mut occ_res = occurrences::process(base, links_result.doc_links, fix);
+    let mut occ_res = occurrences::process(
+        base,
+        links_result.incoming_doc_links,
+        links_result.outgoing_doc_links,
+        fix,
+    );
     results.append(&mut occ_res);
     results.sorted()
 }
