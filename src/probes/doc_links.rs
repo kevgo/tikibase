@@ -10,34 +10,36 @@ impl DocLinks {
     /// registers an association between doc and other_doc
     pub fn add<P: Into<PathBuf>>(&mut self, doc: P, other_doc: P) {
         let doc_path = doc.into();
-        let mut data = match self.data.get_mut(&doc_path) {
+        match self.data.get_mut(&doc_path) {
             None => {
                 // TODO: use https://crates.io/crates/ahash as the hashing function here
                 let mut docs = HashSet::new();
+                docs.insert(other_doc.into());
                 self.data.insert(doc_path, docs);
-                &mut docs
             }
-            Some(docs) => docs,
+            Some(docs) => {
+                docs.insert(other_doc.into());
+            }
         };
-        data.insert(other_doc.into());
     }
 
-    pub fn get<P: AsRef<PathBuf>>(&self, doc: P) -> &HashSet<PathBuf> {
-        match self.data.get(doc.as_ref()) {
-            None => &HashSet::new(),
-            Some(result) => result,
+    /// provides all documents that are associated with the given document
+    pub fn get(&self, doc: &PathBuf) -> HashSet<PathBuf> {
+        match self.data.get(doc) {
+            None => HashSet::new(),
+            Some(result) => result.clone(),
         }
     }
 
-    /// provides the number of registered documents
-    pub fn len(&self) -> usize {
-        self.data.len()
-    }
+    /// provides the number of tracked documents
+    // pub fn len(&self) -> usize {
+    //     self.data.len()
+    // }
 
     /// provides an empty DocLinks instance
     pub fn new() -> DocLinks {
-        // TODO: use https://crates.io/crates/ahash as the hashing function here
         DocLinks {
+            // TODO: use https://crates.io/crates/ahash as the hashing function here
             data: HashMap::new(),
         }
     }

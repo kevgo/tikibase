@@ -43,6 +43,7 @@ pub fn process(
             .get(&doc.path)
             .difference(&outgoing_doc_links.get(&doc.path))
             .into_iter()
+            .map(|p| p.to_owned())
             .collect();
 
         // no missing links --> done here
@@ -56,7 +57,7 @@ pub fn process(
             doc.path.clone(),
             missing_outgoing
                 .into_iter()
-                .map(|path| base.get_doc(path).unwrap())
+                .map(|path| base.get_doc(&path).unwrap())
                 .map(|doc| MissingOccurrence {
                     path: doc.path.clone(),
                     title: doc.title(),
@@ -110,10 +111,10 @@ pub fn process(
     result
 }
 
-pub fn missing_from_file(path: &Path) -> Vec<&PathBuf> {
-    let missing = incoming.difference(&outgoing);
-    missing.into_iter().collect()
-}
+// pub fn missing_from_file(path: &PathBuf) -> Vec<&PathBuf> {
+//     let missing = incoming.difference(&outgoing);
+//     missing.into_iter().collect()
+// }
 
 #[cfg(test)]
 mod tests {

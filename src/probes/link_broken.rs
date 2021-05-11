@@ -1,5 +1,6 @@
+use super::doc_links::DocLinks;
+use super::outcome::Outcome;
 use super::Tikibase;
-use super::{doc_links::DocLinks, outcome::Outcome};
 use crate::core::line::Reference;
 use std::path::PathBuf;
 
@@ -46,7 +47,7 @@ pub fn process(base: &Tikibase) -> LinksResult {
                             } else {
                                 result
                                     .incoming_doc_links
-                                    .add(PathBuf::from(destination), doc.path.clone());
+                                    .add(PathBuf::from(&destination), doc.path.clone());
                                 result
                                     .outgoing_doc_links
                                     .add(doc.path.clone(), PathBuf::from(destination));
