@@ -7,24 +7,22 @@ use tikibase::probes;
 use tikibase::stats;
 
 fn main() {
-    let (mut base, errors) = Tikibase::load(PathBuf::from("."));
+    let (base, errors) = Tikibase::load(PathBuf::from("."));
     for error in errors {
         println!("{}", error);
     }
     match parse(std::env::args()) {
         Command::Check => {
-            for message in probes::run(&mut base, false) {
+            for message in probes::run(base, false) {
                 println!("{}", message);
             }
         }
         Command::Fix => {
-            for message in probes::run(&mut base, true) {
-                println!("{}", message);
-            }
+            probes::run(base, true);
         }
         Command::Help => help::run(),
         Command::Pitstop => {
-            for finding in probes::run(&mut base, true) {
+            for finding in probes::run(base, true) {
                 println!("{}", finding);
             }
         }

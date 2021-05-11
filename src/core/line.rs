@@ -4,6 +4,7 @@ use regex::Regex;
 #[derive(Debug, PartialEq)]
 pub struct Line {
     /// The line number relative to the section title line, 0-based.
+    // TODO: remove because it is redundant with the index of this line in the section?
     pub section_offset: u32,
     pub text: String,
 }
@@ -26,9 +27,13 @@ impl Line {
                 "!" => result.push(Reference::Image {
                     src: cap[2].to_string(),
                 }),
-                "" => result.push(Reference::Link {
-                    destination: cap[2].to_string(),
-                }),
+                "" => {
+                    let mut destination = cap[2].to_string();
+                    if let Some(idx) = destination.find('#') {
+                        destination.truncate(idx);
+                    }
+                    result.push(Reference::Link { destination })
+                }
                 _ => panic!("unexpected capture: '{}'", &cap[1]),
             }
         }
@@ -54,14 +59,20 @@ mod tests {
         #[test]
         fn link_md() {
             let line = Line {
-                text: r#"an MD link: [one](one.md)"#.to_string(),
+                text: r#"an MD link: [one](one.md) and one to a section: [two pieces](two.md#pieces)!"#.to_string(),
                 section_offset: 0,
             };
             let have = line.references();
-            assert_eq!(have.len(), 1);
+            assert_eq!(have.len(), 2);
             match &have[0] {
                 Reference::Link { destination } => {
                     assert_eq!(destination, "one.md");
+                }
+                Reference::Image { src: _ } => panic!("unexpected image"),
+            };
+            match &have[1] {
+                Reference::Link { destination } => {
+                    assert_eq!(destination, "two.md");
                 }
                 Reference::Image { src: _ } => panic!("unexpected image"),
             };

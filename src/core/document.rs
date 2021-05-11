@@ -52,6 +52,22 @@ impl Document {
         file.write_all(self.text().as_bytes()).unwrap();
     }
 
+    /// provides the last section in this document
+    pub fn last_section_mut(&mut self) -> &mut Section {
+        match self.content_sections.len() {
+            0 => &mut self.title_section,
+            index => self.content_sections.get_mut(index - 1).unwrap(),
+        }
+    }
+
+    /// provides the number of lines in this document
+    pub fn lines_count(&self) -> u32 {
+        match self.content_sections.len() {
+            0 => self.title_section.last_line_abs(),
+            cnt => self.content_sections[cnt - 1].last_line_abs(),
+        }
+    }
+
     /// provides a non-consuming iterator for all sections in this document
     pub fn sections(&self) -> SectionIterator {
         SectionIterator {
@@ -68,6 +84,11 @@ impl Document {
             result.push_str(&section.text());
         }
         result
+    }
+
+    /// provides the human-readable title of this document
+    pub fn title(&self) -> String {
+        self.title_section.section_type()
     }
 }
 
@@ -131,6 +152,69 @@ content";
         }
     }
 
+    mod lines_count {
+
+        use super::super::Document;
+        use std::path::PathBuf;
+
+        #[test]
+        fn with_content_sections() {
+            let give = "\
+# Title
+title text
+### Section 1
+one
+two
+### Section 2
+foo
+";
+            let doc = Document::from_str(PathBuf::from("test.md"), give).unwrap();
+            assert_eq!(doc.lines_count(), 6);
+        }
+
+        #[test]
+        fn no_content_sections() {
+            let give = "\
+# Title
+title text
+";
+            let doc = Document::from_str(PathBuf::from("test.md"), give).unwrap();
+            assert_eq!(doc.lines_count(), 1);
+        }
+    }
+
+    mod last_section_mut {
+
+        use super::Document;
+        use std::path::PathBuf;
+
+        #[test]
+        fn has_content_section() {
+            let give = "\
+# Title
+title text
+
+### s1
+
+text
+";
+            let mut doc = Document::from_str(PathBuf::from("test.md"), give).unwrap();
+            let have = doc.last_section_mut();
+            assert_eq!(have.title_line.text, "### s1");
+        }
+
+        #[test]
+        fn no_content_sections() {
+            let give = "\
+# Title
+title text
+";
+            let mut doc = Document::from_str(PathBuf::from("test.md"), give).unwrap();
+            let have = doc.last_section_mut();
+            assert_eq!(have.title_line.text, "# Title");
+        }
+    }
+
     #[test]
     fn text() {
         let give = "\
@@ -146,6 +230,19 @@ foo
         let have = doc.text();
         assert_eq!(have, give);
     }
+
+    #[test]
+    fn title() {
+        let give = "\
+# Title
+title text
+### Section 1
+one
+";
+        let doc = Document::from_str(PathBuf::from("test.md"), give).unwrap();
+        let have = doc.title();
+        assert_eq!(have, "Title");
+    }
 }
 
 // -------------------------------------------------------------------------------------
@@ -154,7 +251,7 @@ foo
 
 /// Allows building up sections one line at a time.
 pub struct SectionBuilder {
-    line_number: u32,
+    pub line_number: u32,
     title_line: String,
     body: Vec<Line>,
     body_line_number: u32,

@@ -10,6 +10,8 @@ Feature: accept links to existing documents
     And file "2.md" with content:
       """
       # Two
+
+      [one](1.md)
       """
 
   Scenario: checking

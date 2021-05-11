@@ -25,9 +25,10 @@ impl SortedResults {
     }
 
     /// registers the given results
-    pub fn append(&mut self, items: &mut Outcome) {
-        self.items.append(&mut items.findings);
-        self.items.append(&mut items.fixes);
+    // TODO: take ownership of outcome
+    pub fn append(&mut self, outcome: &mut Outcome) {
+        self.items.append(&mut outcome.findings);
+        self.items.append(&mut outcome.fixes);
     }
 
     /// provides the registered results sorted alphabetically

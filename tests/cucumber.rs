@@ -1,7 +1,7 @@
 use cucumber_rust::{async_trait, Cucumber, Steps, World};
 use std::collections::HashMap;
 use std::io;
-use std::path::{Path, PathBuf};
+use std::path::PathBuf;
 use tikibase::core::tikibase::Tikibase;
 use tikibase::testhelpers;
 
@@ -32,11 +32,10 @@ fn steps() -> Steps<MyWorld> {
     steps.given_regex(r#"^file "(.*)" with content:$"#, |mut world, ctx| {
         let filename = ctx.matches.get(1).expect("no filename provided");
         let content = ctx.step.docstring().unwrap().trim_start();
-        let filepath = PathBuf::from(filename);
         testhelpers::create_file(filename, content, &world.dir);
         world
             .original_contents
-            .insert(filepath, content.to_string());
+            .insert(PathBuf::from(filename), content.to_string());
         world
     });
 
@@ -47,42 +46,55 @@ fn steps() -> Steps<MyWorld> {
     });
 
     steps.when("checking", |mut world, _ctx| {
-        let (mut base, errs) = Tikibase::load(world.dir.clone());
+        let (base, errs) = Tikibase::load(world.dir.clone());
         world.findings = errs;
         world
             .findings
-            .append(&mut tikibase::probes::run(&mut base, false));
+            .append(&mut tikibase::probes::run(base, false));
         world
     });
 
     steps.when("doing a pitstop", |mut world, _ctx| {
-        let (mut base, errs) = Tikibase::load(world.dir.clone());
+        let (base, errs) = Tikibase::load(world.dir.clone());
         world.findings = errs;
         world
             .findings
-            .append(&mut tikibase::probes::run(&mut base, true));
+            .append(&mut tikibase::probes::run(base, true));
         world
     });
 
     steps.when("fixing", |mut world, _ctx| {
-        let (mut base, errs) = Tikibase::load(world.dir.clone());
+        let (base, errs) = Tikibase::load(world.dir.clone());
         world.findings = errs;
-        tikibase::probes::run(&mut base, true);
+        tikibase::probes::run(base, true);
         world
     });
 
     steps.then("all files are unchanged", |world, _ctx| {
         for (filename, original_content) in &world.original_contents {
-            let current_content = load_file(&world.dir.join(filename));
+            let current_content = testhelpers::load_file(filename, &world.dir);
             assert_eq!(&current_content, original_content);
         }
         world
     });
 
+    steps.then_regex(r#"^file "(.*)" is unchanged$"#, |world, ctx| {
+        let filename = ctx.matches.get(1).expect("no filename provided");
+        let have = &testhelpers::load_file(&filename, &world.dir);
+        let want = world
+            .original_contents
+            .get(&PathBuf::from(filename))
+            .unwrap();
+        assert_eq!(have, want);
+        world
+    });
+
     steps.then_regex(r#"^file "(.*)" should contain:$"#, |world, ctx| {
+        // TODO: rename to want
         let expected = ctx.step.docstring().unwrap().trim_start();
         let filename = ctx.matches.get(1).expect("no filename provided");
-        let actual = load_file(&world.dir.join(filename));
+        // TODO: rename to have
+        let actual = testhelpers::load_file(&filename, &world.dir);
         assert_eq!(actual, expected);
         world
     });
@@ -93,6 +105,11 @@ fn steps() -> Steps<MyWorld> {
         world
     });
 
+    steps.then("it prints nothing", |world, _ctx| {
+        assert_eq!(world.findings, Vec::<String>::new());
+        world
+    });
+
     steps.then("it finds no issues", |world, _ctx| {
         let expected: Vec<&str> = vec![];
         assert_eq!(world.findings, expected);
@@ -100,15 +117,6 @@ fn steps() -> Steps<MyWorld> {
     });
 
     steps
-}
-
-pub fn load_file(filepath: &Path) -> String {
-    let mut result = std::fs::read_to_string(filepath)
-        .unwrap()
-        .trim_end()
-        .to_string();
-    result.push('\n');
-    result
 }
 
 #[tokio::main]
