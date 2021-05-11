@@ -44,14 +44,14 @@ pub fn process(base: &Tikibase) -> LinksResult {
                                     section.line_number + line.section_offset + 1,
                                     destination,
                                 ));
-                            } else {
-                                result
-                                    .incoming_doc_links
-                                    .add(PathBuf::from(&destination), doc.path.clone());
-                                result
-                                    .outgoing_doc_links
-                                    .add(doc.path.clone(), PathBuf::from(destination));
+                                continue;
                             }
+                            result
+                                .incoming_doc_links
+                                .add(PathBuf::from(&destination), doc.path.clone());
+                            result
+                                .outgoing_doc_links
+                                .add(doc.path.clone(), PathBuf::from(destination));
                         }
                         Reference::Image { src } => {
                             if src.starts_with("http") {
