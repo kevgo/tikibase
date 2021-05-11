@@ -56,9 +56,9 @@ mod tests {
     }
 
     mod get {
-        use std::path::PathBuf;
 
         use crate::probes::doc_links::DocLinks;
+        use std::path::PathBuf;
 
         #[test]
         fn exists() {
