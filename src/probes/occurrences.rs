@@ -113,11 +113,10 @@ pub fn process(
 #[cfg(test)]
 mod tests {
 
-    use std::path::PathBuf;
-
     use crate::core::tikibase::Tikibase;
     use crate::probes::doc_links::DocLinks;
     use crate::testhelpers;
+    use std::path::PathBuf;
 
     #[test]
     fn process_false() {
