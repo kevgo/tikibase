@@ -84,7 +84,7 @@ pub fn process(
                 section_builder.add_body_line(format!(
                     "- [{}]({})",
                     missing_occurrence.title,
-                    &missing_occurrence.path.to_string_lossy()
+                    missing_occurrence.path.to_string_lossy()
                 ));
             }
             let occurrences_section = section_builder.result().unwrap();
