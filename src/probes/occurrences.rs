@@ -107,14 +107,8 @@ pub fn process(
             }
         }
     }
-
     result
 }
-
-// pub fn missing_from_file(path: &PathBuf) -> Vec<&PathBuf> {
-//     let missing = incoming.difference(&outgoing);
-//     missing.into_iter().collect()
-// }
 
 #[cfg(test)]
 mod tests {
