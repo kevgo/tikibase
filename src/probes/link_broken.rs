@@ -89,7 +89,6 @@ mod tests {
         fn link_to_non_existing_file() {
             let dir = testhelpers::tmp_dir();
             testhelpers::create_file("one.md", "# One\n\n[invalid](non-existing.md)\n", &dir);
-            testhelpers::create_file("two.md", "# Two", &dir);
             let (base, errs) = Tikibase::load(dir);
             assert_eq!(errs.len(), 0);
             let have = super::super::process(&base);
