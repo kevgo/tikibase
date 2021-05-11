@@ -1,11 +1,11 @@
 use super::doc_links::DocLinks;
-use super::outcome::Outcome;
+use super::outcome::Issue;
 use super::Tikibase;
 use crate::core::line::Reference;
 use std::path::PathBuf;
 
 pub struct LinksResult {
-    pub outcome: Outcome,
+    pub issues: Vec<Box<dyn Issue>>,
 
     /// all links to documents
     pub incoming_doc_links: DocLinks,
@@ -19,7 +19,7 @@ pub struct LinksResult {
 
 pub fn process(base: &Tikibase) -> LinksResult {
     let mut result = LinksResult {
-        outcome: Outcome::new(),
+        issues: vec![],
         incoming_doc_links: DocLinks::new(),
         outgoing_doc_links: DocLinks::new(),
         outgoing_resource_links: Vec::new(),
@@ -38,12 +38,11 @@ pub fn process(base: &Tikibase) -> LinksResult {
                                 destination.replace_range(..index, "");
                             }
                             if !existing_targets.contains(&destination) {
-                                result.outcome.findings.push(format!(
-                                    "{}:{}  broken link to \"{}\"",
-                                    &doc.path.to_string_lossy(),
-                                    section.line_number + line.section_offset + 1,
-                                    destination,
-                                ));
+                                result.issues.push(Box::new(BrokenLink {
+                                    filename: doc.path.clone(),
+                                    line: section.line_number + line.section_offset + 1,
+                                    target: destination,
+                                }));
                                 continue;
                             }
                             // TODO: don't clone, store references here
@@ -59,12 +58,11 @@ pub fn process(base: &Tikibase) -> LinksResult {
                                 continue;
                             }
                             if !base.has_resource(PathBuf::from(&src)) {
-                                result.outcome.findings.push(format!(
-                                    "{}:{}  broken image \"{}\"",
-                                    &doc.path.to_string_lossy(),
-                                    section.line_number + line.section_offset + 1,
-                                    &src,
-                                ));
+                                result.issues.push(Box::new(BrokenImage {
+                                    filename: doc.path.clone(),
+                                    line: section.line_number + line.section_offset + 1,
+                                    target: src.clone(),
+                                }));
                             }
                             result.outgoing_resource_links.push(src);
                         }
@@ -74,6 +72,58 @@ pub fn process(base: &Tikibase) -> LinksResult {
         }
     }
     result
+}
+
+/// describes a broken link in the Tikibase
+pub struct BrokenLink {
+    filename: PathBuf,
+    line: u32,
+    target: String,
+}
+
+impl Issue for BrokenLink {
+    fn describe(self) -> String {
+        format!(
+            "{}:{}  broken link to \"{}\"",
+            self.filename.to_string_lossy(),
+            self.line,
+            self.target
+        )
+    }
+
+    fn fix(self, base: &mut Tikibase) -> String {
+        panic!("not fixable")
+    }
+
+    fn fixable(&self) -> bool {
+        false
+    }
+}
+
+/// describes a broken image in the Tikibase
+pub struct BrokenImage {
+    filename: PathBuf,
+    line: u32,
+    target: String,
+}
+
+impl Issue for BrokenImage {
+    fn describe(self) -> String {
+        format!(
+            "{}:{}  broken image \"{}\"",
+            self.filename.to_string_lossy(),
+            self.line,
+            self.target
+        )
+    }
+
+    fn fix(self, base: &mut Tikibase) -> String {
+        panic!("not fixable")
+    }
+
+    fn fixable(&self) -> bool {
+        false
+    }
 }
 
 #[cfg(test)]
@@ -93,7 +143,7 @@ mod tests {
             assert_eq!(errs.len(), 0);
             let have = super::super::process(&base);
             assert_eq!(
-                have.outcome.findings,
+                have.issues.findings,
                 vec!["one.md:3  broken link to \"non-existing.md\""]
             );
             assert_eq!(have.incoming_doc_links.data.len(), 0);
@@ -119,7 +169,7 @@ Here is a link to [Three](3.md) that also works.
             let (base, errs) = Tikibase::load(dir);
             assert_eq!(errs.len(), 0);
             let have = super::super::process(&base);
-            assert_eq!(have.outcome.findings.len(), 0);
+            assert_eq!(have.issues.findings.len(), 0);
             assert_eq!(have.outgoing_doc_links.data.len(), 1);
             let out_one = have.outgoing_doc_links.get(&PathBuf::from("1.md"));
             assert_eq!(out_one.len(), 2);
@@ -149,7 +199,7 @@ Here is a link to [Three](3.md) that also works.
             let (base, errs) = Tikibase::load(dir);
             assert_eq!(errs.len(), 0);
             let have = super::super::process(&base);
-            assert_eq!(have.outcome.findings, Vec::<String>::new());
+            assert_eq!(have.issues.findings, Vec::<String>::new());
             assert_eq!(have.incoming_doc_links.data.len(), 0);
             assert_eq!(have.outgoing_doc_links.data.len(), 0);
             assert_eq!(have.outgoing_resource_links.len(), 0);
@@ -163,7 +213,7 @@ Here is a link to [Three](3.md) that also works.
             let (base, errs) = Tikibase::load(dir);
             assert_eq!(errs.len(), 0);
             let have = super::super::process(&base);
-            assert_eq!(have.outcome.findings.len(), 0);
+            assert_eq!(have.issues.findings.len(), 0);
             assert_eq!(have.outgoing_resource_links.len(), 1);
             assert_eq!(have.outgoing_resource_links[0], "foo.png");
             assert_eq!(have.incoming_doc_links.data.len(), 0);
@@ -177,11 +227,8 @@ Here is a link to [Three](3.md) that also works.
             let (base, errs) = Tikibase::load(dir);
             assert_eq!(errs.len(), 0);
             let have = super::super::process(&base);
-            assert_eq!(have.outcome.findings.len(), 1);
-            assert_eq!(
-                have.outcome.findings[0],
-                "1.md:3  broken image \"zonk.png\""
-            );
+            assert_eq!(have.issues.findings.len(), 1);
+            assert_eq!(have.issues.findings[0], "1.md:3  broken image \"zonk.png\"");
             assert_eq!(have.outgoing_resource_links.len(), 1);
             assert_eq!(have.outgoing_resource_links[0], "zonk.png");
             assert_eq!(have.incoming_doc_links.data.len(), 0);
