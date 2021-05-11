@@ -6,6 +6,7 @@ use std::{
 
 /// manages links to/from a document
 pub struct DocLinks {
+    /// key = file path, value = associated files
     pub data: HashMap<PathBuf, HashSet<PathBuf>>,
 }
 
