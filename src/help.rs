@@ -2,7 +2,6 @@ const VERSION: &str = env!("CARGO_PKG_VERSION");
 
 pub fn version() {
     println!("Tikibase v{}", VERSION);
-    vec![]
 }
 
 pub fn run() {

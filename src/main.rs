@@ -29,7 +29,7 @@ fn main() {
     }
 
     // step 4: find the issues in the Tikibase
-    let issues = probes::run(base);
+    let issues = probes::run(&base);
 
     // step 5: fix the issues
     match command {

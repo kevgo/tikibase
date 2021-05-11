@@ -8,11 +8,11 @@ mod section_capitalization;
 mod section_duplicate;
 mod section_empty;
 
-pub fn run(mut base: Tikibase, fix: bool) -> Vec<Box<dyn outcome::Issue>> {
+pub fn run(base: &Tikibase) -> Vec<Box<dyn outcome::Issue>> {
     let mut issues = outcome::Issues::new();
     issues.append(section_duplicate::process(&base));
     issues.append(section_empty::process(&base));
-    // issues.append(&mut section_capitalization::process(&base));
+    issues.append(section_capitalization::process(&base));
     // let mut links_result = link_broken::process(&base);
     // issues.append(&mut links_result.outcome);
     // issues.append(&mut image_orphaned::process(
@@ -26,5 +26,6 @@ pub fn run(mut base: Tikibase, fix: bool) -> Vec<Box<dyn outcome::Issue>> {
     //     fix,
     // );
     // issues.append(&mut occ_res);
-    issues.sorted()
+    // issues.sorted()
+    issues.issues()
 }

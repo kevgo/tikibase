@@ -17,13 +17,17 @@ pub struct Issues(Vec<Box<dyn Issue>>);
 
 impl Issues {
     /// appends the given issue to this issue list
-    pub fn append(&mut self, new_issues: Vec<Box<dyn Issue>>) {
+    pub fn append(&mut self, mut new_issues: Vec<Box<dyn Issue>>) {
         self.0.append(&mut new_issues);
     }
 
     /// provides an empty issue list
     pub fn new() -> Issues {
         Issues(vec![])
+    }
+
+    pub fn issues(self) -> Vec<Box<dyn Issue>> {
+        self.0
     }
 }
 

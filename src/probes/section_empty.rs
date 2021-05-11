@@ -8,8 +8,8 @@ use crate::core::tikibase::Tikibase;
 /// returns the unfixed issues
 pub fn process(base: &Tikibase) -> Vec<Box<dyn Issue>> {
     let mut result = Vec::<Box<dyn Issue>>::new();
-    for doc in &mut base.docs {
-        for section in doc.content_sections {
+    for doc in &base.docs {
+        for section in &doc.content_sections {
             let has_content = section.body.iter().any(|line| !line.text.is_empty());
             if !has_content {
                 result.push(Box::new(EmptySection {
@@ -36,10 +36,11 @@ impl Issue for EmptySection {
     }
 
     fn fix(self, base: &mut Tikibase) -> String {
-        let doc = base.get_doc(&self.filename).unwrap();
+        let base_dir = &base.dir.clone();
+        let doc = base.get_doc_mut(&self.filename).unwrap();
         doc.content_sections
             .retain(|section| section.section_type() == self.section_type);
-        doc.flush(&base.dir);
+        doc.flush(base_dir.as_ref());
         format!(
             "{}:{}  removed empty section \"{}\"",
             self.filename.to_string_lossy(),

@@ -1,56 +1,52 @@
-use super::outcome::Outcome;
+use super::outcome::Issue;
 use crate::core::tikibase::Tikibase;
 use std::collections::{HashMap, HashSet};
 use std::iter::FromIterator;
 
-pub fn process(base: &Tikibase) -> Outcome {
-    let mut finder = MixCapSectionFinder::new();
+pub fn process(base: &Tikibase) -> Vec<Box<dyn Issue>> {
+    // registers variants of section titles: normalized title --> Vec<existing titles>
+    // TODO: use faster hashing algorithm here
+    let mut title_variants: HashMap<String, HashSet<String>> = HashMap::new();
     for doc in &base.docs {
-        finder.register(doc.title_section.section_type());
-        for section in &doc.content_sections {
-            finder.register(section.section_type());
+        for section in doc.sections() {
+            let section_type = section.section_type();
+            title_variants
+                .entry(normalize(&section_type))
+                .or_insert_with(HashSet::new)
+                .insert(section_type);
         }
     }
-    finder.result()
+    let mut result = Vec::<Box<dyn Issue>>::new();
+    for variants in title_variants.into_values() {
+        if variants.len() < 2 {
+            continue;
+        }
+        let mut sorted = Vec::from_iter(variants);
+        sorted.sort();
+        result.push(Box::new(MixCapSection { variants: sorted }))
+    }
+    result
 }
 
-/// helps find sections with mixed captions
-struct MixCapSectionFinder {
-    /// the known section types (key=normalized version, value=actual variations)
-    known_variants: HashMap<String, HashSet<String>>,
+/// describes the issue that sections have mixed capitalization
+pub struct MixCapSection {
+    variants: Vec<String>,
 }
 
-impl MixCapSectionFinder {
-    fn new() -> MixCapSectionFinder {
-        MixCapSectionFinder {
-            known_variants: HashMap::new(),
-        }
+impl Issue for MixCapSection {
+    fn describe(self) -> String {
+        format!(
+            "mixed capitalization of sections: {}",
+            self.variants.join("|")
+        )
     }
 
-    /// evaluates the given section type
-    fn register(&mut self, section_type: String) {
-        let variants = self
-            .known_variants
-            .entry(normalize(&section_type))
-            .or_insert_with(HashSet::new);
-        variants.insert(section_type);
+    fn fix(self, base: &mut Tikibase) -> String {
+        panic!("not fixable")
     }
 
-    /// provides the found sections
-    fn result(self) -> Outcome {
-        Outcome {
-            findings: self
-                .known_variants
-                .into_values()
-                .filter(|variants| variants.len() > 1)
-                .map(|variants| {
-                    let mut v_sorted = Vec::from_iter(variants);
-                    v_sorted.sort();
-                    format!("mixed capitalization of sections: {}", v_sorted.join("|"))
-                })
-                .collect(),
-            fixes: Vec::new(),
-        }
+    fn fixable(&self) -> bool {
+        false
     }
 }
 
