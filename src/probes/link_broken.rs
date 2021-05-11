@@ -46,6 +46,7 @@ pub fn process(base: &Tikibase) -> LinksResult {
                                 ));
                                 continue;
                             }
+                            // TODO: don't clone, store references here
                             result
                                 .incoming_doc_links
                                 .add(PathBuf::from(&destination), doc.path.clone());
