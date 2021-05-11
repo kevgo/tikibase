@@ -39,10 +39,11 @@ pub fn process(
     let mut result = Outcome::new();
     let mut missings = HashMap::<PathBuf, Vec<MissingOccurrence>>::new();
     for doc in &base.docs {
-        let missing_outgoing: Vec<PathBuf> = incoming_doc_links
+        let mut missing_outgoing: Vec<PathBuf> = incoming_doc_links
             .get(&doc.path)
             .difference(&outgoing_doc_links.get(&doc.path))
             .into_iter()
+            // TODO: use reference here instead of cloning
             .map(|p| p.to_owned())
             .collect();
 
@@ -52,7 +53,7 @@ pub fn process(
         }
 
         // register missing occurrences
-        // missing_outgoing.sort();
+        missing_outgoing.sort();
         missings.insert(
             doc.path.clone(),
             missing_outgoing
