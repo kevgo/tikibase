@@ -123,7 +123,7 @@ mod tests {
 
     use crate::core::tikibase::Tikibase;
     use crate::probes::doc_links::DocLinks;
-    use crate::{probes::doc_links::DocLink, testhelpers};
+    use crate::testhelpers;
 
     #[test]
     fn process_false() {
@@ -133,16 +133,13 @@ mod tests {
         testhelpers::create_file("3.md", "# Three\n\n[one](1.md)\n", &dir);
         let (base, errs) = Tikibase::load(dir);
         assert_eq!(errs.len(), 0);
-        let mut doc_links: DocLinks = DocLinks { links: vec![] };
-        doc_links.push(DocLink {
-            from: PathBuf::from("3.md"),
-            to: PathBuf::from("1.md"),
-        });
-        doc_links.push(DocLink {
-            from: PathBuf::from("2.md"),
-            to: PathBuf::from("1.md"),
-        });
-        let have = super::process(base, doc_links, false);
+        let mut outgoing_links = DocLinks::new();
+        outgoing_links.add(PathBuf::from("3.md"), PathBuf::from("1.md"));
+        outgoing_links.add(PathBuf::from("2.md"), PathBuf::from("1.md"));
+        let mut incoming_links = DocLinks::new();
+        incoming_links.add(PathBuf::from("1.md"), PathBuf::from("3.md"));
+        incoming_links.add(PathBuf::from("1.md"), PathBuf::from("2.md"));
+        let have = super::process(base, incoming_links, outgoing_links, false);
         assert_eq!(have.fixes.len(), 0);
         assert_eq!(
             have.findings,
@@ -161,16 +158,13 @@ mod tests {
         testhelpers::create_file("3.md", "# Three\n\n[one](1.md)\n", &dir);
         let (base, errs) = Tikibase::load(dir.clone());
         assert_eq!(errs.len(), 0);
-        let mut doc_links: DocLinks = DocLinks { links: Vec::new() };
-        doc_links.push(DocLink {
-            from: PathBuf::from("3.md"),
-            to: PathBuf::from("1.md"),
-        });
-        doc_links.push(DocLink {
-            from: PathBuf::from("2.md"),
-            to: PathBuf::from("1.md"),
-        });
-        let have = super::process(base, doc_links, true);
+        let mut outgoing_links = DocLinks::new();
+        outgoing_links.add(PathBuf::from("3.md"), PathBuf::from("1.md"));
+        outgoing_links.add(PathBuf::from("2.md"), PathBuf::from("1.md"));
+        let mut incoming_links = DocLinks::new();
+        incoming_links.add(PathBuf::from("1.md"), PathBuf::from("3.md"));
+        incoming_links.add(PathBuf::from("1.md"), PathBuf::from("2.md"));
+        let have = super::process(base, incoming_links, outgoing_links, true);
         assert_eq!(have.fixes, vec!["1.md:3  added occurrences section"]);
         assert_eq!(have.findings.len(), 0);
         let content_one = testhelpers::load_file("1.md", &dir);

@@ -96,8 +96,8 @@ mod tests {
                 have.outcome.findings,
                 vec!["one.md:3  broken link to \"non-existing.md\""]
             );
-            assert_eq!(have.incoming_doc_links.len(), 0);
-            assert_eq!(have.outgoing_doc_links.len(), 0);
+            assert_eq!(have.incoming_doc_links.data.len(), 0);
+            assert_eq!(have.outgoing_doc_links.data.len(), 0);
             assert_eq!(have.outgoing_resource_links.len(), 0);
         }
 
@@ -120,25 +120,19 @@ Here is a link to [Three](3.md) that also works.
             assert_eq!(errs.len(), 0);
             let have = super::super::process(&base);
             assert_eq!(have.outcome.findings.len(), 0);
-            assert_eq!(have.outgoing_doc_links.len(), 3);
-            let out_one = have.outgoing_doc_links.get(&PathBuf::from("1.md")).unwrap();
+            assert_eq!(have.outgoing_doc_links.data.len(), 1);
+            let out_one = have.outgoing_doc_links.get(&PathBuf::from("1.md"));
             assert_eq!(out_one.len(), 2);
             assert!(out_one.contains(&PathBuf::from("2.md")));
             assert!(out_one.contains(&PathBuf::from("3.md")));
-            let out_two = have.outgoing_doc_links.get(&PathBuf::from("2.md")).unwrap();
-            assert_eq!(out_two.len(), 0);
-            let out_three = have.outgoing_doc_links.get(&PathBuf::from("2.md")).unwrap();
-            assert_eq!(out_three.len(), 0);
 
-            assert_eq!(have.incoming_doc_links.len(), 3);
-            let in_one = have.incoming_doc_links.get(&PathBuf::from("1.md")).unwrap();
-            assert_eq!(in_one.len(), 0);
-            let in_two = have.incoming_doc_links.get(&PathBuf::from("2.md")).unwrap();
-            assert_eq!(in_two.len(), 1);
-            assert!(in_one.contains(&PathBuf::from("1.md")));
-            let in_three = have.incoming_doc_links.get(&PathBuf::from("3.md")).unwrap();
-            assert_eq!(in_three.len(), 1);
-            assert!(in_one.contains(&PathBuf::from("1.md")));
+            assert_eq!(have.incoming_doc_links.data.len(), 2);
+            let into_two = have.incoming_doc_links.get(&PathBuf::from("2.md"));
+            assert_eq!(into_two.len(), 1);
+            assert!(into_two.contains(&PathBuf::from("1.md")));
+            let into_three = have.incoming_doc_links.get(&PathBuf::from("3.md"));
+            assert_eq!(into_three.len(), 1);
+            assert!(into_three.contains(&PathBuf::from("1.md")));
         }
 
         #[test]
@@ -156,8 +150,8 @@ Here is a link to [Three](3.md) that also works.
             assert_eq!(errs.len(), 0);
             let have = super::super::process(&base);
             assert_eq!(have.outcome.findings, Vec::<String>::new());
-            assert_eq!(have.incoming_doc_links.len(), 0);
-            assert_eq!(have.outgoing_doc_links.len(), 0);
+            assert_eq!(have.incoming_doc_links.data.len(), 0);
+            assert_eq!(have.outgoing_doc_links.data.len(), 0);
             assert_eq!(have.outgoing_resource_links.len(), 0);
         }
 
@@ -172,8 +166,8 @@ Here is a link to [Three](3.md) that also works.
             assert_eq!(have.outcome.findings.len(), 0);
             assert_eq!(have.outgoing_resource_links.len(), 1);
             assert_eq!(have.outgoing_resource_links[0], "foo.png");
-            assert_eq!(have.incoming_doc_links.len(), 0);
-            assert_eq!(have.outgoing_doc_links.len(), 0);
+            assert_eq!(have.incoming_doc_links.data.len(), 0);
+            assert_eq!(have.outgoing_doc_links.data.len(), 0);
         }
 
         #[test]
@@ -190,8 +184,8 @@ Here is a link to [Three](3.md) that also works.
             );
             assert_eq!(have.outgoing_resource_links.len(), 1);
             assert_eq!(have.outgoing_resource_links[0], "zonk.png");
-            assert_eq!(have.incoming_doc_links.len(), 0);
-            assert_eq!(have.outgoing_doc_links.len(), 0);
+            assert_eq!(have.incoming_doc_links.data.len(), 0);
+            assert_eq!(have.outgoing_doc_links.data.len(), 0);
         }
     }
 }
