@@ -1,7 +1,7 @@
 use crate::core::tikibase::Tikibase;
 use std::collections::HashMap;
 
-pub fn run(base: &Tikibase) -> Vec<String> {
+pub fn run(base: &Tikibase) {
     println!("documents: {}", base.docs.len());
     println!("resources: {}", base.resources.len());
     let section_types = collect_section_types(&base);
@@ -12,7 +12,6 @@ pub fn run(base: &Tikibase) -> Vec<String> {
     for key in keys {
         println!("- {} ({})", key, section_types.get(key).unwrap());
     }
-    vec![]
 }
 
 fn collect_section_types(tb: &Tikibase) -> HashMap<String, u32> {

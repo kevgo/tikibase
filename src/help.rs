@@ -1,11 +1,11 @@
 const VERSION: &str = env!("CARGO_PKG_VERSION");
 
-pub fn version() -> Vec<String> {
+pub fn version() {
     println!("Tikibase v{}", VERSION);
     vec![]
 }
 
-pub fn run() -> Vec<String> {
+pub fn run() {
     println!(
         r#"Tikibase is a tool to manage Tikibases, i.e. collections of Markdown documents in the current directory.
 
@@ -15,5 +15,4 @@ Available commands are:
 - version (v): show the version of the currently installed Tikibase tool
 "#
     );
-    vec![]
 }

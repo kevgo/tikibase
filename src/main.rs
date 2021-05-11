@@ -16,17 +16,30 @@ fn main() {
         println!("{}", error);
     }
 
-    // step 3: execute the command
-    let findings = match command {
-        Command::Check => probes::run(base, false),
-        Command::Fix => probes::run(base, true),
+    // step 3: execute basic commands
+    let basic_command = true;
+    match command {
         Command::Help => help::run(),
-        Command::Pitstop => probes::run(base, true),
         Command::Stats => stats::run(&base),
         Command::Version => help::version(),
+        _ => basic_command = false,
+    }
+    if basic_command {
+        return;
+    }
+
+    // step 4: find the issues in the Tikibase
+    let issues = probes::run(base);
+
+    // step 5: fix the issues
+    match command {
+        Command::Check => probes::run(base, false),
+        Command::Fix => probes::run(base, true),
+        Command::Pitstop => probes::run(base, true),
+        _ => panic!(format!("unexpected complex command: {}", command)),
     };
 
-    // step 4: print the results
+    // step 6: print the results
     for finding in findings {
         println!("{}", finding);
     }

@@ -1,43 +1,61 @@
-use super::outcome::Outcome;
+use std::path::PathBuf;
+
+use super::outcome::Issue;
 use crate::core::tikibase::Tikibase;
 
 /// finds all empty sections in the given Tikibase,
 /// fixes them if fix is enabled,
 /// returns the unfixed issues
-pub fn process(base: &mut Tikibase, fix: bool) -> Outcome {
-    let mut result = Outcome::new();
+pub fn process(base: &Tikibase) -> Vec<Box<dyn Issue>> {
+    let mut result = Vec::<Box<dyn Issue>>::new();
     for doc in &mut base.docs {
-        let filename = &doc.path.to_string_lossy();
-        let mut fixed = false;
-        doc.content_sections.retain(|section| {
+        for section in doc.content_sections {
             let has_content = section.body.iter().any(|line| !line.text.is_empty());
-            if has_content {
-                return true;
+            if !has_content {
+                result.push(Box::new(EmptySection {
+                    filename: doc.path.clone(),
+                    line: section.line_number,
+                    section_type: section.section_type(),
+                }));
             }
-            // found an empty section
-            if fix {
-                result.fixes.push(format!(
-                    "{}:{}  removed empty section \"{}\"",
-                    &filename,
-                    section.line_number + 1,
-                    section.section_type()
-                ));
-                fixed = true;
-                return false;
-            }
-            result.findings.push(format!(
-                "{}:{}  section \"{}\" has no content",
-                &filename,
-                section.line_number + 1,
-                section.section_type()
-            ));
-            true
-        });
-        if fixed {
-            doc.flush(&base.dir);
         }
     }
     result
+}
+
+/// describes the issue that a section is empty
+pub struct EmptySection {
+    filename: PathBuf,
+    line: u32,
+    section_type: String,
+}
+
+impl Issue for EmptySection {
+    fn fixable(&self) -> bool {
+        true
+    }
+
+    fn fix(self, base: &mut Tikibase) -> String {
+        let doc = base.get_doc(&self.filename).unwrap();
+        doc.content_sections
+            .retain(|section| section.section_type() == self.section_type);
+        doc.flush(&base.dir);
+        format!(
+            "{}:{}  removed empty section \"{}\"",
+            self.filename.to_string_lossy(),
+            self.line + 1,
+            self.section_type
+        )
+    }
+
+    fn describe(self) -> String {
+        format!(
+            "{}:{}  section \"{}\" has no content",
+            self.filename.to_string_lossy(),
+            self.line + 1,
+            self.section_type
+        )
+    }
 }
 
 #[cfg(test)]
