@@ -69,8 +69,7 @@ pub fn process(
 
     if fix {
         let base_dir = base.dir.clone();
-        for (filepath, mut missing_occurrences) in missings {
-            missing_occurrences.sort();
+        for (filepath, missing_occurrences) in missings {
             let doc = base.get_doc_mut(&filepath).unwrap();
             // insert a newline into the section before
             let last_section = doc.last_section_mut();
