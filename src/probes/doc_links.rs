@@ -31,14 +31,10 @@ impl DocLinks {
     pub fn get(&self, doc: &Path) -> HashSet<PathBuf> {
         match self.data.get(doc) {
             None => HashSet::new(),
+            // TODO: return a reference here instead of cloning
             Some(result) => result.clone(),
         }
     }
-
-    /// provides the number of tracked documents
-    // pub fn len(&self) -> usize {
-    //     self.data.len()
-    // }
 
     /// provides an empty DocLinks instance
     pub fn new() -> DocLinks {
