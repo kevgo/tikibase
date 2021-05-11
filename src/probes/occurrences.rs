@@ -97,8 +97,7 @@ pub fn process(
             doc.flush(&base_dir);
         }
     } else {
-        for (filepath, mut missing_occurrences) in missings {
-            missing_occurrences.sort();
+        for (filepath, missing_occurrences) in missings {
             for missing_occurrence in missing_occurrences {
                 result.findings.push(format!(
                     "{}  missing link to \"{}\"",
