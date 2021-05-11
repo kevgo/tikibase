@@ -7,27 +7,28 @@ use tikibase::probes;
 use tikibase::stats;
 
 fn main() {
+    // step 1: determine the configuration
+    let command = parse(std::env::args());
+
+    // step 2: load the Tikibase
     let (base, errors) = Tikibase::load(PathBuf::from("."));
     for error in errors {
         println!("{}", error);
     }
-    match parse(std::env::args()) {
-        Command::Check => {
-            for message in probes::run(base, false) {
-                println!("{}", message);
-            }
-        }
-        Command::Fix => {
-            probes::run(base, true);
-        }
+
+    // step 3: execute the command
+    let findings = match command {
+        Command::Check => probes::run(base, false),
+        Command::Fix => probes::run(base, true),
         Command::Help => help::run(),
-        Command::Pitstop => {
-            for finding in probes::run(base, true) {
-                println!("{}", finding);
-            }
-        }
+        Command::Pitstop => probes::run(base, true),
         Command::Stats => stats::run(&base),
         Command::Version => help::version(),
+    };
+
+    // step 4: print the results
+    for finding in findings {
+        println!("{}", finding);
     }
 }
 
