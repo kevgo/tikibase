@@ -142,8 +142,11 @@ mod tests {
             let (base, errs) = Tikibase::load(dir);
             assert_eq!(errs.len(), 0);
             let have = super::super::process(&base);
-            let issues: Vec<String> = have.issues.iter().map(|issue| issue.describe()).collect();
-            assert_eq!(issues, vec!["one.md:3  broken link to \"non-existing.md\""]);
+            let outcomes: Vec<String> = have.issues.iter().map(|issue| issue.describe()).collect();
+            assert_eq!(
+                outcomes,
+                vec!["one.md:3  broken link to \"non-existing.md\""]
+            );
             assert_eq!(have.incoming_doc_links.data.len(), 0);
             assert_eq!(have.outgoing_doc_links.data.len(), 0);
             assert_eq!(have.outgoing_resource_links.len(), 0);
