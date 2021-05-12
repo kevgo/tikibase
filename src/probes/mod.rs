@@ -38,20 +38,20 @@ pub trait Issue {
     /// fixes this issue, returns a human-readable description of what it did
     fn fix(&self, base: &mut Tikibase) -> String;
 
-    /// indicates whether this issues is fixable
+    /// indicates whether this issue is fixable
     fn fixable(&self) -> bool;
 }
 
-/// a sorted list of issues
+/// a collection of issues
 pub struct Issues(Vec<Box<dyn Issue>>);
 
 impl Issues {
-    /// appends the given issue to this issue list
+    /// appends the given issue to this issue collection
     pub fn append(&mut self, mut new_issues: Issues) {
         self.0.append(&mut new_issues.0);
     }
 
-    /// consumes this Issue list into an iterator
+    /// consumes this Issue collection into an iterator
     pub fn into_iter(self) -> IntoIter<Box<dyn Issue>> {
         self.0.into_iter()
     }
