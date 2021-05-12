@@ -72,11 +72,11 @@ impl Issue for MissingOccurrences {
         let links: Vec<String> = self
             .missing_links
             .iter()
-            .map(|occ| occ.title.clone())
+            .map(|occ| occ.path.to_string_lossy().to_string())
             .collect();
 
         format!(
-            "{}  missing link to \"{}\"",
+            "{}  missing link to {}",
             self.file.to_string_lossy(),
             links.join(", "),
         )
@@ -144,6 +144,6 @@ mod tests {
         incoming_links.add(PathBuf::from("1.md"), PathBuf::from("2.md"));
         let have = super::process(&base, &incoming_links, &outgoing_links);
         let issues: Vec<String> = have.iter().map(|issue| issue.describe()).collect();
-        assert_eq!(issues, vec!["1.md  missing link to \"Two\", \"Three\"",]);
+        assert_eq!(issues, vec!["1.md  missing link to 2.md, 3.md",]);
     }
 }
