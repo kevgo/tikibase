@@ -47,7 +47,7 @@ pub fn process(command: Command, path: PathBuf) -> Vec<String> {
 
     // here we have a complex command
 
-    // step 3: find the issues in the Tikibase
+    // step 3: find all issues in the Tikibase
     let issues = probes::run(&base);
 
     // step 4: take care of the issues
