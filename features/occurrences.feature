@@ -34,9 +34,12 @@ Feature: add occurrence sections
       1.md  missing link to "Title 3"
       """
 
-  Scenario: fix
+  Scenario: this
     When fixing
-    Then it prints nothing
+    Then it prints:
+      """
+      1.md:7  added occurrences section
+      """
     And file "1.md" should contain:
       """
       # Title 1
