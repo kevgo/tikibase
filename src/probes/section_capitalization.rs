@@ -8,7 +8,7 @@ pub fn process(base: &Tikibase) -> Issues {
     // TODO: use faster hashing algorithm here
     let mut title_variants: HashMap<String, HashSet<String>> = HashMap::new();
     for doc in &base.docs {
-        for section in doc.sections() {
+        for section in &doc.content_sections {
             let section_type = section.section_type();
             title_variants
                 .entry(normalize(&section_type))
