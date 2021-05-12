@@ -56,16 +56,13 @@ pub fn process(command: Command, path: PathBuf) -> Vec<String> {
         Command::Fix => issues
             .into_iter()
             .filter(|issue| issue.fixable())
-            .map(|issue| issue.fix(&mut base))
+            .map(|fixable_issue| fixable_issue.fix(&mut base))
             .collect(),
         Command::Pitstop => issues
             .into_iter()
-            .map(|issue| {
-                if issue.fixable() {
-                    issue.fix(&mut base)
-                } else {
-                    issue.describe()
-                }
+            .map(|issue| match issue.fixable() {
+                true => issue.fix(&mut base),
+                false => issue.describe(),
             })
             .collect(),
         _ => {
