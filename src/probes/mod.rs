@@ -35,7 +35,7 @@ pub trait Issue {
     /// provides a human-readable description of the issue
     fn describe(&self) -> String;
 
-    /// fixes this issue, returns a description of what it did
+    /// fixes this issue, returns a human-readable description of what it did
     fn fix(&self, base: &mut Tikibase) -> String;
 
     /// indicates whether this issues is fixable
