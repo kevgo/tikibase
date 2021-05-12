@@ -4,7 +4,8 @@ use std::path::PathBuf;
 use tikibase::{process, Command};
 
 fn main() {
-    let mut outcomes = process(parse(std::env::args()), PathBuf::from("."));
+    let command = parse(std::env::args());
+    let mut outcomes = process(command, PathBuf::from("."));
     outcomes.sort();
     for outcome in outcomes {
         println!("{}", outcome);
