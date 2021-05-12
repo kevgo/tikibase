@@ -38,15 +38,8 @@ impl Issue for EmptySection {
     fn fix(&self, base: &mut Tikibase) -> String {
         let base_dir = &base.dir.clone();
         let doc = base.get_doc_mut(&self.filename).unwrap();
-        println!("11111111111111111");
-        doc.content_sections.retain(|section| {
-            println!(
-                "SECTION: {} / {}",
-                section.section_type(),
-                &self.section_type
-            );
-            section.section_type() != self.section_type
-        });
+        doc.content_sections
+            .retain(|section| section.section_type() != self.section_type);
         doc.flush(base_dir.as_ref());
         format!(
             "{}:{}  removed empty section \"{}\"",
