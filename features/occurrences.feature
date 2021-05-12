@@ -30,11 +30,10 @@ Feature: add occurrence sections
     When checking
     Then it prints:
       """
-      1.md  missing link to "Title 2"
-      1.md  missing link to "Title 3"
+      1.md  missing link to 2.md, 3.md
       """
 
-  Scenario: this
+  Scenario: fix
     When fixing
     Then it prints:
       """
