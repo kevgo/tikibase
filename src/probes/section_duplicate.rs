@@ -1,11 +1,11 @@
 use std::path::PathBuf;
 
-use super::Issue;
+use super::{Issue, Issues};
 use crate::core::tikibase::Tikibase;
 
 /// finds all duplicate sections in the given Tikibase
-pub fn process(base: &Tikibase) -> Vec<Box<dyn Issue>> {
-    let mut result = Vec::<Box<dyn Issue>>::new();
+pub fn process(base: &Tikibase) -> Issues {
+    let mut result = Issues::new();
     for doc in &base.docs {
         let mut known_sections = vec![];
         for section in &doc.content_sections {

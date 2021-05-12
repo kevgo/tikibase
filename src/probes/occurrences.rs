@@ -1,5 +1,5 @@
-use super::doc_links::DocLinks;
 use super::Issue;
+use super::{doc_links::DocLinks, Issues};
 use crate::core::document::builder_with_title_line;
 use crate::core::tikibase::Tikibase;
 use std::cmp::{Eq, Ord, Ordering, PartialEq};
@@ -88,8 +88,8 @@ pub fn process(
     base: &Tikibase,
     incoming_doc_links: &DocLinks,
     outgoing_doc_links: &DocLinks,
-) -> Vec<Box<dyn Issue>> {
-    let mut result = Vec::<Box<dyn Issue>>::new();
+) -> Issues {
+    let mut result = Issues::new();
     for doc in &base.docs {
         let mut missing_outgoing: Vec<PathBuf> = incoming_doc_links
             .get(&doc.path)

@@ -1,9 +1,9 @@
-use super::Issue;
+use super::{Issue, Issues};
 use crate::core::tikibase::Tikibase;
 use std::collections::{HashMap, HashSet};
 use std::iter::FromIterator;
 
-pub fn process(base: &Tikibase) -> Vec<Box<dyn Issue>> {
+pub fn process(base: &Tikibase) -> Issues {
     // registers variants of section titles: normalized title --> Vec<existing titles>
     // TODO: use faster hashing algorithm here
     let mut title_variants: HashMap<String, HashSet<String>> = HashMap::new();
@@ -16,7 +16,7 @@ pub fn process(base: &Tikibase) -> Vec<Box<dyn Issue>> {
                 .insert(section_type);
         }
     }
-    let mut result = Vec::<Box<dyn Issue>>::new();
+    let mut result = Issues::new();
     for variants in title_variants.into_values() {
         if variants.len() < 2 {
             continue;

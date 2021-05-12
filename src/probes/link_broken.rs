@@ -1,11 +1,12 @@
 use super::doc_links::DocLinks;
 use super::Issue;
+use super::Issues;
 use super::Tikibase;
 use crate::core::line::Reference;
 use std::path::PathBuf;
 
 pub struct LinksResult {
-    pub issues: Vec<Box<dyn Issue>>,
+    pub issues: Issues,
 
     /// all links to documents
     pub incoming_doc_links: DocLinks,
@@ -19,7 +20,7 @@ pub struct LinksResult {
 
 pub fn process(base: &Tikibase) -> LinksResult {
     let mut result = LinksResult {
-        issues: vec![],
+        issues: Issues::new(),
         incoming_doc_links: DocLinks::new(),
         outgoing_doc_links: DocLinks::new(),
         outgoing_resource_links: Vec::new(),

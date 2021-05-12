@@ -1,8 +1,8 @@
-use super::Issue;
 use super::Tikibase;
+use super::{Issue, Issues};
 
-pub fn process(base: &Tikibase, resource_links: Vec<String>) -> Vec<Box<dyn Issue>> {
-    let mut result = Vec::<Box<dyn Issue>>::new();
+pub fn process(base: &Tikibase, resource_links: Vec<String>) -> Issues {
+    let mut result = Issues::new();
     for resource in base.resources.iter() {
         let path = resource.path.to_string_lossy().to_string();
         if !resource_links.contains(&path) {

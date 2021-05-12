@@ -1,13 +1,13 @@
 use std::path::PathBuf;
 
-use super::Issue;
+use super::{Issue, Issues};
 use crate::core::tikibase::Tikibase;
 
 /// finds all empty sections in the given Tikibase,
 /// fixes them if fix is enabled,
 /// returns the unfixed issues
-pub fn process(base: &Tikibase) -> Vec<Box<dyn Issue>> {
-    let mut result = Vec::<Box<dyn Issue>>::new();
+pub fn process(base: &Tikibase) -> Issues {
+    let mut result = Issues::new();
     for doc in &base.docs {
         for section in &doc.content_sections {
             let has_content = section.body.iter().any(|line| !line.text.is_empty());
