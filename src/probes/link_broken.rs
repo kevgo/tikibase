@@ -170,7 +170,7 @@ Here is a link to [Three](3.md) that also works.
             let (base, errs) = Tikibase::load(dir);
             assert_eq!(errs.len(), 0);
             let have = super::super::process(&base);
-            assert_eq!(have.issues.len(), 0);
+            assert!(have.issues.is_empty());
             assert_eq!(have.outgoing_doc_links.data.len(), 1);
             let out_one = have.outgoing_doc_links.get(&PathBuf::from("1.md"));
             assert_eq!(out_one.len(), 2);
@@ -200,7 +200,7 @@ Here is a link to [Three](3.md) that also works.
             let (base, errs) = Tikibase::load(dir);
             assert_eq!(errs.len(), 0);
             let have = super::super::process(&base);
-            assert_eq!(have.issues.len(), 0);
+            assert!(have.issues.is_empty());
             assert_eq!(have.incoming_doc_links.data.len(), 0);
             assert_eq!(have.outgoing_doc_links.data.len(), 0);
             assert_eq!(have.outgoing_resource_links.len(), 0);
@@ -214,7 +214,7 @@ Here is a link to [Three](3.md) that also works.
             let (base, errs) = Tikibase::load(dir);
             assert_eq!(errs.len(), 0);
             let have = super::super::process(&base);
-            assert_eq!(have.issues.len(), 0);
+            assert!(have.issues.is_empty());
             assert_eq!(have.outgoing_resource_links.len(), 1);
             assert_eq!(have.outgoing_resource_links[0], "foo.png");
             assert_eq!(have.incoming_doc_links.data.len(), 0);

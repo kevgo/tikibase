@@ -128,6 +128,6 @@ content";
         let (mut base, errs) = Tikibase::load(dir);
         assert_eq!(errs.len(), 0);
         let have = process(&mut base);
-        assert_eq!(have.len(), 0);
+        assert!(have.is_empty());
     }
 }

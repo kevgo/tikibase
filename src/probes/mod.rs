@@ -1,6 +1,5 @@
 use crate::core::tikibase::Tikibase;
 use std::slice::Iter;
-use std::vec::IntoIter;
 
 mod doc_links;
 mod image_orphaned;
@@ -51,19 +50,14 @@ impl Issues {
         self.0.append(&mut new_issues.0);
     }
 
-    /// consumes this Issue collection into an iterator
-    pub fn into_iter(self) -> IntoIter<Box<dyn Issue>> {
-        self.0.into_iter()
-    }
-
     /// provides an iterator over borrowed references to the contained Issues
     pub fn iter(&self) -> Iter<Box<dyn Issue>> {
         self.0.iter()
     }
 
-    /// provides the number of contained issues
-    pub fn len(&self) -> usize {
-        self.0.len()
+    /// indicates whether this collection contains any elements
+    pub fn is_empty(&self) -> bool {
+        self.0.is_empty()
     }
 
     /// provides an empty Issues instance
@@ -74,5 +68,21 @@ impl Issues {
     /// adds the given Issue to this Issue collection
     pub fn push(&mut self, issue: Box<dyn Issue>) {
         self.0.push(issue);
+    }
+}
+
+impl Default for Issues {
+    fn default() -> Self {
+        Issues::new()
+    }
+}
+
+impl IntoIterator for Issues {
+    type Item = Box<dyn Issue>;
+
+    type IntoIter = std::vec::IntoIter<Box<dyn Issue>>;
+
+    fn into_iter(self) -> Self::IntoIter {
+        self.0.into_iter()
     }
 }

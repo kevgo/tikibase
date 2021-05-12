@@ -3,33 +3,14 @@ use super::Issue;
 use super::Issues;
 use crate::core::document::builder_with_title_line;
 use crate::core::tikibase::Tikibase;
-use std::cmp::{Eq, Ord, Ordering, PartialEq};
 use std::path::PathBuf;
 
-#[derive(Eq)]
 struct MissingOccurrence {
     path: PathBuf,
     title: String,
 }
 
-impl Ord for MissingOccurrence {
-    fn cmp(&self, other: &Self) -> Ordering {
-        self.path.cmp(&other.path)
-    }
-}
-
-impl PartialOrd for MissingOccurrence {
-    fn partial_cmp(&self, other: &Self) -> Option<Ordering> {
-        Some(self.path.cmp(&other.path))
-    }
-}
-
-impl PartialEq for MissingOccurrence {
-    fn eq(&self, other: &Self) -> bool {
-        self.path == other.path
-    }
-}
-
+/// missing links in a document
 pub struct MissingOccurrences {
     file: PathBuf,
     missing_links: Vec<MissingOccurrence>,
