@@ -21,9 +21,8 @@ impl Issue for MissingOccurrences {
         let base_dir = base.dir.clone();
         let doc = base.get_doc_mut(&self.file).unwrap();
 
-        // insert a newline into the section before
-        let last_section = doc.last_section_mut();
-        last_section.push_line("");
+        // append a newline to the section before
+        doc.last_section_mut().push_line("");
 
         // insert occurrences section
         let mut section_builder =
