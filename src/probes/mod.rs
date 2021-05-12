@@ -56,7 +56,7 @@ impl Issues {
         self.0.into_iter()
     }
 
-    /// provides a borrowed iterator over the Issues
+    /// provides an iterator over borrowed references to the contained Issues
     pub fn iter(&self) -> Iter<Box<dyn Issue>> {
         self.0.iter()
     }
