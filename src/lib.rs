@@ -20,6 +20,7 @@ pub enum Command {
 
 pub fn process(command: Command, path: PathBuf) -> Vec<String> {
     let mut result = Vec::new();
+
     // step 1: load the Tikibase
     let (mut base, mut errors) = Tikibase::load(path);
     result.append(&mut errors);
