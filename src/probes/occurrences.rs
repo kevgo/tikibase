@@ -1,4 +1,5 @@
-use super::{doc_links::DocLinks, outcome::Issue};
+use super::doc_links::DocLinks;
+use super::Issue;
 use crate::core::document::builder_with_title_line;
 use crate::core::tikibase::Tikibase;
 use std::cmp::{Eq, Ord, Ordering, PartialEq};

@@ -1,4 +1,4 @@
-use super::outcome::Issue;
+use super::Issue;
 use super::Tikibase;
 
 pub fn process(base: &Tikibase, resource_links: Vec<String>) -> Vec<Box<dyn Issue>> {

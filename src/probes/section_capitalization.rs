@@ -1,4 +1,4 @@
-use super::outcome::Issue;
+use super::Issue;
 use crate::core::tikibase::Tikibase;
 use std::collections::{HashMap, HashSet};
 use std::iter::FromIterator;

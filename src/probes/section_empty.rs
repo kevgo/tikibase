@@ -1,6 +1,6 @@
 use std::path::PathBuf;
 
-use super::outcome::Issue;
+use super::Issue;
 use crate::core::tikibase::Tikibase;
 
 /// finds all empty sections in the given Tikibase,

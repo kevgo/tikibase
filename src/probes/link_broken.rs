@@ -1,5 +1,5 @@
 use super::doc_links::DocLinks;
-use super::outcome::Issue;
+use super::Issue;
 use super::Tikibase;
 use crate::core::line::Reference;
 use std::path::PathBuf;
