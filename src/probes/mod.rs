@@ -61,7 +61,7 @@ impl Issues {
         self.0.iter()
     }
 
-    /// provides the number of issues in this Issue collection
+    /// provides the number of contained issues
     pub fn len(&self) -> usize {
         self.0.len()
     }
