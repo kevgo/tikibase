@@ -67,7 +67,7 @@ mod tests {
     use crate::testhelpers;
 
     #[test]
-    fn false_empty_section() {
+    fn empty_section() {
         let dir = testhelpers::tmp_dir();
         let content = "\
 # test document
@@ -79,16 +79,19 @@ content";
         testhelpers::create_file("test.md", content, &dir);
         let (mut base, errs) = Tikibase::load(dir);
         assert_eq!(errs.len(), 0);
-        let have = process(&mut base, false);
-        assert_eq!(have.findings.len(), 1);
+        let have: Vec<String> = process(&mut base)
+            .iter()
+            .map(|issue| issue.describe())
+            .collect();
+        assert_eq!(have.len(), 1);
         assert_eq!(
-            have.findings[0],
+            have[0],
             "test.md:3  section \"empty section\" has no content"
         );
     }
 
     #[test]
-    fn false_empty_line() {
+    fn empty_line() {
         let dir = testhelpers::tmp_dir();
         let content = "\
 # test document
@@ -101,16 +104,19 @@ content";
         testhelpers::create_file("test.md", content, &dir);
         let (mut base, errs) = Tikibase::load(dir);
         assert_eq!(errs.len(), 0);
-        let have = process(&mut base, false);
-        assert_eq!(have.findings.len(), 1);
+        let have: Vec<String> = process(&mut base)
+            .iter()
+            .map(|issue| issue.describe())
+            .collect();
+        assert_eq!(have.len(), 1);
         assert_eq!(
-            have.findings[0],
+            have[0],
             "test.md:3  section \"empty section\" has no content"
         );
     }
 
     #[test]
-    fn false_content() {
+    fn content() {
         let dir = testhelpers::tmp_dir();
         let content = "\
 # test document
@@ -121,35 +127,7 @@ content";
         testhelpers::create_file("test.md", content, &dir);
         let (mut base, errs) = Tikibase::load(dir);
         assert_eq!(errs.len(), 0);
-        let have = process(&mut base, false);
-        assert_eq!(have.findings.len(), 0);
-    }
-
-    #[test]
-    fn true_empty_section() {
-        let dir = testhelpers::tmp_dir();
-        testhelpers::create_file(
-            "test.md",
-            "\
-# test document
-
-### empty section
-### next section
-
-content",
-            &dir,
-        );
-        let (mut base, errs) = Tikibase::load(dir);
-        assert_eq!(errs.len(), 0);
-        let result = process(&mut base, true);
-        assert_eq!(result.findings.len(), 0);
-
-        // verify Tikibase data
-        assert_eq!(base.docs.len(), 1);
-        assert_eq!(base.docs[0].content_sections.len(), 1);
-        assert_eq!(
-            base.docs[0].content_sections[0].title_line.text,
-            "### next section"
-        );
+        let have = process(&mut base);
+        assert_eq!(have.len(), 0);
     }
 }

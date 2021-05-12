@@ -65,18 +65,5 @@ mod tests {
         assert_eq!(super::normalize("FOO"), "foo");
     }
 
-    #[test]
-    fn mix_cap_section_finder() {
-        let mut mcsf = super::MixCapSectionFinder::new();
-        mcsf.register("same".to_string());
-        mcsf.register("same".to_string());
-        mcsf.register("different".to_string());
-        mcsf.register("Different".to_string());
-        let have = mcsf.result();
-        assert_eq!(have.findings.len(), 1);
-        assert_eq!(
-            have.findings[0],
-            "mixed capitalization of sections: Different|different",
-        );
-    }
+    // TODO: add test for process
 }

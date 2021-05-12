@@ -142,10 +142,8 @@ mod tests {
             let (base, errs) = Tikibase::load(dir);
             assert_eq!(errs.len(), 0);
             let have = super::super::process(&base);
-            assert_eq!(
-                have.issues.findings,
-                vec!["one.md:3  broken link to \"non-existing.md\""]
-            );
+            let issues: Vec<String> = have.issues.iter().map(|issue| issue.describe()).collect();
+            assert_eq!(issues, vec!["one.md:3  broken link to \"non-existing.md\""]);
             assert_eq!(have.incoming_doc_links.data.len(), 0);
             assert_eq!(have.outgoing_doc_links.data.len(), 0);
             assert_eq!(have.outgoing_resource_links.len(), 0);
@@ -169,7 +167,7 @@ Here is a link to [Three](3.md) that also works.
             let (base, errs) = Tikibase::load(dir);
             assert_eq!(errs.len(), 0);
             let have = super::super::process(&base);
-            assert_eq!(have.issues.findings.len(), 0);
+            assert_eq!(have.issues.len(), 0);
             assert_eq!(have.outgoing_doc_links.data.len(), 1);
             let out_one = have.outgoing_doc_links.get(&PathBuf::from("1.md"));
             assert_eq!(out_one.len(), 2);
@@ -199,7 +197,7 @@ Here is a link to [Three](3.md) that also works.
             let (base, errs) = Tikibase::load(dir);
             assert_eq!(errs.len(), 0);
             let have = super::super::process(&base);
-            assert_eq!(have.issues.findings, Vec::<String>::new());
+            assert_eq!(have.issues.len(), 0);
             assert_eq!(have.incoming_doc_links.data.len(), 0);
             assert_eq!(have.outgoing_doc_links.data.len(), 0);
             assert_eq!(have.outgoing_resource_links.len(), 0);
@@ -213,7 +211,7 @@ Here is a link to [Three](3.md) that also works.
             let (base, errs) = Tikibase::load(dir);
             assert_eq!(errs.len(), 0);
             let have = super::super::process(&base);
-            assert_eq!(have.issues.findings.len(), 0);
+            assert_eq!(have.issues.len(), 0);
             assert_eq!(have.outgoing_resource_links.len(), 1);
             assert_eq!(have.outgoing_resource_links[0], "foo.png");
             assert_eq!(have.incoming_doc_links.data.len(), 0);
@@ -227,8 +225,9 @@ Here is a link to [Three](3.md) that also works.
             let (base, errs) = Tikibase::load(dir);
             assert_eq!(errs.len(), 0);
             let have = super::super::process(&base);
-            assert_eq!(have.issues.findings.len(), 1);
-            assert_eq!(have.issues.findings[0], "1.md:3  broken image \"zonk.png\"");
+            let issues: Vec<String> = have.issues.iter().map(|issue| issue.describe()).collect();
+            assert_eq!(issues.len(), 1);
+            assert_eq!(issues[0], "1.md:3  broken image \"zonk.png\"");
             assert_eq!(have.outgoing_resource_links.len(), 1);
             assert_eq!(have.outgoing_resource_links[0], "zonk.png");
             assert_eq!(have.incoming_doc_links.data.len(), 0);

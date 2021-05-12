@@ -67,9 +67,11 @@ content";
         testhelpers::create_file("test.md", content, &dir);
         let (mut base, errs) = Tikibase::load(dir);
         assert_eq!(errs.len(), 0);
-        let have = process(&mut base);
-        assert_eq!(have.findings.len(), 1);
-        assert_eq!(have.findings[0], "test.md  duplicate section: One");
-        assert_eq!(have.fixes.len(), 0);
+        let have: Vec<String> = process(&mut base)
+            .iter()
+            .map(|issue| issue.describe())
+            .collect();
+        assert_eq!(have.len(), 1);
+        assert_eq!(have[0], "test.md  duplicate section: One");
     }
 }

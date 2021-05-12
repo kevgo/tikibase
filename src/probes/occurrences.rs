@@ -129,7 +129,7 @@ mod tests {
     use std::path::PathBuf;
 
     #[test]
-    fn process_false() {
+    fn process() {
         let dir = testhelpers::tmp_dir();
         testhelpers::create_file("1.md", "# One\n", &dir);
         testhelpers::create_file("2.md", "# Two\n\n[one](1.md)\n", &dir);
@@ -142,38 +142,14 @@ mod tests {
         let mut incoming_links = DocLinks::new();
         incoming_links.add(PathBuf::from("1.md"), PathBuf::from("3.md"));
         incoming_links.add(PathBuf::from("1.md"), PathBuf::from("2.md"));
-        let have = super::process(base, incoming_links, outgoing_links, false);
-        assert_eq!(have.fixes.len(), 0);
+        let have = super::process(&base, &incoming_links, &outgoing_links);
+        let issues: Vec<String> = have.iter().map(|issue| issue.describe()).collect();
         assert_eq!(
-            have.findings,
+            issues,
             vec![
                 "1.md  missing link to \"Two\"",
                 "1.md  missing link to \"Three\"",
             ]
         );
-    }
-
-    #[test]
-    fn process_true() {
-        let dir = testhelpers::tmp_dir();
-        testhelpers::create_file("1.md", "# One\n", &dir);
-        testhelpers::create_file("2.md", "# Two\n\n[one](1.md)\n", &dir);
-        testhelpers::create_file("3.md", "# Three\n\n[one](1.md)\n", &dir);
-        let (base, errs) = Tikibase::load(dir.clone());
-        assert_eq!(errs.len(), 0);
-        let mut outgoing_links = DocLinks::new();
-        outgoing_links.add(PathBuf::from("3.md"), PathBuf::from("1.md"));
-        outgoing_links.add(PathBuf::from("2.md"), PathBuf::from("1.md"));
-        let mut incoming_links = DocLinks::new();
-        incoming_links.add(PathBuf::from("1.md"), PathBuf::from("3.md"));
-        incoming_links.add(PathBuf::from("1.md"), PathBuf::from("2.md"));
-        let have = super::process(base, incoming_links, outgoing_links, true);
-        assert_eq!(have.fixes, vec!["1.md:3  added occurrences section"]);
-        assert_eq!(have.findings.len(), 0);
-        let content_one = testhelpers::load_file("1.md", &dir);
-        assert_eq!(
-            content_one,
-            "# One\n\n### occurrences\n\n- [Two](2.md)\n- [Three](3.md)\n"
-        )
     }
 }
