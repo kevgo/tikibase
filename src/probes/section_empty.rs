@@ -35,7 +35,7 @@ impl Issue for EmptySection {
         true
     }
 
-    fn fix(self, base: &mut Tikibase) -> String {
+    fn fix(&self, base: &mut Tikibase) -> String {
         let base_dir = &base.dir.clone();
         let doc = base.get_doc_mut(&self.filename).unwrap();
         doc.content_sections
@@ -49,7 +49,7 @@ impl Issue for EmptySection {
         )
     }
 
-    fn describe(self) -> String {
+    fn describe(&self) -> String {
         format!(
             "{}:{}  section \"{}\" has no content",
             self.filename.to_string_lossy(),

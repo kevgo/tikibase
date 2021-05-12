@@ -34,14 +34,14 @@ pub struct MixCapSection {
 }
 
 impl Issue for MixCapSection {
-    fn describe(self) -> String {
+    fn describe(&self) -> String {
         format!(
             "mixed capitalization of sections: {}",
             self.variants.join("|")
         )
     }
 
-    fn fix(self, base: &mut Tikibase) -> String {
+    fn fix(&self, _base: &mut Tikibase) -> String {
         panic!("not fixable")
     }
 

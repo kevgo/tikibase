@@ -17,7 +17,7 @@ pub struct OrphanedImage {
 }
 
 impl Issue for OrphanedImage {
-    fn fix(self, base: &mut Tikibase) -> String {
+    fn fix(&self, _base: &mut Tikibase) -> String {
         panic!("not fixable")
     }
 
@@ -25,7 +25,7 @@ impl Issue for OrphanedImage {
         false
     }
 
-    fn describe(self) -> String {
+    fn describe(&self) -> String {
         format!("unused image \"{}\"", self.path)
     }
 }

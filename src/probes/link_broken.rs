@@ -82,7 +82,7 @@ pub struct BrokenLink {
 }
 
 impl Issue for BrokenLink {
-    fn describe(self) -> String {
+    fn describe(&self) -> String {
         format!(
             "{}:{}  broken link to \"{}\"",
             self.filename.to_string_lossy(),
@@ -91,7 +91,7 @@ impl Issue for BrokenLink {
         )
     }
 
-    fn fix(self, base: &mut Tikibase) -> String {
+    fn fix(&self, _base: &mut Tikibase) -> String {
         panic!("not fixable")
     }
 
@@ -108,7 +108,7 @@ pub struct BrokenImage {
 }
 
 impl Issue for BrokenImage {
-    fn describe(self) -> String {
+    fn describe(&self) -> String {
         format!(
             "{}:{}  broken image \"{}\"",
             self.filename.to_string_lossy(),
@@ -117,7 +117,7 @@ impl Issue for BrokenImage {
         )
     }
 
-    fn fix(self, base: &mut Tikibase) -> String {
+    fn fix(&self, _base: &mut Tikibase) -> String {
         panic!("not fixable")
     }
 

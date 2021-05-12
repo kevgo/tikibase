@@ -34,7 +34,7 @@ pub struct MissingOccurrences {
 }
 
 impl Issue for MissingOccurrences {
-    fn fix(self, base: &mut Tikibase) -> String {
+    fn fix(&self, base: &mut Tikibase) -> String {
         let base_dir = base.dir.clone();
         let doc = base.get_doc_mut(&self.file).unwrap();
 
@@ -46,7 +46,7 @@ impl Issue for MissingOccurrences {
         let mut section_builder =
             builder_with_title_line("### occurrences".to_string(), doc.lines_count() + 1);
         section_builder.add_body_line("".to_string());
-        for missing in self.missing_links {
+        for missing in self.missing_links.iter() {
             section_builder.add_body_line(format!(
                 "- [{}]({})",
                 missing.title,
@@ -68,11 +68,11 @@ impl Issue for MissingOccurrences {
         true
     }
 
-    fn describe(self) -> String {
+    fn describe(&self) -> String {
         let links: Vec<String> = self
             .missing_links
-            .into_iter()
-            .map(|occ| occ.title)
+            .iter()
+            .map(|occ| occ.title.clone())
             .collect();
 
         format!(
@@ -84,7 +84,7 @@ impl Issue for MissingOccurrences {
 }
 
 pub fn process(
-    mut base: &Tikibase,
+    base: &Tikibase,
     incoming_doc_links: &DocLinks,
     outgoing_doc_links: &DocLinks,
 ) -> Vec<Box<dyn Issue>> {

@@ -11,13 +11,13 @@ fn main() {
     let command = parse(std::env::args());
 
     // step 2: load the Tikibase
-    let (base, errors) = Tikibase::load(PathBuf::from("."));
+    let (mut base, errors) = Tikibase::load(PathBuf::from("."));
     for error in errors {
         println!("{}", error);
     }
 
     // step 3: execute basic commands
-    let basic_command = true;
+    let mut basic_command = true;
     match command {
         Command::Help => help::run(),
         Command::Stats => stats::run(&base),
@@ -31,17 +31,36 @@ fn main() {
     // step 4: find the issues in the Tikibase
     let issues = probes::run(&base);
 
-    // step 5: fix the issues
-    match command {
-        Command::Check => probes::run(base, false),
-        Command::Fix => probes::run(base, true),
-        Command::Pitstop => probes::run(base, true),
-        _ => panic!(format!("unexpected complex command: {}", command)),
+    // step 5: take care of the issues
+    let mut outcomes = match command {
+        Command::Check => issues
+            .into_iter()
+            .map(|issue| issue.describe())
+            .collect::<Vec<String>>(),
+        Command::Fix => issues
+            .into_iter()
+            .filter(|issue| issue.fixable())
+            .map(|issue| issue.fix(&mut base))
+            .collect::<Vec<String>>(),
+        Command::Pitstop => issues
+            .into_iter()
+            .map(|issue| {
+                if issue.fixable() {
+                    issue.fix(&mut base)
+                } else {
+                    issue.describe()
+                }
+            })
+            .collect::<Vec<String>>(),
+        _ => {
+            panic!("unexpected complex command: {:?}", command);
+        }
     };
 
     // step 6: print the results
-    for finding in findings {
-        println!("{}", finding);
+    outcomes.sort();
+    for outcome in outcomes {
+        println!("{}", outcome);
     }
 }
 

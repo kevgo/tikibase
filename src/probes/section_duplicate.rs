@@ -34,11 +34,11 @@ impl Issue for DuplicateSection {
         false
     }
 
-    fn fix(self, base: &mut Tikibase) -> String {
+    fn fix(&self, _base: &mut Tikibase) -> String {
         panic!("not fixable");
     }
 
-    fn describe(self) -> String {
+    fn describe(&self) -> String {
         format!(
             "{}  duplicate section: {}",
             self.filename.to_string_lossy(),
