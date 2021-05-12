@@ -56,7 +56,6 @@ impl Issue for MissingOccurrences {
             .iter()
             .map(|occ| occ.path.to_string_lossy().to_string())
             .collect();
-
         format!(
             "{}  missing link to {}",
             self.file.to_string_lossy(),
@@ -70,7 +69,7 @@ pub fn process(
     incoming_doc_links: &DocLinks,
     outgoing_doc_links: &DocLinks,
 ) -> Issues {
-    let mut result = Issues::new();
+    let mut issues = Issues::new();
     for doc in &base.docs {
         let mut missing_outgoing: Vec<PathBuf> = incoming_doc_links
             .get(&doc.path)
@@ -87,7 +86,7 @@ pub fn process(
 
         // register missing occurrences
         missing_outgoing.sort();
-        result.push(Box::new(MissingOccurrences {
+        issues.push(Box::new(MissingOccurrences {
             file: doc.path.clone(),
             missing_links: missing_outgoing
                 .into_iter()
@@ -99,7 +98,7 @@ pub fn process(
                 .collect(),
         }));
     }
-    result
+    issues
 }
 
 #[cfg(test)]
