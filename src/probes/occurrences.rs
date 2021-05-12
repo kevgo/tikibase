@@ -144,12 +144,6 @@ mod tests {
         incoming_links.add(PathBuf::from("1.md"), PathBuf::from("2.md"));
         let have = super::process(&base, &incoming_links, &outgoing_links);
         let issues: Vec<String> = have.iter().map(|issue| issue.describe()).collect();
-        assert_eq!(
-            issues,
-            vec![
-                "1.md  missing link to \"Two\"",
-                "1.md  missing link to \"Three\"",
-            ]
-        );
+        assert_eq!(issues, vec!["1.md  missing link to \"Two\", \"Three\"",]);
     }
 }
