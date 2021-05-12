@@ -26,13 +26,21 @@ pub fn process(command: Command, path: PathBuf) -> Vec<String> {
     result.append(&mut errors);
 
     // step 2: basic command --> execute and exit
-    let mut basic_command = true;
-    match command {
-        Command::Help => help::run(),
-        Command::Stats => stats::run(&base),
-        Command::Version => help::version(),
-        _ => basic_command = false,
-    }
+    let basic_command = match command {
+        Command::Help => {
+            help::run();
+            true
+        }
+        Command::Stats => {
+            stats::run(&base);
+            true
+        }
+        Command::Version => {
+            help::version();
+            true
+        }
+        _ => false,
+    };
     if basic_command {
         return result;
     }
