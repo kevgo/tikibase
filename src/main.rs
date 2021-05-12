@@ -1,9 +1,7 @@
 extern crate lazy_static;
 
 use std::path::PathBuf;
-
-use tikibase::process;
-use tikibase::Command;
+use tikibase::{process, Command};
 
 fn main() {
     let mut outcomes = process(parse(std::env::args()), PathBuf::from("."));
