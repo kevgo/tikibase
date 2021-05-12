@@ -228,9 +228,9 @@ Here is a link to [Three](3.md) that also works.
             let (base, errs) = Tikibase::load(dir);
             assert_eq!(errs.len(), 0);
             let have = super::super::process(&base);
-            let issues: Vec<String> = have.issues.iter().map(|issue| issue.describe()).collect();
-            assert_eq!(issues.len(), 1);
-            assert_eq!(issues[0], "1.md:3  broken image \"zonk.png\"");
+            let outcomes: Vec<String> = have.issues.iter().map(|issue| issue.describe()).collect();
+            assert_eq!(outcomes.len(), 1);
+            assert_eq!(outcomes[0], "1.md:3  broken image \"zonk.png\"");
             assert_eq!(have.outgoing_resource_links.len(), 1);
             assert_eq!(have.outgoing_resource_links[0], "zonk.png");
             assert_eq!(have.incoming_doc_links.data.len(), 0);
