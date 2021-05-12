@@ -1,9 +1,7 @@
-use super::doc_links::DocLinks;
-use super::outcome::Outcome;
+use super::{doc_links::DocLinks, outcome::Issue};
 use crate::core::document::builder_with_title_line;
 use crate::core::tikibase::Tikibase;
 use std::cmp::{Eq, Ord, Ordering, PartialEq};
-use std::collections::HashMap;
 use std::path::PathBuf;
 
 #[derive(Eq)]
@@ -30,14 +28,67 @@ impl PartialEq for MissingOccurrence {
     }
 }
 
+pub struct MissingOccurrences {
+    file: PathBuf,
+    missing_links: Vec<MissingOccurrence>,
+}
+
+impl Issue for MissingOccurrences {
+    fn fix(self, base: &mut Tikibase) -> String {
+        let base_dir = base.dir.clone();
+        let doc = base.get_doc_mut(&self.file).unwrap();
+
+        // insert a newline into the section before
+        let last_section = doc.last_section_mut();
+        last_section.push_line("");
+
+        // insert occurrences section
+        let mut section_builder =
+            builder_with_title_line("### occurrences".to_string(), doc.lines_count() + 1);
+        section_builder.add_body_line("".to_string());
+        for missing in self.missing_links {
+            section_builder.add_body_line(format!(
+                "- [{}]({})",
+                missing.title,
+                missing.path.to_string_lossy()
+            ));
+        }
+        let occurrences_section = section_builder.result().unwrap();
+        let result = format!(
+            "{}:{}  added occurrences section",
+            doc.path.to_string_lossy(),
+            occurrences_section.line_number + 1
+        );
+        doc.content_sections.push(occurrences_section);
+        doc.flush(&base_dir);
+        result
+    }
+
+    fn fixable(&self) -> bool {
+        true
+    }
+
+    fn describe(self) -> String {
+        let links: Vec<String> = self
+            .missing_links
+            .into_iter()
+            .map(|occ| occ.title)
+            .collect();
+
+        format!(
+            "{}  missing link to \"{}\"",
+            self.file.to_string_lossy(),
+            links.join(", "),
+        )
+    }
+}
+
 pub fn process(
-    mut base: Tikibase,
-    incoming_doc_links: DocLinks,
-    outgoing_doc_links: DocLinks,
-    fix: bool,
-) -> Outcome {
-    let mut result = Outcome::new();
-    let mut missings = HashMap::<PathBuf, Vec<MissingOccurrence>>::new();
+    mut base: &Tikibase,
+    incoming_doc_links: &DocLinks,
+    outgoing_doc_links: &DocLinks,
+) -> Vec<Box<dyn Issue>> {
+    let mut result = Vec::<Box<dyn Issue>>::new();
     for doc in &base.docs {
         let mut missing_outgoing: Vec<PathBuf> = incoming_doc_links
             .get(&doc.path)
@@ -54,9 +105,9 @@ pub fn process(
 
         // register missing occurrences
         missing_outgoing.sort();
-        missings.insert(
-            doc.path.clone(),
-            missing_outgoing
+        result.push(Box::new(MissingOccurrences {
+            file: doc.path.clone(),
+            missing_links: missing_outgoing
                 .into_iter()
                 .map(|path| base.get_doc(&path).unwrap())
                 .map(|doc| MissingOccurrence {
@@ -64,48 +115,7 @@ pub fn process(
                     title: doc.title(),
                 })
                 .collect(),
-        );
-    }
-
-    if fix {
-        let base_dir = base.dir.clone();
-        for (filepath, missing_occurrences) in missings {
-            let doc = base.get_doc_mut(&filepath).unwrap();
-
-            // insert a newline into the section before
-            let last_section = doc.last_section_mut();
-            last_section.push_line("");
-
-            // insert occurrences section
-            let mut section_builder =
-                builder_with_title_line("### occurrences".to_string(), doc.lines_count() + 1);
-            section_builder.add_body_line("".to_string());
-            for missing_occurrence in missing_occurrences {
-                section_builder.add_body_line(format!(
-                    "- [{}]({})",
-                    missing_occurrence.title,
-                    missing_occurrence.path.to_string_lossy()
-                ));
-            }
-            let occurrences_section = section_builder.result().unwrap();
-            result.fixes.push(format!(
-                "{}:{}  added occurrences section",
-                doc.path.to_string_lossy(),
-                occurrences_section.line_number + 1
-            ));
-            doc.content_sections.push(occurrences_section);
-            doc.flush(&base_dir);
-        }
-    } else {
-        for (filepath, missing_occurrences) in missings {
-            for missing_occurrence in missing_occurrences {
-                result.findings.push(format!(
-                    "{}  missing link to \"{}\"",
-                    filepath.to_string_lossy(),
-                    missing_occurrence.title,
-                ));
-            }
-        }
+        }));
     }
     result
 }

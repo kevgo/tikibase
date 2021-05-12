@@ -21,9 +21,8 @@ pub fn run(base: &Tikibase) -> Vec<Box<dyn outcome::Issue>> {
     ));
     let mut occ_res = occurrences::process(
         base,
-        links_result.incoming_doc_links,
-        links_result.outgoing_doc_links,
-        fix,
+        &links_result.incoming_doc_links,
+        &links_result.outgoing_doc_links,
     );
     issues.append(occ_res);
     // issues.sorted()
