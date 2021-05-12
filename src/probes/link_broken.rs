@@ -1,7 +1,6 @@
 use super::doc_links::DocLinks;
-use super::Issue;
-use super::Issues;
 use super::Tikibase;
+use super::{Issue, Issues};
 use crate::core::line::Reference;
 use std::path::PathBuf;
 
