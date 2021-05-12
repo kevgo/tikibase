@@ -51,16 +51,13 @@ pub fn process(command: Command, path: PathBuf) -> Vec<String> {
     let issues = probes::run(&base);
 
     // step 4: take care of the issues
-    let mut outcomes = match command {
-        Command::Check => issues
-            .into_iter()
-            .map(|issue| issue.describe())
-            .collect::<Vec<String>>(),
+    let mut outcomes: Vec<String> = match command {
+        Command::Check => issues.into_iter().map(|issue| issue.describe()).collect(),
         Command::Fix => issues
             .into_iter()
             .filter(|issue| issue.fixable())
             .map(|issue| issue.fix(&mut base))
-            .collect::<Vec<String>>(),
+            .collect(),
         Command::Pitstop => issues
             .into_iter()
             .map(|issue| {
@@ -70,7 +67,7 @@ pub fn process(command: Command, path: PathBuf) -> Vec<String> {
                     issue.describe()
                 }
             })
-            .collect::<Vec<String>>(),
+            .collect(),
         _ => {
             panic!("unexpected complex command: {:?}", command);
         }
