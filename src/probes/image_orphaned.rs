@@ -12,6 +12,7 @@ pub fn process(base: &Tikibase, resource_links: Vec<String>) -> Issues {
     result
 }
 
+/// an image that isn't linked to
 pub struct OrphanedImage {
     path: String,
 }
