@@ -18,11 +18,11 @@ pub enum Command {
     Version,
 }
 
-pub fn process(command: Command, path: PathBuf) -> Vec<String> {
+pub fn process<P: Into<PathBuf>>(command: Command, path: P) -> Vec<String> {
     let mut result = Vec::new();
 
     // step 1: load the Tikibase
-    let (mut base, mut errors) = Tikibase::load(path);
+    let (mut base, mut errors) = Tikibase::load(path.into());
     result.append(&mut errors);
 
     // step 2: basic command --> execute and exit

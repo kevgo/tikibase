@@ -1,11 +1,10 @@
 extern crate lazy_static;
 
-use std::path::PathBuf;
 use tikibase::{process, Command};
 
 fn main() {
     let command = parse(std::env::args());
-    let mut outcomes = process(command, PathBuf::from("."));
+    let mut outcomes = process(command, ".");
     outcomes.sort();
     for outcome in outcomes {
         println!("{}", outcome);
