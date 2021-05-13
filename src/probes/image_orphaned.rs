@@ -30,3 +30,5 @@ impl Issue for OrphanedImage {
         format!("unused image \"{}\"", self.path)
     }
 }
+
+// TODO: add tests

@@ -4,7 +4,7 @@ use tikibase::{config, process, Command};
 
 fn main() {
     let command = parse(std::env::args());
-    let config = config::load();
+    let config = config::load(".");
     let mut outcomes = process(command, ".");
     outcomes.sort();
     for outcome in outcomes {

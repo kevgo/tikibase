@@ -2,17 +2,19 @@ use serde::Deserialize;
 // use serde_json::Result;
 use std::fs::File;
 use std::io::ErrorKind;
+use std::path::Path;
 
 /// Tikibase configuration data
-#[derive(Deserialize, Default)]
+#[derive(Deserialize, Default, PartialEq, Debug)]
 pub struct Data {
     /// the allowed section types
     pub allowed_sections: Option<Vec<String>>,
 }
 
 /// loads the configuration from the config file
-pub fn load() -> Result<Data, String> {
-    let file = match File::open("tikibase.json") {
+pub fn load<P: AsRef<Path>>(dir: P) -> Result<Data, String> {
+    let config_path = dir.as_ref().join("tikibase.json");
+    let file = match File::open(config_path) {
         Ok(content) => content,
         Err(e) => match e.kind() {
             ErrorKind::NotFound => return Ok(Default::default()),
@@ -37,5 +39,45 @@ mod tests {
     fn defaults() {
         let default_config: Data = Default::default();
         assert_eq!(default_config.allowed_sections, None)
+    }
+
+    mod load {
+        use crate::testhelpers;
+
+        #[test]
+        fn no_config_file() {
+            let dir = testhelpers::tmp_dir();
+            let have = super::super::load(dir).unwrap();
+            let want = super::super::Data {
+                allowed_sections: None,
+            };
+            assert_eq!(have, want);
+        }
+
+        #[test]
+        fn empty_config_file() {
+            let dir = testhelpers::tmp_dir();
+            testhelpers::create_file("tikibase.json", "{}", &dir);
+            let have = super::super::load(&dir).unwrap();
+            let want = super::super::Data {
+                allowed_sections: None,
+            };
+            assert_eq!(have, want);
+        }
+
+        #[test]
+        fn valid_config_file() {
+            let dir = testhelpers::tmp_dir();
+            let content = r#"{
+    "allowed_sections": [ "one", "two" ]
+}
+"#;
+            testhelpers::create_file("tikibase.json", content, &dir);
+            let have = super::super::load(&dir).unwrap();
+            let want = super::super::Data {
+                allowed_sections: Some(vec!["one".to_string(), "two".to_string()]),
+            };
+            assert_eq!(have, want);
+        }
     }
 }
