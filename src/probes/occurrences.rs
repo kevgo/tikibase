@@ -1,3 +1,5 @@
+use ahash::AHashSet;
+
 use super::doc_links::DocLinks;
 use super::Issue;
 use super::Issues;
@@ -73,7 +75,12 @@ pub fn process(
     for doc in &base.docs {
         let mut missing_outgoing: Vec<PathBuf> = incoming_doc_links
             .get(&doc.path)
-            .difference(&outgoing_doc_links.get(&doc.path))
+            .get_or_insert(&AHashSet::new())
+            .difference(
+                &outgoing_doc_links
+                    .get(&doc.path)
+                    .get_or_insert(&AHashSet::new()),
+            )
             .into_iter()
             // TODO: use reference here instead of cloning
             .map(|p| p.to_owned())

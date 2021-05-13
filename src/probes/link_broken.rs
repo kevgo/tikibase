@@ -172,16 +172,16 @@ Here is a link to [Three](3.md) that also works.
             let have = super::super::process(&base);
             assert!(have.issues.is_empty());
             assert_eq!(have.outgoing_doc_links.data.len(), 1);
-            let out_one = have.outgoing_doc_links.get(&PathBuf::from("1.md"));
+            let out_one = have.outgoing_doc_links.get(&PathBuf::from("1.md")).unwrap();
             assert_eq!(out_one.len(), 2);
             assert!(out_one.contains(&PathBuf::from("2.md")));
             assert!(out_one.contains(&PathBuf::from("3.md")));
 
             assert_eq!(have.incoming_doc_links.data.len(), 2);
-            let into_two = have.incoming_doc_links.get(&PathBuf::from("2.md"));
+            let into_two = have.incoming_doc_links.get(&PathBuf::from("2.md")).unwrap();
             assert_eq!(into_two.len(), 1);
             assert!(into_two.contains(&PathBuf::from("1.md")));
-            let into_three = have.incoming_doc_links.get(&PathBuf::from("3.md"));
+            let into_three = have.incoming_doc_links.get(&PathBuf::from("3.md")).unwrap();
             assert_eq!(into_three.len(), 1);
             assert!(into_three.contains(&PathBuf::from("1.md")));
         }
