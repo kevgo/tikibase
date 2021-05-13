@@ -1,3 +1,5 @@
+#![feature(destructuring_assignment)]
+
 use ahash::AHashMap;
 use cucumber_rust::{async_trait, Cucumber, Steps, World};
 use std::io;
@@ -9,8 +11,13 @@ use tikibase::Command;
 pub struct MyWorld {
     /// the directory in which the Tikibase under test is located
     pub dir: PathBuf,
+
+    /// the exit code of the Tikibase run
+    pub exitcode: i32,
+
     /// results of the Tikibase run
     pub findings: Vec<String>,
+
     /// content of the files before the Tikibase command ran
     pub original_contents: AHashMap<PathBuf, String>,
 }
@@ -21,6 +28,7 @@ impl World for MyWorld {
     async fn new() -> Result<Self, io::Error> {
         Ok(MyWorld {
             dir: testhelpers::tmp_dir(),
+            exitcode: 0,
             findings: vec![],
             original_contents: AHashMap::new(),
         })
@@ -47,17 +55,18 @@ fn steps() -> Steps<MyWorld> {
     });
 
     steps.when("checking", |mut world, _ctx| {
-        world.findings = tikibase::process(Command::Check, world.dir.clone());
+        let result = tikibase::process(&Command::Check, world.dir.clone());
+        (world.findings, world.exitcode) = result;
         world
     });
 
     steps.when("doing a pitstop", |mut world, _ctx| {
-        world.findings = tikibase::process(Command::Pitstop, world.dir.clone());
+        (world.findings, world.exitcode) = tikibase::process(&Command::Pitstop, world.dir.clone());
         world
     });
 
     steps.when("fixing", |mut world, _ctx| {
-        world.findings = tikibase::process(Command::Fix, world.dir.clone());
+        (world.findings, world.exitcode) = tikibase::process(&Command::Fix, world.dir.clone());
         world
     });
 
@@ -109,6 +118,18 @@ fn steps() -> Steps<MyWorld> {
     steps.then("it finds no issues", |world, _ctx| {
         let expected: Vec<&str> = vec![];
         assert_eq!(world.findings, expected);
+        assert_eq!(world.exitcode, 0);
+        world
+    });
+
+    steps.then_regex("^the exit code is (\\d+)$", |world, ctx| {
+        let want: i32 = ctx
+            .matches
+            .get(1)
+            .expect("no exit code provided")
+            .parse()
+            .unwrap();
+        assert_eq!(world.exitcode, want);
         world
     });
 

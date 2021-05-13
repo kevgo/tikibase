@@ -10,6 +10,12 @@ Feature: orphaned resource
             unused image "orphan.png"
             """
         And all files are unchanged
+        And the exit code is 1
+
+    Scenario: fix
+        When fixing
+        Then it finds no issues
+        And all files are unchanged
 
     Scenario: pitstop
         When doing a pitstop
@@ -18,3 +24,4 @@ Feature: orphaned resource
             unused image "orphan.png"
             """
         And all files are unchanged
+        And the exit code is 1

@@ -32,6 +32,7 @@ Feature: add occurrence sections
       """
       1.md  missing link to 2.md, 3.md
       """
+    And the exit code is 1
 
   Scenario: fix
     When fixing
@@ -54,6 +55,7 @@ Feature: add occurrence sections
       """
     And file "2.md" is unchanged
     And file "3.md" is unchanged
+    And the exit code is 0
 
   Scenario: pitstop
     When doing a pitstop
@@ -61,3 +63,4 @@ Feature: add occurrence sections
       """
       1.md:7  added occurrences section
       """
+    And the exit code is 0

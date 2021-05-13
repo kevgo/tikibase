@@ -19,6 +19,13 @@ Feature: recognize/fix broken images
       1.md:5  broken image "non-existing.png"
       """
     And all files are unchanged
+    And the exit code is 3
+
+  Scenario: fix
+    When checking
+    Then it finds no issues
+    And all files are unchanged
+    And the exit code is 0
 
   Scenario: pitstop
     When doing a pitstop
@@ -29,3 +36,4 @@ Feature: recognize/fix broken images
       1.md:5  broken image "non-existing.png"
       """
     And all files are unchanged
+    And the exit code is 3

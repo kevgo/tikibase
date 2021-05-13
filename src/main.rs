@@ -5,11 +5,12 @@ use tikibase::Command;
 
 fn main() {
     let command = parse(std::env::args());
-    let mut outcomes = process(command, ".");
+    let (mut outcomes, exitcode) = process(&command, ".");
     outcomes.sort();
-    for outcome in outcomes {
+    for outcome in &outcomes {
         println!("{}", outcome);
     }
+    std::process::exit(exitcode);
 }
 
 /// Provides the command-line arguments as a Rust struct.
