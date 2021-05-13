@@ -117,21 +117,10 @@ fn steps() -> Steps<MyWorld> {
 
 #[tokio::main]
 async fn main() {
-    // let pool = "the pool";
-
     Cucumber::<MyWorld>::new()
         .features(&["./features"])
         .steps(steps())
-        // Add some global context for all the tests, like databases.
-        // .context(Context::new().add(pool))
-        // Add some lifecycle functions to manage our database nightmare
-        // .before(feature("Example feature"), |ctx| println!("").boxed())
-        // .after(feature("Example feature"), |ctx| {
-        //     async move { drop_tables(&pool).await }.boxed()
-        // })
-        // Parses the command line arguments if passed
-        .cli()
-        // Runs the Cucumber tests and then exists
+        .cli() // parse command line arguments
         .run_and_exit()
         .await
 }
