@@ -16,16 +16,16 @@ pub fn process(base: &Tikibase) -> Issues {
                 .insert(section_type);
         }
     }
-    let mut result = Issues::new();
+    let mut issues = Issues::new();
     for variants in title_variants.into_values() {
         if variants.len() < 2 {
             continue;
         }
         let mut sorted = Vec::from_iter(variants);
         sorted.sort();
-        result.push(Box::new(MixCapSection { variants: sorted }))
+        issues.push(Box::new(MixCapSection { variants: sorted }))
     }
-    result
+    issues
 }
 
 /// describes the issue that sections have mixed capitalization
@@ -65,5 +65,34 @@ mod tests {
         assert_eq!(super::normalize("FOO"), "foo");
     }
 
-    // TODO: add test for process
+    use crate::core::tikibase::Tikibase;
+    use crate::testhelpers;
+
+    #[test]
+    fn progress() {
+        let dir = testhelpers::tmp_dir();
+        let content = "\
+# test document
+
+### ONE
+content
+
+### One
+content";
+        testhelpers::create_file("1.md", content, &dir);
+        let content = "\
+# another document
+
+### one
+content";
+        testhelpers::create_file("2.md", content, &dir);
+        let (mut base, errs) = Tikibase::load(dir);
+        assert_eq!(errs.len(), 0);
+        let have: Vec<String> = super::process(&mut base)
+            .iter()
+            .map(|issue| issue.describe())
+            .collect();
+        assert_eq!(have.len(), 1);
+        assert_eq!(have[0], "mixed capitalization of sections: ONE|One|one");
+    }
 }
