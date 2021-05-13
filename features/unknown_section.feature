@@ -23,7 +23,7 @@ Feature: verify section types
       text
       """
 
-  Scenario: this
+  Scenario: check
     When checking
     Then it prints:
       """
