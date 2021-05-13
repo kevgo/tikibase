@@ -81,12 +81,10 @@ fn steps() -> Steps<MyWorld> {
     });
 
     steps.then_regex(r#"^file "(.*)" should contain:$"#, |world, ctx| {
-        // TODO: rename to want
-        let expected = ctx.step.docstring().unwrap().trim_start();
+        let want = ctx.step.docstring().unwrap().trim_start();
         let filename = ctx.matches.get(1).expect("no filename provided");
-        // TODO: rename to have
-        let actual = testhelpers::load_file(&filename, &world.dir);
-        assert_eq!(actual, expected);
+        let have = testhelpers::load_file(&filename, &world.dir);
+        assert_eq!(have, want);
         world
     });
 
