@@ -31,7 +31,6 @@ pub fn load<P: AsRef<Path>>(dir: P) -> Result<Data, String> {
 
 #[cfg(test)]
 mod tests {
-
     use super::Data;
 
     #[test]
@@ -67,10 +66,11 @@ mod tests {
         #[test]
         fn valid_config_file() {
             let dir = testhelpers::tmp_dir();
-            let content = r#"{
-    "allowed_sections": [ "one", "two" ]
-}
-"#;
+            let content = r#"
+            {
+              "allowed_sections": [ "one", "two" ]
+            }
+            "#;
             testhelpers::create_file("tikibase.json", content, &dir);
             let have = super::super::load(&dir).unwrap();
             let want = super::super::Data {
