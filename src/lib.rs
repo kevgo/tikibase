@@ -23,17 +23,17 @@ pub fn process<P: Into<PathBuf>>(command: Command, path: P) -> Vec<String> {
     let mut result = Vec::new();
     let path = path.into();
 
-    // step 1: load the configuration
+    // load the configuration
     let config = match config::load(&path) {
         Ok(config) => config,
         Err(err) => return vec![err],
     };
 
-    // step 2: load the Tikibase
+    // load the Tikibase
     let (mut base, mut errors) = Tikibase::load(path);
     result.append(&mut errors);
 
-    // step 3: basic command --> execute and exit
+    // handle basic commands
     let basic_command = match command {
         Command::Help => {
             help::run();
@@ -53,12 +53,10 @@ pub fn process<P: Into<PathBuf>>(command: Command, path: P) -> Vec<String> {
         return result;
     }
 
-    // here we have a complex command
-
-    // step 4: find all issues in the Tikibase
+    // find all issues in the Tikibase
     let issues = probes::run(&base, &config);
 
-    // step 5: take care of the issues
+    // take care of the issues
     let mut outcomes: Vec<String> = match command {
         Command::Check => issues.into_iter().map(|issue| issue.describe()).collect(),
         Command::Fix => issues
