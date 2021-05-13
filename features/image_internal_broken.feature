@@ -21,7 +21,7 @@ Feature: recognize/fix broken images
     And all files are unchanged
     And the exit code is 3
 
-  Scenario: this
+  Scenario: fix
     When fixing
     Then it finds no issues
     And all files are unchanged
