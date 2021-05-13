@@ -1,23 +1,23 @@
 use super::{Issue, Issues};
 use crate::core::tikibase::Tikibase;
-use std::collections::{HashMap, HashSet};
+use ahash::{AHashMap, AHashSet};
 use std::iter::FromIterator;
 
 pub fn process(base: &Tikibase) -> Issues {
     // registers variants of section titles: normalized title --> Vec<existing titles>
     // TODO: use faster hashing algorithm here
-    let mut title_variants: HashMap<String, HashSet<String>> = HashMap::new();
+    let mut title_variants: AHashMap<String, AHashSet<String>> = AHashMap::new();
     for doc in &base.docs {
         for section in &doc.content_sections {
             let section_type = section.section_type();
             title_variants
                 .entry(normalize(&section_type))
-                .or_insert_with(HashSet::new)
+                .or_insert_with(AHashSet::new)
                 .insert(section_type);
         }
     }
     let mut issues = Issues::new();
-    for variants in title_variants.into_values() {
+    for (_, variants) in title_variants.drain() {
         if variants.len() < 2 {
             continue;
         }

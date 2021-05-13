@@ -1,5 +1,5 @@
+use ahash::AHashMap;
 use cucumber_rust::{async_trait, Cucumber, Steps, World};
-use std::collections::HashMap;
 use std::io;
 use std::path::PathBuf;
 use tikibase;
@@ -12,7 +12,7 @@ pub struct MyWorld {
     /// results of the Tikibase run
     pub findings: Vec<String>,
     /// content of the files before the Tikibase command ran
-    pub original_contents: HashMap<PathBuf, String>,
+    pub original_contents: AHashMap<PathBuf, String>,
 }
 
 #[async_trait(?Send)]
@@ -22,7 +22,7 @@ impl World for MyWorld {
         Ok(MyWorld {
             dir: testhelpers::tmp_dir(),
             findings: vec![],
-            original_contents: HashMap::new(),
+            original_contents: AHashMap::new(),
         })
     }
 }

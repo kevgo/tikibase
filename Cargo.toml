@@ -7,6 +7,7 @@ authors = ["Kevin Goslar <kevin.goslar@gmail.com>"]
 edition = "2018"
 
 [dependencies]
+ahash = "0.7.2"
 heck = "0.3"
 lazy_static = "1.4.0"
 rand = "0.8.3"
