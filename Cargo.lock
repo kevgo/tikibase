@@ -771,6 +771,8 @@ dependencies = [
  "lazy_static",
  "rand",
  "regex",
+ "serde",
+ "serde_json",
  "tempfile",
  "tokio",
  "walkdir",

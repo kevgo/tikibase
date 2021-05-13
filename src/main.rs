@@ -1,6 +1,7 @@
 extern crate lazy_static;
 
-use tikibase::{process, Command};
+use tikibase::process;
+use tikibase::Command;
 
 fn main() {
     let command = parse(std::env::args());

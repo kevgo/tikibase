@@ -1,4 +1,5 @@
 #![feature(map_into_keys_values)]
+pub mod config;
 pub mod core;
 pub mod help;
 pub mod probes;
@@ -20,12 +21,19 @@ pub enum Command {
 
 pub fn process<P: Into<PathBuf>>(command: Command, path: P) -> Vec<String> {
     let mut result = Vec::new();
+    let path = path.into();
 
-    // step 1: load the Tikibase
-    let (mut base, mut errors) = Tikibase::load(path.into());
+    // load the configuration
+    let config = match config::load(&path) {
+        Ok(config) => config,
+        Err(err) => return vec![err],
+    };
+
+    // load the Tikibase
+    let (mut base, mut errors) = Tikibase::load(path);
     result.append(&mut errors);
 
-    // step 2: basic command --> execute and exit
+    // handle basic commands
     let basic_command = match command {
         Command::Help => {
             help::run();
@@ -45,12 +53,10 @@ pub fn process<P: Into<PathBuf>>(command: Command, path: P) -> Vec<String> {
         return result;
     }
 
-    // here we have a complex command
+    // find all issues in the Tikibase
+    let issues = probes::run(&base, &config);
 
-    // step 3: find all issues in the Tikibase
-    let issues = probes::run(&base);
-
-    // step 4: take care of the issues
+    // take care of the issues
     let mut outcomes: Vec<String> = match command {
         Command::Check => issues.into_iter().map(|issue| issue.describe()).collect(),
         Command::Fix => issues
