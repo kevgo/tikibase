@@ -76,12 +76,12 @@ pub fn process<P: Into<PathBuf>>(command: &Command, path: P) -> (Vec<String>, i3
             panic!("unexpected complex command: {:?}", command);
         }
     };
-    result.append(&mut outcomes);
     let exitcode = match command {
         Command::Check => outcomes.len() as i32,
         Command::Fix => 0,
         Command::Pitstop => unfixables,
         _ => 0,
     };
+    result.append(&mut outcomes);
     (result, exitcode)
 }
