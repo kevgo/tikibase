@@ -47,10 +47,8 @@ pub fn process(base: &Tikibase) -> LinksResult {
                             }
                             result
                                 .incoming_doc_links
-                                .add(PathBuf::from(&destination), doc.path.clone());
-                            result
-                                .outgoing_doc_links
-                                .add(doc.path.clone(), PathBuf::from(destination));
+                                .add(&destination, doc.path.clone());
+                            result.outgoing_doc_links.add(doc.path.clone(), destination);
                         }
                         Reference::Image { src } => {
                             if src.starts_with("http") {
