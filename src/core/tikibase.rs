@@ -33,12 +33,12 @@ impl Tikibase {
     pub fn link_targets(&self) -> Vec<String> {
         let mut result: Vec<String> = Vec::new();
         for doc in &self.docs {
-            let filename = doc.path.to_string_lossy();
+            let filename = doc.path.to_string_lossy().to_string();
             result.push(format!("{}{}", &filename, doc.title_section.anchor()));
             for section in &doc.content_sections {
                 result.push(format!("{}{}", &filename, section.anchor()));
             }
-            result.push(filename.to_string());
+            result.push(filename);
         }
         result.sort();
         result
