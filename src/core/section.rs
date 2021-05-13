@@ -32,10 +32,7 @@ impl Section {
 
     /// adds a new line with the given text to this section
     pub fn push_line<S: Into<String>>(&mut self, text: S) {
-        self.body.push(Line {
-            section_offset: self.body.len() as u32 + 1,
-            text: text.into(),
-        });
+        self.body.push(Line { text: text.into() });
     }
 
     pub fn section_type(&self) -> String {
@@ -100,7 +97,6 @@ mod tests {
             let section = Section {
                 title_line: Line {
                     text: give.to_string(),
-                    section_offset: 0,
                 },
                 body: vec![],
                 line_number: 0,
@@ -119,7 +115,6 @@ mod tests {
             let section = Section {
                 line_number: 12,
                 title_line: Line {
-                    section_offset: 0,
                     text: "".to_string(),
                 },
                 body: Vec::new(),
@@ -132,11 +127,9 @@ mod tests {
             let section = Section {
                 line_number: 12,
                 title_line: Line {
-                    section_offset: 0,
                     text: "".to_string(),
                 },
                 body: vec![Line {
-                    section_offset: 1,
                     text: "".to_string(),
                 }],
             };
@@ -174,7 +167,6 @@ title content";
             let mut section = Section {
                 line_number: 10,
                 title_line: Line {
-                    section_offset: 0,
                     text: "foo".to_string(),
                 },
                 body: vec![],
@@ -182,7 +174,6 @@ title content";
             section.push_line("new line");
             assert_eq!(section.body.len(), 1);
             assert_eq!(section.body[0].text, "new line");
-            assert_eq!(section.body[0].section_offset, 1);
         }
 
         #[test]
@@ -190,20 +181,16 @@ title content";
             let mut section = Section {
                 line_number: 10,
                 title_line: Line {
-                    section_offset: 0,
                     text: "foo".to_string(),
                 },
                 body: vec![Line {
-                    section_offset: 1,
                     text: "l1".to_string(),
                 }],
             };
             section.push_line("new line");
             assert_eq!(section.body.len(), 2);
             assert_eq!(section.body[0].text, "l1");
-            assert_eq!(section.body[0].section_offset, 1);
             assert_eq!(section.body[1].text, "new line");
-            assert_eq!(section.body[1].section_offset, 2);
         }
     }
 
@@ -220,7 +207,6 @@ title content";
                 line_number: 2,
                 title_line: Line {
                     text: give.to_string(),
-                    section_offset: 0,
                 },
                 body: vec![],
             };
@@ -235,15 +221,12 @@ title content";
             line_number: 12,
             title_line: Line {
                 text: "### welcome".to_string(),
-                section_offset: 0,
             },
             body: vec![
                 Line {
-                    section_offset: 0,
                     text: "".to_string(),
                 },
                 Line {
-                    section_offset: 1,
                     text: "content".to_string(),
                 },
             ],

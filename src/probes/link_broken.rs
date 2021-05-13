@@ -27,7 +27,7 @@ pub fn process(base: &Tikibase) -> LinksResult {
     let existing_targets = base.link_targets();
     for doc in &base.docs {
         for section in doc.sections() {
-            for line in section.lines() {
+            for (i, line) in section.lines().enumerate() {
                 for reference in line.references() {
                     match reference {
                         Reference::Link { mut destination } => {
@@ -40,7 +40,7 @@ pub fn process(base: &Tikibase) -> LinksResult {
                             if !existing_targets.contains(&destination) {
                                 result.issues.push(Box::new(BrokenLink {
                                     filename: doc.path.clone(),
-                                    line: section.line_number + line.section_offset + 1,
+                                    line: section.line_number + (i as u32) + 1,
                                     target: destination,
                                 }));
                                 continue;
@@ -60,7 +60,7 @@ pub fn process(base: &Tikibase) -> LinksResult {
                             if !base.has_resource(PathBuf::from(&src)) {
                                 result.issues.push(Box::new(BrokenImage {
                                     filename: doc.path.clone(),
-                                    line: section.line_number + line.section_offset + 1,
+                                    line: section.line_number + (i as u32) + 1,
                                     target: src.clone(),
                                 }));
                             }

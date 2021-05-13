@@ -3,9 +3,6 @@ use regex::Regex;
 
 #[derive(Debug, PartialEq)]
 pub struct Line {
-    /// The line number relative to the section title line, 0-based.
-    // TODO: remove because it is redundant with the index of this line in the section?
-    pub section_offset: u32,
     pub text: String,
 }
 
@@ -60,7 +57,6 @@ mod tests {
         fn link_md() {
             let line = Line {
                 text: r#"an MD link: [one](one.md) and one to a section: [two pieces](two.md#pieces)!"#.to_string(),
-                section_offset: 0,
             };
             let have = line.references();
             assert_eq!(have.len(), 2);
@@ -82,7 +78,6 @@ mod tests {
         fn link_html() {
             let line = Line {
                 text: r#"an HTML link: <a href="two.md">two</a>"#.to_string(),
-                section_offset: 0,
             };
             let have = line.references();
             assert_eq!(have.len(), 1);
@@ -98,7 +93,6 @@ mod tests {
         fn img_md() {
             let line = Line {
                 text: r#"an MD image: ![zonk](zonk.md)"#.to_string(),
-                section_offset: 0,
             };
             let have = line.references();
             assert_eq!(have.len(), 1);
@@ -114,7 +108,6 @@ mod tests {
         fn img_html() {
             let line = Line {
                 text: r#"<img src="zonk.md">"#.to_string(),
-                section_offset: 0,
             };
             let have = line.references();
             assert_eq!(have.len(), 1);
@@ -130,7 +123,6 @@ mod tests {
         fn img_html_extra_attributes() {
             let line = Line {
                 text: r#"<img src="zonk.md" width="10" height="10">"#.to_string(),
-                section_offset: 0,
             };
             let have = line.references();
             assert_eq!(have.len(), 1);
@@ -146,7 +138,6 @@ mod tests {
         fn img_xml_nospace() {
             let line = Line {
                 text: r#"<img src="zonk.md"/>"#.to_string(),
-                section_offset: 0,
             };
             let have = line.references();
             assert_eq!(have.len(), 1);
@@ -162,7 +153,6 @@ mod tests {
         fn img_xml_space() {
             let line = Line {
                 text: r#"<img src="zonk.md" />"#.to_string(),
-                section_offset: 0,
             };
             let have = line.references();
             assert_eq!(have.len(), 1);

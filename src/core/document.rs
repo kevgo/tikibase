@@ -254,7 +254,6 @@ pub struct SectionBuilder {
     pub line_number: u32,
     title_line: String,
     body: Vec<Line>,
-    body_line_number: u32,
     valid: bool,
 }
 
@@ -264,7 +263,6 @@ pub fn builder_with_title_line(text: String, line_number: u32) -> SectionBuilder
         title_line: text,
         line_number,
         body: Vec::new(),
-        body_line_number: 0,
         valid: true,
     }
 }
@@ -275,7 +273,6 @@ pub fn placeholder_builder() -> SectionBuilder {
         title_line: "".to_string(),
         line_number: 0,
         body: Vec::new(),
-        body_line_number: 0,
         valid: false,
     }
 }
@@ -285,11 +282,7 @@ impl SectionBuilder {
         if !self.valid {
             panic!("cannot add to an invalid builder");
         }
-        self.body_line_number += 1;
-        self.body.push(Line {
-            section_offset: self.body_line_number,
-            text: line,
-        });
+        self.body.push(Line { text: line });
     }
 
     /// Provides the content this builder has accumulated.
@@ -299,7 +292,6 @@ impl SectionBuilder {
             true => Some(Section {
                 title_line: Line {
                     text: self.title_line,
-                    section_offset: 0,
                 },
                 line_number: self.line_number,
                 body: self.body,
