@@ -14,7 +14,6 @@ impl DocLinks {
         let doc_path = doc.into();
         match self.data.get_mut(&doc_path) {
             None => {
-                // TODO: use https://crates.io/crates/ahash as the hashing function here
                 let mut docs = AHashSet::new();
                 docs.insert(other_doc.into());
                 self.data.insert(doc_path, docs);
@@ -37,7 +36,6 @@ impl DocLinks {
     /// provides an empty DocLinks instance
     pub fn new() -> DocLinks {
         DocLinks {
-            // TODO: use https://crates.io/crates/ahash as the hashing function here
             data: AHashMap::new(),
         }
     }
