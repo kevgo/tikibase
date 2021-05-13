@@ -210,7 +210,7 @@ title content";
                 body: vec![],
             };
             let have = section.section_type();
-            assert_eq!(have, want.to_string(), "want: '{}', have: '{}'", want, have);
+            assert_eq!(have, want);
         }
     }
 
