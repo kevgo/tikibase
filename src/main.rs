@@ -7,7 +7,7 @@ fn main() {
     let command = parse(std::env::args());
     let (mut outcomes, exitcode) = process(&command, ".");
     outcomes.sort();
-    for outcome in &outcomes {
+    for outcome in outcomes {
         println!("{}", outcome);
     }
     std::process::exit(exitcode);
