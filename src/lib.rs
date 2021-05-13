@@ -26,7 +26,7 @@ pub fn process<P: Into<PathBuf>>(command: Command, path: P) -> Vec<String> {
     // step 1: load the configuration
     let config = match config::load(&path) {
         Ok(config) => config,
-        Err(text) => return vec![text],
+        Err(err) => return vec![err],
     };
 
     // step 2: load the Tikibase
