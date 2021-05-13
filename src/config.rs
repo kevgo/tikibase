@@ -79,5 +79,22 @@ mod tests {
             };
             assert_eq!(have, want);
         }
+
+        #[test]
+        fn invalid_config_file() {
+            let dir = testhelpers::tmp_dir();
+            let content = r#"{
+    "allowed_sections": [
+}
+"#;
+            testhelpers::create_file("tikibase.json", content, &dir);
+            match super::super::load(&dir) {
+                Err(e) => assert_eq!(
+                    e,
+                    "Configuration file has invalid structure: expected value at line 3 column 1"
+                ),
+                Ok(_) => panic!(),
+            }
+        }
     }
 }
