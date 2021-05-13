@@ -13,8 +13,8 @@ pub struct Tikibase {
 
 impl Tikibase {
     /// provides the document with the given relative filename
-    pub fn get_doc(&self, filename: &Path) -> Option<&Document> {
-        self.docs.iter().find(|doc| doc.path == filename)
+    pub fn get_doc<P: AsRef<Path>>(&self, filename: P) -> Option<&Document> {
+        self.docs.iter().find(|doc| doc.path == filename.as_ref())
     }
 
     /// provides the document with the given relative filename as a mutable reference
@@ -110,7 +110,6 @@ mod tests {
 
         use super::super::*;
         use crate::testhelpers;
-        use std::path::PathBuf;
 
         #[test]
         fn exists() {
@@ -118,9 +117,7 @@ mod tests {
             testhelpers::create_file("one.md", "# test doc", &dir);
             let (base, errs) = Tikibase::load(dir);
             assert_eq!(errs.len(), 0);
-            let doc = base
-                .get_doc(&PathBuf::from("one.md"))
-                .expect("document not found");
+            let doc = base.get_doc("one.md").expect("document not found");
             assert_eq!(doc.title_section.title_line.text, "# test doc");
         }
 
@@ -129,7 +126,7 @@ mod tests {
             let dir = testhelpers::tmp_dir();
             let (base, errs) = Tikibase::load(dir);
             assert_eq!(errs.len(), 0);
-            match base.get_doc(&PathBuf::from("zonk.md")) {
+            match base.get_doc("zonk.md") {
                 None => return,
                 Some(_) => panic!("should have found nothing"),
             }
