@@ -91,7 +91,7 @@ content";
     }
 
     #[test]
-    fn empty_line() {
+    fn blank_line() {
         let dir = testhelpers::tmp_dir();
         let content = "\
 # test document
