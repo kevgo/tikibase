@@ -7,12 +7,12 @@ use crate::core::tikibase::Tikibase;
 /// fixes them if fix is enabled,
 /// returns the unfixed issues
 pub fn process(base: &Tikibase) -> Issues {
-    let mut result = Issues::new();
+    let mut issues = Issues::new();
     for doc in &base.docs {
         for section in &doc.content_sections {
             let has_content = section.body.iter().any(|line| !line.text.is_empty());
             if !has_content {
-                result.push(Box::new(EmptySection {
+                issues.push(Box::new(EmptySection {
                     filename: doc.path.clone(),
                     line: section.line_number,
                     section_type: section.section_type(),
@@ -20,7 +20,7 @@ pub fn process(base: &Tikibase) -> Issues {
             }
         }
     }
-    result
+    issues
 }
 
 /// describes the issue that a section is empty
