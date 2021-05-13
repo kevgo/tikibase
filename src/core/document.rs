@@ -258,9 +258,9 @@ pub struct SectionBuilder {
 }
 
 /// Provides a builder instance loaded with the given title line.
-pub fn builder_with_title_line(text: String, line_number: u32) -> SectionBuilder {
+pub fn builder_with_title_line<S: Into<String>>(text: S, line_number: u32) -> SectionBuilder {
     SectionBuilder {
-        title_line: text,
+        title_line: text.into(),
         line_number,
         body: Vec::new(),
         valid: true,
