@@ -27,7 +27,9 @@ Feature: verify section types
     When checking
     Then it prints:
       """
-      1.md:7  unknown section "zonk", allowed sections: what is it | links
+      1.md:7  unknown section "zonk", allowed sections:
+        - what is it
+        - links
       """
 
   Scenario: fix
@@ -39,6 +41,8 @@ Feature: verify section types
     When doing a pitstop
     Then it prints:
       """
-      1.md:7  unknown section "zonk", allowed sections: what is it | links
+      1.md:7  unknown section "zonk", allowed sections:
+        - what is it
+        - links
       """
     And all files are unchanged

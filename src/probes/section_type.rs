@@ -35,12 +35,17 @@ struct UnknownSection {
 
 impl Issue for UnknownSection {
     fn describe(&self) -> String {
+        let alloweds: Vec<String> = self
+            .allowed_types
+            .iter()
+            .map(|allowed| format!("\n  - {}", allowed))
+            .collect();
         format!(
-            "{}:{}  unknown section \"{}\", allowed sections: {}",
+            "{}:{}  unknown section \"{}\", allowed sections:{}",
             self.file.to_string_lossy(),
             self.line + 1,
             self.section_type,
-            self.allowed_types.join(" | ")
+            alloweds.join("")
         )
     }
 

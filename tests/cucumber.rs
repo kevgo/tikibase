@@ -89,8 +89,15 @@ fn steps() -> Steps<MyWorld> {
     });
 
     steps.then("it prints:", |world, ctx| {
-        let expected: Vec<&str> = ctx.step.docstring().unwrap().trim().split("\n").collect();
-        assert_eq!(&world.findings, &expected);
+        let have: Vec<String> = world
+            .findings
+            .iter()
+            .map(|line| line.split('\n'))
+            .flatten()
+            .map(|str| str.to_string())
+            .collect();
+        let want: Vec<&str> = ctx.step.docstring().unwrap().trim().split("\n").collect();
+        assert_eq!(have, want);
         world
     });
 
