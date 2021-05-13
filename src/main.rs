@@ -1,10 +1,10 @@
 extern crate lazy_static;
 
-use tikibase::{config, process, Command};
+use tikibase::process;
+use tikibase::Command;
 
 fn main() {
     let command = parse(std::env::args());
-    let config = config::load(".");
     let mut outcomes = process(command, ".");
     outcomes.sort();
     for outcome in outcomes {

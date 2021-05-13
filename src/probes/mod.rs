@@ -1,4 +1,4 @@
-use crate::core::tikibase::Tikibase;
+use crate::{config, core::tikibase::Tikibase};
 use std::slice::Iter;
 
 mod doc_links;
@@ -8,12 +8,14 @@ mod occurrences;
 mod section_capitalization;
 mod section_duplicate;
 mod section_empty;
+mod section_type;
 
-pub fn run(base: &Tikibase) -> Issues {
+pub fn run(base: &Tikibase, config: config::Data) -> Issues {
     let mut issues = Issues::new();
     issues.append(section_duplicate::process(&base));
     issues.append(section_empty::process(&base));
     issues.append(section_capitalization::process(&base));
+    issues.append(section_type::process(&base, &config));
     let links_result = link_broken::process(&base);
     issues.append(links_result.issues);
     issues.append(image_orphaned::process(
