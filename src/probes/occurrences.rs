@@ -81,7 +81,6 @@ pub fn process(
                     .get_or_insert(&AHashSet::new()),
             )
             .into_iter()
-            // TODO: use reference here instead of cloning
             .map(|p| p.to_owned())
             .collect();
 
