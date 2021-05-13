@@ -14,7 +14,7 @@ pub struct Data {
 pub fn load<P: AsRef<Path>>(dir: P) -> Result<Data, String> {
     let config_path = dir.as_ref().join("tikibase.json");
     let file = match File::open(config_path) {
-        Ok(content) => content,
+        Ok(reader) => reader,
         Err(e) => match e.kind() {
             ErrorKind::NotFound => return Ok(Default::default()),
             _ => {
