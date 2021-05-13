@@ -111,7 +111,6 @@ mod tests {
     use crate::core::tikibase::Tikibase;
     use crate::probes::doc_links::DocLinks;
     use crate::testhelpers;
-    use std::path::PathBuf;
 
     #[test]
     fn process() {
@@ -122,11 +121,11 @@ mod tests {
         let (base, errs) = Tikibase::load(dir);
         assert_eq!(errs.len(), 0);
         let mut outgoing_links = DocLinks::new();
-        outgoing_links.add(PathBuf::from("3.md"), PathBuf::from("1.md"));
-        outgoing_links.add(PathBuf::from("2.md"), PathBuf::from("1.md"));
+        outgoing_links.add("3.md", "1.md");
+        outgoing_links.add("2.md", "1.md");
         let mut incoming_links = DocLinks::new();
-        incoming_links.add(PathBuf::from("1.md"), PathBuf::from("3.md"));
-        incoming_links.add(PathBuf::from("1.md"), PathBuf::from("2.md"));
+        incoming_links.add("1.md", "3.md");
+        incoming_links.add("1.md", "2.md");
         let have = super::process(&base, &incoming_links, &outgoing_links);
         let issues: Vec<String> = have.iter().map(|issue| issue.describe()).collect();
         assert_eq!(issues, vec!["1.md  missing link to 2.md, 3.md",]);
