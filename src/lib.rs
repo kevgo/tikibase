@@ -19,14 +19,14 @@ pub enum Command {
     Version,
 }
 
-pub fn process<P: Into<PathBuf>>(command: Command, path: P) -> Vec<String> {
+pub fn process<P: Into<PathBuf>>(command: &Command, path: P) -> (Vec<String>, i32) {
     let mut result = Vec::new();
     let path = path.into();
 
     // load the configuration
     let config = match config::load(&path) {
         Ok(config) => config,
-        Err(err) => return vec![err],
+        Err(err) => return (vec![err], 1),
     };
 
     // load the Tikibase
@@ -50,11 +50,12 @@ pub fn process<P: Into<PathBuf>>(command: Command, path: P) -> Vec<String> {
         _ => false,
     };
     if basic_command {
-        return result;
+        return (result, 0);
     }
 
     // find all issues in the Tikibase
     let issues = probes::run(&base, &config);
+    let unfix_count = issues.iter().filter(|issue| !issue.fixable()).count() as i32;
 
     // take care of the issues
     let mut outcomes: Vec<String> = match command {
@@ -75,6 +76,12 @@ pub fn process<P: Into<PathBuf>>(command: Command, path: P) -> Vec<String> {
             panic!("unexpected complex command: {:?}", command);
         }
     };
+    let exitcode = match command {
+        Command::Check => outcomes.len() as i32,
+        Command::Fix => 0,
+        Command::Pitstop => unfix_count,
+        _ => 0,
+    };
     result.append(&mut outcomes);
-    result
+    (result, exitcode)
 }

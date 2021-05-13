@@ -15,6 +15,12 @@ Feature: recognize/fix links to non-existing documents
       1.md:3  broken link to "non-existing.md"
       """
     And all files are unchanged
+    And the exit code is 1
+
+  Scenario: fixing
+    When fixing
+    Then it finds no issues
+    And all files are unchanged
 
   Scenario: pitstop
     When doing a pitstop
@@ -23,3 +29,4 @@ Feature: recognize/fix links to non-existing documents
       1.md:3  broken link to "non-existing.md"
       """
     And all files are unchanged
+    And the exit code is 1

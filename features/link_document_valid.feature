@@ -19,6 +19,11 @@ Feature: accept links to existing documents
     Then it finds no issues
     And all files are unchanged
 
+  Scenario: fix
+    When fixing
+    Then it finds no issues
+    And all files are unchanged
+
   Scenario: pitstop
     When doing a pitstop
     Then it finds no issues

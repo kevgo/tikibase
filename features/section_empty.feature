@@ -21,6 +21,7 @@ Feature: recognize/fix sections without content
       1.md:3  section "One" has no content
       1.md:9  section "Three" has no content
       """
+    And the exit code is 2
 
   Scenario: fix
     When fixing
@@ -32,6 +33,7 @@ Feature: recognize/fix sections without content
 
       content
       """
+    And the exit code is 0
 
 
   Scenario: pitstop
@@ -49,3 +51,4 @@ Feature: recognize/fix sections without content
 
       content
       """
+    And the exit code is 0
