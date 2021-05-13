@@ -6,12 +6,15 @@ pub fn version() {
 
 pub fn run() {
     println!(
-        r#"Tikibase is a tool to manage Tikibases, i.e. collections of Markdown documents in the current directory.
+        r#"Tikibase is a tool to manage knowledge bases made out of Markdown files.
 
-Available commands are:
-- check (c): verify the integrity of this Tikibase
-- stats (st): display statistics about this Tikibase
-- version (v): show the version of the currently installed Tikibase tool
+Available commands:
+- check, c     list all issues
+- fix, f       fix all auto-correctable issues
+- help, h      this help screen
+- pitstop, ps  fix all issues and list the unfixable ones
+- stats, st    display statistics about this Tikibase
+- version, v   show the currently installed version
 "#
     );
 }
