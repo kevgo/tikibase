@@ -42,8 +42,8 @@ impl Document {
     }
 
     /// provides a Document instance containing the content of the file at the given path
-    pub fn from_str(path: PathBuf, text: &str) -> Result<Document, String> {
-        Document::from_lines(text.lines().map(|line| line.to_string()), path)
+    pub fn from_str<P: Into<PathBuf>>(path: P, text: &str) -> Result<Document, String> {
+        Document::from_lines(text.lines().map(|line| line.to_string()), path.into())
     }
 
     /// persists the changes made to this document to disk
@@ -120,7 +120,6 @@ impl<'a> Iterator for SectionIterator<'a> {
 mod tests {
 
     use super::Document;
-    use std::path::PathBuf;
 
     #[test]
     fn from_str_valid() {
@@ -128,7 +127,7 @@ mod tests {
 # test
 ### section 1
 content";
-        let doc = Document::from_str(PathBuf::from("one.md"), content).unwrap();
+        let doc = Document::from_str("one.md", content).unwrap();
         let mut sections = doc.sections();
         match sections.next() {
             None => panic!("expected title section"),
@@ -146,7 +145,7 @@ content";
 
     #[test]
     fn from_str_invalid() {
-        match Document::from_str(PathBuf::from("one.md"), "content") {
+        match Document::from_str("one.md", "content") {
             Err(e) => assert_eq!(e, "one.md  no title section"),
             Ok(_) => panic!(),
         }
@@ -155,7 +154,6 @@ content";
     mod lines_count {
 
         use super::super::Document;
-        use std::path::PathBuf;
 
         #[test]
         fn with_content_sections() {
@@ -168,7 +166,7 @@ two
 ### Section 2
 foo
 ";
-            let doc = Document::from_str(PathBuf::from("test.md"), give).unwrap();
+            let doc = Document::from_str("test.md", give).unwrap();
             assert_eq!(doc.lines_count(), 6);
         }
 
@@ -178,7 +176,7 @@ foo
 # Title
 title text
 ";
-            let doc = Document::from_str(PathBuf::from("test.md"), give).unwrap();
+            let doc = Document::from_str("test.md", give).unwrap();
             assert_eq!(doc.lines_count(), 1);
         }
     }
@@ -186,7 +184,6 @@ title text
     mod last_section_mut {
 
         use super::Document;
-        use std::path::PathBuf;
 
         #[test]
         fn has_content_section() {
@@ -198,7 +195,7 @@ title text
 
 text
 ";
-            let mut doc = Document::from_str(PathBuf::from("test.md"), give).unwrap();
+            let mut doc = Document::from_str("test.md", give).unwrap();
             let have = doc.last_section_mut();
             assert_eq!(have.title_line.text, "### s1");
         }
@@ -209,7 +206,7 @@ text
 # Title
 title text
 ";
-            let mut doc = Document::from_str(PathBuf::from("test.md"), give).unwrap();
+            let mut doc = Document::from_str("test.md", give).unwrap();
             let have = doc.last_section_mut();
             assert_eq!(have.title_line.text, "# Title");
         }
@@ -226,7 +223,7 @@ two
 ### Section 2
 foo
 ";
-        let doc = Document::from_str(PathBuf::from("test.md"), give).unwrap();
+        let doc = Document::from_str("test.md", give).unwrap();
         let have = doc.text();
         assert_eq!(have, give);
     }
@@ -239,7 +236,7 @@ title text
 ### Section 1
 one
 ";
-        let doc = Document::from_str(PathBuf::from("test.md"), give).unwrap();
+        let doc = Document::from_str("test.md", give).unwrap();
         let have = doc.title();
         assert_eq!(have, "Title");
     }

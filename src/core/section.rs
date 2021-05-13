@@ -83,7 +83,6 @@ impl<'a> Iterator for LinesIterator<'a> {
 mod tests {
     use super::super::document::Document;
     use super::*;
-    use std::path::PathBuf;
 
     #[test]
     fn anchor() {
@@ -141,7 +140,7 @@ mod tests {
         let content = "\
 # test
 title content";
-        let doc = Document::from_str(PathBuf::from("foo"), content).unwrap();
+        let doc = Document::from_str("foo", content).unwrap();
         let mut lines = doc.title_section.lines();
         match lines.next() {
             None => panic!("expected title line"),
