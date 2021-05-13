@@ -52,7 +52,6 @@ fn steps() -> Steps<MyWorld> {
     });
 
     steps.when("doing a pitstop", |mut world, _ctx| {
-        println!("2222222222222");
         world.findings = tikibase::process(Command::Pitstop, world.dir.clone());
         world
     });
