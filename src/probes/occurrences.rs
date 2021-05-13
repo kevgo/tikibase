@@ -1,10 +1,9 @@
-use ahash::AHashSet;
-
 use super::doc_links::DocLinks;
 use super::Issue;
 use super::Issues;
 use crate::core::document::builder_with_title_line;
 use crate::core::tikibase::Tikibase;
+use ahash::AHashSet;
 use std::path::PathBuf;
 
 struct MissingOccurrence {
