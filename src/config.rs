@@ -10,7 +10,7 @@ pub struct Data {
     pub allowed_sections: Option<Vec<String>>,
 }
 
-/// loads the configuration from the config file
+/// reads the config file
 pub fn load<P: AsRef<Path>>(dir: P) -> Result<Data, String> {
     let config_path = dir.as_ref().join("tikibase.json");
     let file = match File::open(config_path) {
