@@ -10,7 +10,7 @@ mod section_duplicate;
 mod section_empty;
 mod section_type;
 
-pub fn run(base: &Tikibase, config: config::Data) -> Issues {
+pub fn run(base: &Tikibase, config: &config::Data) -> Issues {
     let mut issues = Issues::new();
     issues.append(section_duplicate::process(&base));
     issues.append(section_empty::process(&base));

@@ -18,6 +18,7 @@ pub fn process(base: &Tikibase, config: &config::Data) -> Issues {
                             file: doc.path.clone(),
                             line: section.line_number,
                             section_type: section_type,
+                            allowed_types: config.allowed_sections.clone().unwrap(),
                         }));
                     }
                 }
@@ -32,15 +33,17 @@ struct UnknownSection {
     file: PathBuf,
     line: u32,
     section_type: String,
+    allowed_types: Vec<String>,
 }
 
 impl Issue for UnknownSection {
     fn describe(&self) -> String {
         format!(
-            "{}:{}  unknown section \"{}\"",
+            "{}:{}  unknown section \"{}\", allowed sections: {}",
             self.file.to_string_lossy(),
-            self.line,
-            self.section_type
+            self.line + 1,
+            self.section_type,
+            self.allowed_types.join(" | ")
         )
     }
 
