@@ -55,7 +55,7 @@ pub fn process<P: Into<PathBuf>>(command: &Command, path: P) -> (Vec<String>, i3
 
     // find all issues in the Tikibase
     let issues = probes::run(&base, &config);
-    let unfixables = issues.iter().filter(|issue| !issue.fixable()).count() as i32;
+    let unfix_count = issues.iter().filter(|issue| !issue.fixable()).count() as i32;
 
     // take care of the issues
     let mut outcomes: Vec<String> = match command {
@@ -79,7 +79,7 @@ pub fn process<P: Into<PathBuf>>(command: &Command, path: P) -> (Vec<String>, i3
     let exitcode = match command {
         Command::Check => outcomes.len() as i32,
         Command::Fix => 0,
-        Command::Pitstop => unfixables,
+        Command::Pitstop => unfix_count,
         _ => 0,
     };
     result.append(&mut outcomes);
