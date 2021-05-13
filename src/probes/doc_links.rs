@@ -1,13 +1,11 @@
+use ahash::{AHashMap, AHashSet};
+use std::path::Path;
 use std::path::PathBuf;
-use std::{
-    collections::{HashMap, HashSet},
-    path::Path,
-};
 
 /// manages links to/from a document
 pub struct DocLinks {
     /// key = file path, value = associated files
-    pub data: HashMap<PathBuf, HashSet<PathBuf>>,
+    pub data: AHashMap<PathBuf, AHashSet<PathBuf>>,
 }
 
 impl DocLinks {
@@ -16,8 +14,7 @@ impl DocLinks {
         let doc_path = doc.into();
         match self.data.get_mut(&doc_path) {
             None => {
-                // TODO: use https://crates.io/crates/ahash as the hashing function here
-                let mut docs = HashSet::new();
+                let mut docs = AHashSet::new();
                 docs.insert(other_doc.into());
                 self.data.insert(doc_path, docs);
             }
@@ -28,9 +25,9 @@ impl DocLinks {
     }
 
     /// provides all documents that are associated with the given document
-    pub fn get(&self, doc: &Path) -> HashSet<PathBuf> {
+    pub fn get(&self, doc: &Path) -> AHashSet<PathBuf> {
         match self.data.get(doc) {
-            None => HashSet::new(),
+            None => AHashSet::new(),
             // TODO: return a reference here instead of cloning
             Some(result) => result.clone(),
         }
@@ -39,8 +36,7 @@ impl DocLinks {
     /// provides an empty DocLinks instance
     pub fn new() -> DocLinks {
         DocLinks {
-            // TODO: use https://crates.io/crates/ahash as the hashing function here
-            data: HashMap::new(),
+            data: AHashMap::new(),
         }
     }
 }

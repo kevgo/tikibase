@@ -1,5 +1,5 @@
 use crate::core::tikibase::Tikibase;
-use std::collections::HashMap;
+use ahash::AHashMap;
 
 pub fn run(base: &Tikibase) {
     println!("documents: {}", base.docs.len());
@@ -14,8 +14,8 @@ pub fn run(base: &Tikibase) {
     }
 }
 
-fn collect_section_types(tb: &Tikibase) -> HashMap<String, u32> {
-    let mut result: HashMap<String, u32> = HashMap::new();
+fn collect_section_types(tb: &Tikibase) -> AHashMap<String, u32> {
+    let mut result: AHashMap<String, u32> = AHashMap::new();
     for doc in &tb.docs {
         for section in &doc.content_sections {
             let section_type = section.section_type();
