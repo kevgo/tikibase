@@ -2,8 +2,9 @@ use cucumber_rust::{async_trait, Cucumber, Steps, World};
 use std::collections::HashMap;
 use std::io;
 use std::path::PathBuf;
-use tikibase::core::tikibase::Tikibase;
+use tikibase;
 use tikibase::testhelpers;
+use tikibase::Command;
 
 pub struct MyWorld {
     /// the directory in which the Tikibase under test is located
@@ -46,27 +47,17 @@ fn steps() -> Steps<MyWorld> {
     });
 
     steps.when("checking", |mut world, _ctx| {
-        let (base, errs) = Tikibase::load(world.dir.clone());
-        world.findings = errs;
-        world
-            .findings
-            .append(&mut tikibase::probes::run(base, false));
+        world.findings = tikibase::process(Command::Check, world.dir.clone());
         world
     });
 
     steps.when("doing a pitstop", |mut world, _ctx| {
-        let (base, errs) = Tikibase::load(world.dir.clone());
-        world.findings = errs;
-        world
-            .findings
-            .append(&mut tikibase::probes::run(base, true));
+        world.findings = tikibase::process(Command::Pitstop, world.dir.clone());
         world
     });
 
     steps.when("fixing", |mut world, _ctx| {
-        let (base, errs) = Tikibase::load(world.dir.clone());
-        world.findings = errs;
-        tikibase::probes::run(base, true);
+        world.findings = tikibase::process(Command::Fix, world.dir.clone());
         world
     });
 

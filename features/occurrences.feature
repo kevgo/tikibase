@@ -30,13 +30,15 @@ Feature: add occurrence sections
     When checking
     Then it prints:
       """
-      1.md  missing link to "Title 2"
-      1.md  missing link to "Title 3"
+      1.md  missing link to 2.md, 3.md
       """
 
   Scenario: fix
     When fixing
-    Then it prints nothing
+    Then it prints:
+      """
+      1.md:7  added occurrences section
+      """
     And file "1.md" should contain:
       """
       # Title 1

@@ -46,6 +46,7 @@ impl Section {
             .find(|(_, letter)| *letter != '#' && *letter != ' ');
         match pos {
             None => "".to_string(),
+            // TODO: remove a reference here?
             Some((pos, _)) => self.title_line.text.clone().split_off(pos),
         }
     }

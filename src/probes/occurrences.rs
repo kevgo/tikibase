@@ -1,43 +1,75 @@
 use super::doc_links::DocLinks;
-use super::outcome::Outcome;
+use super::Issue;
+use super::Issues;
 use crate::core::document::builder_with_title_line;
 use crate::core::tikibase::Tikibase;
-use std::cmp::{Eq, Ord, Ordering, PartialEq};
-use std::collections::HashMap;
 use std::path::PathBuf;
 
-#[derive(Eq)]
 struct MissingOccurrence {
     path: PathBuf,
     title: String,
 }
 
-impl Ord for MissingOccurrence {
-    fn cmp(&self, other: &Self) -> Ordering {
-        self.path.cmp(&other.path)
-    }
+/// missing links in a document
+pub struct MissingOccurrences {
+    file: PathBuf,
+    missing_links: Vec<MissingOccurrence>,
 }
 
-impl PartialOrd for MissingOccurrence {
-    fn partial_cmp(&self, other: &Self) -> Option<Ordering> {
-        Some(self.path.cmp(&other.path))
-    }
-}
+impl Issue for MissingOccurrences {
+    fn fix(&self, base: &mut Tikibase) -> String {
+        let base_dir = base.dir.clone();
+        let doc = base.get_doc_mut(&self.file).unwrap();
 
-impl PartialEq for MissingOccurrence {
-    fn eq(&self, other: &Self) -> bool {
-        self.path == other.path
+        // append a newline to the section before
+        doc.last_section_mut().push_line("");
+
+        // insert occurrences section
+        let mut section_builder =
+            builder_with_title_line("### occurrences".to_string(), doc.lines_count() + 1);
+        section_builder.add_body_line("".to_string());
+        for missing in self.missing_links.iter() {
+            section_builder.add_body_line(format!(
+                "- [{}]({})",
+                missing.title,
+                missing.path.to_string_lossy()
+            ));
+        }
+        let occurrences_section = section_builder.result().unwrap();
+        let result = format!(
+            "{}:{}  added occurrences section",
+            doc.path.to_string_lossy(),
+            occurrences_section.line_number + 1
+        );
+        doc.content_sections.push(occurrences_section);
+        doc.flush(&base_dir);
+        result
+    }
+
+    fn fixable(&self) -> bool {
+        true
+    }
+
+    fn describe(&self) -> String {
+        let links: Vec<String> = self
+            .missing_links
+            .iter()
+            .map(|occ| occ.path.to_string_lossy().to_string())
+            .collect();
+        format!(
+            "{}  missing link to {}",
+            self.file.to_string_lossy(),
+            links.join(", "),
+        )
     }
 }
 
 pub fn process(
-    mut base: Tikibase,
-    incoming_doc_links: DocLinks,
-    outgoing_doc_links: DocLinks,
-    fix: bool,
-) -> Outcome {
-    let mut result = Outcome::new();
-    let mut missings = HashMap::<PathBuf, Vec<MissingOccurrence>>::new();
+    base: &Tikibase,
+    incoming_doc_links: &DocLinks,
+    outgoing_doc_links: &DocLinks,
+) -> Issues {
+    let mut issues = Issues::new();
     for doc in &base.docs {
         let mut missing_outgoing: Vec<PathBuf> = incoming_doc_links
             .get(&doc.path)
@@ -54,9 +86,9 @@ pub fn process(
 
         // register missing occurrences
         missing_outgoing.sort();
-        missings.insert(
-            doc.path.clone(),
-            missing_outgoing
+        issues.push(Box::new(MissingOccurrences {
+            file: doc.path.clone(),
+            missing_links: missing_outgoing
                 .into_iter()
                 .map(|path| base.get_doc(&path).unwrap())
                 .map(|doc| MissingOccurrence {
@@ -64,50 +96,9 @@ pub fn process(
                     title: doc.title(),
                 })
                 .collect(),
-        );
+        }));
     }
-
-    if fix {
-        let base_dir = base.dir.clone();
-        for (filepath, missing_occurrences) in missings {
-            let doc = base.get_doc_mut(&filepath).unwrap();
-
-            // insert a newline into the section before
-            let last_section = doc.last_section_mut();
-            last_section.push_line("");
-
-            // insert occurrences section
-            let mut section_builder =
-                builder_with_title_line("### occurrences".to_string(), doc.lines_count() + 1);
-            section_builder.add_body_line("".to_string());
-            for missing_occurrence in missing_occurrences {
-                section_builder.add_body_line(format!(
-                    "- [{}]({})",
-                    missing_occurrence.title,
-                    missing_occurrence.path.to_string_lossy()
-                ));
-            }
-            let occurrences_section = section_builder.result().unwrap();
-            result.fixes.push(format!(
-                "{}:{}  added occurrences section",
-                doc.path.to_string_lossy(),
-                occurrences_section.line_number + 1
-            ));
-            doc.content_sections.push(occurrences_section);
-            doc.flush(&base_dir);
-        }
-    } else {
-        for (filepath, missing_occurrences) in missings {
-            for missing_occurrence in missing_occurrences {
-                result.findings.push(format!(
-                    "{}  missing link to \"{}\"",
-                    filepath.to_string_lossy(),
-                    missing_occurrence.title,
-                ));
-            }
-        }
-    }
-    result
+    issues
 }
 
 #[cfg(test)]
@@ -119,7 +110,7 @@ mod tests {
     use std::path::PathBuf;
 
     #[test]
-    fn process_false() {
+    fn process() {
         let dir = testhelpers::tmp_dir();
         testhelpers::create_file("1.md", "# One\n", &dir);
         testhelpers::create_file("2.md", "# Two\n\n[one](1.md)\n", &dir);
@@ -132,38 +123,8 @@ mod tests {
         let mut incoming_links = DocLinks::new();
         incoming_links.add(PathBuf::from("1.md"), PathBuf::from("3.md"));
         incoming_links.add(PathBuf::from("1.md"), PathBuf::from("2.md"));
-        let have = super::process(base, incoming_links, outgoing_links, false);
-        assert_eq!(have.fixes.len(), 0);
-        assert_eq!(
-            have.findings,
-            vec![
-                "1.md  missing link to \"Two\"",
-                "1.md  missing link to \"Three\"",
-            ]
-        );
-    }
-
-    #[test]
-    fn process_true() {
-        let dir = testhelpers::tmp_dir();
-        testhelpers::create_file("1.md", "# One\n", &dir);
-        testhelpers::create_file("2.md", "# Two\n\n[one](1.md)\n", &dir);
-        testhelpers::create_file("3.md", "# Three\n\n[one](1.md)\n", &dir);
-        let (base, errs) = Tikibase::load(dir.clone());
-        assert_eq!(errs.len(), 0);
-        let mut outgoing_links = DocLinks::new();
-        outgoing_links.add(PathBuf::from("3.md"), PathBuf::from("1.md"));
-        outgoing_links.add(PathBuf::from("2.md"), PathBuf::from("1.md"));
-        let mut incoming_links = DocLinks::new();
-        incoming_links.add(PathBuf::from("1.md"), PathBuf::from("3.md"));
-        incoming_links.add(PathBuf::from("1.md"), PathBuf::from("2.md"));
-        let have = super::process(base, incoming_links, outgoing_links, true);
-        assert_eq!(have.fixes, vec!["1.md:3  added occurrences section"]);
-        assert_eq!(have.findings.len(), 0);
-        let content_one = testhelpers::load_file("1.md", &dir);
-        assert_eq!(
-            content_one,
-            "# One\n\n### occurrences\n\n- [Two](2.md)\n- [Three](3.md)\n"
-        )
+        let have = super::process(&base, &incoming_links, &outgoing_links);
+        let issues: Vec<String> = have.iter().map(|issue| issue.describe()).collect();
+        assert_eq!(issues, vec!["1.md  missing link to 2.md, 3.md",]);
     }
 }

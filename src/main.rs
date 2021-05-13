@@ -1,44 +1,15 @@
 extern crate lazy_static;
 
 use std::path::PathBuf;
-use tikibase::core::tikibase::Tikibase;
-use tikibase::help;
-use tikibase::probes;
-use tikibase::stats;
+use tikibase::{process, Command};
 
 fn main() {
-    let (base, errors) = Tikibase::load(PathBuf::from("."));
-    for error in errors {
-        println!("{}", error);
+    let command = parse(std::env::args());
+    let mut outcomes = process(command, PathBuf::from("."));
+    outcomes.sort();
+    for outcome in outcomes {
+        println!("{}", outcome);
     }
-    match parse(std::env::args()) {
-        Command::Check => {
-            for message in probes::run(base, false) {
-                println!("{}", message);
-            }
-        }
-        Command::Fix => {
-            probes::run(base, true);
-        }
-        Command::Help => help::run(),
-        Command::Pitstop => {
-            for finding in probes::run(base, true) {
-                println!("{}", finding);
-            }
-        }
-        Command::Stats => stats::run(&base),
-        Command::Version => help::version(),
-    }
-}
-
-#[derive(Debug, PartialEq)]
-enum Command {
-    Check,
-    Fix,
-    Help,
-    Pitstop,
-    Stats,
-    Version,
 }
 
 /// Provides the command-line arguments as a Rust struct.
@@ -62,7 +33,7 @@ where
 
 #[cfg(test)]
 mod tests {
-    use super::Command::{Check, Help, Stats, Version};
+    use tikibase::Command::{Check, Help, Stats, Version};
 
     #[test]
     fn parse() {
