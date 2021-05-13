@@ -1,9 +1,7 @@
-use std::path::PathBuf;
-
+use super::{Issue, Issues};
 use crate::config;
 use crate::core::tikibase::Tikibase;
-
-use super::{Issue, Issues};
+use std::path::PathBuf;
 
 pub fn process(base: &Tikibase, config: &config::Data) -> Issues {
     let mut issues = Issues::new();
