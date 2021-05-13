@@ -5,13 +5,13 @@ use crate::core::tikibase::Tikibase;
 
 /// finds all duplicate sections in the given Tikibase
 pub fn process(base: &Tikibase) -> Issues {
-    let mut result = Issues::new();
+    let mut issues = Issues::new();
     for doc in &base.docs {
         let mut known_sections = vec![];
         for section in &doc.content_sections {
             let section_type = section.section_type();
             if known_sections.contains(&section_type) {
-                result.push(Box::new(DuplicateSection {
+                issues.push(Box::new(DuplicateSection {
                     filename: doc.path.clone(),
                     section_type,
                 }))
@@ -20,7 +20,7 @@ pub fn process(base: &Tikibase) -> Issues {
             }
         }
     }
-    result
+    issues
 }
 
 /// describes the issue that a document contains two sections with the same title
