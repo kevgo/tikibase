@@ -56,7 +56,7 @@ pub fn process(base: &Tikibase) -> LinksResult {
                             if src.starts_with("http") {
                                 continue;
                             }
-                            if !base.has_resource(PathBuf::from(&src)) {
+                            if !base.has_resource(&src) {
                                 result.issues.push(Box::new(BrokenImage {
                                     filename: doc.path.clone(),
                                     line: section.line_number + (i as u32) + 1,

@@ -25,10 +25,10 @@ impl Tikibase {
     }
 
     /// indicates whether this Tikibase contains a resource with the given path
-    pub fn has_resource(&self, filename: PathBuf) -> bool {
+    pub fn has_resource<P: AsRef<Path>>(&self, filename: P) -> bool {
         self.resources
             .iter()
-            .any(|resource| resource.path == filename)
+            .any(|resource| resource.path == filename.as_ref())
     }
 
     /// provides all valid link targets in this Tikibase
@@ -166,14 +166,13 @@ mod tests {
 
         use super::super::*;
         use crate::testhelpers;
-        use std::path::PathBuf;
 
         #[test]
         fn empty() {
             let dir = testhelpers::tmp_dir();
             let (base, errs) = Tikibase::load(dir);
             assert_eq!(errs.len(), 0);
-            assert_eq!(base.has_resource(PathBuf::from("foo.png")), false);
+            assert_eq!(base.has_resource("foo.png"), false);
         }
 
         #[test]
@@ -182,7 +181,7 @@ mod tests {
             testhelpers::create_file("foo.png", "content", &dir);
             let (base, errs) = Tikibase::load(dir);
             assert_eq!(errs.len(), 0);
-            assert_eq!(base.has_resource(PathBuf::from("foo.png")), true);
+            assert_eq!(base.has_resource("foo.png"), true);
         }
     }
 
