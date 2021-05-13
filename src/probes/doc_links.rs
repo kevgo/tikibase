@@ -25,12 +25,8 @@ impl DocLinks {
     }
 
     /// provides all documents that are associated with the given document
-    pub fn get(&self, doc: &Path) -> AHashSet<PathBuf> {
-        match self.data.get(doc) {
-            None => AHashSet::new(),
-            // TODO: return a reference here instead of cloning
-            Some(result) => result.clone(),
-        }
+    pub fn get(&self, doc: &Path) -> Option<&AHashSet<PathBuf>> {
+        self.data.get(doc)
     }
 
     /// provides an empty DocLinks instance
@@ -59,7 +55,7 @@ mod tests {
         doc_links.add("1.md", "2.md");
         doc_links.add("1.md", "3.md");
         assert_eq!(doc_links.data.len(), 1);
-        let have = doc_links.get(&PathBuf::from("1.md"));
+        let have = doc_links.get(&PathBuf::from("1.md")).unwrap();
         assert_eq!(have.len(), 2);
         assert!(have.contains(&PathBuf::from("2.md")));
         assert!(have.contains(&PathBuf::from("3.md")));
@@ -74,7 +70,7 @@ mod tests {
         fn exists() {
             let mut doc_links = DocLinks::new();
             doc_links.add("1.md", "2.md");
-            let have = doc_links.get(&PathBuf::from("1.md"));
+            let have = doc_links.get(&PathBuf::from("1.md")).unwrap();
             assert_eq!(have.len(), 1);
             assert!(have.contains(&PathBuf::from("2.md")));
         }
@@ -83,7 +79,7 @@ mod tests {
         fn doesnt_exist() {
             let doc_links = DocLinks::new();
             let have = doc_links.get(&PathBuf::from("zonk.md"));
-            assert_eq!(have.len(), 0);
+            assert_eq!(have, None);
         }
     }
 }
