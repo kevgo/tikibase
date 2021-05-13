@@ -16,7 +16,7 @@ pub fn process(base: &Tikibase, config: &config::Data) -> Issues {
                 issues.push(Box::new(UnknownSection {
                     file: doc.path.clone(),
                     line: section.line_number,
-                    section_type: section_type,
+                    section_type,
                     allowed_types: config.allowed_sections.clone().unwrap(),
                 }));
             }
