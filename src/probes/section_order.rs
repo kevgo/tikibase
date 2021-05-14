@@ -106,96 +106,53 @@ mod tests {
 
     mod reorder {
         use super::super::reorder;
-        use crate::core::line::Line;
         use crate::core::section::Section;
-        use std::default::Default;
+        use crate::testhelpers;
 
         #[test]
         fn perfect_match() {
             let schema = vec!["one".to_string(), "two".to_string()];
-            let mut give: Vec<Section> = Vec::new();
-            give.push(Section {
-                title_line: Line {
-                    text: "### one".to_string(),
-                },
-                ..Default::default()
-            });
-            give.push(Section {
-                title_line: Line {
-                    text: "### two".to_string(),
-                },
-                ..Default::default()
-            });
+            let mut give: Vec<Section> = vec![
+                testhelpers::section_with_title("### one"),
+                testhelpers::section_with_title("### two"),
+            ];
             let have = reorder(&mut give, &schema);
-            let new_order: Vec<String> =
-                have.iter().map(|section| section.section_type()).collect();
-            assert_eq!(new_order, vec!["one", "two"]);
+            let have: Vec<String> = have.iter().map(|section| section.section_type()).collect();
+            assert_eq!(have, vec!["one", "two"]);
         }
 
         #[test]
         fn match_but_missing() {
             let schema = vec!["one".to_string(), "two".to_string(), "three".to_string()];
-            let mut give: Vec<Section> = Vec::new();
-            give.push(Section {
-                title_line: Line {
-                    text: "### one".to_string(),
-                },
-                ..Default::default()
-            });
-            give.push(Section {
-                title_line: Line {
-                    text: "### three".to_string(),
-                },
-                ..Default::default()
-            });
+            let mut give: Vec<Section> = vec![
+                testhelpers::section_with_title("### one"),
+                testhelpers::section_with_title("### three"),
+            ];
             let have = reorder(&mut give, &schema);
-            let new_order: Vec<String> =
-                have.iter().map(|section| section.section_type()).collect();
-            assert_eq!(new_order, vec!["one", "three"]);
+            let have: Vec<String> = have.iter().map(|section| section.section_type()).collect();
+            assert_eq!(have, vec!["one", "three"]);
         }
 
         #[test]
         fn wrong_order() {
             let schema = vec!["one".to_string(), "two".to_string(), "three".to_string()];
-            let mut give: Vec<Section> = Vec::new();
-            give.push(Section {
-                title_line: Line {
-                    text: "### three".to_string(),
-                },
-                ..Default::default()
-            });
-            give.push(Section {
-                title_line: Line {
-                    text: "### two".to_string(),
-                },
-                ..Default::default()
-            });
-            give.push(Section {
-                title_line: Line {
-                    text: "### one".to_string(),
-                },
-                ..Default::default()
-            });
+            let mut give: Vec<Section> = vec![
+                testhelpers::section_with_title("### three"),
+                testhelpers::section_with_title("### two"),
+                testhelpers::section_with_title("### one"),
+            ];
             let have = reorder(&mut give, &schema);
-            let new_order: Vec<String> =
-                have.iter().map(|section| section.section_type()).collect();
-            assert_eq!(new_order, vec!["one", "two", "three"]);
+            let have: Vec<String> = have.iter().map(|section| section.section_type()).collect();
+            assert_eq!(have, vec!["one", "two", "three"]);
         }
 
         #[test]
         fn single_section() {
             let schema = vec!["one".to_string(), "two".to_string(), "three".to_string()];
-            let mut give: Vec<Section> = Vec::new();
-            give.push(Section {
-                title_line: Line {
-                    text: "### three".to_string(),
-                },
-                ..Default::default()
-            });
+            let mut give: Vec<Section> = vec![testhelpers::section_with_title("### three")];
             let have = reorder(&mut give, &schema);
-            let new_order: Vec<String> =
-                have.iter().map(|section| section.section_type()).collect();
-            assert_eq!(new_order, vec!["three"]);
+            let have: Vec<String> = have.iter().map(|section| section.section_type()).collect();
+            assert_eq!(have, vec!["three"]);
         }
     }
 

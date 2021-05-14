@@ -4,6 +4,8 @@ use std::io::prelude::*;
 use std::path::{Path, PathBuf};
 use std::time::{SystemTime, UNIX_EPOCH};
 
+use crate::core::{line::Line, section::Section};
+
 /// creates a temporary directory
 pub fn tmp_dir() -> PathBuf {
     let timestamp = SystemTime::now()
@@ -32,4 +34,15 @@ pub fn load_file<P: AsRef<Path>>(filename: P, dir: &Path) -> String {
         .to_string();
     result.push('\n');
     result
+}
+
+/// provides a section with the given title for testing
+pub fn section_with_title(title: &str) -> Section {
+    Section {
+        line_number: 0,
+        title_line: Line {
+            text: title.to_string(),
+        },
+        body: vec![],
+    }
 }
