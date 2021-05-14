@@ -8,6 +8,9 @@ use std::path::Path;
 pub struct Data {
     /// the allowed section types
     pub allowed_sections: Option<Vec<String>>,
+
+    /// files to ignore
+    pub ignore: Option<Vec<String>>,
 }
 
 /// reads the config file
@@ -48,6 +51,7 @@ mod tests {
             let have = super::super::load(dir).unwrap();
             let want = super::super::Data {
                 allowed_sections: None,
+                ignore: None,
             };
             assert_eq!(have, want);
         }
@@ -59,6 +63,7 @@ mod tests {
             let have = super::super::load(&dir).unwrap();
             let want = super::super::Data {
                 allowed_sections: None,
+                ignore: None,
             };
             assert_eq!(have, want);
         }
@@ -75,6 +80,7 @@ mod tests {
             let have = super::super::load(&dir).unwrap();
             let want = super::super::Data {
                 allowed_sections: Some(vec!["one".to_string(), "two".to_string()]),
+                ignore: None,
             };
             assert_eq!(have, want);
         }
