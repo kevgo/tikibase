@@ -49,7 +49,7 @@ fn matches_schema(actual: &[String], schema: &[String]) -> bool {
         }
 
         if !schema.contains(actual_value) {
-            // unknown actual --> ignore
+            // unknown element in actual --> ignore here (there is a separate check for this)
             actual_element = actual_iter.next();
             continue;
         }
