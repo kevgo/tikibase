@@ -32,12 +32,12 @@ fn matches_schema(actual: &[String], schema: &[String]) -> bool {
     let mut schema_iter = schema.iter();
     let mut schema_element = schema_iter.next();
     loop {
-        if schema_element.is_none() && actual_element.is_none() {
-            // we reached the end of both iterators --> success
+        if actual_element.is_none() {
+            // we reached the end of the actual list --> actual matches schema
             return true;
         }
-        if schema_element.is_none() ^ actual_element.is_none() {
-            // one of the iterators is done but the other is not --> actual doesn't match schema
+        if schema_element.is_none() {
+            // we reached the end of schema --> no match
             return false;
         }
 
@@ -53,9 +53,9 @@ fn matches_schema(actual: &[String], schema: &[String]) -> bool {
         }
 
         if !schema.contains(actual_value) {
-            // unknown element --> abort this check
-            // (we have a dedicated check for this)
-            return true;
+            // unknown element --> skip this element
+            actual_element = actual_iter.next();
+            continue;
         }
 
         // elements don't match --> advance the schema
