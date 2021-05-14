@@ -27,6 +27,13 @@ pub fn create_file(filename: &str, content: &str, dir: &Path) {
     file.write_all(content.as_bytes()).unwrap();
 }
 
+/// provides a Line with the given text
+pub fn line_with_text(text: &str) -> Line {
+    Line {
+        text: text.to_string(),
+    }
+}
+
 pub fn load_file<P: AsRef<Path>>(filename: P, dir: &Path) -> String {
     let mut result = std::fs::read_to_string(dir.join(filename))
         .unwrap()

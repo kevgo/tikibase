@@ -52,12 +52,14 @@ impl Line {
 mod tests {
 
     mod references {
+        use crate::testhelpers::line_with_text;
+
         use super::super::*;
         #[test]
         fn link_md() {
-            let line = Line {
-                text: r#"an MD link: [one](one.md) and one to a section: [two pieces](two.md#pieces)!"#.to_string(),
-            };
+            let line = line_with_text(
+                r#"an MD link: [one](one.md) and one to a section: [two pieces](two.md#pieces)!"#,
+            );
             let have = line.references();
             assert_eq!(have.len(), 2);
             match &have[0] {
@@ -76,9 +78,7 @@ mod tests {
 
         #[test]
         fn link_html() {
-            let line = Line {
-                text: r#"an HTML link: <a href="two.md">two</a>"#.to_string(),
-            };
+            let line = line_with_text(r#"an HTML link: <a href="two.md">two</a>"#);
             let have = line.references();
             assert_eq!(have.len(), 1);
             match &have[0] {
@@ -91,9 +91,7 @@ mod tests {
 
         #[test]
         fn img_md() {
-            let line = Line {
-                text: r#"an MD image: ![zonk](zonk.md)"#.to_string(),
-            };
+            let line = line_with_text(r#"an MD image: ![zonk](zonk.md)"#);
             let have = line.references();
             assert_eq!(have.len(), 1);
             match &have[0] {
@@ -106,9 +104,7 @@ mod tests {
 
         #[test]
         fn img_html() {
-            let line = Line {
-                text: r#"<img src="zonk.md">"#.to_string(),
-            };
+            let line = line_with_text(r#"<img src="zonk.md">"#);
             let have = line.references();
             assert_eq!(have.len(), 1);
             match &have[0] {
@@ -121,9 +117,7 @@ mod tests {
 
         #[test]
         fn img_html_extra_attributes() {
-            let line = Line {
-                text: r#"<img src="zonk.md" width="10" height="10">"#.to_string(),
-            };
+            let line = line_with_text(r#"<img src="zonk.md" width="10" height="10">"#);
             let have = line.references();
             assert_eq!(have.len(), 1);
             match &have[0] {
@@ -136,9 +130,7 @@ mod tests {
 
         #[test]
         fn img_xml_nospace() {
-            let line = Line {
-                text: r#"<img src="zonk.md"/>"#.to_string(),
-            };
+            let line = line_with_text(r#"<img src="zonk.md"/>"#);
             let have = line.references();
             assert_eq!(have.len(), 1);
             match &have[0] {
@@ -151,9 +143,7 @@ mod tests {
 
         #[test]
         fn img_xml_space() {
-            let line = Line {
-                text: r#"<img src="zonk.md" />"#.to_string(),
-            };
+            let line = line_with_text(r#"<img src="zonk.md" />"#);
             let have = line.references();
             assert_eq!(have.len(), 1);
             match &have[0] {

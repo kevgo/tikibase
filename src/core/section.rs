@@ -95,7 +95,7 @@ impl<'a> Iterator for LinesIterator<'a> {
 mod tests {
     use super::super::document::Document;
     use super::*;
-    use crate::testhelpers::section_with_title;
+    use crate::testhelpers::{line_with_text, section_with_title};
 
     #[test]
     fn anchor() {
@@ -112,8 +112,8 @@ mod tests {
 
     mod last_line {
 
-        use crate::core::line::Line;
         use crate::core::section::Section;
+        use crate::testhelpers::line_with_text;
         use std::default::Default;
 
         #[test]
@@ -129,9 +129,7 @@ mod tests {
         fn with_body() {
             let section = Section {
                 line_number: 12,
-                body: vec![Line {
-                    text: "".to_string(),
-                }],
+                body: vec![line_with_text("")],
                 ..Default::default()
             };
             assert_eq!(section.last_line_abs(), 13);
@@ -160,8 +158,8 @@ title content";
     }
 
     mod push_line {
-        use crate::core::line::Line;
         use crate::core::section::Section;
+        use crate::testhelpers::line_with_text;
 
         #[test]
         fn no_body() {
@@ -177,9 +175,7 @@ title content";
         #[test]
         fn with_body() {
             let mut section = Section {
-                body: vec![Line {
-                    text: "l1".to_string(),
-                }],
+                body: vec![line_with_text("l1")],
                 ..Default::default()
             };
             section.push_line("new line");
@@ -206,17 +202,8 @@ title content";
     #[test]
     fn text() {
         let section = Section {
-            title_line: Line {
-                text: "### welcome".to_string(),
-            },
-            body: vec![
-                Line {
-                    text: "".to_string(),
-                },
-                Line {
-                    text: "content".to_string(),
-                },
-            ],
+            title_line: line_with_text("### welcome"),
+            body: vec![line_with_text(""), line_with_text("content")],
             ..Default::default()
         };
         assert_eq!(section.text(), "### welcome\n\ncontent\n");
