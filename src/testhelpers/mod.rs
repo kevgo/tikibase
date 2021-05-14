@@ -1,10 +1,10 @@
+use crate::core::line::Line;
+use crate::core::section::Section;
 use rand::Rng;
 use std::fs::File;
 use std::io::prelude::*;
 use std::path::{Path, PathBuf};
 use std::time::{SystemTime, UNIX_EPOCH};
-
-use crate::core::{line::Line, section::Section};
 
 /// creates a temporary directory
 pub fn tmp_dir() -> PathBuf {
