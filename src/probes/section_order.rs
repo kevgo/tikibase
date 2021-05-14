@@ -133,9 +133,12 @@ mod tests {
             assert_eq!(new_order, vec!["one", "two"]);
         }
 
+        #[test]
         fn match_but_missing() {
             todo!()
         }
+
+        #[test]
         fn single_section() {
             todo!()
         }
