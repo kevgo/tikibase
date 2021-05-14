@@ -32,19 +32,17 @@ fn matches_schema(actual: &[String], schema: &[String]) -> bool {
     let mut schema_iter = schema.iter();
     let mut schema_element = schema_iter.next();
     loop {
-        if actual_element.is_none() {
-            // we reached the end of the actual list --> actual matches schema
-            return true;
-        }
-        if schema_element.is_none() {
-            // we reached the end of schema but there are still elements in actual --> no match
-            return false;
-        }
+        let actual_value = match actual_element {
+            None => return true, // we reached the end of the actual list --> actual matches schema
+            Some(value) => value,
+        };
+        let schema_value = match schema_element {
+            None => return false, // we reached the end of schema but there are still elements in actual --> no match
+            Some(value) => value,
+        };
 
-        let actual_value = actual_element.unwrap();
-        let schema_value = schema_element.unwrap();
+        // here both actual and schema contain more elements --> keep comparing them
 
-        // here there are more elements --> keep comparing them
         if actual_value == schema_value {
             // elements match --> advance both pointers
             actual_element = actual_iter.next();
