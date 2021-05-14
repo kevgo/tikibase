@@ -60,7 +60,7 @@ fn matches_schema(actual: &[String], schema: &[String]) -> bool {
     }
 }
 
-/// provides a new Vector that contains the elements from actual ordered according to schema
+/// drains the given sections vector and provides a new Vector that contains the elements ordered according to schema
 fn reorder(sections: &mut Vec<Section>, schema: &[String]) -> Vec<Section> {
     let mut result: Vec<Section> = Vec::new();
     for schema_element in schema.iter() {
