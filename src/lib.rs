@@ -1,10 +1,10 @@
-pub mod config;
 pub mod core;
 pub mod help;
 pub mod probes;
 pub mod stats;
 pub mod testhelpers;
 
+use crate::core::config;
 use crate::core::tikibase::Tikibase;
 use std::path::PathBuf;
 
