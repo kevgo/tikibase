@@ -95,6 +95,7 @@ impl<'a> Iterator for LinesIterator<'a> {
 mod tests {
     use super::super::document::Document;
     use super::*;
+    use crate::testhelpers::section_with_title;
 
     #[test]
     fn anchor() {
@@ -104,13 +105,7 @@ mod tests {
             ("A Complex Section", "#a-complex-section"),
         ];
         for (give, want) in tests.into_iter() {
-            let section = Section {
-                title_line: Line {
-                    text: give.to_string(),
-                },
-                body: vec![],
-                line_number: 0,
-            };
+            let section = section_with_title(give);
             assert_eq!(section.anchor(), want);
         }
     }
