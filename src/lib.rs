@@ -1,4 +1,3 @@
-#![feature(map_into_keys_values)]
 pub mod config;
 pub mod core;
 pub mod help;

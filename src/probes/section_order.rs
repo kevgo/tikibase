@@ -7,17 +7,12 @@ use crate::core::tikibase::Tikibase;
 
 pub fn process(base: &Tikibase, config: &config::Data) -> Issues {
     let mut issues = Issues::new();
-    let expected_sections = match &config.allowed_sections {
+    let expected_order = match &config.allowed_sections {
         None => return issues,
         Some(expected_sections) => expected_sections,
     };
     for doc in &base.docs {
-        let actual_sections: Vec<String> = doc
-            .content_sections
-            .iter()
-            .map(|section| section.section_type())
-            .collect();
-        if !same_order(&actual_sections, expected_sections) {
+        if !matches_schema(&doc.section_types(), expected_order) {
             issues.push(Box::new(UnorderedSections {
                 file: doc.path.clone(),
             }));
@@ -26,23 +21,23 @@ pub fn process(base: &Tikibase, config: &config::Data) -> Issues {
     issues
 }
 
-/// Indicates whether the given actual has the same order as the given schema.
-/// Actual is allowed to be missing elements.
-fn same_order(actual: &[String], schema: &[String]) -> bool {
-    if actual.is_empty() {
+/// Indicates whether the given actual contains a subset of schema, in the same order as schema.
+fn matches_schema(actual: &[String], schema: &[String]) -> bool {
+    if actual.len() < 2 {
+        // 0 or 1 elements --> order always matches
         return true;
     }
     let mut actual_iter = actual.iter();
-    let mut schema_iter = schema.iter();
     let mut actual_element = actual_iter.next();
+    let mut schema_iter = schema.iter();
     let mut schema_element = schema_iter.next();
     loop {
         if schema_element.is_none() && actual_element.is_none() {
-            // we reached the end of both iterators --> match
+            // we reached the end of both iterators --> success
             return true;
         }
         if schema_element.is_none() ^ actual_element.is_none() {
-            // one of the iterators is done but the other is not --> no match
+            // one of the iterators is done but the other is not --> actual doesn't match schema
             return false;
         }
         // here there are more elements --> keep comparing them
@@ -53,7 +48,7 @@ fn same_order(actual: &[String], schema: &[String]) -> bool {
             continue;
         }
         // elements don't match --> advance the schema
-        // (because actual might miss elements that are in schema but not the other way around)
+        // (because schema might contain elements that are not in actual)
         schema_element = schema_iter.next();
     }
 }
@@ -76,7 +71,7 @@ fn reorder(sections: &mut Vec<Section>, schema: &[String]) -> Vec<Section> {
     result
 }
 
-/// describes a document that has sections out of order
+/// describes the issue that a document has sections out of order
 pub struct UnorderedSections {
     file: PathBuf,
 }
@@ -135,49 +130,100 @@ mod tests {
 
         #[test]
         fn match_but_missing() {
-            todo!()
+            let schema = vec!["one".to_string(), "two".to_string(), "three".to_string()];
+            let mut give: Vec<Section> = Vec::new();
+            give.push(Section {
+                title_line: Line {
+                    text: "### one".to_string(),
+                },
+                ..Default::default()
+            });
+            give.push(Section {
+                title_line: Line {
+                    text: "### three".to_string(),
+                },
+                ..Default::default()
+            });
+            let have = reorder(&mut give, &schema);
+            let new_order: Vec<String> =
+                have.iter().map(|section| section.section_type()).collect();
+            assert_eq!(new_order, vec!["one", "three"]);
         }
 
         #[test]
         fn wrong_order() {
-            todo!()
+            let schema = vec!["one".to_string(), "two".to_string(), "three".to_string()];
+            let mut give: Vec<Section> = Vec::new();
+            give.push(Section {
+                title_line: Line {
+                    text: "### three".to_string(),
+                },
+                ..Default::default()
+            });
+            give.push(Section {
+                title_line: Line {
+                    text: "### two".to_string(),
+                },
+                ..Default::default()
+            });
+            give.push(Section {
+                title_line: Line {
+                    text: "### one".to_string(),
+                },
+                ..Default::default()
+            });
+            let have = reorder(&mut give, &schema);
+            let new_order: Vec<String> =
+                have.iter().map(|section| section.section_type()).collect();
+            assert_eq!(new_order, vec!["one", "two", "three"]);
         }
 
         #[test]
         fn single_section() {
-            todo!()
+            let schema = vec!["one".to_string(), "two".to_string(), "three".to_string()];
+            let mut give: Vec<Section> = Vec::new();
+            give.push(Section {
+                title_line: Line {
+                    text: "### three".to_string(),
+                },
+                ..Default::default()
+            });
+            let have = reorder(&mut give, &schema);
+            let new_order: Vec<String> =
+                have.iter().map(|section| section.section_type()).collect();
+            assert_eq!(new_order, vec!["three"]);
         }
     }
 
     mod same_order {
-        use super::super::same_order;
+        use super::super::matches_schema;
 
         #[test]
         fn perfect_match() {
             let schema = vec!["one".to_string(), "two".to_string(), "three".to_string()];
             let give = vec!["one".to_string(), "two".to_string(), "three".to_string()];
-            assert!(same_order(&give, &schema));
+            assert!(matches_schema(&give, &schema));
         }
 
         #[test]
         fn match_but_missing() {
             let schema = vec!["one".to_string(), "two".to_string(), "three".to_string()];
             let give = vec!["one".to_string(), "three".to_string()];
-            assert!(same_order(&give, &schema));
+            assert!(matches_schema(&give, &schema));
         }
 
         #[test]
         fn mismatch() {
             let schema = vec!["one".to_string(), "two".to_string(), "three".to_string()];
             let give = vec!["two".to_string(), "one".to_string()];
-            assert_eq!(same_order(&give, &schema), false);
+            assert_eq!(matches_schema(&give, &schema), false);
         }
 
         #[test]
         fn empty() {
             let schema = vec!["one".to_string(), "two".to_string(), "three".to_string()];
             let give = vec![];
-            assert_eq!(same_order(&give, &schema), true);
+            assert_eq!(matches_schema(&give, &schema), true);
         }
     }
 }

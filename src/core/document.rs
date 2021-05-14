@@ -77,6 +77,14 @@ impl Document {
         }
     }
 
+    /// provides the section types in this document
+    pub fn section_types(&self) -> Vec<String> {
+        self.content_sections
+            .iter()
+            .map(|section| section.section_type())
+            .collect()
+    }
+
     /// provides the complete textual content of this document
     pub fn text(&self) -> String {
         let mut result = self.title_section.text();
@@ -210,6 +218,22 @@ title text
             let have = doc.last_section_mut();
             assert_eq!(have.title_line.text, "# Title");
         }
+    }
+
+    #[test]
+    fn section_types() {
+        let content = "\
+# Title
+title text
+### Section 1
+two
+### Section 2
+foo
+";
+        let doc = Document::from_str("test.md", content).unwrap();
+        let have = doc.section_types();
+        let want = vec!["Section 1".to_string(), "Section 2".to_string()];
+        assert_eq!(have, want);
     }
 
     #[test]
