@@ -129,12 +129,10 @@ mod tests {
         fn with_body() {
             let section = Section {
                 line_number: 12,
-                title_line: Line {
-                    text: "".to_string(),
-                },
                 body: vec![Line {
                     text: "".to_string(),
                 }],
+                ..Default::default()
             };
             assert_eq!(section.last_line_abs(), 13);
         }
@@ -168,11 +166,8 @@ title content";
         #[test]
         fn no_body() {
             let mut section = Section {
-                line_number: 10,
-                title_line: Line {
-                    text: "foo".to_string(),
-                },
                 body: vec![],
+                ..Default::default()
             };
             section.push_line("new line");
             assert_eq!(section.body.len(), 1);
@@ -182,13 +177,10 @@ title content";
         #[test]
         fn with_body() {
             let mut section = Section {
-                line_number: 10,
-                title_line: Line {
-                    text: "foo".to_string(),
-                },
                 body: vec![Line {
                     text: "l1".to_string(),
                 }],
+                ..Default::default()
             };
             section.push_line("new line");
             assert_eq!(section.body.len(), 2);
@@ -206,14 +198,7 @@ title content";
             ("###", ""),
         ];
         for (give, want) in tests.into_iter() {
-            let section = Section {
-                line_number: 2,
-                title_line: Line {
-                    text: give.to_string(),
-                },
-                body: vec![],
-            };
-            let have = section.section_type();
+            let have = section_with_title(give).section_type();
             assert_eq!(have, want);
         }
     }
@@ -221,7 +206,6 @@ title content";
     #[test]
     fn text() {
         let section = Section {
-            line_number: 12,
             title_line: Line {
                 text: "### welcome".to_string(),
             },
@@ -233,6 +217,7 @@ title content";
                     text: "content".to_string(),
                 },
             ],
+            ..Default::default()
         };
         assert_eq!(section.text(), "### welcome\n\ncontent\n");
     }
