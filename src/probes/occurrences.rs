@@ -109,6 +109,7 @@ pub fn process(
 #[cfg(test)]
 mod tests {
 
+    use crate::core::config;
     use crate::core::tikibase::Tikibase;
     use crate::probes::doc_links::DocLinks;
     use crate::testhelpers;
@@ -119,7 +120,7 @@ mod tests {
         testhelpers::create_file("1.md", "# One\n", &dir);
         testhelpers::create_file("2.md", "# Two\n\n[one](1.md)\n", &dir);
         testhelpers::create_file("3.md", "# Three\n\n[one](1.md)\n", &dir);
-        let (base, errs) = Tikibase::load(dir);
+        let (base, errs) = Tikibase::load(dir, &config::empty());
         assert_eq!(errs.len(), 0);
         let mut outgoing_links = DocLinks::new();
         outgoing_links.add("3.md", "1.md");

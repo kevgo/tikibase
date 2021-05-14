@@ -129,6 +129,7 @@ mod tests {
     mod process {
         use std::path::PathBuf;
 
+        use crate::core::config;
         use crate::core::tikibase::Tikibase;
         use crate::testhelpers;
 
@@ -136,7 +137,7 @@ mod tests {
         fn link_to_non_existing_file() {
             let dir = testhelpers::tmp_dir();
             testhelpers::create_file("one.md", "# One\n\n[invalid](non-existing.md)\n", &dir);
-            let (base, errs) = Tikibase::load(dir);
+            let (base, errs) = Tikibase::load(dir, &config::empty());
             assert_eq!(errs.len(), 0);
             let have = super::super::process(&base);
             let outcomes: Vec<String> = have.issues.iter().map(|issue| issue.describe()).collect();
@@ -164,7 +165,7 @@ Here is a link to [Three](3.md) that also works.
             testhelpers::create_file("1.md", content, &dir);
             testhelpers::create_file("2.md", "# Two", &dir);
             testhelpers::create_file("3.md", "# Three", &dir);
-            let (base, errs) = Tikibase::load(dir);
+            let (base, errs) = Tikibase::load(dir, &config::empty());
             assert_eq!(errs.len(), 0);
             let have = super::super::process(&base);
             assert!(have.issues.is_empty());
@@ -194,7 +195,7 @@ Here is a link to [Three](3.md) that also works.
 ";
             testhelpers::create_file("one.md", content, &dir);
             testhelpers::create_file("two.md", "# Two", &dir);
-            let (base, errs) = Tikibase::load(dir);
+            let (base, errs) = Tikibase::load(dir, &config::empty());
             assert_eq!(errs.len(), 0);
             let have = super::super::process(&base);
             assert!(have.issues.is_empty());
@@ -208,7 +209,7 @@ Here is a link to [Three](3.md) that also works.
             let dir = testhelpers::tmp_dir();
             testhelpers::create_file("1.md", "# One\n\n![image](foo.png)\n", &dir);
             testhelpers::create_file("foo.png", "image content", &dir);
-            let (base, errs) = Tikibase::load(dir);
+            let (base, errs) = Tikibase::load(dir, &config::empty());
             assert_eq!(errs.len(), 0);
             let have = super::super::process(&base);
             assert!(have.issues.is_empty());
@@ -222,7 +223,7 @@ Here is a link to [Three](3.md) that also works.
         fn link_to_non_existing_image() {
             let dir = testhelpers::tmp_dir();
             testhelpers::create_file("1.md", "# One\n\n![image](zonk.png)\n", &dir);
-            let (base, errs) = Tikibase::load(dir);
+            let (base, errs) = Tikibase::load(dir, &config::empty());
             assert_eq!(errs.len(), 0);
             let have = super::super::process(&base);
             let outcomes: Vec<String> = have.issues.iter().map(|issue| issue.describe()).collect();

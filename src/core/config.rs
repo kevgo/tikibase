@@ -32,6 +32,13 @@ pub fn load<P: AsRef<Path>>(dir: P) -> Result<Data, String> {
         .map_err(|e| format!("Configuration file has invalid structure: {}", e))
 }
 
+pub fn empty() -> Data {
+    Data {
+        allowed_sections: None,
+        ignore: None,
+    }
+}
+
 #[cfg(test)]
 mod tests {
     use super::Data;

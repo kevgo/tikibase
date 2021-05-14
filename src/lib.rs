@@ -29,7 +29,7 @@ pub fn process<P: Into<PathBuf>>(command: &Command, path: P) -> (Vec<String>, i3
     };
 
     // load the Tikibase
-    let (mut base, mut errors) = Tikibase::load(path);
+    let (mut base, mut errors) = Tikibase::load(path, &config);
     result.append(&mut errors);
 
     // handle basic commands

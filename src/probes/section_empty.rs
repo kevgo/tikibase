@@ -64,6 +64,7 @@ impl Issue for EmptySection {
 mod tests {
 
     use super::process;
+    use crate::core::config;
     use crate::core::tikibase::Tikibase;
     use crate::testhelpers;
 
@@ -78,7 +79,7 @@ mod tests {
 
 content";
         testhelpers::create_file("test.md", content, &dir);
-        let (mut base, errs) = Tikibase::load(dir);
+        let (mut base, errs) = Tikibase::load(dir, &config::empty());
         assert_eq!(errs.len(), 0);
         let have: Vec<String> = process(&mut base)
             .iter()
@@ -103,7 +104,7 @@ content";
 
 content";
         testhelpers::create_file("test.md", content, &dir);
-        let (mut base, errs) = Tikibase::load(dir);
+        let (mut base, errs) = Tikibase::load(dir, &config::empty());
         assert_eq!(errs.len(), 0);
         let have: Vec<String> = process(&mut base)
             .iter()
@@ -126,7 +127,7 @@ content";
 
 content";
         testhelpers::create_file("test.md", content, &dir);
-        let (mut base, errs) = Tikibase::load(dir);
+        let (mut base, errs) = Tikibase::load(dir, &config::empty());
         assert_eq!(errs.len(), 0);
         let have = process(&mut base);
         assert!(have.is_empty());

@@ -65,6 +65,7 @@ mod tests {
         assert_eq!(super::normalize("FOO"), "foo");
     }
 
+    use crate::core::config;
     use crate::core::tikibase::Tikibase;
     use crate::testhelpers;
 
@@ -86,7 +87,7 @@ content";
 ### one
 content";
         testhelpers::create_file("2.md", content, &dir);
-        let (mut base, errs) = Tikibase::load(dir);
+        let (mut base, errs) = Tikibase::load(dir, &config::empty());
         assert_eq!(errs.len(), 0);
         let have: Vec<String> = super::process(&mut base)
             .iter()

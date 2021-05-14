@@ -1,5 +1,5 @@
-use super::document::Document;
 use super::resource::Resource;
+use super::{config, document::Document};
 use std::fs::File;
 use std::io::{BufRead, BufReader};
 use std::path::{Path, PathBuf};
@@ -47,7 +47,7 @@ impl Tikibase {
     }
 
     /// Provides a Tikibase instance for the given directory.
-    pub fn load(dir: PathBuf) -> (Tikibase, Vec<String>) {
+    pub fn load(dir: PathBuf, config: &config::Data) -> (Tikibase, Vec<String>) {
         let mut docs = Vec::new();
         let mut resources = Vec::new();
         let mut errors = Vec::new();
@@ -56,9 +56,17 @@ impl Tikibase {
             if entry.path() == dir {
                 continue;
             }
-            let filename = entry.file_name().to_string_lossy();
+            let filename = entry.file_name().to_string_lossy().to_string();
             if filename == "tikibase.json" || filename.starts_with('.') {
                 continue;
+            }
+            match &config.ignore {
+                Some(ignore) => {
+                    if ignore.contains(&filename) {
+                        continue;
+                    }
+                }
+                None => {}
             }
             let path = entry.path();
             let filepath = path.strip_prefix(&dir).unwrap().to_owned();
@@ -117,7 +125,7 @@ mod tests {
         fn exists() {
             let dir = testhelpers::tmp_dir();
             testhelpers::create_file("one.md", "# test doc", &dir);
-            let (base, errs) = Tikibase::load(dir);
+            let (base, errs) = Tikibase::load(dir, &config::empty());
             assert_eq!(errs.len(), 0);
             let doc = base.get_doc("one.md").expect("document not found");
             assert_eq!(doc.title_section.title_line.text, "# test doc");
@@ -126,7 +134,7 @@ mod tests {
         #[test]
         fn missing() {
             let dir = testhelpers::tmp_dir();
-            let (base, errs) = Tikibase::load(dir);
+            let (base, errs) = Tikibase::load(dir, &config::empty());
             assert_eq!(errs.len(), 0);
             match base.get_doc("zonk.md") {
                 None => return,
@@ -144,7 +152,7 @@ mod tests {
         fn exists() {
             let dir = testhelpers::tmp_dir();
             testhelpers::create_file("one.md", "# test doc", &dir);
-            let (mut base, errs) = Tikibase::load(dir);
+            let (mut base, errs) = Tikibase::load(dir, &config::empty());
             assert_eq!(errs.len(), 0);
             let doc = base.get_doc_mut("one.md").expect("document not found");
             assert_eq!(doc.title_section.title_line.text, "# test doc");
@@ -153,7 +161,7 @@ mod tests {
         #[test]
         fn missing() {
             let dir = testhelpers::tmp_dir();
-            let (mut base, errs) = Tikibase::load(dir);
+            let (mut base, errs) = Tikibase::load(dir, &config::empty());
             assert_eq!(errs.len(), 0);
             match base.get_doc_mut("zonk.md") {
                 None => return,
@@ -170,7 +178,7 @@ mod tests {
         #[test]
         fn empty() {
             let dir = testhelpers::tmp_dir();
-            let (base, errs) = Tikibase::load(dir);
+            let (base, errs) = Tikibase::load(dir, &config::empty());
             assert_eq!(errs.len(), 0);
             assert_eq!(base.has_resource("foo.png"), false);
         }
@@ -179,7 +187,7 @@ mod tests {
         fn matching_resource() {
             let dir = testhelpers::tmp_dir();
             testhelpers::create_file("foo.png", "content", &dir);
-            let (base, errs) = Tikibase::load(dir);
+            let (base, errs) = Tikibase::load(dir, &config::empty());
             assert_eq!(errs.len(), 0);
             assert_eq!(base.has_resource("foo.png"), true);
         }
@@ -197,7 +205,7 @@ mod tests {
 content";
         testhelpers::create_file("one.md", content, &dir);
         testhelpers::create_file("two.md", content, &dir);
-        let (base, errs) = Tikibase::load(dir);
+        let (base, errs) = Tikibase::load(dir, &config::empty());
         assert_eq!(errs.len(), 0);
         let have = base.link_targets();
         let want = vec![
@@ -226,7 +234,7 @@ two
 foo
 ";
         testhelpers::create_file("file.md", content, &dir);
-        let (base, errs) = Tikibase::load(dir);
+        let (base, errs) = Tikibase::load(dir, &config::empty());
         assert_eq!(errs.len(), 0);
         assert_eq!(base.docs.len(), 1);
         let doc = &base.docs[0];
@@ -251,7 +259,7 @@ foo
     fn load_hidden_file() {
         let dir = testhelpers::tmp_dir();
         testhelpers::create_file(".prettierrc", "semi: false", &dir);
-        let (base, errs) = Tikibase::load(dir);
+        let (base, errs) = Tikibase::load(dir, &config::empty());
         assert_eq!(errs.len(), 0);
         assert_eq!(base.resources.len(), 0);
     }
@@ -259,7 +267,7 @@ foo
     #[test]
     fn empty() {
         let dir = testhelpers::tmp_dir();
-        let (base, errs) = Tikibase::load(dir);
+        let (base, errs) = Tikibase::load(dir, &config::empty());
         assert_eq!(errs.len(), 0);
         assert_eq!(base.docs.len(), 0);
         assert_eq!(base.resources.len(), 0);
