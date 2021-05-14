@@ -39,7 +39,6 @@ Feature: recognize/fix sections without content
       content
       """
 
-
   Scenario: pitstop
     When doing a pitstop
     Then it prints:
