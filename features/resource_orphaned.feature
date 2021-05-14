@@ -7,7 +7,7 @@ Feature: orphaned resource
         When checking
         Then it prints:
             """
-            unused image "orphan.png"
+            unused resource "orphan.png"
             """
         And all files are unchanged
         And the exit code is 1
@@ -21,7 +21,7 @@ Feature: orphaned resource
         When doing a pitstop
         Then it prints:
             """
-            unused image "orphan.png"
+            unused resource "orphan.png"
             """
         And all files are unchanged
         And the exit code is 1
