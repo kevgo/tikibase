@@ -41,8 +41,6 @@ fn matches_schema(actual: &[String], schema: &[String]) -> bool {
             Some(value) => value,
         };
 
-        // here both actual and schema contain more elements --> keep comparing them
-
         if actual_value == schema_value {
             // elements match --> advance both pointers
             actual_element = actual_iter.next();
@@ -51,7 +49,7 @@ fn matches_schema(actual: &[String], schema: &[String]) -> bool {
         }
 
         if !schema.contains(actual_value) {
-            // unknown element --> skip this element
+            // unknown actual --> ignore
             actual_element = actual_iter.next();
             continue;
         }
