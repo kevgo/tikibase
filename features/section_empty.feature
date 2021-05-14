@@ -38,6 +38,7 @@ Feature: recognize/fix sections without content
 
       content
       """
+    And the exit code is 0
 
   Scenario: pitstop
     When doing a pitstop
