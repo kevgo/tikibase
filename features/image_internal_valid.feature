@@ -9,7 +9,7 @@ Feature: accept valid images
       <img src="existing.png" />
       ![valid image](existing.png)
       """
-    And binary file "existing.png"
+    And file "existing.png"
 
   Scenario: check
     When checking

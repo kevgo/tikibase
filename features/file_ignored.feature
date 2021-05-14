@@ -9,4 +9,4 @@ Feature: Ignore files
         ]
       }
       """
-    And binary file "Makefile"
+    And file "Makefile"

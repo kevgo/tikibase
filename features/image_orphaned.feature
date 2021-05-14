@@ -1,7 +1,7 @@
 Feature: orphaned resource
 
     Background:
-        Given binary file "orphan.png"
+        Given file "orphan.png"
 
     Scenario: check
         When checking
