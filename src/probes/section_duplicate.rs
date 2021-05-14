@@ -1,6 +1,7 @@
 use std::path::PathBuf;
 
 use super::{Issue, Issues};
+use crate::config;
 use crate::core::tikibase::Tikibase;
 
 /// finds all duplicate sections in the given Tikibase
@@ -34,7 +35,7 @@ impl Issue for DuplicateSection {
         false
     }
 
-    fn fix(&self, _base: &mut Tikibase) -> String {
+    fn fix(&self, _base: &mut Tikibase, _config: &config::Data) -> String {
         panic!("not fixable");
     }
 

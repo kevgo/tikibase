@@ -1,4 +1,5 @@
-use crate::{config, core::tikibase::Tikibase};
+use crate::config;
+use crate::core::tikibase::Tikibase;
 use std::slice::Iter;
 
 mod doc_links;
@@ -8,6 +9,7 @@ mod occurrences;
 mod section_capitalization;
 mod section_duplicate;
 mod section_empty;
+mod section_order;
 mod section_type;
 
 pub fn run(base: &Tikibase, config: &config::Data) -> Issues {
@@ -16,6 +18,7 @@ pub fn run(base: &Tikibase, config: &config::Data) -> Issues {
     issues.append(section_empty::process(&base));
     issues.append(section_capitalization::process(&base));
     issues.append(section_type::process(&base, &config));
+    issues.append(section_order::process(&base, &config));
     let links_result = link_broken::process(&base);
     issues.append(links_result.issues);
     issues.append(image_orphaned::process(
@@ -37,7 +40,7 @@ pub trait Issue {
     fn describe(&self) -> String;
 
     /// fixes this issue, returns a human-readable description of what it did
-    fn fix(&self, base: &mut Tikibase) -> String;
+    fn fix(&self, base: &mut Tikibase, config: &config::Data) -> String;
 
     /// indicates whether this issue is fixable
     fn fixable(&self) -> bool;

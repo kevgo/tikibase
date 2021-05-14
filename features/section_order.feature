@@ -33,9 +33,12 @@ Feature: verify the ordering of content sections
       """
     And the exit code is 1
 
-  Scenario: fix
+  Scenario: this
     When fixing
-    Then it finds no issues
+    Then it prints:
+      """
+      test.md  fixed section order
+      """
     And file "1.md" should contain:
       """
       # Test

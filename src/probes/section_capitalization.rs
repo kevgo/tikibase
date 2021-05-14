@@ -1,4 +1,5 @@
 use super::{Issue, Issues};
+use crate::config;
 use crate::core::tikibase::Tikibase;
 use ahash::{AHashMap, AHashSet};
 use std::iter::FromIterator;
@@ -40,7 +41,7 @@ impl Issue for MixCapSection {
         )
     }
 
-    fn fix(&self, _base: &mut Tikibase) -> String {
+    fn fix(&self, _base: &mut Tikibase, _config: &config::Data) -> String {
         panic!("not fixable")
     }
 
