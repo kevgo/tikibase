@@ -1,3 +1,4 @@
+use crate::core::config;
 use crate::core::line::Line;
 use crate::core::section::Section;
 use rand::Rng;
@@ -25,6 +26,14 @@ pub fn tmp_dir() -> PathBuf {
 pub fn create_file(filename: &str, content: &str, dir: &Path) {
     let mut file = File::create(dir.join(filename)).unwrap();
     file.write_all(content.as_bytes()).unwrap();
+}
+
+/// provides an empty configuration instance for testing
+pub fn empty_config() -> config::Data {
+    config::Data {
+        allowed_sections: None,
+        ignore: None,
+    }
 }
 
 /// provides a Line with the given text

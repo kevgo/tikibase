@@ -52,13 +52,12 @@ impl Issue for DuplicateSection {
 mod tests {
 
     use super::process;
-    use crate::core::config;
     use crate::core::tikibase::Tikibase;
-    use crate::testhelpers;
+    use crate::testhelpers::{create_file, empty_config, tmp_dir};
 
     #[test]
     fn duplicate_sections() {
-        let dir = testhelpers::tmp_dir();
+        let dir = tmp_dir();
         let content = "\
 # test document
 
@@ -66,8 +65,8 @@ mod tests {
 content
 ### One
 content";
-        testhelpers::create_file("test.md", content, &dir);
-        let (mut base, errs) = Tikibase::load(dir, &config::empty());
+        create_file("test.md", content, &dir);
+        let (mut base, errs) = Tikibase::load(dir, &empty_config());
         assert_eq!(errs.len(), 0);
         let have: Vec<String> = process(&mut base)
             .iter()
