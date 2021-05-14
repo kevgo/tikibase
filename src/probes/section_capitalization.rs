@@ -66,11 +66,11 @@ mod tests {
     }
 
     use crate::core::tikibase::Tikibase;
-    use crate::testhelpers;
+    use crate::testhelpers::{create_file, empty_config, tmp_dir};
 
     #[test]
     fn progress() {
-        let dir = testhelpers::tmp_dir();
+        let dir = tmp_dir();
         let content = "\
 # test document
 
@@ -79,14 +79,14 @@ content
 
 ### One
 content";
-        testhelpers::create_file("1.md", content, &dir);
+        create_file("1.md", content, &dir);
         let content = "\
 # another document
 
 ### one
 content";
-        testhelpers::create_file("2.md", content, &dir);
-        let (mut base, errs) = Tikibase::load(dir);
+        create_file("2.md", content, &dir);
+        let (mut base, errs) = Tikibase::load(dir, &empty_config());
         assert_eq!(errs.len(), 0);
         let have: Vec<String> = super::process(&mut base)
             .iter()

@@ -65,11 +65,11 @@ mod tests {
 
     use super::process;
     use crate::core::tikibase::Tikibase;
-    use crate::testhelpers;
+    use crate::testhelpers::{create_file, empty_config, tmp_dir};
 
     #[test]
     fn empty_section() {
-        let dir = testhelpers::tmp_dir();
+        let dir = tmp_dir();
         let content = "\
 # test document
 
@@ -77,8 +77,8 @@ mod tests {
 ### next section
 
 content";
-        testhelpers::create_file("test.md", content, &dir);
-        let (mut base, errs) = Tikibase::load(dir);
+        create_file("test.md", content, &dir);
+        let (mut base, errs) = Tikibase::load(dir, &empty_config());
         assert_eq!(errs.len(), 0);
         let have: Vec<String> = process(&mut base)
             .iter()
@@ -93,7 +93,7 @@ content";
 
     #[test]
     fn blank_line() {
-        let dir = testhelpers::tmp_dir();
+        let dir = tmp_dir();
         let content = "\
 # test document
 
@@ -102,8 +102,8 @@ content";
 ### next section
 
 content";
-        testhelpers::create_file("test.md", content, &dir);
-        let (mut base, errs) = Tikibase::load(dir);
+        create_file("test.md", content, &dir);
+        let (mut base, errs) = Tikibase::load(dir, &empty_config());
         assert_eq!(errs.len(), 0);
         let have: Vec<String> = process(&mut base)
             .iter()
@@ -118,15 +118,15 @@ content";
 
     #[test]
     fn content() {
-        let dir = testhelpers::tmp_dir();
+        let dir = tmp_dir();
         let content = "\
 # test document
 
 ### section with content
 
 content";
-        testhelpers::create_file("test.md", content, &dir);
-        let (mut base, errs) = Tikibase::load(dir);
+        create_file("test.md", content, &dir);
+        let (mut base, errs) = Tikibase::load(dir, &empty_config());
         assert_eq!(errs.len(), 0);
         let have = process(&mut base);
         assert!(have.is_empty());

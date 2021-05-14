@@ -8,6 +8,9 @@ use std::path::Path;
 pub struct Data {
     /// the allowed section types
     pub allowed_sections: Option<Vec<String>>,
+
+    /// files to ignore
+    pub ignore: Option<Vec<String>>,
 }
 
 /// reads the config file
@@ -40,53 +43,56 @@ mod tests {
     }
 
     mod load {
-        use crate::testhelpers;
+        use crate::testhelpers::{create_file, tmp_dir};
 
         #[test]
         fn no_config_file() {
-            let dir = testhelpers::tmp_dir();
+            let dir = tmp_dir();
             let have = super::super::load(dir).unwrap();
             let want = super::super::Data {
                 allowed_sections: None,
+                ignore: None,
             };
             assert_eq!(have, want);
         }
 
         #[test]
         fn empty_config_file() {
-            let dir = testhelpers::tmp_dir();
-            testhelpers::create_file("tikibase.json", "{}", &dir);
+            let dir = tmp_dir();
+            create_file("tikibase.json", "{}", &dir);
             let have = super::super::load(&dir).unwrap();
             let want = super::super::Data {
                 allowed_sections: None,
+                ignore: None,
             };
             assert_eq!(have, want);
         }
 
         #[test]
         fn valid_config_file() {
-            let dir = testhelpers::tmp_dir();
+            let dir = tmp_dir();
             let content = r#"
             {
               "allowed_sections": [ "one", "two" ]
             }
             "#;
-            testhelpers::create_file("tikibase.json", content, &dir);
+            create_file("tikibase.json", content, &dir);
             let have = super::super::load(&dir).unwrap();
             let want = super::super::Data {
                 allowed_sections: Some(vec!["one".to_string(), "two".to_string()]),
+                ignore: None,
             };
             assert_eq!(have, want);
         }
 
         #[test]
         fn invalid_config_file() {
-            let dir = testhelpers::tmp_dir();
+            let dir = tmp_dir();
             let content = r#"{
     "allowed_sections": [
 }
 "#;
-            testhelpers::create_file("tikibase.json", content, &dir);
+            create_file("tikibase.json", content, &dir);
             match super::super::load(&dir) {
                 Err(e) => assert_eq!(
                     e,
