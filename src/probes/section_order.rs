@@ -69,10 +69,7 @@ fn reorder(sections: &mut Vec<Section>, schema: &[String]) -> Vec<Section> {
             .position(|section| &section.section_type() == schema_element);
         match pos {
             None => continue,
-            Some(pos) => {
-                let existing_section = sections.remove(pos);
-                result.push(existing_section);
-            }
+            Some(pos) => result.push(sections.remove(pos)),
         }
     }
     result
