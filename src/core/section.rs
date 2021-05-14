@@ -95,6 +95,7 @@ impl<'a> Iterator for LinesIterator<'a> {
 mod tests {
     use super::super::document::Document;
     use super::*;
+    use crate::testhelpers::{line_with_text, section_with_title};
 
     #[test]
     fn anchor() {
@@ -104,30 +105,22 @@ mod tests {
             ("A Complex Section", "#a-complex-section"),
         ];
         for (give, want) in tests.into_iter() {
-            let section = Section {
-                title_line: Line {
-                    text: give.to_string(),
-                },
-                body: vec![],
-                line_number: 0,
-            };
+            let section = section_with_title(give);
             assert_eq!(section.anchor(), want);
         }
     }
 
     mod last_line {
 
-        use crate::core::line::Line;
         use crate::core::section::Section;
+        use crate::testhelpers::line_with_text;
+        use std::default::Default;
 
         #[test]
         fn no_body() {
             let section = Section {
                 line_number: 12,
-                title_line: Line {
-                    text: "".to_string(),
-                },
-                body: Vec::new(),
+                ..Default::default()
             };
             assert_eq!(section.last_line_abs(), 12);
         }
@@ -136,12 +129,8 @@ mod tests {
         fn with_body() {
             let section = Section {
                 line_number: 12,
-                title_line: Line {
-                    text: "".to_string(),
-                },
-                body: vec![Line {
-                    text: "".to_string(),
-                }],
+                body: vec![line_with_text("")],
+                ..Default::default()
             };
             assert_eq!(section.last_line_abs(), 13);
         }
@@ -169,17 +158,14 @@ title content";
     }
 
     mod push_line {
-        use crate::core::line::Line;
         use crate::core::section::Section;
+        use crate::testhelpers::line_with_text;
 
         #[test]
         fn no_body() {
             let mut section = Section {
-                line_number: 10,
-                title_line: Line {
-                    text: "foo".to_string(),
-                },
                 body: vec![],
+                ..Default::default()
             };
             section.push_line("new line");
             assert_eq!(section.body.len(), 1);
@@ -189,13 +175,8 @@ title content";
         #[test]
         fn with_body() {
             let mut section = Section {
-                line_number: 10,
-                title_line: Line {
-                    text: "foo".to_string(),
-                },
-                body: vec![Line {
-                    text: "l1".to_string(),
-                }],
+                body: vec![line_with_text("l1")],
+                ..Default::default()
             };
             section.push_line("new line");
             assert_eq!(section.body.len(), 2);
@@ -213,14 +194,7 @@ title content";
             ("###", ""),
         ];
         for (give, want) in tests.into_iter() {
-            let section = Section {
-                line_number: 2,
-                title_line: Line {
-                    text: give.to_string(),
-                },
-                body: vec![],
-            };
-            let have = section.section_type();
+            let have = section_with_title(give).section_type();
             assert_eq!(have, want);
         }
     }
@@ -228,18 +202,9 @@ title content";
     #[test]
     fn text() {
         let section = Section {
-            line_number: 12,
-            title_line: Line {
-                text: "### welcome".to_string(),
-            },
-            body: vec![
-                Line {
-                    text: "".to_string(),
-                },
-                Line {
-                    text: "content".to_string(),
-                },
-            ],
+            title_line: line_with_text("### welcome"),
+            body: vec![line_with_text(""), line_with_text("content")],
+            ..Default::default()
         };
         assert_eq!(section.text(), "### welcome\n\ncontent\n");
     }
