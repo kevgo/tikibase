@@ -114,15 +114,13 @@ mod tests {
 
         use crate::core::line::Line;
         use crate::core::section::Section;
+        use std::default::Default;
 
         #[test]
         fn no_body() {
             let section = Section {
                 line_number: 12,
-                title_line: Line {
-                    text: "".to_string(),
-                },
-                body: Vec::new(),
+                ..Default::default()
             };
             assert_eq!(section.last_line_abs(), 12);
         }
