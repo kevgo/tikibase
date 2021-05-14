@@ -25,7 +25,12 @@ Feature: recognize/fix sections without content
 
   Scenario: fix
     When fixing
-    Then file "1.md" should contain:
+    Then it prints:
+      """
+      1.md:3  removed empty section "One"
+      1.md:9  removed empty section "Three"
+      """
+    And file "1.md" should contain:
       """
       # Title 1
 
@@ -34,7 +39,6 @@ Feature: recognize/fix sections without content
       content
       """
     And the exit code is 0
-
 
   Scenario: pitstop
     When doing a pitstop

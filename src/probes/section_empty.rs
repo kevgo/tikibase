@@ -1,6 +1,7 @@
 use std::path::PathBuf;
 
 use super::{Issue, Issues};
+use crate::config;
 use crate::core::tikibase::Tikibase;
 
 /// finds all empty sections in the given Tikibase,
@@ -35,7 +36,7 @@ impl Issue for EmptySection {
         true
     }
 
-    fn fix(&self, base: &mut Tikibase) -> String {
+    fn fix(&self, base: &mut Tikibase, _config: &config::Data) -> String {
         let base_dir = &base.dir.clone();
         let doc = base.get_doc_mut(&self.filename).unwrap();
         doc.content_sections

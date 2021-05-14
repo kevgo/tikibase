@@ -1,6 +1,7 @@
 use super::doc_links::DocLinks;
 use super::Issue;
 use super::Issues;
+use crate::config;
 use crate::core::document::builder_with_title_line;
 use crate::core::tikibase::Tikibase;
 use ahash::AHashSet;
@@ -18,7 +19,7 @@ pub struct MissingOccurrences {
 }
 
 impl Issue for MissingOccurrences {
-    fn fix(&self, base: &mut Tikibase) -> String {
+    fn fix(&self, base: &mut Tikibase, _config: &config::Data) -> String {
         let base_dir = base.dir.clone();
         let doc = base.get_doc_mut(&self.file).unwrap();
 

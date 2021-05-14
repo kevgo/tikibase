@@ -1,3 +1,5 @@
+use crate::config;
+
 use super::Tikibase;
 use super::{Issue, Issues};
 
@@ -18,7 +20,7 @@ pub struct OrphanedImage {
 }
 
 impl Issue for OrphanedImage {
-    fn fix(&self, _base: &mut Tikibase) -> String {
+    fn fix(&self, _base: &mut Tikibase, _config: &config::Data) -> String {
         panic!("not fixable")
     }
 

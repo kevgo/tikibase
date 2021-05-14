@@ -49,7 +49,7 @@ impl Issue for UnknownSection {
         )
     }
 
-    fn fix(&self, _base: &mut Tikibase) -> String {
+    fn fix(&self, _base: &mut Tikibase, _config: &config::Data) -> String {
         panic!("not fixable")
     }
 
@@ -57,3 +57,5 @@ impl Issue for UnknownSection {
         false
     }
 }
+
+// TODO: tests

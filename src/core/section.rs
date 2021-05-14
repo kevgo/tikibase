@@ -59,6 +59,18 @@ impl Section {
     }
 }
 
+impl Default for Section {
+    fn default() -> Self {
+        Section {
+            line_number: 0,
+            title_line: Line {
+                text: "### section".to_string(),
+            },
+            body: vec![],
+        }
+    }
+}
+
 /// an iterator for Lines
 pub struct LinesIterator<'a> {
     title_line: &'a Line,

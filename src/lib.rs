@@ -1,4 +1,3 @@
-#![feature(map_into_keys_values)]
 pub mod config;
 pub mod core;
 pub mod help;
@@ -63,12 +62,12 @@ pub fn process<P: Into<PathBuf>>(command: &Command, path: P) -> (Vec<String>, i3
         Command::Fix => issues
             .into_iter()
             .filter(|issue| issue.fixable())
-            .map(|fixable_issue| fixable_issue.fix(&mut base))
+            .map(|fixable_issue| fixable_issue.fix(&mut base, &config))
             .collect(),
         Command::Pitstop => issues
             .into_iter()
             .map(|issue| match issue.fixable() {
-                true => issue.fix(&mut base),
+                true => issue.fix(&mut base, &config),
                 false => issue.describe(),
             })
             .collect(),

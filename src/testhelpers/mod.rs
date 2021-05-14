@@ -1,3 +1,5 @@
+use crate::core::line::Line;
+use crate::core::section::Section;
 use rand::Rng;
 use std::fs::File;
 use std::io::prelude::*;
@@ -32,4 +34,15 @@ pub fn load_file<P: AsRef<Path>>(filename: P, dir: &Path) -> String {
         .to_string();
     result.push('\n');
     result
+}
+
+/// provides a section with the given title for testing
+pub fn section_with_title(title: &str) -> Section {
+    Section {
+        line_number: 0,
+        title_line: Line {
+            text: title.to_string(),
+        },
+        body: vec![],
+    }
 }

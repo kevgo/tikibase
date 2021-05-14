@@ -1,7 +1,7 @@
 use super::doc_links::DocLinks;
 use super::Tikibase;
 use super::{Issue, Issues};
-use crate::core::line::Reference;
+use crate::{config, core::line::Reference};
 use std::path::PathBuf;
 
 pub struct LinksResult {
@@ -88,7 +88,7 @@ impl Issue for BrokenLink {
         )
     }
 
-    fn fix(&self, _base: &mut Tikibase) -> String {
+    fn fix(&self, _base: &mut Tikibase, _config: &config::Data) -> String {
         panic!("not fixable")
     }
 
@@ -114,7 +114,7 @@ impl Issue for BrokenImage {
         )
     }
 
-    fn fix(&self, _base: &mut Tikibase) -> String {
+    fn fix(&self, _base: &mut Tikibase, _config: &config::Data) -> String {
         panic!("not fixable")
     }
 
