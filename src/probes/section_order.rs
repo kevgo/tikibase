@@ -40,13 +40,24 @@ fn matches_schema(actual: &[String], schema: &[String]) -> bool {
             // one of the iterators is done but the other is not --> actual doesn't match schema
             return false;
         }
+
+        let actual_value = actual_element.unwrap();
+        let schema_value = schema_element.unwrap();
+
         // here there are more elements --> keep comparing them
-        if actual_element == schema_element {
+        if actual_value == schema_value {
             // elements match --> advance both pointers
             actual_element = actual_iter.next();
             schema_element = schema_iter.next();
             continue;
         }
+
+        if !schema.contains(actual_value) {
+            // unknown element --> abort this check
+            // (we have a dedicated check for this)
+            return true;
+        }
+
         // elements don't match --> advance the schema
         // (because schema might contain elements that are not in actual)
         schema_element = schema_iter.next();

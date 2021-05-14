@@ -25,7 +25,11 @@ Feature: recognize/fix sections without content
 
   Scenario: fix
     When fixing
-    Then it finds no issues
+    Then it prints:
+      """
+      1.md:3  removed empty section "One"
+      1.md:9  removed empty section "Three"
+      """
     And file "1.md" should contain:
       """
       # Title 1

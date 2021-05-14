@@ -33,13 +33,13 @@ Feature: verify the ordering of content sections
       """
     And the exit code is 1
 
-  Scenario: this
+  Scenario: fix
     When fixing
     Then it prints:
       """
       test.md  fixed section order
       """
-    And file "1.md" should contain:
+    And file "test.md" should contain:
       """
       # Test
 
@@ -59,7 +59,7 @@ Feature: verify the ordering of content sections
       """
       test.md  fixed section order
       """
-    And file "1.md" should contain:
+    And file "test.md" should contain:
       """
       # Test
 
