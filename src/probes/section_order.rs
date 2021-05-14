@@ -37,7 +37,7 @@ fn matches_schema(actual: &[String], schema: &[String]) -> bool {
             return true;
         }
         if schema_element.is_none() {
-            // we reached the end of schema --> no match
+            // we reached the end of schema but there are still elements in actual --> no match
             return false;
         }
 
