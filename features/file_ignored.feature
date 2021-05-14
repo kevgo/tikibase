@@ -5,7 +5,7 @@ Feature: Ignore files
       """
       {
         "ignore": [
-          "Makefile",
+          "Makefile"
         ]
       }
       """
