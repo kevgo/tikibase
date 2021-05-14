@@ -1,5 +1,6 @@
+use super::config;
+use super::document::Document;
 use super::resource::Resource;
-use super::{config, document::Document};
 use std::fs::File;
 use std::io::{BufRead, BufReader};
 use std::path::{Path, PathBuf};
