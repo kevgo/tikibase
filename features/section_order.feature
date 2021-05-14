@@ -52,6 +52,7 @@ Feature: verify the ordering of content sections
       ### three
       text
       """
+    And the exit code is 0
 
   Scenario: pitstop
     When doing a pitstop
