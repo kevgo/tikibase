@@ -8,18 +8,18 @@ pub fn process(base: &Tikibase, resource_links: Vec<String>) -> Issues {
     for resource in base.resources.iter() {
         let path = resource.path.to_string_lossy().to_string();
         if !resource_links.contains(&path) {
-            result.push(Box::new(OrphanedImage { path }));
+            result.push(Box::new(OrphanedResource { path }));
         }
     }
     result
 }
 
-/// an image that isn't linked to
-pub struct OrphanedImage {
+/// a resource that isn't linked to
+pub struct OrphanedResource {
     path: String,
 }
 
-impl Issue for OrphanedImage {
+impl Issue for OrphanedResource {
     fn fix(&self, _base: &mut Tikibase, _config: &config::Data) -> String {
         panic!("not fixable")
     }
@@ -29,7 +29,7 @@ impl Issue for OrphanedImage {
     }
 
     fn describe(&self) -> String {
-        format!("unused image \"{}\"", self.path)
+        format!("unused resource \"{}\"", self.path)
     }
 }
 
