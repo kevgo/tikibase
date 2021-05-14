@@ -48,9 +48,9 @@ fn steps() -> Steps<MyWorld> {
         world
     });
 
-    steps.given_regex(r#"^binary file "(.*)"$"#, |world, ctx| {
+    steps.given_regex(r#"^file "(.*)"$"#, |world, ctx| {
         let filename = ctx.matches.get(1).expect("no filename provided");
-        testhelpers::create_file(filename, "binary content", &world.dir);
+        testhelpers::create_file(filename, "content", &world.dir);
         world
     });
 
