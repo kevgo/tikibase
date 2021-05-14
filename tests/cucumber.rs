@@ -5,7 +5,7 @@ use cucumber_rust::{async_trait, Cucumber, Steps, World};
 use std::io;
 use std::path::PathBuf;
 use tikibase;
-use tikibase::testhelpers;
+use tikibase::testhelpers::{create_file, load_file, tmp_dir};
 use tikibase::Command;
 
 pub struct MyWorld {
@@ -27,7 +27,7 @@ impl World for MyWorld {
     type Error = io::Error;
     async fn new() -> Result<Self, io::Error> {
         Ok(MyWorld {
-            dir: testhelpers::tmp_dir(),
+            dir: tmp_dir(),
             exitcode: 0,
             findings: vec![],
             original_contents: AHashMap::new(),
@@ -41,7 +41,7 @@ fn steps() -> Steps<MyWorld> {
     steps.given_regex(r#"^file "(.*)" with content:$"#, |mut world, ctx| {
         let filename = ctx.matches.get(1).expect("no filename provided");
         let content = ctx.step.docstring().unwrap().trim_start().to_string();
-        testhelpers::create_file(filename, &content, &world.dir);
+        create_file(filename, &content, &world.dir);
         world
             .original_contents
             .insert(PathBuf::from(filename), content);
@@ -50,7 +50,7 @@ fn steps() -> Steps<MyWorld> {
 
     steps.given_regex(r#"^file "(.*)"$"#, |world, ctx| {
         let filename = ctx.matches.get(1).expect("no filename provided");
-        testhelpers::create_file(filename, "content", &world.dir);
+        create_file(filename, "content", &world.dir);
         world
     });
 
@@ -72,7 +72,7 @@ fn steps() -> Steps<MyWorld> {
 
     steps.then("all files are unchanged", |world, _ctx| {
         for (filename, original_content) in &world.original_contents {
-            let current_content = testhelpers::load_file(filename, &world.dir);
+            let current_content = load_file(filename, &world.dir);
             assert_eq!(&current_content, original_content);
         }
         world
@@ -80,7 +80,7 @@ fn steps() -> Steps<MyWorld> {
 
     steps.then_regex(r#"^file "(.*)" is unchanged$"#, |world, ctx| {
         let filename = ctx.matches.get(1).expect("no filename provided");
-        let have = &testhelpers::load_file(&filename, &world.dir);
+        let have = &load_file(&filename, &world.dir);
         let want = world
             .original_contents
             .get(&PathBuf::from(filename))
@@ -92,7 +92,7 @@ fn steps() -> Steps<MyWorld> {
     steps.then_regex(r#"^file "(.*)" should contain:$"#, |world, ctx| {
         let want = ctx.step.docstring().unwrap().trim_start();
         let filename = ctx.matches.get(1).expect("no filename provided");
-        let have = testhelpers::load_file(&filename, &world.dir);
+        let have = load_file(&filename, &world.dir);
         assert_eq!(have, want);
         world
     });
