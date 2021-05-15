@@ -5,19 +5,19 @@ use std::path::PathBuf;
 
 pub fn process(base: &Tikibase, config: &config::Data) -> Issues {
     let mut issues = Issues::new();
-    let allowed_sections = match &config.allowed_sections {
+    let sections = match &config.sections {
         None => return issues,
-        Some(allowed_sections) => allowed_sections,
+        Some(sections) => sections,
     };
     for doc in &base.docs {
         for section in &doc.content_sections {
             let section_type = section.section_type();
-            if !allowed_sections.contains(&section_type) {
+            if !sections.contains(&section_type) {
                 issues.push(Box::new(UnknownSection {
                     file: doc.path.clone(),
                     line: section.line_number,
                     section_type,
-                    allowed_types: config.allowed_sections.clone().unwrap(),
+                    allowed_types: config.sections.clone().unwrap(),
                 }));
             }
         }
