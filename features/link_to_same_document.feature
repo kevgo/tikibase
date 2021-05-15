@@ -9,7 +9,7 @@ Feature: Link to the same document
       <a href="1.md">myself</a>
       """
 
-  Scenario: this
+  Scenario: check
     When checking
     Then it prints:
       """

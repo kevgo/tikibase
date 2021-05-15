@@ -2,8 +2,8 @@ use super::line::Line;
 use super::section::Section;
 use lazy_static::lazy_static;
 use regex::Regex;
-use std::io::prelude::*;
 use std::path::{Path, PathBuf};
+use std::{collections::HashSet, io::prelude::*};
 
 pub struct Document {
     /// the path relative to the Tikibase root directory
@@ -108,8 +108,8 @@ impl Document {
     }
 
     /// provides all the sources that this document defines
-    pub fn sources_defined(&self) -> Vec<String> {
-        let mut result = Vec::new();
+    pub fn sources_defined(&self) -> HashSet<String> {
+        let mut result = HashSet::new();
         let links_section = match self.get_section("links") {
             None => return result,
             Some(section) => section,
@@ -119,19 +119,19 @@ impl Document {
         }
         for line in links_section.lines() {
             for cap in SOURCE_RE.captures_iter(&line.text) {
-                result.push(cap[1].to_string());
+                result.insert(cap[1].to_string());
             }
         }
         result
     }
 
     /// provides all the sources used in this document
-    pub fn sources_used(&self) -> Vec<UsedSource> {
-        let mut result = Vec::new();
+    pub fn sources_used(&self) -> HashSet<UsedSource> {
+        let mut result = HashSet::new();
         for section in self.sections() {
             for (line_idx, line) in section.lines().enumerate() {
                 for source in line.used_sources() {
-                    result.push(UsedSource {
+                    result.insert(UsedSource {
                         file: &self.path,
                         line: section.line_number + (line_idx as u32),
                         source,
@@ -177,11 +177,11 @@ impl<'a> Iterator for SectionIterator<'a> {
     }
 }
 
-#[derive(Debug, PartialEq)]
+#[derive(Debug, PartialEq, Eq, Hash)]
 pub struct UsedSource<'a> {
-    file: &'a PathBuf,
-    line: u32,
-    source: String,
+    pub file: &'a PathBuf,
+    pub line: u32,
+    pub source: String,
 }
 
 // -------------------------------------------------------------------------------------
@@ -418,6 +418,8 @@ one
     }
 
     mod sources_defined {
+        use std::collections::HashSet;
+
         use crate::core::document::Document;
 
         #[test]
@@ -455,13 +457,15 @@ title text
 ";
             let doc = Document::from_str("test.md", give).unwrap();
             let have = doc.sources_defined();
-            let want = vec!["1".to_string(), "2".to_string()];
+            let mut want = HashSet::new();
+            want.insert("1".to_string());
+            want.insert("2".to_string());
             assert_eq!(have, want);
         }
     }
 
     mod sources_used {
-        use std::path::PathBuf;
+        use std::{collections::HashSet, path::PathBuf};
 
         use crate::core::document::{Document, UsedSource};
 
@@ -487,23 +491,22 @@ text [1] [3]
             let doc = Document::from_str("test.md", give).unwrap();
             let have = doc.sources_used();
             let pathbuf = PathBuf::from("test.md");
-            let want = vec![
-                UsedSource {
-                    file: &pathbuf,
-                    line: 1,
-                    source: "2".to_string(),
-                },
-                UsedSource {
-                    file: &pathbuf,
-                    line: 3,
-                    source: "1".to_string(),
-                },
-                UsedSource {
-                    file: &pathbuf,
-                    line: 3,
-                    source: "3".to_string(),
-                },
-            ];
+            let mut want = HashSet::new();
+            want.insert(UsedSource {
+                file: &pathbuf,
+                line: 1,
+                source: "2".to_string(),
+            });
+            want.insert(UsedSource {
+                file: &pathbuf,
+                line: 3,
+                source: "1".to_string(),
+            });
+            want.insert(UsedSource {
+                file: &pathbuf,
+                line: 3,
+                source: "3".to_string(),
+            });
             assert_eq!(have, want);
         }
     }
