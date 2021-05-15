@@ -419,9 +419,8 @@ one
     }
 
     mod sources_defined {
-        use std::collections::HashSet;
-
         use crate::core::document::Document;
+        use std::collections::HashSet;
 
         #[test]
         fn no_links() {
