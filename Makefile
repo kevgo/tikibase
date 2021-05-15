@@ -22,5 +22,4 @@ unit:  # runs the unit tests
 update:  # updates the dependencies
 	cargo update
 
-
 .SILENT:
