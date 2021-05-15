@@ -2,8 +2,9 @@ use super::line::Line;
 use super::section::Section;
 use lazy_static::lazy_static;
 use regex::Regex;
+use std::collections::HashSet;
+use std::io::prelude::*;
 use std::path::{Path, PathBuf};
-use std::{collections::HashSet, io::prelude::*};
 
 pub struct Document {
     /// the path relative to the Tikibase root directory
