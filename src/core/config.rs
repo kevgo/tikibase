@@ -7,7 +7,7 @@ use std::path::Path;
 #[derive(Deserialize, Default, PartialEq, Debug)]
 pub struct Data {
     /// the allowed section types
-    pub allowed_sections: Option<Vec<String>>,
+    pub section_names: Option<Vec<String>>,
 
     /// files to ignore
     pub ignore: Option<Vec<String>>,
@@ -39,7 +39,7 @@ mod tests {
     #[test]
     fn defaults() {
         let default_config: Data = Default::default();
-        assert_eq!(default_config.allowed_sections, None)
+        assert_eq!(default_config.section_names, None)
     }
 
     mod load {
@@ -50,7 +50,7 @@ mod tests {
             let dir = tmp_dir();
             let have = super::super::load(dir).unwrap();
             let want = super::super::Data {
-                allowed_sections: None,
+                section_names: None,
                 ignore: None,
             };
             assert_eq!(have, want);
@@ -62,7 +62,7 @@ mod tests {
             create_file("tikibase.json", "{}", &dir);
             let have = super::super::load(&dir).unwrap();
             let want = super::super::Data {
-                allowed_sections: None,
+                section_names: None,
                 ignore: None,
             };
             assert_eq!(have, want);
@@ -73,13 +73,13 @@ mod tests {
             let dir = tmp_dir();
             let content = r#"
             {
-              "allowed_sections": [ "one", "two" ]
+              "section_names": [ "one", "two" ]
             }
             "#;
             create_file("tikibase.json", content, &dir);
             let have = super::super::load(&dir).unwrap();
             let want = super::super::Data {
-                allowed_sections: Some(vec!["one".to_string(), "two".to_string()]),
+                section_names: Some(vec!["one".to_string(), "two".to_string()]),
                 ignore: None,
             };
             assert_eq!(have, want);
@@ -89,7 +89,7 @@ mod tests {
         fn invalid_config_file() {
             let dir = tmp_dir();
             let content = r#"{
-    "allowed_sections": [
+    "section_names": [
 }
 "#;
             create_file("tikibase.json", content, &dir);
