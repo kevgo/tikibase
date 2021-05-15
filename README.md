@@ -40,18 +40,27 @@ your platform or install from source:
 ### usage
 
 - on your developer machine: run `tikibase ps` in the folder with the Markdown
-  files
-- in your tests/CI: run `tikibase check`
+  files (finds all issues, fixes the auto-fixable ones, and lists the rest)
+- in your tests/CI: run `tikibase check` (lists all issues)
 - to see all available commands: `tikibase help`
 
 ### configuration
 
 To configure this tool, create a file `tikibase.json` in the directory
-containing your Tikibase. The available options are:
+containing your Tikibase. Here is an example:
 
-- **allowed_sections**: an array of section names that are only allowed
+```json
+{
+  "ignore": ["Makefile"],
+  "sections": ["foo", "bar"]
+}
+```
+
+- **ignore:** list of files to ignore
+- **sections:** if provided, accepts only sections with the given names, in the
+  given order
 
 ### related
 
-You might want to also use
-[VSCode Markdown IDE](https://github.com/kevgo/vscode-markdown-ide).
+[VSCode Markdown IDE](https://github.com/kevgo/vscode-markdown-ide) allows
+convenient editing of Tikibase content.
