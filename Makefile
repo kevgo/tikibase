@@ -19,4 +19,7 @@ unit:  # runs the unit tests
 	cargo clippy
 	cargo test
 
+update:  # updates the dependencies
+	cargo update
+
 .SILENT:
