@@ -181,36 +181,39 @@ impl SectionBuilder {
 
 #[cfg(test)]
 mod tests {
-
     use super::Document;
 
-    #[test]
-    fn from_str_valid() {
-        let content = "\
+    mod from_str {
+        use super::super::Document;
+
+        #[test]
+        fn valid() {
+            let content = "\
 # test
 ### section 1
 content";
-        let doc = Document::from_str("one.md", content).unwrap();
-        let mut sections = doc.sections();
-        match sections.next() {
-            None => panic!("expected title section"),
-            Some(s1) => assert_eq!(s1.title_line.text, "# test"),
+            let doc = Document::from_str("one.md", content).unwrap();
+            let mut sections = doc.sections();
+            match sections.next() {
+                None => panic!("expected title section"),
+                Some(s1) => assert_eq!(s1.title_line.text, "# test"),
+            }
+            match sections.next() {
+                None => panic!("expected s1"),
+                Some(s1) => assert_eq!(s1.title_line.text, "### section 1"),
+            }
+            match sections.next() {
+                None => return,
+                Some(_) => panic!("unexpected section"),
+            }
         }
-        match sections.next() {
-            None => panic!("expected s1"),
-            Some(s1) => assert_eq!(s1.title_line.text, "### section 1"),
-        }
-        match sections.next() {
-            None => return,
-            Some(_) => panic!("unexpected section"),
-        }
-    }
 
-    #[test]
-    fn from_str_invalid() {
-        match Document::from_str("one.md", "content") {
-            Err(e) => assert_eq!(e, "one.md  no title section"),
-            Ok(_) => panic!(),
+        #[test]
+        fn invalid() {
+            match Document::from_str("one.md", "content") {
+                Err(e) => assert_eq!(e, "one.md  no title section"),
+                Ok(_) => panic!(),
+            }
         }
     }
 
@@ -246,7 +249,7 @@ title text
 
     mod last_section_mut {
 
-        use super::Document;
+        use super::super::Document;
 
         #[test]
         fn has_content_section() {
