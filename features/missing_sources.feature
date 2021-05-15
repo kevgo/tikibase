@@ -13,7 +13,7 @@ Feature: recognize missing sources
       1. https://www.rust-lang.org
       """
 
-  Scenario: this
+  Scenario: check
     When checking
     Then it prints:
       """
