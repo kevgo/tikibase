@@ -6,6 +6,7 @@ Feature: recognize/fix links to non-existing documents
       # Title
 
       [zonk](non-existing.md)
+      <a href="non-existing">zonk</a>
       """
 
   Scenario: checking
@@ -13,6 +14,7 @@ Feature: recognize/fix links to non-existing documents
     Then it prints:
       """
       1.md:3  broken link to "non-existing.md"
+      1.md:4  broken link to "non-existing.md"
       """
     And all files are unchanged
     And the exit code is 1
@@ -27,6 +29,7 @@ Feature: recognize/fix links to non-existing documents
     Then it prints:
       """
       1.md:3  broken link to "non-existing.md"
+      1.md:4  broken link to "non-existing.md"
       """
     And all files are unchanged
     And the exit code is 1
