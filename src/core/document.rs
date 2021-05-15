@@ -241,6 +241,7 @@ text
 ";
             let doc = Document::from_str("test.md", content).unwrap();
             assert_eq!(doc.content_sections.len(), 0);
+            assert_eq!(doc.title_section.lines().count(), 6);
         }
 
         #[test]
