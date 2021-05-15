@@ -4,7 +4,7 @@ Feature: verify the ordering of content sections
     Given file "tikibase.json" with content:
       """
       {
-        "section_names": [
+        "sections": [
           "one",
           "two",
           "three"
