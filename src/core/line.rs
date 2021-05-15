@@ -12,6 +12,7 @@ pub enum Reference {
 }
 
 impl Line {
+    /// provides all links and images in this line
     pub fn references(&self) -> Vec<Reference> {
         lazy_static! {
             static ref MD_RE: Regex = Regex::new("(!?)\\[[^\\]]*\\]\\(([^)]*)\\)").unwrap();
@@ -45,6 +46,17 @@ impl Line {
             });
         }
         result
+    }
+
+    /// provides the indexes of all sources used in this line
+    pub fn used_sources(&self) -> Vec<String> {
+        lazy_static! {
+            static ref SOURCE_RE: Regex = Regex::new(r#"\[(\d+)\]"#).unwrap();
+        }
+        SOURCE_RE
+            .captures_iter(&self.text)
+            .map(|cap| cap[1].to_string())
+            .collect()
     }
 }
 
@@ -152,6 +164,31 @@ mod tests {
                 }
                 _ => panic!("expected image"),
             };
+        }
+    }
+
+    mod used_sources {
+        use crate::testhelpers::line_with_text;
+
+        #[test]
+        fn no_source() {
+            let line = line_with_text(r#"text"#);
+            let have = line.used_sources();
+            assert_eq!(have.len(), 0);
+        }
+
+        #[test]
+        fn single_source() {
+            let line = line_with_text(r#"- text [1]"#);
+            let have = line.used_sources();
+            assert_eq!(have, vec!["1".to_string()]);
+        }
+
+        #[test]
+        fn multiple_sources() {
+            let line = line_with_text(r#"- text [1] [2]"#);
+            let have = line.used_sources();
+            assert_eq!(have, vec!["1".to_string(), "2".to_string()]);
         }
     }
 }

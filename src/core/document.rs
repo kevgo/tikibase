@@ -1,5 +1,7 @@
 use super::line::Line;
 use super::section::Section;
+use lazy_static::lazy_static;
+use regex::Regex;
 use std::io::prelude::*;
 use std::path::{Path, PathBuf};
 
@@ -65,6 +67,13 @@ impl Document {
         file.write_all(self.text().as_bytes()).unwrap();
     }
 
+    /// provides the section with the given title
+    pub fn get_section(&self, section_type: &str) -> Option<&Section> {
+        self.content_sections
+            .iter()
+            .find(|section| section.section_type() == section_type)
+    }
+
     /// provides the last section in this document
     pub fn last_section_mut(&mut self) -> &mut Section {
         match self.content_sections.len() {
@@ -96,6 +105,41 @@ impl Document {
             .iter()
             .map(|section| section.section_type())
             .collect()
+    }
+
+    /// provides all the sources that this document defines
+    pub fn sources_defined(&self) -> Vec<String> {
+        let mut result = Vec::new();
+        let links_section = match self.get_section("links") {
+            None => return result,
+            Some(section) => section,
+        };
+        lazy_static! {
+            static ref SOURCE_RE: Regex = Regex::new("^(\\d+)\\.").unwrap();
+        }
+        for line in links_section.lines() {
+            for cap in SOURCE_RE.captures_iter(&line.text) {
+                result.push(cap[1].to_string());
+            }
+        }
+        result
+    }
+
+    /// provides all the sources used in this document
+    pub fn sources_used(&self) -> Vec<UsedSource> {
+        let mut result = Vec::new();
+        for section in self.sections() {
+            for (line_idx, line) in section.lines().enumerate() {
+                for source in line.used_sources() {
+                    result.push(UsedSource {
+                        file: &self.path,
+                        line: section.line_number + (line_idx as u32),
+                        source,
+                    });
+                }
+            }
+        }
+        result
     }
 
     /// provides the complete textual content of this document
@@ -131,6 +175,13 @@ impl<'a> Iterator for SectionIterator<'a> {
             self.body_iter.next()
         }
     }
+}
+
+#[derive(Debug, PartialEq)]
+pub struct UsedSource<'a> {
+    file: &'a PathBuf,
+    line: u32,
+    source: String,
 }
 
 // -------------------------------------------------------------------------------------
@@ -364,5 +415,96 @@ one
         let doc = Document::from_str("test.md", give).unwrap();
         let have = doc.title();
         assert_eq!(have, "Title");
+    }
+
+    mod sources_defined {
+        use crate::core::document::Document;
+
+        #[test]
+        fn no_links() {
+            let give = "\
+# Title
+title text
+";
+            let doc = Document::from_str("test.md", give).unwrap();
+            let have = doc.sources_defined();
+            assert_eq!(have.len(), 0);
+        }
+
+        #[test]
+        fn unordered_links() {
+            let give = "\
+# Title
+title text
+### links
+- https://foo.com
+";
+            let doc = Document::from_str("test.md", give).unwrap();
+            let have = doc.sources_defined();
+            assert_eq!(have.len(), 0);
+        }
+
+        #[test]
+        fn ordered_links() {
+            let give = "\
+# Title
+title text
+### links
+1. https://one.com
+2. https://two.com
+";
+            let doc = Document::from_str("test.md", give).unwrap();
+            let have = doc.sources_defined();
+            let want = vec!["1".to_string(), "2".to_string()];
+            assert_eq!(have, want);
+        }
+    }
+
+    mod sources_used {
+        use std::path::PathBuf;
+
+        use crate::core::document::{Document, UsedSource};
+
+        #[test]
+        fn no_sources() {
+            let give = "\
+# Title
+title text
+";
+            let doc = Document::from_str("test.md", give).unwrap();
+            let have = doc.sources_used();
+            assert_eq!(have.len(), 0);
+        }
+
+        #[test]
+        fn with_sources() {
+            let give = "\
+# Title
+title text [2]
+### sec 1
+text [1] [3]
+";
+            let doc = Document::from_str("test.md", give).unwrap();
+            let have = doc.sources_used();
+            let pathbuf = PathBuf::from("test.md");
+            let want = vec![
+                UsedSource {
+                    file: &pathbuf,
+                    line: 1,
+                    source: "2".to_string(),
+                },
+                UsedSource {
+                    file: &pathbuf,
+                    line: 3,
+                    source: "1".to_string(),
+                },
+                UsedSource {
+                    file: &pathbuf,
+                    line: 3,
+                    source: "3".to_string(),
+                },
+            ];
+            assert_eq!(have, want);
+        }
     }
 }
