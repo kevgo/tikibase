@@ -32,6 +32,8 @@ Tikibase by finding/fixing a number of issues:
 - **empty sections**
 - **unknown sections:** when the config file contains a `sections` key
 - **section order:** when the config file contains a `sections` key
+- **missing sources:** links in an ordered list in the `### links` section
+  referenced like `[1]` in the document
 
 ### installation
 
