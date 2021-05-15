@@ -7,7 +7,7 @@ use std::path::Path;
 #[derive(Deserialize, Default, PartialEq, Debug)]
 pub struct Data {
     /// the allowed section types
-    pub section_names: Option<Vec<String>>,
+    pub sections: Option<Vec<String>>,
 
     /// files to ignore
     pub ignore: Option<Vec<String>>,
@@ -39,7 +39,7 @@ mod tests {
     #[test]
     fn defaults() {
         let default_config: Data = Default::default();
-        assert_eq!(default_config.section_names, None)
+        assert_eq!(default_config.sections, None)
     }
 
     mod load {
@@ -50,7 +50,7 @@ mod tests {
             let dir = tmp_dir();
             let have = super::super::load(dir).unwrap();
             let want = super::super::Data {
-                section_names: None,
+                sections: None,
                 ignore: None,
             };
             assert_eq!(have, want);
@@ -62,7 +62,7 @@ mod tests {
             create_file("tikibase.json", "{}", &dir);
             let have = super::super::load(&dir).unwrap();
             let want = super::super::Data {
-                section_names: None,
+                sections: None,
                 ignore: None,
             };
             assert_eq!(have, want);
@@ -73,13 +73,13 @@ mod tests {
             let dir = tmp_dir();
             let content = r#"
             {
-              "section_names": [ "one", "two" ]
+              "sections": [ "one", "two" ]
             }
             "#;
             create_file("tikibase.json", content, &dir);
             let have = super::super::load(&dir).unwrap();
             let want = super::super::Data {
-                section_names: Some(vec!["one".to_string(), "two".to_string()]),
+                sections: Some(vec!["one".to_string(), "two".to_string()]),
                 ignore: None,
             };
             assert_eq!(have, want);
@@ -89,7 +89,7 @@ mod tests {
         fn invalid_config_file() {
             let dir = tmp_dir();
             let content = r#"{
-    "section_names": [
+    "sections": [
 }
 "#;
             create_file("tikibase.json", content, &dir);

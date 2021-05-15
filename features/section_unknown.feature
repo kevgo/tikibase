@@ -4,7 +4,7 @@ Feature: verify section types
     Given file "tikibase.json" with content:
       """
       {
-        "section_names": [
+        "sections": [
           "what is it",
           "links"
         ]

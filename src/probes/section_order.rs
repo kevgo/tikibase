@@ -7,7 +7,7 @@ use crate::core::tikibase::Tikibase;
 
 pub fn process(base: &Tikibase, config: &config::Data) -> Issues {
     let mut issues = Issues::new();
-    let expected_order = match &config.section_names {
+    let expected_order = match &config.sections {
         None => return issues,
         Some(expected_sections) => expected_sections,
     };
@@ -88,10 +88,8 @@ impl Issue for UnorderedSections {
     fn fix(&self, base: &mut Tikibase, config: &config::Data) -> String {
         let base_dir = base.dir.clone();
         let mut doc = base.get_doc_mut(&self.file).unwrap();
-        doc.content_sections = reorder(
-            &mut doc.content_sections,
-            config.section_names.as_ref().unwrap(),
-        );
+        doc.content_sections =
+            reorder(&mut doc.content_sections, config.sections.as_ref().unwrap());
         doc.flush(&base_dir);
         format!("{}  fixed section order", &doc.path.to_string_lossy())
     }
