@@ -121,6 +121,61 @@ impl<'a> Iterator for SectionIterator<'a> {
 }
 
 // -------------------------------------------------------------------------------------
+// HELPERS
+// -------------------------------------------------------------------------------------
+
+/// Allows building up sections one line at a time.
+pub struct SectionBuilder {
+    pub line_number: u32,
+    title_line: String,
+    body: Vec<Line>,
+    valid: bool,
+}
+
+/// Provides a builder instance loaded with the given title line.
+pub fn builder_with_title_line<S: Into<String>>(text: S, line_number: u32) -> SectionBuilder {
+    SectionBuilder {
+        title_line: text.into(),
+        line_number,
+        body: Vec::new(),
+        valid: true,
+    }
+}
+
+/// Null value for SectionBuilder instances
+pub fn placeholder_builder() -> SectionBuilder {
+    SectionBuilder {
+        title_line: "".to_string(),
+        line_number: 0,
+        body: Vec::new(),
+        valid: false,
+    }
+}
+
+impl SectionBuilder {
+    pub fn add_body_line<S: Into<String>>(&mut self, line: S) {
+        if !self.valid {
+            panic!("cannot add to an invalid builder");
+        }
+        self.body.push(Line { text: line.into() });
+    }
+
+    /// Provides the content this builder has accumulated.
+    pub fn result(self) -> Option<Section> {
+        match self.valid {
+            false => None,
+            true => Some(Section {
+                title_line: Line {
+                    text: self.title_line,
+                },
+                line_number: self.line_number,
+                body: self.body,
+            }),
+        }
+    }
+}
+
+// -------------------------------------------------------------------------------------
 // TESTS
 // -------------------------------------------------------------------------------------
 
@@ -263,60 +318,5 @@ one
         let doc = Document::from_str("test.md", give).unwrap();
         let have = doc.title();
         assert_eq!(have, "Title");
-    }
-}
-
-// -------------------------------------------------------------------------------------
-// HELPERS
-// -------------------------------------------------------------------------------------
-
-/// Allows building up sections one line at a time.
-pub struct SectionBuilder {
-    pub line_number: u32,
-    title_line: String,
-    body: Vec<Line>,
-    valid: bool,
-}
-
-/// Provides a builder instance loaded with the given title line.
-pub fn builder_with_title_line<S: Into<String>>(text: S, line_number: u32) -> SectionBuilder {
-    SectionBuilder {
-        title_line: text.into(),
-        line_number,
-        body: Vec::new(),
-        valid: true,
-    }
-}
-
-/// Null value for SectionBuilder instances
-pub fn placeholder_builder() -> SectionBuilder {
-    SectionBuilder {
-        title_line: "".to_string(),
-        line_number: 0,
-        body: Vec::new(),
-        valid: false,
-    }
-}
-
-impl SectionBuilder {
-    pub fn add_body_line<S: Into<String>>(&mut self, line: S) {
-        if !self.valid {
-            panic!("cannot add to an invalid builder");
-        }
-        self.body.push(Line { text: line.into() });
-    }
-
-    /// Provides the content this builder has accumulated.
-    pub fn result(self) -> Option<Section> {
-        match self.valid {
-            false => None,
-            true => Some(Section {
-                title_line: Line {
-                    text: self.title_line,
-                },
-                line_number: self.line_number,
-                body: self.body,
-            }),
-        }
     }
 }
