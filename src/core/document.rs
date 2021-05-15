@@ -18,8 +18,14 @@ impl Document {
     {
         let mut sections: Vec<Section> = Vec::new();
         let mut section_builder = placeholder_builder();
+        let mut inside_fence = false;
+        let mut fence_start_line = 0;
         for (line, line_number) in lines.zip(0..) {
-            if line.starts_with('#') {
+            if line.starts_with("```") {
+                inside_fence = !inside_fence;
+                fence_start_line = line_number;
+            }
+            if line.starts_with('#') && !inside_fence {
                 if let Some(section) = section_builder.result() {
                     sections.push(section);
                 }
@@ -34,6 +40,13 @@ impl Document {
             sections.push(section);
         }
         let content_sections = sections.split_off(1);
+        if inside_fence {
+            return Err(format!(
+                "{}:{}  unclosed fence",
+                path.to_string_lossy(),
+                fence_start_line + 1,
+            ));
+        }
         Ok(Document {
             path,
             title_section: sections.pop().unwrap(),
@@ -216,8 +229,33 @@ content";
             }
         }
 
+        #[test]
         fn with_fenced_code_block() {
-            //
+            let content = "\
+# test
+
+```md
+### not a document section
+text
+```
+";
+            let doc = Document::from_str("test.md", content).unwrap();
+            assert_eq!(doc.content_sections.len(), 0);
+        }
+
+        #[test]
+        fn with_open_fenced_code_block() {
+            let content = "\
+# test
+
+```md
+### not a document section
+text
+";
+            match Document::from_str("test.md", content) {
+                Err(msg) => assert_eq!(msg, "test.md:3  unclosed fence"),
+                Ok(_) => panic!(),
+            }
         }
     }
 
