@@ -31,7 +31,7 @@ pub fn create_file(filename: &str, content: &str, dir: &Path) {
 /// provides an empty configuration instance for testing
 pub fn empty_config() -> config::Data {
     config::Data {
-        allowed_sections: None,
+        section_names: None,
         ignore: None,
     }
 }
