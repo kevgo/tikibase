@@ -6,27 +6,31 @@
 
 _the un-database_
 
-Whatever knowledge base you use and love today, it will be outdated in 5 years
-and unsupported or unavailable in 10 years. All your content will be gone with
-it. Tikibase is a knowledge base with focus on longetivity and flexibilty. Using
-a Tikibase doesn't require a special database server or viewer application. It
-consists of a set of standard Markdown files. You read, write, and organize
-these files using the text or Markdown viewer/editor of your choice. You manage
-the files using a version control system like Git or Mercurial. A Tikibase is
-available on all current and future compute platforms that can display text.
+Whatever note taking or knowledge base application you use and love today, it
+will be outdated in 5 years and unsupported/unavailable in 10 years. All your
+data will be gone with it.
 
-The CLI application in this repository helps maintain a Tikibase by finding and
-sometimes fixing various issues:
+Tikibase solves this problem. It is a knowledge base solution available on all
+current and future compute platforms. Tikibase works without any particular
+database server or viewer application. If your computer can display/edit text,
+you can use a Tikibase on it.
 
-- broken links
-- broken images
-- images not referenced in a Markdown document
-- missing backlinks
-- inconsistent section capitalization
-- duplicate sections
-- empty sections
-- unknown sections
-- section order
+A Tikibase is just a set of normal Markdown files. You view, change, and
+organize these files using the text or Markdown viewer/editor of your choice.
+You manage the files using a version control system like Git or Mercurial. The
+CLI application in this repository is an optional linter that helps maintain a
+Tikibase by finding/fixing a number of issues:
+
+- **broken links:** Markdown or HTML links pointing to non-existing local files
+- **broken images:** Markdown or HTML image tags pointing to non-existing files
+- **orphaned resources:** non-Markdown files not referenced in a Markdown
+  document
+- **missing backlinks:** if document A links to document B, document B must also
+- **inconsistent section capitalization** link to document A
+- **duplicate sections**
+- **empty sections**
+- **unknown sections:** when the config file contains a `sections` key
+- **section order:** when the config file contains a `sections` key
 
 ### installation
 
@@ -46,8 +50,7 @@ your platform or install from source:
 
 ### configuration
 
-To configure this tool, create a file `tikibase.json` in the directory
-containing your Tikibase. Here is an example:
+Create a file `tikibase.json` in your Tikibase directory. Here is an example:
 
 ```json
 {
@@ -63,4 +66,4 @@ containing your Tikibase. Here is an example:
 ### related
 
 [VSCode Markdown IDE](https://github.com/kevgo/vscode-markdown-ide) allows
-convenient editing of Tikibase content.
+convenient editing of Tikibase content using VSCode.
