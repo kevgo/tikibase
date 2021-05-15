@@ -26,6 +26,7 @@ Tikibase by finding/fixing a number of issues:
 - **orphaned resources:** non-Markdown files not referenced in a Markdown
   document
 - **missing backlinks:** if document A links to document B, document B must also
+- **links to the same document**
 - **inconsistent section capitalization** link to document A
 - **duplicate sections**
 - **empty sections**

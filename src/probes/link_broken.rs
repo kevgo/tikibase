@@ -45,6 +45,13 @@ pub fn process(base: &Tikibase) -> LinksResult {
                                 }));
                                 continue;
                             }
+                            if destination == doc.path.to_string_lossy() {
+                                result.issues.push(Box::new(LinkToSameDocument {
+                                    filename: doc.path.clone(),
+                                    line: section.line_number + (i as u32) + 1,
+                                }));
+                                continue;
+                            }
                             result
                                 .incoming_doc_links
                                 .add(&destination, doc.path.clone());
@@ -116,6 +123,29 @@ impl Issue for BrokenImage {
 
     fn fix(&self, _base: &mut Tikibase, _config: &config::Data) -> String {
         panic!("not fixable")
+    }
+
+    fn fixable(&self) -> bool {
+        false
+    }
+}
+
+pub struct LinkToSameDocument {
+    filename: PathBuf,
+    line: u32,
+}
+
+impl Issue for LinkToSameDocument {
+    fn describe(&self) -> String {
+        format!(
+            "{}:{}  link to the same file",
+            self.filename.to_string_lossy(),
+            self.line
+        )
+    }
+
+    fn fix(&self, _base: &mut Tikibase, _config: &config::Data) -> String {
+        panic!("not fixable");
     }
 
     fn fixable(&self) -> bool {
