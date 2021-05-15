@@ -215,6 +215,10 @@ content";
                 Ok(_) => panic!(),
             }
         }
+
+        fn with_fenced_code_block() {
+            //
+        }
     }
 
     mod lines_count {
