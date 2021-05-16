@@ -11,7 +11,7 @@ Feature: Ignore files
       """
     And file "Makefile"
 
-  Scenario: this
+  Scenario: check
     When checking
     Then it finds no issues
 

@@ -1,23 +1,26 @@
-Feature: Link to the same document
+Feature: recognize missing sources
 
   Background:
     Given file "1.md" with content:
       """
       # Title
 
-      [myself](1.md)
-      <a href="1.md">myself</a>
+      ### metrics
+      - 100 tons of Rust [2]
+
+      ### links
+
+      1. https://www.rust-lang.org
       """
 
   Scenario: check
     When checking
     Then it prints:
       """
-      1.md:3  link to the same file
-      1.md:4  link to the same file
+      1.md:4  missing source [2]
       """
     And all files are unchanged
-    And the exit code is 2
+    And the exit code is 1
 
   Scenario: fixing
     When fixing
@@ -28,8 +31,7 @@ Feature: Link to the same document
     When doing a pitstop
     Then it prints:
       """
-      1.md:3  link to the same file
-      1.md:4  link to the same file
+      1.md:4  missing source [2]
       """
     And all files are unchanged
-    And the exit code is 2
+    And the exit code is 1

@@ -1,5 +1,8 @@
 use super::line::Line;
 use super::section::Section;
+use lazy_static::lazy_static;
+use regex::Regex;
+use std::collections::HashSet;
 use std::io::prelude::*;
 use std::path::{Path, PathBuf};
 
@@ -65,6 +68,13 @@ impl Document {
         file.write_all(self.text().as_bytes()).unwrap();
     }
 
+    /// provides the section with the given title
+    pub fn get_section(&self, section_type: &str) -> Option<&Section> {
+        self.content_sections
+            .iter()
+            .find(|section| section.section_type() == section_type)
+    }
+
     /// provides the last section in this document
     pub fn last_section_mut(&mut self) -> &mut Section {
         match self.content_sections.len() {
@@ -96,6 +106,41 @@ impl Document {
             .iter()
             .map(|section| section.section_type())
             .collect()
+    }
+
+    /// provides all the sources that this document defines
+    pub fn sources_defined(&self) -> HashSet<String> {
+        let mut result = HashSet::new();
+        let links_section = match self.get_section("links") {
+            None => return result,
+            Some(section) => section,
+        };
+        lazy_static! {
+            static ref SOURCE_RE: Regex = Regex::new("^(\\d+)\\.").unwrap();
+        }
+        for line in links_section.lines() {
+            for cap in SOURCE_RE.captures_iter(&line.text) {
+                result.insert(cap[1].to_string());
+            }
+        }
+        result
+    }
+
+    /// provides all the sources used in this document
+    pub fn sources_used(&self) -> HashSet<UsedSource> {
+        let mut result = HashSet::new();
+        for section in self.sections() {
+            for (line_idx, line) in section.lines().enumerate() {
+                for index in line.used_sources() {
+                    result.insert(UsedSource {
+                        file: &self.path,
+                        line: section.line_number + (line_idx as u32),
+                        index,
+                    });
+                }
+            }
+        }
+        result
     }
 
     /// provides the complete textual content of this document
@@ -131,6 +176,13 @@ impl<'a> Iterator for SectionIterator<'a> {
             self.body_iter.next()
         }
     }
+}
+
+#[derive(Debug, PartialEq, Eq, Hash)]
+pub struct UsedSource<'a> {
+    pub file: &'a PathBuf,
+    pub line: u32,
+    pub index: String,
 }
 
 // -------------------------------------------------------------------------------------
@@ -364,5 +416,98 @@ one
         let doc = Document::from_str("test.md", give).unwrap();
         let have = doc.title();
         assert_eq!(have, "Title");
+    }
+
+    mod sources_defined {
+        use crate::core::document::Document;
+        use std::collections::HashSet;
+
+        #[test]
+        fn no_links() {
+            let give = "\
+# Title
+title text
+";
+            let doc = Document::from_str("test.md", give).unwrap();
+            let have = doc.sources_defined();
+            assert_eq!(have.len(), 0);
+        }
+
+        #[test]
+        fn unordered_links() {
+            let give = "\
+# Title
+title text
+### links
+- https://foo.com
+";
+            let doc = Document::from_str("test.md", give).unwrap();
+            let have = doc.sources_defined();
+            assert_eq!(have.len(), 0);
+        }
+
+        #[test]
+        fn ordered_links() {
+            let give = "\
+# Title
+title text
+### links
+1. https://one.com
+2. https://two.com
+";
+            let doc = Document::from_str("test.md", give).unwrap();
+            let have = doc.sources_defined();
+            let mut want = HashSet::new();
+            want.insert("1".to_string());
+            want.insert("2".to_string());
+            assert_eq!(have, want);
+        }
+    }
+
+    mod sources_used {
+        use std::{collections::HashSet, path::PathBuf};
+
+        use crate::core::document::{Document, UsedSource};
+
+        #[test]
+        fn no_sources() {
+            let give = "\
+# Title
+title text
+";
+            let doc = Document::from_str("test.md", give).unwrap();
+            let have = doc.sources_used();
+            assert_eq!(have.len(), 0);
+        }
+
+        #[test]
+        fn with_sources() {
+            let give = "\
+# Title
+title text [2]
+### sec 1
+text [1] [3]
+";
+            let doc = Document::from_str("test.md", give).unwrap();
+            let have = doc.sources_used();
+            let pathbuf = PathBuf::from("test.md");
+            let mut want = HashSet::new();
+            want.insert(UsedSource {
+                file: &pathbuf,
+                line: 1,
+                index: "2".to_string(),
+            });
+            want.insert(UsedSource {
+                file: &pathbuf,
+                line: 3,
+                index: "1".to_string(),
+            });
+            want.insert(UsedSource {
+                file: &pathbuf,
+                line: 3,
+                index: "3".to_string(),
+            });
+            assert_eq!(have, want);
+        }
     }
 }
