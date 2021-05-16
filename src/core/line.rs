@@ -172,21 +172,21 @@ mod tests {
 
         #[test]
         fn no_source() {
-            let line = line_with_text(r#"text"#);
+            let line = line_with_text("text");
             let have = line.used_sources();
             assert_eq!(have.len(), 0);
         }
 
         #[test]
         fn single_source() {
-            let line = line_with_text(r#"- text [1]"#);
+            let line = line_with_text("- text [1]");
             let have = line.used_sources();
             assert_eq!(have, vec!["1".to_string()]);
         }
 
         #[test]
         fn multiple_sources() {
-            let line = line_with_text(r#"- text [1] [2]"#);
+            let line = line_with_text("- text [1] [2]");
             let have = line.used_sources();
             assert_eq!(have, vec!["1".to_string(), "2".to_string()]);
         }
