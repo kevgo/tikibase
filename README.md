@@ -25,9 +25,9 @@ Tikibase by finding/fixing a number of issues:
 - **broken images:** Markdown or HTML image tags pointing to non-existing files
 - **orphaned resources:** non-Markdown files not referenced in a Markdown
   document
-- **missing backlinks:** if document A links to document B, document B must also
+- **missing backlinks:** if document A links to document B, document B must also link to document A
 - **links to the same document**
-- **inconsistent section capitalization** link to document A
+- **inconsistent section capitalization**
 - **duplicate sections**
 - **empty sections**
 - **unknown sections:** when the config file contains a `sections` key
