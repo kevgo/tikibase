@@ -131,11 +131,11 @@ impl Document {
         let mut result = HashSet::new();
         for section in self.sections() {
             for (line_idx, line) in section.lines().enumerate() {
-                for source in line.used_sources() {
+                for index in line.used_sources() {
                     result.insert(UsedSource {
                         file: &self.path,
                         line: section.line_number + (line_idx as u32),
-                        index: source,
+                        index,
                     });
                 }
             }
