@@ -135,7 +135,7 @@ impl Document {
                     result.insert(UsedSource {
                         file: &self.path,
                         line: section.line_number + (line_idx as u32),
-                        source,
+                        index: source,
                     });
                 }
             }
@@ -182,7 +182,7 @@ impl<'a> Iterator for SectionIterator<'a> {
 pub struct UsedSource<'a> {
     pub file: &'a PathBuf,
     pub line: u32,
-    pub source: String,
+    pub index: String,
 }
 
 // -------------------------------------------------------------------------------------
@@ -495,17 +495,17 @@ text [1] [3]
             want.insert(UsedSource {
                 file: &pathbuf,
                 line: 1,
-                source: "2".to_string(),
+                index: "2".to_string(),
             });
             want.insert(UsedSource {
                 file: &pathbuf,
                 line: 3,
-                source: "1".to_string(),
+                index: "1".to_string(),
             });
             want.insert(UsedSource {
                 file: &pathbuf,
                 line: 3,
-                source: "3".to_string(),
+                index: "3".to_string(),
             });
             assert_eq!(have, want);
         }

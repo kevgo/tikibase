@@ -7,11 +7,11 @@ pub fn process(base: &Tikibase) -> Issues {
         let used_sources = doc.sources_used();
         let defined_source_ids = doc.sources_defined();
         for used_source in used_sources {
-            if !defined_source_ids.contains(&used_source.source) {
+            if !defined_source_ids.contains(&used_source.index) {
                 issues.push(Box::new(MissingSource {
                     file: used_source.file.to_string_lossy().to_string(),
                     line: used_source.line,
-                    index: used_source.source,
+                    index: used_source.index,
                 }));
             }
         }
