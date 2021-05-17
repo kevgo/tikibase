@@ -130,6 +130,9 @@ impl Document {
     pub fn sources_used(&self) -> HashSet<UsedSource> {
         let mut result = HashSet::new();
         for section in self.sections() {
+            if section.section_type() == "occurrences" {
+                continue;
+            }
             for (line_idx, line) in section.lines().enumerate() {
                 for index in line.used_sources() {
                     result.insert(UsedSource {
