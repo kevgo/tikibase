@@ -42,7 +42,7 @@ impl Section {
                 return &self.title_line.text[i..];
             }
         }
-        &self.title_line.text[..]
+        ""
     }
 
     /// provides the complete text of this section
@@ -183,18 +183,35 @@ title content";
         }
     }
 
-    #[test]
-    fn section_type() {
-        let tests = vec![
-            ("# Title", "Title"),
-            ("### Title", "Title"),
-            ("Title", "Title"),
-            ("###", ""),
-        ];
-        for (title, want) in tests.into_iter() {
-            let section = section_with_title(title);
+    mod section_type {
+        use crate::testhelpers::section_with_title;
+
+        #[test]
+        fn h1() {
+            let section = section_with_title("# Title");
             let have = section.section_type();
-            assert_eq!(have, want);
+            assert_eq!(have, "Title");
+        }
+
+        #[test]
+        fn h3() {
+            let section = section_with_title("### Title");
+            let have = section.section_type();
+            assert_eq!(have, "Title");
+        }
+
+        #[test]
+        fn no_header() {
+            let section = section_with_title("Title");
+            let have = section.section_type();
+            assert_eq!(have, "Title");
+        }
+
+        #[test]
+        fn no_text() {
+            let section = section_with_title("###");
+            let have = section.section_type();
+            assert_eq!(have, "");
         }
     }
 
