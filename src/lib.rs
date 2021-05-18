@@ -1,3 +1,5 @@
+#![feature(cow_is_borrowed)]
+
 pub mod core;
 pub mod help;
 pub mod probes;

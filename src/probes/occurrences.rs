@@ -151,15 +151,20 @@ mod tests {
         assert_eq!(issues, vec!["1.md  missing link to 2.md, 3.md"]);
     }
 
-    #[test]
-    fn strip_links() {
-        let tests = vec![
-            ("[one](1.md) [two](2.md)", "one two"),
-            ("one two", "one two"),
-        ];
-        for (give, want) in tests {
-            let have = super::strip_links(give);
-            assert_eq!(have, want, "{} -> {}", give, want);
+    mod strip_links {
+
+        #[test]
+        fn with_links() {
+            let have = super::super::strip_links("[one](1.md) [two](2.md)");
+            assert!(have.is_owned());
+            assert_eq!(have, "one two");
+        }
+
+        #[test]
+        fn without_links() {
+            let have = super::super::strip_links("one two");
+            assert!(have.is_borrowed());
+            assert_eq!(have, "one two");
         }
     }
 }
