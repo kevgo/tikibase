@@ -35,7 +35,6 @@ impl Section {
         self.body.push(Line { text: text.into() });
     }
 
-    // TODO: return a string slice here
     pub fn section_type(&self) -> &str {
         for (i, c) in self.title_line.text.char_indices() {
             if c != '#' && c != ' ' {
