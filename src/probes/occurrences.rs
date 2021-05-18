@@ -6,8 +6,8 @@ use crate::core::document::builder_with_title_line;
 use crate::core::tikibase::Tikibase;
 use ahash::AHashSet;
 use lazy_static::lazy_static;
-use regex::{Captures, Match, Regex};
-use std::{borrow::Cow, path::PathBuf};
+use regex::{Captures, Regex};
+use std::path::PathBuf;
 
 struct MissingOccurrence {
     path: PathBuf,
@@ -68,19 +68,20 @@ impl Issue for MissingOccurrences {
 }
 
 /// removes all links from the given string
-fn strip_links(text: &str) -> Cow<str> {
+// TODO: try using a Cow<> here
+fn strip_links(text: &str) -> String {
     lazy_static! {
         static ref SOURCE_RE: Regex = Regex::new(r#"\[([^]]*)\]\([^)]*\)"#).unwrap();
     }
-    let mut matches: Vec<Captures> = SOURCE_RE.captures_iter(text).collect();
+    let matches: Vec<Captures> = SOURCE_RE.captures_iter(text).collect();
     if matches.is_empty() {
-        return Cow::Borrowed(text);
+        return text.to_string();
     }
     let mut result = text.to_string();
     for m in matches {
-        result.replace(m.get(0).unwrap(), m.get(1).unwrap());
+        result = result.replace(m.get(0).unwrap().as_str(), m.get(1).unwrap().as_str());
     }
-    Cow::from(result)
+    result
 }
 
 pub fn process(
