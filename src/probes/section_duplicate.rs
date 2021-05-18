@@ -8,7 +8,7 @@ use crate::core::tikibase::Tikibase;
 pub fn process(base: &Tikibase) -> Issues {
     let mut issues = Issues::new();
     for doc in &base.docs {
-        let mut known_sections = vec![];
+        let mut known_sections = Vec::new();
         for section in &doc.content_sections {
             let section_type = section.section_type();
             if known_sections.contains(&section_type) {
