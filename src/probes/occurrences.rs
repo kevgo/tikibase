@@ -5,7 +5,9 @@ use crate::config;
 use crate::core::document::builder_with_title_line;
 use crate::core::tikibase::Tikibase;
 use ahash::AHashSet;
-use std::path::PathBuf;
+use lazy_static::lazy_static;
+use regex::{Match, Regex};
+use std::{borrow::Cow, path::PathBuf};
 
 struct MissingOccurrence {
     path: PathBuf,
@@ -32,7 +34,7 @@ impl Issue for MissingOccurrences {
         for missing in self.missing_links.iter() {
             section_builder.add_body_line(format!(
                 "- [{}]({})",
-                missing.title,
+                strip_links(&missing.title),
                 missing.path.to_string_lossy()
             ));
         }
@@ -63,6 +65,23 @@ impl Issue for MissingOccurrences {
             links.join(", "),
         )
     }
+}
+
+/// removes all links from the given string
+fn strip_links(text: &str) -> Cow<str> {
+    lazy_static! {
+        static ref SOURCE_RE: Regex = Regex::new(r#"\[(^])*\]\([^)]*\)"#).unwrap();
+    }
+    let mut matches: Vec<Match> = SOURCE_RE.find_iter(text).collect();
+    if matches.is_empty() {
+        return Cow::Borrowed(text);
+    }
+    matches.reverse();
+    let mut result = text.to_string();
+    for m in matches {
+        result.replace_range(m.range(), "");
+    }
+    Cow::from(result)
 }
 
 pub fn process(
@@ -129,6 +148,18 @@ mod tests {
         incoming_links.add("1.md", "2.md");
         let have = super::process(&base, &incoming_links, &outgoing_links);
         let issues: Vec<String> = have.iter().map(|issue| issue.describe()).collect();
-        assert_eq!(issues, vec!["1.md  missing link to 2.md, 3.md",]);
+        assert_eq!(issues, vec!["1.md  missing link to 2.md, 3.md"]);
+    }
+
+    #[test]
+    fn strip_links() {
+        let tests = vec![
+            ("[one](1.md) [two](2.md)", "one two"),
+            ("one two", "one two"),
+        ];
+        for (give, want) in tests {
+            let have = super::strip_links(give);
+            assert_eq!(have, want, "{} -> {}", give, want);
+        }
     }
 }
