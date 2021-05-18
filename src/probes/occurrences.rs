@@ -68,7 +68,6 @@ impl Issue for MissingOccurrences {
 }
 
 /// removes all links from the given string
-// TODO: try using a Cow<> here
 fn strip_links(text: &str) -> Cow<str> {
     lazy_static! {
         static ref SOURCE_RE: Regex = Regex::new(r#"\[([^]]*)\]\([^)]*\)"#).unwrap();
