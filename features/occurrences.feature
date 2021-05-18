@@ -34,7 +34,7 @@ Feature: add occurrence sections
       """
     And the exit code is 1
 
-  Scenario: this
+  Scenario: fix
     When fixing
     Then it prints:
       """
