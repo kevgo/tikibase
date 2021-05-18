@@ -35,16 +35,14 @@ impl Section {
         self.body.push(Line { text: text.into() });
     }
 
-    pub fn section_type(&self) -> String {
-        let pos = self
-            .title_line
-            .text
-            .char_indices()
-            .find(|(_, letter)| *letter != '#' && *letter != ' ');
-        match pos {
-            None => "".into(),
-            Some((pos, _)) => self.title_line.text.clone().split_off(pos),
+    // TODO: return a string slice here
+    pub fn section_type(&self) -> &str {
+        for (i, c) in self.title_line.text.char_indices() {
+            if c != '#' && c != ' ' {
+                return &self.title_line.text[i..];
+            }
         }
+        ""
     }
 
     /// provides the complete text of this section
@@ -185,17 +183,35 @@ title content";
         }
     }
 
-    #[test]
-    fn section_type() {
-        let tests = vec![
-            ("# Title", "Title"),
-            ("### Title", "Title"),
-            ("Title", "Title"),
-            ("###", ""),
-        ];
-        for (give, want) in tests.into_iter() {
-            let have = section_with_title(give).section_type();
-            assert_eq!(have, want);
+    mod section_type {
+        use crate::testhelpers::section_with_title;
+
+        #[test]
+        fn h1() {
+            let section = section_with_title("# Title");
+            let have = section.section_type();
+            assert_eq!(have, "Title");
+        }
+
+        #[test]
+        fn h3() {
+            let section = section_with_title("### Title");
+            let have = section.section_type();
+            assert_eq!(have, "Title");
+        }
+
+        #[test]
+        fn no_header() {
+            let section = section_with_title("Title");
+            let have = section.section_type();
+            assert_eq!(have, "Title");
+        }
+
+        #[test]
+        fn no_text() {
+            let section = section_with_title("###");
+            let have = section.section_type();
+            assert_eq!(have, "");
         }
     }
 
