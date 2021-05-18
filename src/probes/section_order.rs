@@ -48,6 +48,7 @@ fn matches_schema(actual: Vec<&str>, schema: &[String]) -> bool {
             continue;
         }
 
+        // HACK: see https://github.com/rust-lang/rust/issues/42671
         if !schema.iter().any(|s| s == actual_value) {
             // unknown element in actual --> ignore here (there is a separate check for this)
             actual_element = actual_iter.next();
