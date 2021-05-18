@@ -58,5 +58,3 @@ impl Issue for UnknownSection {
         false
     }
 }
-
-// TODO: tests

@@ -32,5 +32,3 @@ impl Issue for OrphanedResource {
         format!("unused resource \"{}\"", self.path)
     }
 }
-
-// TODO: add tests

@@ -153,7 +153,7 @@ mod tests {
         }
     }
 
-    mod same_order {
+    mod matches_schema {
         use super::super::matches_schema;
 
         #[test]
