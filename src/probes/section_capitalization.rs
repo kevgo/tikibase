@@ -6,6 +6,7 @@ use std::iter::FromIterator;
 
 pub fn process(base: &Tikibase) -> Issues {
     // registers variants of section titles: normalized title --> Vec<existing titles>
+    // TODO: store values as &str
     let mut title_variants: AHashMap<String, AHashSet<String>> = AHashMap::new();
     for doc in &base.docs {
         for section in &doc.content_sections {
@@ -13,7 +14,7 @@ pub fn process(base: &Tikibase) -> Issues {
             title_variants
                 .entry(normalize(&section_type))
                 .or_insert_with(AHashSet::new)
-                .insert(section_type);
+                .insert(section_type.into());
         }
     }
     let mut issues = Issues::new();

@@ -35,16 +35,14 @@ impl Section {
         self.body.push(Line { text: text.into() });
     }
 
-    pub fn section_type(&self) -> String {
-        let pos = self
-            .title_line
-            .text
-            .char_indices()
-            .find(|(_, letter)| *letter != '#' && *letter != ' ');
-        match pos {
-            None => "".into(),
-            Some((pos, _)) => self.title_line.text.clone().split_off(pos),
+    // TODO: return a string slice here
+    pub fn section_type(&self) -> &str {
+        for (i, c) in self.title_line.text.char_indices() {
+            if c != '#' && c != ' ' {
+                return &self.title_line.text[i..];
+            }
         }
+        &self.title_line.text[..]
     }
 
     /// provides the complete text of this section

@@ -101,7 +101,7 @@ impl Document {
     }
 
     /// provides the section types in this document
-    pub fn section_types(&self) -> Vec<String> {
+    pub fn section_types(&self) -> Vec<&str> {
         self.content_sections
             .iter()
             .map(|section| section.section_type())
@@ -156,7 +156,7 @@ impl Document {
     }
 
     /// provides the human-readable title of this document
-    pub fn title(&self) -> String {
+    pub fn title(&self) -> &str {
         self.title_section.section_type()
     }
 }

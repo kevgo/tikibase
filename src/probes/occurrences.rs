@@ -117,7 +117,7 @@ pub fn process(
                 .map(|path| base.get_doc(&path).unwrap())
                 .map(|doc| MissingOccurrence {
                     path: doc.path.clone(),
-                    title: doc.title(),
+                    title: doc.title().into(),
                 })
                 .collect(),
         }));

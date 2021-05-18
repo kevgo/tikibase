@@ -22,6 +22,7 @@ pub fn process(base: &Tikibase, config: &config::Data) -> Issues {
 }
 
 /// Indicates whether the given actual contains a subset of schema, in the same order as schema.
+// TODO: make actual a &[&str]
 fn matches_schema(actual: &[String], schema: &[String]) -> bool {
     if actual.len() < 2 {
         // 0 or 1 elements --> order always matches

@@ -16,7 +16,7 @@ pub fn process(base: &Tikibase) -> Issues {
                 issues.push(Box::new(EmptySection {
                     filename: doc.path.clone(),
                     line: section.line_number,
-                    section_type: section.section_type(),
+                    section_type: section.section_type().into(),
                 }));
             }
         }
