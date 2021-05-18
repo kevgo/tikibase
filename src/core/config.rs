@@ -79,7 +79,7 @@ mod tests {
             create_file("tikibase.json", content, &dir);
             let have = super::super::load(&dir).unwrap();
             let want = super::super::Data {
-                sections: Some(vec!["one".to_string(), "two".to_string()]),
+                sections: Some(vec!["one".into(), "two".into()]),
                 ignore: None,
             };
             assert_eq!(have, want);

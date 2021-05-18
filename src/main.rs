@@ -50,7 +50,7 @@ mod tests {
             ("foo", Help),
         ];
         for (give, want) in tests.into_iter() {
-            let args = vec!["tikibase".to_string(), give.to_string()];
+            let args = vec!["tikibase".into(), give.into()];
             let have = super::parse(args.into_iter());
             assert_eq!(have, want);
         }

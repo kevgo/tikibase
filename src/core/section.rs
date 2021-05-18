@@ -42,7 +42,7 @@ impl Section {
             .char_indices()
             .find(|(_, letter)| *letter != '#' && *letter != ' ');
         match pos {
-            None => "".to_string(),
+            None => "".into(),
             Some((pos, _)) => self.title_line.text.clone().split_off(pos),
         }
     }
@@ -64,7 +64,7 @@ impl Default for Section {
         Section {
             line_number: 0,
             title_line: Line {
-                text: "### section".to_string(),
+                text: "### section".into(),
             },
             body: vec![],
         }

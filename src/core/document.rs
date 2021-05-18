@@ -213,7 +213,7 @@ pub fn builder_with_title_line<S: Into<String>>(text: S, line_number: u32) -> Se
 /// Null value for SectionBuilder instances
 pub fn placeholder_builder() -> SectionBuilder {
     SectionBuilder {
-        title_line: "".to_string(),
+        title_line: "".into(),
         line_number: 0,
         body: Vec::new(),
         valid: false,
@@ -461,8 +461,8 @@ title text
             let doc = Document::from_str("test.md", give).unwrap();
             let have = doc.sources_defined();
             let mut want = HashSet::new();
-            want.insert("1".to_string());
-            want.insert("2".to_string());
+            want.insert("1".into());
+            want.insert("2".into());
             assert_eq!(have, want);
         }
     }
@@ -498,17 +498,17 @@ text [1] [3]
             want.insert(UsedSource {
                 file: &pathbuf,
                 line: 1,
-                index: "2".to_string(),
+                index: "2".into(),
             });
             want.insert(UsedSource {
                 file: &pathbuf,
                 line: 3,
-                index: "1".to_string(),
+                index: "1".into(),
             });
             want.insert(UsedSource {
                 file: &pathbuf,
                 line: 3,
-                index: "3".to_string(),
+                index: "3".into(),
             });
             assert_eq!(have, want);
         }
