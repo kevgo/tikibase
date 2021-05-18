@@ -5,6 +5,9 @@ use crate::config;
 use crate::core::document::builder_with_title_line;
 use crate::core::tikibase::Tikibase;
 use ahash::AHashSet;
+use lazy_static::lazy_static;
+use regex::{Captures, Regex};
+use std::borrow::Cow;
 use std::path::PathBuf;
 
 struct MissingOccurrence {
@@ -32,7 +35,7 @@ impl Issue for MissingOccurrences {
         for missing in self.missing_links.iter() {
             section_builder.add_body_line(format!(
                 "- [{}]({})",
-                missing.title,
+                strip_links(&missing.title),
                 missing.path.to_string_lossy()
             ));
         }
@@ -63,6 +66,22 @@ impl Issue for MissingOccurrences {
             links.join(", "),
         )
     }
+}
+
+/// removes all links from the given string
+fn strip_links(text: &str) -> Cow<str> {
+    lazy_static! {
+        static ref SOURCE_RE: Regex = Regex::new(r#"\[([^]]*)\]\([^)]*\)"#).unwrap();
+    }
+    let matches: Vec<Captures> = SOURCE_RE.captures_iter(text).collect();
+    if matches.is_empty() {
+        return Cow::Borrowed(text);
+    }
+    let mut result = text.to_string();
+    for m in matches {
+        result = result.replace(m.get(0).unwrap().as_str(), m.get(1).unwrap().as_str());
+    }
+    Cow::Owned(result)
 }
 
 pub fn process(
@@ -129,6 +148,23 @@ mod tests {
         incoming_links.add("1.md", "2.md");
         let have = super::process(&base, &incoming_links, &outgoing_links);
         let issues: Vec<String> = have.iter().map(|issue| issue.describe()).collect();
-        assert_eq!(issues, vec!["1.md  missing link to 2.md, 3.md",]);
+        assert_eq!(issues, vec!["1.md  missing link to 2.md, 3.md"]);
+    }
+
+    mod strip_links {
+
+        #[test]
+        fn with_links() {
+            let have = super::super::strip_links("[one](1.md) [two](2.md)");
+            assert!(have.is_owned());
+            assert_eq!(have, "one two");
+        }
+
+        #[test]
+        fn without_links() {
+            let have = super::super::strip_links("one two");
+            assert!(have.is_borrowed());
+            assert_eq!(have, "one two");
+        }
     }
 }

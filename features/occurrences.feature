@@ -11,7 +11,7 @@ Feature: add occurrence sections
       """
     And file "2.md" with content:
       """
-      # Two
+      # [One](1.md) times two
 
       ### Foo
 
@@ -50,7 +50,7 @@ Feature: add occurrence sections
 
       ### occurrences
 
-      - [Two](2.md)
+      - [One times two](2.md)
       - [Three](3.md)
       """
     And file "2.md" is unchanged
@@ -62,5 +62,18 @@ Feature: add occurrence sections
     Then it prints:
       """
       1.md:7  added occurrences section
+      """
+    And file "1.md" should contain:
+      """
+      # One
+
+      ### section 1
+
+      text
+
+      ### occurrences
+
+      - [One times two](2.md)
+      - [Three](3.md)
       """
     And the exit code is 0
