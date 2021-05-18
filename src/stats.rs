@@ -7,19 +7,19 @@ pub fn run(base: &Tikibase) {
     let section_types = collect_section_types(&base);
     println!();
     println!("{} section types:", section_types.len());
-    let mut keys: Vec<&String> = section_types.keys().collect::<Vec<&String>>();
+    let mut keys: Vec<&str> = section_types.keys().collect();
     keys.sort();
     for key in keys {
         println!("- {} ({})", key, section_types.get(key).unwrap());
     }
 }
 
-fn collect_section_types(tb: &Tikibase) -> AHashMap<String, u32> {
-    let mut result: AHashMap<String, u32> = AHashMap::new();
+fn collect_section_types(tb: &Tikibase) -> AHashMap<&str, u32> {
+    let mut result: AHashMap<&str, u32> = AHashMap::new();
     for doc in &tb.docs {
         for section in &doc.content_sections {
             let section_type = section.section_type();
-            match result.get(&section_type) {
+            match result.get(section_type) {
                 None => result.insert(section_type, 1),
                 Some(count) => {
                     let new = count + 1;

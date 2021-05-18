@@ -12,7 +12,7 @@ pub fn process(base: &Tikibase, config: &config::Data) -> Issues {
     for doc in &base.docs {
         for section in &doc.content_sections {
             let section_type = section.section_type();
-            if !sections.contains(&section_type) {
+            if !sections.contains(section_type) {
                 issues.push(Box::new(UnknownSection {
                     file: doc.path.clone(),
                     line: section.line_number,

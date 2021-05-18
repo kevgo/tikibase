@@ -12,7 +12,7 @@ pub fn process(base: &Tikibase, config: &config::Data) -> Issues {
         Some(expected_sections) => expected_sections,
     };
     for doc in &base.docs {
-        if !matches_schema(&doc.section_types(), expected_order) {
+        if !matches_schema(doc.section_types(), expected_order) {
             issues.push(Box::new(UnorderedSections {
                 file: doc.path.clone(),
             }));
@@ -23,7 +23,7 @@ pub fn process(base: &Tikibase, config: &config::Data) -> Issues {
 
 /// Indicates whether the given actual contains a subset of schema, in the same order as schema.
 // TODO: make actual a &[&str]
-fn matches_schema(actual: &[String], schema: &[String]) -> bool {
+fn matches_schema(actual: Vec<&str>, schema: &[String]) -> bool {
     if actual.len() < 2 {
         // 0 or 1 elements --> order always matches
         return true;
@@ -114,7 +114,7 @@ mod tests {
             let mut give: Vec<Section> =
                 vec![section_with_title("### one"), section_with_title("### two")];
             let have = reorder(&mut give, &schema);
-            let have: Vec<String> = have.iter().map(|section| section.section_type()).collect();
+            let have: Vec<&str> = have.iter().map(|section| section.section_type()).collect();
             assert_eq!(have, vec!["one", "two"]);
         }
 
@@ -126,7 +126,7 @@ mod tests {
                 section_with_title("### three"),
             ];
             let have = reorder(&mut give, &schema);
-            let have: Vec<String> = have.iter().map(|section| section.section_type()).collect();
+            let have: Vec<&str> = have.iter().map(|section| section.section_type()).collect();
             assert_eq!(have, vec!["one", "three"]);
         }
 
@@ -139,7 +139,7 @@ mod tests {
                 section_with_title("### one"),
             ];
             let have = reorder(&mut give, &schema);
-            let have: Vec<String> = have.iter().map(|section| section.section_type()).collect();
+            let have: Vec<&str> = have.iter().map(|section| section.section_type()).collect();
             assert_eq!(have, vec!["one", "two", "three"]);
         }
 
@@ -148,7 +148,7 @@ mod tests {
             let schema = vec!["one".to_string(), "two".to_string(), "three".to_string()];
             let mut give: Vec<Section> = vec![section_with_title("### three")];
             let have = reorder(&mut give, &schema);
-            let have: Vec<String> = have.iter().map(|section| section.section_type()).collect();
+            let have: Vec<&str> = have.iter().map(|section| section.section_type()).collect();
             assert_eq!(have, vec!["three"]);
         }
     }
@@ -159,22 +159,22 @@ mod tests {
         #[test]
         fn perfect_match() {
             let schema = vec!["one".to_string(), "two".to_string(), "three".to_string()];
-            let give = vec!["one".to_string(), "two".to_string(), "three".to_string()];
-            assert!(matches_schema(&give, &schema));
+            let give = vec!["one", "two", "three"];
+            assert!(matches_schema(give, &schema));
         }
 
         #[test]
         fn match_but_missing() {
             let schema = vec!["one".to_string(), "two".to_string(), "three".to_string()];
-            let give = vec!["one".to_string(), "three".to_string()];
-            assert!(matches_schema(&give, &schema));
+            let give = vec!["one", "three"];
+            assert!(matches_schema(give, &schema));
         }
 
         #[test]
         fn mismatch() {
             let schema = vec!["one".to_string(), "two".to_string(), "three".to_string()];
-            let give = vec!["two".to_string(), "one".to_string()];
-            assert_eq!(matches_schema(&give, &schema), false);
+            let give = vec!["two", "one"];
+            assert_eq!(matches_schema(give, &schema), false);
         }
 
         #[test]

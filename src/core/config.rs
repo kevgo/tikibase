@@ -5,9 +5,9 @@ use std::path::Path;
 
 /// Tikibase configuration data
 #[derive(Deserialize, Default, PartialEq, Debug)]
-pub struct Data {
+pub struct Data<'a> {
     /// the allowed section types
-    pub sections: Option<Vec<String>>,
+    pub sections: Option<Vec<&'a str>>,
 
     /// files to ignore
     pub ignore: Option<Vec<String>>,
