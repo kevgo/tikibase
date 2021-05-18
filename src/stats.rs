@@ -7,7 +7,7 @@ pub fn run(base: &Tikibase) {
     let section_types = collect_section_types(&base);
     println!();
     println!("{} section types:", section_types.len());
-    let mut keys: Vec<&str> = section_types.keys().collect();
+    let mut keys: Vec<&&str> = section_types.keys().collect();
     keys.sort();
     for key in keys {
         println!("- {} ({})", key, section_types.get(key).unwrap());

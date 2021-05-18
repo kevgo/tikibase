@@ -191,8 +191,9 @@ title content";
             ("Title", "Title"),
             ("###", ""),
         ];
-        for (give, want) in tests.into_iter() {
-            let have = section_with_title(give).section_type();
+        for (title, want) in tests.into_iter() {
+            let section = section_with_title(title);
+            let have = section.section_type();
             assert_eq!(have, want);
         }
     }

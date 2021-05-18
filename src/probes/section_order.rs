@@ -49,7 +49,7 @@ fn matches_schema(actual: Vec<&str>, schema: &[String]) -> bool {
             continue;
         }
 
-        if !schema.contains(actual_value) {
+        if !schema.iter().any(|s| s == actual_value) {
             // unknown element in actual --> ignore here (there is a separate check for this)
             actual_element = actual_iter.next();
             continue;
@@ -67,7 +67,7 @@ fn reorder(sections: &mut Vec<Section>, schema: &[String]) -> Vec<Section> {
     for schema_element in schema.iter() {
         let pos = sections
             .iter()
-            .position(|section| &section.section_type() == schema_element);
+            .position(|section| section.section_type() == schema_element);
         match pos {
             None => continue,
             Some(pos) => result.push(sections.remove(pos)),
@@ -181,7 +181,7 @@ mod tests {
         fn empty() {
             let schema = vec!["one".to_string(), "two".to_string(), "three".to_string()];
             let give = vec![];
-            assert_eq!(matches_schema(&give, &schema), true);
+            assert_eq!(matches_schema(give, &schema), true);
         }
     }
 }
