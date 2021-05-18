@@ -7,7 +7,8 @@ use crate::core::tikibase::Tikibase;
 use ahash::AHashSet;
 use lazy_static::lazy_static;
 use regex::{Captures, Regex};
-use std::{borrow::Cow, path::PathBuf};
+use std::borrow::Cow;
+use std::path::PathBuf;
 
 struct MissingOccurrence {
     path: PathBuf,
