@@ -3,7 +3,7 @@ Feature: add occurrence sections
   Background:
     Given file "1.md" with content:
       """
-      # Title 1
+      # One
 
       ### section 1
 
@@ -11,7 +11,7 @@ Feature: add occurrence sections
       """
     And file "2.md" with content:
       """
-      # Title 2
+      # Two
 
       ### Foo
 
@@ -19,7 +19,7 @@ Feature: add occurrence sections
       """
     And file "3.md" with content:
       """
-      # Title 3
+      # Three
 
       ### Bar
 
@@ -42,7 +42,7 @@ Feature: add occurrence sections
       """
     And file "1.md" should contain:
       """
-      # Title 1
+      # One
 
       ### section 1
 
@@ -50,8 +50,8 @@ Feature: add occurrence sections
 
       ### occurrences
 
-      - [Title 2](2.md)
-      - [Title 3](3.md)
+      - [Two](2.md)
+      - [Three](3.md)
       """
     And file "2.md" is unchanged
     And file "3.md" is unchanged
