@@ -38,9 +38,7 @@ pub fn empty_config() -> config::Data {
 
 /// provides a Line with the given text
 pub fn line_with_text(text: &str) -> Line {
-    Line {
-        text: text.to_string(),
-    }
+    Line { text: text.into() }
 }
 
 pub fn load_file<P: AsRef<Path>>(filename: P, dir: &Path) -> String {
@@ -56,9 +54,7 @@ pub fn load_file<P: AsRef<Path>>(filename: P, dir: &Path) -> String {
 pub fn section_with_title(title: &str) -> Section {
     Section {
         line_number: 0,
-        title_line: Line {
-            text: title.to_string(),
-        },
+        title_line: Line { text: title.into() },
         body: vec![],
     }
 }
