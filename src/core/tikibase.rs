@@ -57,13 +57,13 @@ impl Tikibase {
             if entry.path() == dir {
                 continue;
             }
-            let filename = entry.file_name().to_string_lossy().to_string();
+            let filename = entry.file_name().to_string_lossy();
             if filename == "tikibase.json" || filename.starts_with('.') {
                 continue;
             }
             match &config.ignore {
                 Some(ignore) => {
-                    if ignore.contains(&filename) {
+                    if ignore.iter().any(|i| i == &filename) {
                         continue;
                     }
                 }
