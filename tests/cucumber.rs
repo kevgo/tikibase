@@ -40,11 +40,11 @@ fn steps() -> Steps<MyWorld> {
 
     steps.given_regex(r#"^file "(.*)" with content:$"#, |mut world, ctx| {
         let filename = ctx.matches.get(1).expect("no filename provided");
-        let content = ctx.step.docstring().unwrap().trim_start().to_string();
-        create_file(filename, &content, &world.dir);
+        let content = ctx.step.docstring().unwrap().trim_start();
+        create_file(filename, content, &world.dir);
         world
             .original_contents
-            .insert(PathBuf::from(filename), content);
+            .insert(PathBuf::from(filename), content.into());
         world
     });
 
@@ -98,12 +98,11 @@ fn steps() -> Steps<MyWorld> {
     });
 
     steps.then("it prints:", |world, ctx| {
-        let have: Vec<String> = world
+        let have: Vec<&str> = world
             .findings
             .iter()
             .map(|line| line.split('\n'))
             .flatten()
-            .map(|str| str.to_string())
             .collect();
         let want: Vec<&str> = ctx.step.docstring().unwrap().trim().split("\n").collect();
         assert_eq!(have, want);
