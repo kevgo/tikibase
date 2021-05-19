@@ -42,10 +42,8 @@ pub fn line_with_text(text: &str) -> Line {
 }
 
 pub fn load_file<P: AsRef<Path>>(filename: P, dir: &Path) -> String {
-    let mut result = std::fs::read_to_string(dir.join(filename))
-        .unwrap()
-        .trim_end()
-        .to_string();
+    let mut result = std::fs::read_to_string(dir.join(filename)).unwrap();
+    trim_end(&mut result);
     result.push('\n');
     result
 }
@@ -56,5 +54,34 @@ pub fn section_with_title(title: &str) -> Section {
         line_number: 0,
         title_line: Line { text: title.into() },
         body: vec![],
+    }
+}
+
+/// trims whitespace from the end of this string,
+/// inline without allocating a new String
+fn trim_end(text: &mut String) {
+    while text.ends_with(|c: char| c.is_whitespace()) {
+        text.truncate(text.len() - 1);
+    }
+}
+
+#[cfg(test)]
+mod tests {
+
+    mod trim_end {
+
+        #[test]
+        fn whitespaces() {
+            let mut s = "Foo\n\n".into();
+            super::super::trim_end(&mut s);
+            assert_eq!(s, "Foo");
+        }
+
+        #[test]
+        fn no_whitespace() {
+            let mut s = "Foo".into();
+            super::super::trim_end(&mut s);
+            assert_eq!(s, "Foo");
+        }
     }
 }
