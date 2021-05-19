@@ -8,9 +8,7 @@ pub fn process(base: &Tikibase, resource_links: Vec<String>) -> Issues {
     for resource in base.resources.iter() {
         let path = resource.path.to_string_lossy();
         if !resource_links.iter().any(|rl| rl == &path) {
-            result.push(Box::new(OrphanedResource {
-                path: path.to_string(),
-            }));
+            result.push(Box::new(OrphanedResource { path: path.into() }));
         }
     }
     result
