@@ -6,9 +6,11 @@ use super::{Issue, Issues};
 pub fn process(base: &Tikibase, resource_links: Vec<String>) -> Issues {
     let mut result = Issues::new();
     for resource in base.resources.iter() {
-        let path = resource.path.to_string_lossy().to_string();
-        if !resource_links.contains(&path) {
-            result.push(Box::new(OrphanedResource { path }));
+        let path = resource.path.to_string_lossy();
+        if !resource_links.iter().any(|rl| rl == &path) {
+            result.push(Box::new(OrphanedResource {
+                path: path.to_string(),
+            }));
         }
     }
     result
