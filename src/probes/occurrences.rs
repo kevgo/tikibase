@@ -55,10 +55,10 @@ impl Issue for MissingOccurrences {
     }
 
     fn describe(&self) -> String {
-        let links: Vec<String> = self
+        let links: Vec<Cow<str>> = self
             .missing_links
             .iter()
-            .map(|occ| occ.path.to_string_lossy().to_string())
+            .map(|ml| ml.path.to_string_lossy())
             .collect();
         format!(
             "{}  missing link to {}",
