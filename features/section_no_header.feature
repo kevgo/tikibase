@@ -9,7 +9,7 @@ Feature: recognize sections with an empty header
       content
       """
 
-  Scenario: this
+  Scenario: check
     When checking
     Then it prints:
       """
