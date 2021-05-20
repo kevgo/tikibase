@@ -1,8 +1,7 @@
-use std::path::PathBuf;
-
 use super::{Issue, Issues};
 use crate::config;
 use crate::core::tikibase::Tikibase;
+use std::path::PathBuf;
 
 /// finds all empty sections in the given Tikibase,
 /// fixes them if fix is enabled,

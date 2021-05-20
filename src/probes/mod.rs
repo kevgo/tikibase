@@ -9,6 +9,7 @@ mod occurrences;
 mod section_capitalization;
 mod section_duplicate;
 mod section_empty;
+mod section_no_header;
 mod section_order;
 mod section_type;
 mod sources_missing;
@@ -20,6 +21,7 @@ pub fn run(base: &Tikibase, config: &config::Data) -> Issues {
     issues.append(section_capitalization::process(&base));
     issues.append(section_type::process(&base, &config));
     issues.append(section_order::process(&base, &config));
+    issues.append(section_no_header::process(&base));
     issues.append(sources_missing::process(&base));
     let links_result = link_broken::process(&base);
     issues.append(links_result.issues);
