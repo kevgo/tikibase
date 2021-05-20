@@ -6,7 +6,6 @@ Feature: recognize sections with an empty header
       # Title 1
 
       ###
-
       content
       """
 
