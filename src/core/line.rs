@@ -52,9 +52,11 @@ impl Line {
     pub fn used_sources(&self) -> Vec<String> {
         lazy_static! {
             static ref SOURCE_RE: Regex = Regex::new(r#"\[(\d+)\]"#).unwrap();
+            static ref CODE_RE: Regex = Regex::new("`[^`]+`").unwrap();
         }
+        let sanitized = CODE_RE.replace_all(&self.text, "");
         SOURCE_RE
-            .captures_iter(&self.text)
+            .captures_iter(&sanitized)
             .map(|cap| cap[1].to_string())
             .collect()
     }
@@ -189,6 +191,14 @@ mod tests {
             let line = line_with_text("- text [1] [2]");
             let have = line.used_sources();
             assert_eq!(have, vec!["1".to_string(), "2".to_string()]);
+        }
+
+        #[test]
+        fn code_segment() {
+            let line = line_with_text("- text `map[0]`");
+            let have = line.used_sources();
+            let want: Vec<String> = Vec::new();
+            assert_eq!(have, want);
         }
     }
 }
