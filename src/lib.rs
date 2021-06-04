@@ -30,18 +30,10 @@ pub fn process<P: Into<PathBuf>>(command: &Command, path: P) -> (Vec<String>, i3
         Err(err) => return (vec![err], 1),
     };
 
-    // load the Tikibase
-    let (mut base, mut errors) = Tikibase::load(path, &config);
-    result.append(&mut errors);
-
-    // handle basic commands
+    // handle non-repo commands
     let basic_command = match command {
         Command::Help => {
             help::run();
-            true
-        }
-        Command::Stats => {
-            stats::run(&base);
             true
         }
         Command::Version => {
@@ -51,6 +43,16 @@ pub fn process<P: Into<PathBuf>>(command: &Command, path: P) -> (Vec<String>, i3
         _ => false,
     };
     if basic_command {
+        return (result, 0);
+    }
+
+    // load the Tikibase
+    let (mut base, mut errors) = Tikibase::load(path, &config);
+    result.append(&mut errors);
+
+    // handle stats command
+    if command == &Command::Stats {
+        stats::run(&base);
         return (result, 0);
     }
 
