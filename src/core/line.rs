@@ -195,7 +195,7 @@ mod tests {
 
         #[test]
         fn code_segment() {
-            let line = line_with_text("- text `map[0]`");
+            let line = line_with_text("code: `map[0]`");
             let have = line.used_sources();
             let want: Vec<String> = Vec::new();
             assert_eq!(have, want);
