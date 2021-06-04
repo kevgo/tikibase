@@ -129,17 +129,23 @@ impl Document {
     /// provides all the sources used in this document
     pub fn sources_used(&self) -> HashSet<UsedSource> {
         let mut result = HashSet::new();
+        let mut line_inside_code_block = false;
         for section in self.sections() {
             if section.section_type() == "occurrences" {
                 continue;
             }
             for (line_idx, line) in section.lines().enumerate() {
-                for index in line.used_sources() {
-                    result.insert(UsedSource {
-                        file: &self.path,
-                        line: section.line_number + (line_idx as u32),
-                        index,
-                    });
+                if line.text.starts_with("```") {
+                    line_inside_code_block = !line_inside_code_block
+                }
+                if !line_inside_code_block {
+                    for index in line.used_sources() {
+                        result.insert(UsedSource {
+                            file: &self.path,
+                            line: section.line_number + (line_idx as u32),
+                            index,
+                        });
+                    }
                 }
             }
         }
@@ -511,6 +517,31 @@ text [1] [3]
                 index: "3".into(),
             });
             assert_eq!(have, want);
+        }
+
+        #[test]
+        fn code_segment() {
+            let give = "\
+# Title
+Example code: `map[0]`
+";
+            let doc = Document::from_str("test.md", give).unwrap();
+            let have = doc.sources_used();
+            assert_eq!(have.len(), 0);
+        }
+
+        #[test]
+        fn code_block() {
+            let give = "\
+# Title
+Example code:
+```
+map[0]
+```
+";
+            let doc = Document::from_str("test.md", give).unwrap();
+            let have = doc.sources_used();
+            assert_eq!(have.len(), 0);
         }
     }
 }
