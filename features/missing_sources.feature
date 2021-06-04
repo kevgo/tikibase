@@ -8,12 +8,18 @@ Feature: recognize missing sources
       ### metrics
       - 100 tons of Rust [2]
 
+      ```go
+      result := map[0]
+      ```
+
+      Also, you can do this: `map[0]`.
+
       ### links
 
       1. https://www.rust-lang.org
       """
 
-  Scenario: check
+  Scenario: this
     When checking
     Then it prints:
       """
