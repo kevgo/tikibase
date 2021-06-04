@@ -129,16 +129,16 @@ impl Document {
     /// provides all the sources used in this document
     pub fn sources_used(&self) -> HashSet<UsedSource> {
         let mut result = HashSet::new();
-        let mut ignore_line = false;
+        let mut line_inside_code_block = false;
         for section in self.sections() {
             if section.section_type() == "occurrences" {
                 continue;
             }
             for (line_idx, line) in section.lines().enumerate() {
                 if line.text.starts_with("```") {
-                    ignore_line = !ignore_line
+                    line_inside_code_block = !line_inside_code_block
                 }
-                if !ignore_line {
+                if !line_inside_code_block {
                     for index in line.used_sources() {
                         result.insert(UsedSource {
                             file: &self.path,
