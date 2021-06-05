@@ -30,7 +30,9 @@ impl Document {
             }
             if line.starts_with('#') && !inside_fence {
                 if let Some(section) = section_builder.result() {
-                    sections.push(section);
+                    if section.section_type() != "occurrences" {
+                        sections.push(section);
+                    }
                 }
                 section_builder = builder_with_title_line(line, line_number);
             } else if section_builder.valid {
@@ -40,7 +42,9 @@ impl Document {
             }
         }
         if let Some(section) = section_builder.result() {
-            sections.push(section);
+            if section.section_type() != "occurrences" {
+                sections.push(section);
+            }
         }
         let content_sections = sections.split_off(1);
         if inside_fence {
