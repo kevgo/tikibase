@@ -71,13 +71,15 @@ impl Issue for MissingOccurrences {
 /// indicates an obsolete "occurrences" section
 pub struct ObsoleteOccurrencesSection {
     file: PathBuf,
+    line: u32,
 }
 
 impl Issue for ObsoleteOccurrencesSection {
     fn describe(&self) -> String {
         format!(
-            "{}  obsolete occurrences section",
-            self.file.to_string_lossy()
+            "{}:{}  obsolete occurrences section",
+            self.file.to_string_lossy(),
+            self.line + 1,
         )
     }
 
@@ -86,8 +88,9 @@ impl Issue for ObsoleteOccurrencesSection {
         let doc = base.get_doc_mut(&self.file).unwrap();
         doc.flush(&base_dir);
         format!(
-            "{}  deleted occurrences section",
-            self.file.to_string_lossy()
+            "{}:{}  removed obsolete occurrences section",
+            self.file.to_string_lossy(),
+            self.line + 1,
         )
     }
 
@@ -136,6 +139,7 @@ pub fn process(
             if doc.had_occurrences_section {
                 issues.push(Box::new(ObsoleteOccurrencesSection {
                     file: doc.path.clone(),
+                    line: doc.occurrences_section_line,
                 }));
             }
             continue;

@@ -12,6 +12,7 @@ pub struct Document {
     pub title_section: Section,
     pub content_sections: Vec<Section>,
     pub had_occurrences_section: bool,
+    pub occurrences_section_line: u32,
 }
 
 impl Document {
@@ -25,6 +26,7 @@ impl Document {
         let mut inside_fence = false;
         let mut fence_start_line = 0;
         let mut had_occurrences_section = false;
+        let mut occurrences_section_line = 0;
         for (line, line_number) in lines.zip(0..) {
             if line.starts_with("```") {
                 inside_fence = !inside_fence;
@@ -33,7 +35,10 @@ impl Document {
             if line.starts_with('#') && !inside_fence {
                 if let Some(section) = section_builder.result() {
                     match section.section_type() {
-                        "occurrences" => had_occurrences_section = true,
+                        "occurrences" => {
+                            had_occurrences_section = true;
+                            occurrences_section_line = section.line_number;
+                        }
                         _ => sections.push(section),
                     }
                 }
@@ -46,7 +51,10 @@ impl Document {
         }
         if let Some(section) = section_builder.result() {
             match section.section_type() {
-                "occurrences" => had_occurrences_section = true,
+                "occurrences" => {
+                    had_occurrences_section = true;
+                    occurrences_section_line = section.line_number;
+                }
                 _ => sections.push(section),
             }
         }
@@ -63,6 +71,7 @@ impl Document {
             title_section: sections.pop().unwrap(),
             content_sections,
             had_occurrences_section,
+            occurrences_section_line,
         })
     }
 
