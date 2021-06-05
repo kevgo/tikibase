@@ -7,15 +7,15 @@ authors = ["Kevin Goslar <kevin.goslar@gmail.com>"]
 edition = "2018"
 
 [dependencies]
-ahash = "0.7.2"
-heck = "0.3"
+ahash = "0.7.4"
+heck = "0.3.3"
 lazy_static = "1.4.0"
 rand = "0.8.3"
-regex = "1"
-serde = { version = "1.0", features = ["derive"] }
-serde_json = "1.0"
-tempfile = "3"
-walkdir = "2"
+regex = "1.5.4"
+serde = { version = "1.0.126", features = ["derive"] }
+serde_json = "1.0.64"
+tempfile = "3.2.0"
+walkdir = "2.3.2"
 
 [[test]]
 name = "cucumber"
@@ -25,7 +25,7 @@ test = false
 [dev-dependencies]
 cucumber_rust = { git = "https://github.com/bbqsrc/cucumber-rust", branch = "main" }
 # You can use any executor you want, but we're going to use Tokio in this example.
-tokio = { version = "1", features = ["macros", "rt-multi-thread"] }
+tokio = { version = "1.6.1", features = ["macros", "rt-multi-thread"] }
 
 [profile.release]
 strip = "symbols"

@@ -26,8 +26,12 @@ setup:  # prepares this codebase
 	echo Please do this manually:
 	echo 1. install musl, e.g. "sudo apt install musl"
 	echo 2. rustup target add x86_64-unknown-linux-musl --toolchain=nightly
+	echo 3. install openssl-devel:
+	echo    - Fedora: sudo dnf install openssl-devel
+	echo    - Debian: sudo apt install libssl-dev
+	echo 4. cargo install cargo-edit
 
 update:  # updates the dependencies
-	cargo update
+	cargo upgrade
 
 .SILENT:
