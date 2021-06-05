@@ -11,6 +11,10 @@ pub struct Document {
     pub path: PathBuf,
     pub title_section: Section,
     pub content_sections: Vec<Section>,
+    /// Loading filters out "occurrences" sections.
+    /// Some => this document had an "occurrences" section at the given line when loading it.
+    /// None => this document had no occurrences section when loading it.
+    pub occurrences_section_line: Option<u32>,
 }
 
 impl Document {
@@ -23,6 +27,7 @@ impl Document {
         let mut section_builder = placeholder_builder();
         let mut inside_fence = false;
         let mut fence_start_line = 0;
+        let mut had_occurrences_section = None;
         for (line, line_number) in lines.zip(0..) {
             if line.starts_with("```") {
                 inside_fence = !inside_fence;
@@ -30,7 +35,10 @@ impl Document {
             }
             if line.starts_with('#') && !inside_fence {
                 if let Some(section) = section_builder.result() {
-                    sections.push(section);
+                    match section.section_type() {
+                        "occurrences" => had_occurrences_section = Some(section.line_number),
+                        _ => sections.push(section),
+                    }
                 }
                 section_builder = builder_with_title_line(line, line_number);
             } else if section_builder.valid {
@@ -40,7 +48,10 @@ impl Document {
             }
         }
         if let Some(section) = section_builder.result() {
-            sections.push(section);
+            match section.section_type() {
+                "occurrences" => had_occurrences_section = Some(section.line_number),
+                _ => sections.push(section),
+            }
         }
         let content_sections = sections.split_off(1);
         if inside_fence {
@@ -54,6 +65,7 @@ impl Document {
             path,
             title_section: sections.pop().unwrap(),
             content_sections,
+            occurrences_section_line: had_occurrences_section,
         })
     }
 
