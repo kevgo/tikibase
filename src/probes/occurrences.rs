@@ -136,10 +136,10 @@ pub fn process(
 
         // no missing links --> done here
         if missing_outgoing.is_empty() {
-            if doc.had_occurrences_section {
+            if let Some(occurrences_section_line) = doc.occurrences_section_line {
                 issues.push(Box::new(ObsoleteOccurrencesSection {
                     file: doc.path.clone(),
-                    line: doc.occurrences_section_line,
+                    line: occurrences_section_line,
                 }));
             }
             continue;
