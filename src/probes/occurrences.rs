@@ -68,7 +68,8 @@ impl Issue for MissingOccurrences {
     }
 }
 
-/// indicates an obsolete "occurrences" section
+/// indicates that a document contains an "occurrences" section
+/// that should no longer be there
 pub struct ObsoleteOccurrencesSection {
     file: PathBuf,
     line: u32,
