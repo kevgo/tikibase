@@ -11,6 +11,7 @@ pub struct Document {
     pub path: PathBuf,
     pub title_section: Section,
     pub content_sections: Vec<Section>,
+    pub had_occurrences_section: bool,
 }
 
 impl Document {
@@ -23,6 +24,7 @@ impl Document {
         let mut section_builder = placeholder_builder();
         let mut inside_fence = false;
         let mut fence_start_line = 0;
+        let mut had_occurrences_section = false;
         for (line, line_number) in lines.zip(0..) {
             if line.starts_with("```") {
                 inside_fence = !inside_fence;
@@ -30,8 +32,9 @@ impl Document {
             }
             if line.starts_with('#') && !inside_fence {
                 if let Some(section) = section_builder.result() {
-                    if section.section_type() != "occurrences" {
-                        sections.push(section);
+                    match section.section_type() {
+                        "occurrences" => had_occurrences_section = true,
+                        _ => sections.push(section),
                     }
                 }
                 section_builder = builder_with_title_line(line, line_number);
@@ -42,8 +45,9 @@ impl Document {
             }
         }
         if let Some(section) = section_builder.result() {
-            if section.section_type() != "occurrences" {
-                sections.push(section);
+            match section.section_type() {
+                "occurrences" => had_occurrences_section = true,
+                _ => sections.push(section),
             }
         }
         let content_sections = sections.split_off(1);
@@ -58,6 +62,7 @@ impl Document {
             path,
             title_section: sections.pop().unwrap(),
             content_sections,
+            had_occurrences_section,
         })
     }
 

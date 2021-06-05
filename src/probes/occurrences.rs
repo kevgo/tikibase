@@ -68,6 +68,34 @@ impl Issue for MissingOccurrences {
     }
 }
 
+/// indicates an obsolete "occurrences" section
+pub struct ObsoleteOccurrencesSection {
+    file: PathBuf,
+}
+
+impl Issue for ObsoleteOccurrencesSection {
+    fn describe(&self) -> String {
+        format!(
+            "{}  obsolete occurrences section",
+            self.file.to_string_lossy()
+        )
+    }
+
+    fn fix(&self, base: &mut Tikibase, _config: &config::Data) -> String {
+        let base_dir = base.dir.clone();
+        let doc = base.get_doc_mut(&self.file).unwrap();
+        doc.flush(&base_dir);
+        format!(
+            "{}  deleted occurrences section",
+            self.file.to_string_lossy()
+        )
+    }
+
+    fn fixable(&self) -> bool {
+        true
+    }
+}
+
 /// removes all links from the given string
 fn strip_links(text: &str) -> Cow<str> {
     lazy_static! {
@@ -105,6 +133,11 @@ pub fn process(
 
         // no missing links --> done here
         if missing_outgoing.is_empty() {
+            if doc.had_occurrences_section {
+                issues.push(Box::new(ObsoleteOccurrencesSection {
+                    file: doc.path.clone(),
+                }));
+            }
             continue;
         }
 
