@@ -17,13 +17,13 @@ can use it to work on your Tikibase.
 
 A Tikibase is just a set of normal Markdown files in a folder. You view, change,
 and organize these files using the text or Markdown editor of your choice. You
-manage changes to your knowledge base using a version control system like Git or
-Mercurial. The CLI application in this repository is an optional linter that
-helps maintain a Tikibase by finding/fixing a number of issues:
+manage changes to the files in your knowledge base using a version control
+system like Git or Mercurial. The CLI application in this repository is an
+optional linter that helps maintain a Tikibase by finding and fixing a number of
+issues:
 
-- **broken links:** Markdown or HTML links pointing to non-existing local files
-- **broken images:** Markdown or HTML image tags pointing to non-existing files
-- **orphaned resources:** non-Markdown files not referenced in a Markdown
+- **broken links/images:** links pointing to non-existing local files
+- **orphaned resources:** non-Markdown files not referenced by a Markdown
   document
 - **missing backlinks:** if document A links to document B, document B must also
   link to document A
@@ -32,10 +32,13 @@ helps maintain a Tikibase by finding/fixing a number of issues:
 - **inconsistent section capitalization**
 - **duplicate sections**
 - **empty sections**
-- **unknown sections:** when the config file contains a `sections` key
-- **section order:** when the config file contains a `sections` key
 - **missing sources:** you can name sources by creating an ordered list in the
   `### links` section. You can reference sources like `[1]` in the document.
+
+When the config file defines the allowed section names:
+
+- **unknown sections**
+- **section order**
 
 ### installation
 
