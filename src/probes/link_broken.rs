@@ -31,6 +31,13 @@ pub fn process(base: &Tikibase) -> LinksResult {
                 for reference in line.references() {
                     match reference {
                         Reference::Link { mut destination } => {
+                            if destination.is_empty() {
+                                result.issues.push(Box::new(LinkWithoutDestination {
+                                    filename: doc.path.clone(),
+                                    line: section.line_number + (i as u32) + 1,
+                                }));
+                                continue;
+                            }
                             if destination.starts_with("http") {
                                 continue;
                             }
@@ -153,6 +160,29 @@ impl Issue for LinkToSameDocument {
     }
 }
 
+pub struct LinkWithoutDestination {
+    filename: PathBuf,
+    line: u32,
+}
+
+impl Issue for LinkWithoutDestination {
+    fn describe(&self) -> String {
+        format!(
+            "{}:{}  link without destination",
+            self.filename.to_string_lossy(),
+            self.line
+        )
+    }
+
+    fn fix(&self, _base: &mut Tikibase, _config: &config::Data) -> String {
+        panic!("not fixable");
+    }
+
+    fn fixable(&self) -> bool {
+        false
+    }
+}
+
 #[cfg(test)]
 mod tests {
 
@@ -211,6 +241,20 @@ Here is a link to [Three](3.md) that also works.
             let into_three = have.incoming_doc_links.get("3.md").unwrap();
             assert_eq!(into_three.len(), 1);
             assert!(into_three.contains(&PathBuf::from("1.md")));
+        }
+
+        #[test]
+        fn link_without_destination() {
+            let dir = tmp_dir();
+            create_file("one.md", "# One\n\n[invalid]()\n", &dir);
+            let (base, errs) = Tikibase::load(dir, &empty_config());
+            assert_eq!(errs.len(), 0);
+            let have = super::super::process(&base);
+            let outcomes: Vec<String> = have.issues.iter().map(|issue| issue.describe()).collect();
+            assert_eq!(outcomes, vec!["one.md:3  link without destination"]);
+            assert_eq!(have.incoming_doc_links.data.len(), 0);
+            assert_eq!(have.outgoing_doc_links.data.len(), 0);
+            assert_eq!(have.outgoing_resource_links.len(), 0);
         }
 
         #[test]
