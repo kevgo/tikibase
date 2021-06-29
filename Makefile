@@ -16,7 +16,10 @@ help:  # shows all available Make commands
 install:  # installs the binary in the system
 	cargo install --path .
 
-test: unit cuke  # runs all tests
+lint:  # checks formatting
+	cargo fmt -- --check
+
+test: unit cuke lint  # runs all tests
 
 unit:  # runs the unit tests
 	cargo clippy
