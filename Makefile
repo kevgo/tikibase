@@ -19,7 +19,7 @@ install:  # installs the binary in the system
 test: unit cuke  # runs all tests
 
 unit:  # runs the unit tests
-	cargo clippy
+	cargo clippy --all-targets --all-features -- -D warnings
 	cargo test
 
 setup:  # prepares this codebase
