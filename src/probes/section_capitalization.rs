@@ -11,7 +11,7 @@ pub fn process(base: &Tikibase) -> Issues {
         for section in &doc.content_sections {
             let section_type = section.section_type();
             title_variants
-                .entry(normalize(&section_type))
+                .entry(normalize(section_type))
                 .or_insert_with(AHashSet::new)
                 .insert(section_type.into());
         }
@@ -86,9 +86,9 @@ content";
 ### one
 content";
         create_file("2.md", content, &dir);
-        let (mut base, errs) = Tikibase::load(dir, &empty_config());
+        let (base, errs) = Tikibase::load(dir, &empty_config());
         assert_eq!(errs.len(), 0);
-        let have: Vec<String> = super::process(&mut base)
+        let have: Vec<String> = super::process(&base)
             .iter()
             .map(|issue| issue.describe())
             .collect();

@@ -16,17 +16,17 @@ mod sources_missing;
 
 pub fn run(base: &Tikibase, config: &config::Data) -> Issues {
     let mut issues = Issues::new();
-    issues.append(section_duplicate::process(&base));
-    issues.append(section_empty::process(&base));
-    issues.append(section_capitalization::process(&base));
-    issues.append(section_type::process(&base, &config));
-    issues.append(section_order::process(&base, &config));
-    issues.append(section_no_header::process(&base));
-    issues.append(sources_missing::process(&base));
-    let links_result = link_broken::process(&base);
+    issues.append(section_duplicate::process(base));
+    issues.append(section_empty::process(base));
+    issues.append(section_capitalization::process(base));
+    issues.append(section_type::process(base, config));
+    issues.append(section_order::process(base, config));
+    issues.append(section_no_header::process(base));
+    issues.append(sources_missing::process(base));
+    let links_result = link_broken::process(base);
     issues.append(links_result.issues);
     issues.append(image_orphaned::process(
-        &base,
+        base,
         links_result.outgoing_resource_links,
     ));
     let occ_res = occurrences::process(

@@ -1,0 +1,5 @@
+# This .prettierignore file is used only in Make tasks.
+
+target
+tools
+tmp

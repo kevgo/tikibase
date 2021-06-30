@@ -149,7 +149,7 @@ title content";
             Some(line) => assert_eq!(line.text, "title content"),
         }
         match lines.next() {
-            None => return,
+            None => {}
             Some(_) => panic!("unexpected line"),
         }
     }

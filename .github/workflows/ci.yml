@@ -20,10 +20,14 @@ jobs:
           toolchain: nightly
           profile: minimal
           override: true
-          # components: rustfmt, clippy
+          components: rustfmt, clippy
       - name: Rust Cache
         uses: Swatinem/rust-cache@v1.2.0
+      - name: Setup
+        run: make setup
       - name: Unit tests
-        run: cargo test
+        run: make unit
       - name: Cucumber
         run: make cuke
+      - name: Linters
+        run: make lint
