@@ -16,16 +16,16 @@ mod sources_missing;
 
 pub fn run(base: &Tikibase, config: &config::Data) -> Issues {
     let mut issues = Issues::new();
-    issues.append(section_duplicate::process(base));
-    issues.append(section_empty::process(base));
-    issues.append(section_capitalization::process(base));
-    issues.append(section_type::process(base, config));
-    issues.append(section_order::process(base, config));
-    issues.append(section_no_header::process(base));
-    issues.append(sources_missing::process(base));
+    issues.extend(section_duplicate::process(base));
+    issues.extend(section_empty::process(base));
+    issues.extend(section_capitalization::process(base));
+    issues.extend(section_type::process(base, config));
+    issues.extend(section_order::process(base, config));
+    issues.extend(section_no_header::process(base));
+    issues.extend(sources_missing::process(base));
     let links_result = link_broken::process(base);
-    issues.append(links_result.issues);
-    issues.append(image_orphaned::process(
+    issues.extend(links_result.issues);
+    issues.extend(image_orphaned::process(
         base,
         links_result.outgoing_resource_links,
     ));
@@ -34,7 +34,7 @@ pub fn run(base: &Tikibase, config: &config::Data) -> Issues {
         &links_result.incoming_doc_links,
         &links_result.outgoing_doc_links,
     );
-    issues.append(occ_res);
+    issues.extend(occ_res);
     issues
 }
 
@@ -55,8 +55,8 @@ pub struct Issues(Vec<Box<dyn Issue>>);
 
 impl Issues {
     /// appends the given issue to this issue collection
-    pub fn append(&mut self, mut new_issues: Issues) {
-        self.0.append(&mut new_issues.0);
+    pub fn extend(&mut self, new_issues: Issues) {
+        self.0.extend(new_issues.0);
     }
 
     /// provides an iterator over borrowed references to the contained Issues
