@@ -77,9 +77,9 @@ mod tests {
 
 content";
         create_file("test.md", content, &dir);
-        let (mut base, errs) = Tikibase::load(dir, &empty_config());
+        let (base, errs) = Tikibase::load(dir, &empty_config());
         assert_eq!(errs.len(), 0);
-        let have: Vec<String> = process(&mut base)
+        let have: Vec<String> = process(&base)
             .iter()
             .map(|issue| issue.describe())
             .collect();
@@ -102,9 +102,9 @@ content";
 
 content";
         create_file("test.md", content, &dir);
-        let (mut base, errs) = Tikibase::load(dir, &empty_config());
+        let (base, errs) = Tikibase::load(dir, &empty_config());
         assert_eq!(errs.len(), 0);
-        let have: Vec<String> = process(&mut base)
+        let have: Vec<String> = process(&base)
             .iter()
             .map(|issue| issue.describe())
             .collect();
@@ -125,9 +125,9 @@ content";
 
 content";
         create_file("test.md", content, &dir);
-        let (mut base, errs) = Tikibase::load(dir, &empty_config());
+        let (base, errs) = Tikibase::load(dir, &empty_config());
         assert_eq!(errs.len(), 0);
-        let have = process(&mut base);
+        let have = process(&base);
         assert!(have.is_empty());
     }
 }

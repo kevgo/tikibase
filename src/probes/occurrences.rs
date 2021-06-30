@@ -129,7 +129,7 @@ pub fn process(
             .get(&doc.path)
             .get_or_insert(&AHashSet::new())
             .difference(
-                &outgoing_doc_links
+                outgoing_doc_links
                     .get(&doc.path)
                     .get_or_insert(&AHashSet::new()),
             )

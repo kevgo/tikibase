@@ -138,7 +138,7 @@ mod tests {
             let (base, errs) = Tikibase::load(dir, &empty_config());
             assert_eq!(errs.len(), 0);
             match base.get_doc("zonk.md") {
-                None => return,
+                None => {}
                 Some(_) => panic!("should have found nothing"),
             }
         }
@@ -165,7 +165,7 @@ mod tests {
             let (mut base, errs) = Tikibase::load(dir, &empty_config());
             assert_eq!(errs.len(), 0);
             match base.get_doc_mut("zonk.md") {
-                None => return,
+                None => {}
                 Some(_) => panic!("should have found nothing"),
             }
         }
@@ -181,7 +181,7 @@ mod tests {
             let dir = tmp_dir();
             let (base, errs) = Tikibase::load(dir, &empty_config());
             assert_eq!(errs.len(), 0);
-            assert_eq!(base.has_resource("foo.png"), false);
+            assert!(!base.has_resource("foo.png"));
         }
 
         #[test]
@@ -190,7 +190,7 @@ mod tests {
             create_file("foo.png", "content", &dir);
             let (base, errs) = Tikibase::load(dir, &empty_config());
             assert_eq!(errs.len(), 0);
-            assert_eq!(base.has_resource("foo.png"), true);
+            assert!(base.has_resource("foo.png"));
         }
     }
 

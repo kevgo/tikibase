@@ -289,7 +289,7 @@ content";
                 Some(s1) => assert_eq!(s1.title_line.text, "### section 1"),
             }
             match sections.next() {
-                None => return,
+                None => {}
                 Some(_) => panic!("unexpected section"),
             }
         }

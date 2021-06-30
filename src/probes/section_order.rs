@@ -174,14 +174,14 @@ mod tests {
         fn mismatch() {
             let schema = vec!["one".to_string(), "two".to_string(), "three".to_string()];
             let give = vec!["two", "one"];
-            assert_eq!(matches_schema(give, &schema), false);
+            assert!(!matches_schema(give, &schema));
         }
 
         #[test]
         fn empty() {
             let schema = vec!["one".to_string(), "two".to_string(), "three".to_string()];
             let give = vec![];
-            assert_eq!(matches_schema(give, &schema), true);
+            assert!(matches_schema(give, &schema));
         }
     }
 }

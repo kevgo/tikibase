@@ -4,7 +4,7 @@ use ahash::AHashMap;
 pub fn run(base: &Tikibase) {
     println!("documents: {}", base.docs.len());
     println!("resources: {}", base.resources.len());
-    let section_types = collect_section_types(&base);
+    let section_types = collect_section_types(base);
     println!();
     println!("{} section types:", section_types.len());
     let mut keys: Vec<&&str> = section_types.keys().collect();
