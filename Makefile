@@ -21,7 +21,7 @@ install:  # installs the binary in the system
 	cargo install --path .
 
 lint:  # checks formatting
-		${CURDIR}/tools/node_modules/.bin/prettier --ignore-path=.prettierignore_make --list-different .
+	${CURDIR}/tools/node_modules/.bin/prettier --ignore-path=.prettierignore_make --list-different .
 	cargo fmt -- --check
 
 
