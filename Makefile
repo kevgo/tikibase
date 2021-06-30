@@ -24,7 +24,6 @@ lint:  # checks formatting
 	${CURDIR}/tools/node_modules/.bin/prettier --ignore-path=.prettierignore_make --list-different .
 	cargo fmt -- --check
 
-
 test: unit cuke lint  # runs all tests
 
 unit:  # runs the unit tests
