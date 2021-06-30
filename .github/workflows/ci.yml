@@ -23,7 +23,11 @@ jobs:
           # components: rustfmt, clippy
       - name: Rust Cache
         uses: Swatinem/rust-cache@v1.2.0
+      - name: Setup
+        run: make setup
       - name: Unit tests
         run: cargo test
       - name: Cucumber
         run: make cuke
+      - name: Linters
+        run: make lint
