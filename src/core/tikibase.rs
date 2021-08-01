@@ -119,7 +119,7 @@ mod tests {
 
     mod get_doc {
 
-        use super::super::*;
+        use super::super::Tikibase;
         use crate::testhelpers::{create_file, empty_config, tmp_dir};
 
         #[test]
@@ -146,7 +146,7 @@ mod tests {
 
     mod get_doc_mut {
 
-        use super::super::*;
+        use super::super::Tikibase;
         use crate::testhelpers::{create_file, empty_config, tmp_dir};
 
         #[test]
@@ -173,7 +173,7 @@ mod tests {
 
     mod has_resource {
 
-        use super::super::*;
+        use super::super::Tikibase;
         use crate::testhelpers::{create_file, empty_config, tmp_dir};
 
         #[test]

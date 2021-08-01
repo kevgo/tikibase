@@ -71,7 +71,7 @@ mod tests {
     #[test]
     fn progress() {
         let dir = tmp_dir();
-        let content = "\
+        let content1 = "\
 # test document
 
 ### ONE
@@ -79,13 +79,13 @@ content
 
 ### One
 content";
-        create_file("1.md", content, &dir);
-        let content = "\
+        create_file("1.md", content1, &dir);
+        let content2 = "\
 # another document
 
 ### one
 content";
-        create_file("2.md", content, &dir);
+        create_file("2.md", content2, &dir);
         let (base, errs) = Tikibase::load(dir, &empty_config());
         assert_eq!(errs.len(), 0);
         let have: Vec<String> = super::process(&base)

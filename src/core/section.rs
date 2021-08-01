@@ -101,7 +101,7 @@ mod tests {
             ("what is it", "#what-is-it"),
             ("A Complex Section", "#a-complex-section"),
         ];
-        for (give, want) in tests.into_iter() {
+        for (give, want) in tests {
             let section = section_with_title(give);
             assert_eq!(section.anchor(), want);
         }
@@ -117,7 +117,7 @@ mod tests {
         fn no_body() {
             let section = Section {
                 line_number: 12,
-                ..Default::default()
+                ..Section::default()
             };
             assert_eq!(section.last_line_abs(), 12);
         }
@@ -127,7 +127,7 @@ mod tests {
             let section = Section {
                 line_number: 12,
                 body: vec![line_with_text("")],
-                ..Default::default()
+                ..Section::default()
             };
             assert_eq!(section.last_line_abs(), 13);
         }
@@ -162,7 +162,7 @@ title content";
         fn no_body() {
             let mut section = Section {
                 body: vec![],
-                ..Default::default()
+                ..Section::default()
             };
             section.push_line("new line");
             assert_eq!(section.body.len(), 1);
@@ -173,7 +173,7 @@ title content";
         fn with_body() {
             let mut section = Section {
                 body: vec![line_with_text("l1")],
-                ..Default::default()
+                ..Section::default()
             };
             section.push_line("new line");
             assert_eq!(section.body.len(), 2);
@@ -219,7 +219,7 @@ title content";
         let section = Section {
             title_line: line_with_text("### welcome"),
             body: vec![line_with_text(""), line_with_text("content")],
-            ..Default::default()
+            ..Section::default()
         };
         assert_eq!(section.text(), "### welcome\n\ncontent\n");
     }
