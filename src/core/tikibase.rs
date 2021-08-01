@@ -74,7 +74,7 @@ impl Tikibase {
             match FileType::from_ext(path.extension()) {
                 FileType::Document => {
                     let file = File::open(&path).unwrap();
-                    let lines = BufReader::new(file).lines().map(|l| l.unwrap());
+                    let lines = BufReader::new(file).lines().map(Result::unwrap);
                     match Document::from_lines(lines, filepath) {
                         Ok(doc) => docs.push(doc),
                         Err(err) => errors.push(err),
