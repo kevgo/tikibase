@@ -23,7 +23,7 @@ pub fn process(base: &Tikibase) -> Issues {
         }
         let mut sorted = Vec::from_iter(variants);
         sorted.sort();
-        issues.push(Box::new(MixCapSection { variants: sorted }))
+        issues.push(Box::new(MixCapSection { variants: sorted }));
     }
     issues
 }

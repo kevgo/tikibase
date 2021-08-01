@@ -15,7 +15,7 @@ pub fn process(base: &Tikibase) -> Issues {
                 issues.push(Box::new(DuplicateSection {
                     filename: doc.path.clone(),
                     section_type: section_type.into(),
-                }))
+                }));
             } else {
                 known_sections.push(section_type);
             }
