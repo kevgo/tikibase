@@ -12,7 +12,7 @@ pub fn process(base: &Tikibase, config: &config::Data) -> Issues {
         Some(expected_sections) => expected_sections,
     };
     for doc in &base.docs {
-        if !matches_schema(doc.section_types(), expected_order) {
+        if !matches_schema(&doc.section_types(), expected_order) {
             issues.push(Box::new(UnorderedSections {
                 file: doc.path.clone(),
             }));
@@ -22,7 +22,7 @@ pub fn process(base: &Tikibase, config: &config::Data) -> Issues {
 }
 
 /// Indicates whether the given actual contains a subset of schema, in the same order as schema.
-fn matches_schema(actual: Vec<&str>, schema: &[String]) -> bool {
+fn matches_schema(actual: &[&str], schema: &[String]) -> bool {
     if actual.len() < 2 {
         // 0 or 1 elements --> order always matches
         return true;
@@ -160,28 +160,28 @@ mod tests {
         fn perfect_match() {
             let schema = vec!["one".to_string(), "two".to_string(), "three".to_string()];
             let give = vec!["one", "two", "three"];
-            assert!(matches_schema(give, &schema));
+            assert!(matches_schema(&give, &schema));
         }
 
         #[test]
         fn match_but_missing() {
             let schema = vec!["one".to_string(), "two".to_string(), "three".to_string()];
             let give = vec!["one", "three"];
-            assert!(matches_schema(give, &schema));
+            assert!(matches_schema(&give, &schema));
         }
 
         #[test]
         fn mismatch() {
             let schema = vec!["one".to_string(), "two".to_string(), "three".to_string()];
             let give = vec!["two", "one"];
-            assert!(!matches_schema(give, &schema));
+            assert!(!matches_schema(&give, &schema));
         }
 
         #[test]
         fn empty() {
             let schema = vec!["one".to_string(), "two".to_string(), "three".to_string()];
             let give = vec![];
-            assert!(matches_schema(give, &schema));
+            assert!(matches_schema(&give, &schema));
         }
     }
 }
