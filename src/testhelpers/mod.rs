@@ -60,7 +60,7 @@ pub fn section_with_title(title: &str) -> Section {
 /// trims whitespace from the end of this string,
 /// inline without allocating a new String
 fn trim_end(text: &mut String) {
-    while text.ends_with(|c: char| c.is_whitespace()) {
+    while text.ends_with(char::is_whitespace) {
         text.truncate(text.len() - 1);
     }
 }
