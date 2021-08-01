@@ -3,7 +3,7 @@ use crate::config;
 use super::Tikibase;
 use super::{Issue, Issues};
 
-pub fn process(base: &Tikibase, resource_links: Vec<String>) -> Issues {
+pub fn process(base: &Tikibase, resource_links: &[String]) -> Issues {
     let mut result = Issues::new();
     for resource in &base.resources {
         let path = resource.path.to_string_lossy();

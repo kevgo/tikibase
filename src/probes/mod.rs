@@ -27,7 +27,7 @@ pub fn run(base: &Tikibase, config: &config::Data) -> Issues {
     issues.extend(links_result.issues);
     issues.extend(image_orphaned::process(
         base,
-        links_result.outgoing_resource_links,
+        &links_result.outgoing_resource_links,
     ));
     let occ_res = occurrences::process(
         base,
