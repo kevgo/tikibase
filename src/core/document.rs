@@ -190,11 +190,11 @@ impl<'a> Iterator for SectionIterator<'a> {
     type Item = &'a Section;
 
     fn next(&mut self) -> Option<Self::Item> {
-        if !self.emitted_title {
+        if self.emitted_title {
+            self.body_iter.next()
+        } else {
             self.emitted_title = true;
             Some(self.title_section)
-        } else {
-            self.body_iter.next()
         }
     }
 }
