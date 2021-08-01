@@ -30,7 +30,7 @@ impl Line {
                     if let Some(idx) = destination.find('#') {
                         destination.truncate(idx);
                     }
-                    result.push(Reference::Link { destination })
+                    result.push(Reference::Link { destination });
                 }
                 _ => panic!("unexpected capture: '{}'", &cap[1]),
             }

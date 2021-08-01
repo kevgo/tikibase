@@ -9,7 +9,7 @@ pub struct DocLinks {
 }
 
 impl DocLinks {
-    /// registers an association between doc and other_doc
+    /// registers an association between `doc` and `other_doc`
     pub fn add<P: Into<PathBuf>, Q: Into<PathBuf>>(&mut self, doc: P, other_doc: Q) {
         let doc_path = doc.into();
         match self.data.get_mut(&doc_path) {
@@ -29,7 +29,7 @@ impl DocLinks {
         self.data.get(doc.as_ref())
     }
 
-    /// provides an empty DocLinks instance
+    /// provides an empty `DocLinks` instance
     pub fn new() -> DocLinks {
         DocLinks {
             data: AHashMap::new(),
