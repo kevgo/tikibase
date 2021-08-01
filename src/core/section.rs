@@ -79,11 +79,11 @@ impl<'a> Iterator for LinesIterator<'a> {
     type Item = &'a Line;
 
     fn next(&mut self) -> Option<Self::Item> {
-        if !self.emitted_title {
+        if self.emitted_title {
+            self.body_iter.next()
+        } else {
             self.emitted_title = true;
             Some(self.title_line)
-        } else {
-            self.body_iter.next()
         }
     }
 }

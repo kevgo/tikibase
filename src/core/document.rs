@@ -148,7 +148,7 @@ impl Document {
             }
             for (line_idx, line) in section.lines().enumerate() {
                 if line.text.starts_with("```") {
-                    line_inside_code_block = !line_inside_code_block
+                    line_inside_code_block = !line_inside_code_block;
                 }
                 if !line_inside_code_block {
                     for index in line.used_sources() {
@@ -228,7 +228,7 @@ pub fn builder_with_title_line<S: Into<String>>(text: S, line_number: u32) -> Se
     }
 }
 
-/// Null value for SectionBuilder instances
+/// Null value for `SectionBuilder` instances
 pub fn placeholder_builder() -> SectionBuilder {
     SectionBuilder {
         title_line: "".into(),
