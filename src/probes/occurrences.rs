@@ -32,7 +32,7 @@ impl Issue for MissingOccurrences {
         // insert occurrences section
         let mut section_builder = builder_with_title_line("### occurrences", doc.lines_count() + 1);
         section_builder.add_body_line("");
-        for missing in self.missing_links.iter() {
+        for missing in &self.missing_links {
             section_builder.add_body_line(format!(
                 "- [{}]({})",
                 strip_links(&missing.title),
