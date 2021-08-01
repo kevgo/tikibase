@@ -69,7 +69,8 @@ impl Document {
         })
     }
 
-    /// provides a Document instance containing the content of the file at the given path
+    #[cfg(test)]
+    /// provides Document instances in tests
     pub fn from_str<P: Into<PathBuf>>(path: P, text: &str) -> Result<Document, String> {
         Document::from_lines(text.lines().map(|line| line.to_string()), path.into())
     }
@@ -116,7 +117,7 @@ impl Document {
     pub fn section_types(&self) -> Vec<&str> {
         self.content_sections
             .iter()
-            .map(|section| section.section_type())
+            .map(Section::section_type)
             .collect()
     }
 

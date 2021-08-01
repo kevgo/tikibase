@@ -10,18 +10,18 @@ use regex::{Captures, Regex};
 use std::borrow::Cow;
 use std::path::PathBuf;
 
-struct MissingOccurrence {
+struct MissingLink {
     path: PathBuf,
     title: String,
 }
 
 /// missing links in a document
-pub struct MissingOccurrences {
+pub struct MissingLinks {
     file: PathBuf,
-    missing_links: Vec<MissingOccurrence>,
+    links: Vec<MissingLink>,
 }
 
-impl Issue for MissingOccurrences {
+impl Issue for MissingLinks {
     fn fix(&self, base: &mut Tikibase, _config: &config::Data) -> String {
         let base_dir = base.dir.clone();
         let doc = base.get_doc_mut(&self.file).unwrap();
@@ -32,11 +32,11 @@ impl Issue for MissingOccurrences {
         // insert occurrences section
         let mut section_builder = builder_with_title_line("### occurrences", doc.lines_count() + 1);
         section_builder.add_body_line("");
-        for missing in &self.missing_links {
+        for link in &self.links {
             section_builder.add_body_line(format!(
                 "- [{}]({})",
-                strip_links(&missing.title),
-                missing.path.to_string_lossy()
+                strip_links(&link.title),
+                link.path.to_string_lossy()
             ));
         }
         let occurrences_section = section_builder.result().unwrap();
@@ -56,7 +56,7 @@ impl Issue for MissingOccurrences {
 
     fn describe(&self) -> String {
         let links: Vec<Cow<str>> = self
-            .missing_links
+            .links
             .iter()
             .map(|ml| ml.path.to_string_lossy())
             .collect();
@@ -70,12 +70,12 @@ impl Issue for MissingOccurrences {
 
 /// indicates that a document contains an "occurrences" section
 /// that should no longer be there
-pub struct ObsoleteOccurrencesSection {
+pub struct ObsoleteLink {
     file: PathBuf,
     line: u32,
 }
 
-impl Issue for ObsoleteOccurrencesSection {
+impl Issue for ObsoleteLink {
     fn describe(&self) -> String {
         format!(
             "{}:{}  obsolete occurrences section",
@@ -134,13 +134,13 @@ pub fn process(
                     .get_or_insert(&AHashSet::new()),
             )
             .into_iter()
-            .map(|p| p.to_owned())
+            .cloned()
             .collect();
 
         // no missing links --> done here
         if missing_outgoing.is_empty() {
             if let Some(occurrences_section_line) = doc.occurrences_section_line {
-                issues.push(Box::new(ObsoleteOccurrencesSection {
+                issues.push(Box::new(ObsoleteLink {
                     file: doc.path.clone(),
                     line: occurrences_section_line,
                 }));
@@ -150,12 +150,12 @@ pub fn process(
 
         // register missing occurrences
         missing_outgoing.sort();
-        issues.push(Box::new(MissingOccurrences {
+        issues.push(Box::new(MissingLinks {
             file: doc.path.clone(),
-            missing_links: missing_outgoing
+            links: missing_outgoing
                 .into_iter()
                 .map(|path| base.get_doc(&path).unwrap())
-                .map(|doc| MissingOccurrence {
+                .map(|doc| MissingLink {
                     path: doc.path.clone(),
                     title: doc.title().into(),
                 })

@@ -68,7 +68,7 @@ mod tests {
     mod references {
         use crate::testhelpers::line_with_text;
 
-        use super::super::*;
+        use super::super::Reference;
         #[test]
         fn link_md() {
             let line = line_with_text(

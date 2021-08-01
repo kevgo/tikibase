@@ -25,7 +25,7 @@ lint:  # checks formatting
 	cargo fmt -- --check
 
 lint_pedantic:  # runs all lints, including false positives
-	cargo clippy --all-targets --all-features -- -W clippy::pedantic -A clippy::cast_possible_wrap -A clippy::cast_possible_truncation -A clippy::missing_panics_doc -A clippy::must_use_candidate -A clippy::match_bool
+	cargo clippy --all-targets --all-features -- -W clippy::pedantic -A clippy::cast_possible_wrap -A clippy::cast_possible_truncation -A clippy::missing_panics_doc -A clippy::must_use_candidate -A clippy::match_bool -A clippy::missing_errors_doc
 
 test: unit cuke lint  # runs all tests
 

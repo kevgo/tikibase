@@ -19,7 +19,7 @@ pub fn load<P: AsRef<Path>>(dir: P) -> Result<Data, String> {
     let file = match File::open(config_path) {
         Ok(reader) => reader,
         Err(e) => match e.kind() {
-            ErrorKind::NotFound => return Ok(Default::default()),
+            ErrorKind::NotFound => return Ok(Data::default()),
             _ => {
                 return Err(format!(
                     "Cannot access configuration file (tikibase.json): {}",
@@ -38,8 +38,8 @@ mod tests {
 
     #[test]
     fn defaults() {
-        let default_config: Data = Default::default();
-        assert_eq!(default_config.sections, None)
+        let default_config = Data::default();
+        assert_eq!(default_config.sections, None);
     }
 
     mod load {
