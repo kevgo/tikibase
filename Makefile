@@ -23,6 +23,7 @@ install:  # installs the binary in the system
 lint:  # checks formatting
 	${CURDIR}/tools/node_modules/.bin/prettier --ignore-path=.prettierignore_make --list-different .
 	cargo fmt -- --check
+	cargo udeps
 
 lint_pedantic:  # runs all lints, including false positives
 	cargo clippy --all-targets --all-features -- -W clippy::pedantic -A clippy::cast_possible_wrap -A clippy::cast_possible_truncation -A clippy::missing_panics_doc -A clippy::must_use_candidate -A clippy::match_bool -A clippy::missing_errors_doc
@@ -35,6 +36,7 @@ unit:  # runs the unit tests
 
 setup:  # prepares this codebase
 	(cd tools && yarn)
+	cargo install cargo-udeps --locked
 	echo
 	echo PLEASE DO THIS MANUALLY:
 	echo 1. install musl, e.g. "sudo apt install musl"
