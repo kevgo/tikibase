@@ -3,6 +3,7 @@ use crate::database::Tikibase;
 use std::slice::Iter;
 
 mod doc_links;
+mod issues;
 mod occurrences;
 mod probes;
 
