@@ -1,3 +1,6 @@
+//! The probes module contains the code that scans for problems in a TikiBase
+//! and reports problems found as `Issues`.
+
 pub mod image_orphaned;
 pub mod link_broken;
 pub mod section_capitalization;

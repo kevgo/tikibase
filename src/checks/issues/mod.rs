@@ -1,3 +1,5 @@
+//! The issues module contains the issues that Tikibase can find.
+
 mod broken_image;
 mod broken_link;
 mod duplicate_section;
