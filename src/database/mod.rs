@@ -1,6 +1,11 @@
 pub mod config;
 pub mod document;
-pub mod line;
-pub mod resource;
-pub mod section;
-pub mod tikibase;
+mod line;
+pub use line::Line;
+mod reference;
+pub use reference::Reference;
+mod resource;
+mod section;
+pub use section::Section;
+mod tikibase;
+pub use crate::database::tikibase::Tikibase;

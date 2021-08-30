@@ -2,8 +2,8 @@ use std::path::PathBuf;
 
 use super::{Issue, Issues};
 use crate::config;
-use crate::database::section::Section;
-use crate::database::tikibase::Tikibase;
+use crate::database::Section;
+use crate::database::Tikibase;
 
 pub fn process(base: &Tikibase, config: &config::Data) -> Issues {
     let mut issues = Issues::new();
@@ -105,7 +105,7 @@ mod tests {
 
     mod reorder {
         use super::super::reorder;
-        use crate::database::section::Section;
+        use crate::database::Section;
         use crate::testhelpers::section_with_title;
 
         #[test]

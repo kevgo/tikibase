@@ -3,7 +3,7 @@ use super::Issue;
 use super::Issues;
 use crate::config;
 use crate::database::document::builder_with_title_line;
-use crate::database::tikibase::Tikibase;
+use crate::database::Tikibase;
 use ahash::AHashSet;
 use lazy_static::lazy_static;
 use regex::{Captures, Regex};
@@ -169,7 +169,7 @@ pub fn process(
 mod tests {
 
     use crate::checks::doc_links::DocLinks;
-    use crate::database::tikibase::Tikibase;
+    use crate::database::Tikibase;
     use crate::testhelpers::{create_file, empty_config, tmp_dir};
 
     #[test]

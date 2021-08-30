@@ -7,7 +7,7 @@ pub mod stats;
 pub mod testhelpers;
 
 use crate::database::config;
-use crate::database::tikibase::Tikibase;
+use crate::database::Tikibase;
 use std::path::PathBuf;
 
 #[derive(Debug, PartialEq)]

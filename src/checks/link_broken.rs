@@ -1,7 +1,8 @@
 use super::doc_links::DocLinks;
-use super::Tikibase;
 use super::{Issue, Issues};
-use crate::{config, database::line::Reference};
+use crate::config;
+use crate::database::Reference;
+use crate::database::Tikibase;
 use std::path::PathBuf;
 
 pub struct LinksResult {
@@ -189,7 +190,7 @@ mod tests {
     mod process {
         use std::path::PathBuf;
 
-        use crate::database::tikibase::Tikibase;
+        use crate::database::Tikibase;
         use crate::testhelpers::{create_file, empty_config, tmp_dir};
 
         #[test]

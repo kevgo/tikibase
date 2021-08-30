@@ -1,6 +1,6 @@
 use std::path::PathBuf;
 
-use crate::database::tikibase::Tikibase;
+use crate::database::Tikibase;
 
 use super::{Issue, Issues};
 

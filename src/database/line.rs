@@ -1,14 +1,10 @@
+use super::Reference;
 use lazy_static::lazy_static;
 use regex::Regex;
 
 #[derive(Debug, PartialEq)]
 pub struct Line {
     pub text: String,
-}
-
-pub enum Reference {
-    Link { destination: String },
-    Image { src: String },
 }
 
 impl Line {

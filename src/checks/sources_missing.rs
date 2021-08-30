@@ -1,5 +1,5 @@
 use super::{Issue, Issues};
-use crate::database::tikibase::Tikibase;
+use crate::database::Tikibase;
 
 pub fn process(base: &Tikibase) -> Issues {
     let mut issues = Issues::new();
