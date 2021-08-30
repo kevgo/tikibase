@@ -70,7 +70,7 @@ pub fn process(base: &Tikibase) -> LinksResult {
                                 continue;
                             }
                             if !base.has_resource(&src) {
-                                result.issues.push(Box::new(BrokenImage {
+                                result.issues.push(Box::new(issues::BrokenImage {
                                     filename: doc.path.clone(),
                                     line: section.line_number + (i as u32) + 1,
                                     target: src.clone(),
@@ -84,32 +84,6 @@ pub fn process(base: &Tikibase) -> LinksResult {
         }
     }
     result
-}
-
-/// describes a broken image in the Tikibase
-pub struct BrokenImage {
-    filename: PathBuf,
-    line: u32,
-    target: String,
-}
-
-impl Issue for BrokenImage {
-    fn describe(&self) -> String {
-        format!(
-            "{}:{}  broken image \"{}\"",
-            self.filename.to_string_lossy(),
-            self.line,
-            self.target
-        )
-    }
-
-    fn fix(&self, _base: &mut Tikibase, _config: &config::Data) -> String {
-        panic!("not fixable")
-    }
-
-    fn fixable(&self) -> bool {
-        false
-    }
 }
 
 pub struct LinkToSameDocument {
