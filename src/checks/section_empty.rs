@@ -1,6 +1,6 @@
 use super::{Issue, Issues};
 use crate::config;
-use crate::database::tikibase::Tikibase;
+use crate::database::Tikibase;
 use std::path::PathBuf;
 
 /// finds all empty sections in the given Tikibase,
@@ -63,7 +63,7 @@ impl Issue for EmptySection {
 mod tests {
 
     use super::process;
-    use crate::database::tikibase::Tikibase;
+    use crate::database::Tikibase;
     use crate::testhelpers::{create_file, empty_config, tmp_dir};
 
     #[test]

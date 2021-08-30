@@ -1,5 +1,5 @@
 use crate::config;
-use crate::database::tikibase::Tikibase;
+use crate::database::Tikibase;
 use std::slice::Iter;
 
 mod doc_links;

@@ -3,4 +3,6 @@ pub mod document;
 pub mod line;
 pub mod resource;
 pub mod section;
-pub mod tikibase;
+mod tikibase;
+
+pub use tikibase::Tikibase;

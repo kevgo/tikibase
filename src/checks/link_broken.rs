@@ -1,6 +1,6 @@
 use super::doc_links::DocLinks;
-use super::Tikibase;
 use super::{Issue, Issues};
+use crate::database::Tikibase;
 use crate::{config, database::line::Reference};
 use std::path::PathBuf;
 
@@ -189,7 +189,7 @@ mod tests {
     mod process {
         use std::path::PathBuf;
 
-        use crate::database::tikibase::Tikibase;
+        use crate::database::Tikibase;
         use crate::testhelpers::{create_file, empty_config, tmp_dir};
 
         #[test]

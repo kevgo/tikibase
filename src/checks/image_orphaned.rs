@@ -1,7 +1,7 @@
 use crate::config;
 
-use super::Tikibase;
 use super::{Issue, Issues};
+use crate::database::Tikibase;
 
 pub fn process(base: &Tikibase, resource_links: &[String]) -> Issues {
     let mut result = Issues::new();
