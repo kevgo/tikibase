@@ -1,4 +1,4 @@
-//! The issues module contains the issues that Tikibase can find.
+//! The issues module contains all possible issues that Tikibase can identify and fix.
 
 mod broken_image;
 mod broken_link;
