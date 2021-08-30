@@ -1,45 +1,9 @@
 use super::doc_links::DocLinks;
-use super::Issue;
 use super::Issues;
 use crate::checks::issues;
-use crate::config;
 use crate::database::Tikibase;
 use ahash::AHashSet;
 use std::path::PathBuf;
-
-/// indicates that a document contains an "occurrences" section
-/// that should no longer be there
-pub struct ObsoleteLink {
-    file: PathBuf,
-    line: u32,
-}
-
-impl Issue for ObsoleteLink {
-    fn describe(&self) -> String {
-        format!(
-            "{}:{}  obsolete occurrences section",
-            self.file.to_string_lossy(),
-            self.line + 1,
-        )
-    }
-
-    fn fix(&self, base: &mut Tikibase, _config: &config::Data) -> String {
-        let base_dir = base.dir.clone();
-        let doc = base.get_doc_mut(&self.file).unwrap();
-        // we can simply flush the document here because
-        // its "occurrences" section was filtered out when loading the document
-        doc.flush(&base_dir);
-        format!(
-            "{}:{}  removed obsolete occurrences section",
-            self.file.to_string_lossy(),
-            self.line + 1,
-        )
-    }
-
-    fn fixable(&self) -> bool {
-        true
-    }
-}
 
 pub fn process(
     base: &Tikibase,
@@ -63,7 +27,7 @@ pub fn process(
         // no missing links --> done here
         if missing_outgoing.is_empty() {
             if let Some(occurrences_section_line) = doc.occurrences_section_line {
-                issues.push(Box::new(ObsoleteLink {
+                issues.push(Box::new(issues::ObsoleteLink {
                     file: doc.path.clone(),
                     line: occurrences_section_line,
                 }));
