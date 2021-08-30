@@ -12,8 +12,8 @@ heck = "0.3.3"
 lazy_static = "1.4.0"
 rand = "0.8.4"
 regex = "1.5.4"
-serde = { version = "1.0.127", features = ["derive"] }
-serde_json = "1.0.66"
+serde = { version = "1.0.130", features = ["derive"] }
+serde_json = "1.0.67"
 walkdir = "2.3.2"
 
 [[test]]
@@ -24,7 +24,7 @@ test = false
 [dev-dependencies]
 cucumber_rust = { git = "https://github.com/bbqsrc/cucumber-rust", branch = "main" }
 # You can use any executor you want, but we're going to use Tokio in this example.
-tokio = { version = "1.9.0", features = ["macros", "rt-multi-thread"] }
+tokio = { version = "1.10.1", features = ["macros", "rt-multi-thread"] }
 
 [profile.release]
 strip = "symbols"
