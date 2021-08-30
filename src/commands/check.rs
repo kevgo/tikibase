@@ -2,7 +2,7 @@ use crate::config;
 use crate::database::Tikibase;
 use crate::{probes, Issues};
 
-pub fn run(base: &Tikibase, config: &config::Data) -> Issues {
+pub(crate) fn check(base: &Tikibase, config: &config::Data) -> Issues {
     let mut issues = Issues::new();
     issues.extend(probes::section_duplicate::process(base));
     issues.extend(probes::section_empty::process(base));
