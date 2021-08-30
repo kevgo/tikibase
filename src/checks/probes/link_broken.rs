@@ -1,9 +1,7 @@
 use crate::checks::doc_links::DocLinks;
-use crate::checks::{issues, Issue, Issues};
-use crate::config;
+use crate::checks::{issues, Issues};
 use crate::database::Reference;
 use crate::database::Tikibase;
-use std::path::PathBuf;
 
 pub struct LinksResult {
     pub issues: Issues,
