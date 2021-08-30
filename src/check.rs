@@ -17,11 +17,10 @@ pub fn run(base: &Tikibase, config: &config::Data) -> Issues {
         base,
         &links_result.outgoing_resource_links,
     ));
-    let occ_res = probes::occurrences::process(
+    issues.extend(probes::occurrences::process(
         base,
         &links_result.incoming_doc_links,
         &links_result.outgoing_doc_links,
-    );
-    issues.extend(occ_res);
+    ));
     issues
 }
