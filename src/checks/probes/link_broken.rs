@@ -33,7 +33,7 @@ pub fn process(base: &Tikibase) -> LinksResult {
                     match reference {
                         Reference::Link { mut destination } => {
                             if destination.is_empty() {
-                                result.issues.push(Box::new(LinkWithoutDestination {
+                                result.issues.push(Box::new(issues::LinkWithoutDestination {
                                     filename: doc.path.clone(),
                                     line: section.line_number + (i as u32) + 1,
                                 }));
@@ -84,29 +84,6 @@ pub fn process(base: &Tikibase) -> LinksResult {
         }
     }
     result
-}
-
-pub struct LinkWithoutDestination {
-    filename: PathBuf,
-    line: u32,
-}
-
-impl Issue for LinkWithoutDestination {
-    fn describe(&self) -> String {
-        format!(
-            "{}:{}  link without destination",
-            self.filename.to_string_lossy(),
-            self.line
-        )
-    }
-
-    fn fix(&self, _base: &mut Tikibase, _config: &config::Data) -> String {
-        panic!("not fixable");
-    }
-
-    fn fixable(&self) -> bool {
-        false
-    }
 }
 
 #[cfg(test)]
