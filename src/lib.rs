@@ -1,6 +1,6 @@
 #![feature(cow_is_borrowed)]
 
-pub(crate) mod checks;
+mod check;
 pub(crate) mod database;
 pub(crate) mod help;
 pub(crate) mod issues;
@@ -60,7 +60,7 @@ pub fn process<P: Into<PathBuf>>(command: &Command, path: P) -> (Vec<String>, i3
     }
 
     // find all issues in the Tikibase
-    let issues = checks::run(&base, &config);
+    let issues = check::run(&base, &config);
     let unfix_count = issues.iter().filter(|issue| !issue.fixable()).count() as i32;
 
     // take care of the issues
