@@ -1,7 +1,6 @@
-use crate::checks::{Issue, Issues};
+use crate::checks::{issues, Issues};
 use crate::config;
 use crate::database::Tikibase;
-use std::path::PathBuf;
 
 pub fn process(base: &Tikibase, config: &config::Data) -> Issues {
     let mut issues = Issues::new();
@@ -14,7 +13,7 @@ pub fn process(base: &Tikibase, config: &config::Data) -> Issues {
             let section_type = section.section_type();
             // HACK: see https://github.com/rust-lang/rust/issues/42671
             if !sections.iter().any(|s| s == section_type) {
-                issues.push(Box::new(UnknownSection {
+                issues.push(Box::new(issues::UnknownSection {
                     file: doc.path.clone(),
                     line: section.line_number,
                     section_type: section_type.into(),
@@ -24,37 +23,4 @@ pub fn process(base: &Tikibase, config: &config::Data) -> Issues {
         }
     }
     issues
-}
-
-/// describes an unknown section
-struct UnknownSection {
-    file: PathBuf,
-    line: u32,
-    section_type: String,
-    allowed_types: Vec<String>,
-}
-
-impl Issue for UnknownSection {
-    fn describe(&self) -> String {
-        let alloweds: Vec<String> = self
-            .allowed_types
-            .iter()
-            .map(|allowed| format!("\n  - {}", allowed))
-            .collect();
-        format!(
-            "{}:{}  unknown section \"{}\", allowed sections:{}",
-            self.file.to_string_lossy(),
-            self.line + 1,
-            self.section_type,
-            alloweds.join("")
-        )
-    }
-
-    fn fix(&self, _base: &mut Tikibase, _config: &config::Data) -> String {
-        panic!("not fixable")
-    }
-
-    fn fixable(&self) -> bool {
-        false
-    }
 }

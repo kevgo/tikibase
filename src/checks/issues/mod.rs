@@ -7,6 +7,7 @@ pub mod link_without_destination;
 pub mod mixed_section_capitalization;
 pub mod orphaned_resource;
 pub mod section_without_header;
+pub mod unknown_section;
 pub mod unordered_sections;
 
 pub use broken_image::BrokenImage;
@@ -18,4 +19,5 @@ pub use link_without_destination::LinkWithoutDestination;
 pub use mixed_section_capitalization::MixCapSection;
 pub use orphaned_resource::OrphanedResource;
 pub use section_without_header::SectionNoHeader;
+pub use unknown_section::UnknownSection;
 pub use unordered_sections::UnorderedSections;
