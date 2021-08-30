@@ -42,7 +42,7 @@ setup:  # prepares this codebase
 	echo 1. install musl, e.g. "sudo apt install musl"
 	echo 2. install openssl-devel:
 	echo    - Fedora: sudo dnf install openssl-devel
-	echo    - Debian: sudo apt install libssl-dev
+	echo    - Debian: sudo apt install libssl-dev pkg-config
 	echo 3. cargo install cargo-edit
 
 update:  # updates the dependencies
