@@ -1,5 +1,5 @@
 use super::line::Line;
-use super::section::Section;
+use super::Section;
 use lazy_static::lazy_static;
 use regex::Regex;
 use std::collections::HashSet;
