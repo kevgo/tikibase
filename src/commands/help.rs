@@ -4,7 +4,7 @@ pub(crate) fn version() {
     println!("Tikibase v{}", VERSION);
 }
 
-pub(crate) fn run() {
+pub(crate) fn help() {
     println!(
         r#"Usage: tikibase <command>
 

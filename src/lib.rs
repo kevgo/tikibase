@@ -2,10 +2,8 @@
 
 mod commands;
 pub(crate) mod database;
-pub(crate) mod help;
 pub(crate) mod issues;
 pub(crate) mod probes;
-pub(crate) mod stats;
 pub mod testhelpers;
 
 use database::{config, Tikibase};
@@ -35,11 +33,11 @@ pub fn process<P: Into<PathBuf>>(command: &Command, path: P) -> (Vec<String>, i3
     // handle non-repo commands
     let basic_command = match command {
         Command::Help => {
-            help::run();
+            commands::help();
             true
         }
         Command::Version => {
-            help::version();
+            commands::version();
             true
         }
         _ => false,
@@ -54,7 +52,7 @@ pub fn process<P: Into<PathBuf>>(command: &Command, path: P) -> (Vec<String>, i3
 
     // handle stats command
     if command == &Command::Stats {
-        stats::run(&base);
+        commands::stats(&base);
         return (result, 0);
     }
 
