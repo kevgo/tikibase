@@ -70,7 +70,7 @@ impl Issues {
     }
 
     /// provides an empty Issues instance
-    pub fn new() -> Issues {
+    pub fn new() -> Self {
         Issues(vec![])
     }
 

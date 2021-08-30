@@ -30,7 +30,7 @@ impl DocLinks {
     }
 
     /// provides an empty `DocLinks` instance
-    pub fn new() -> DocLinks {
+    pub fn new() -> Self {
         DocLinks {
             data: AHashMap::new(),
         }
