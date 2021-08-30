@@ -1,8 +1,6 @@
 use crate::config;
 use crate::database::Tikibase;
-use crate::Issues;
-
-mod probes;
+use crate::{probes, Issues};
 
 pub fn run(base: &Tikibase, config: &config::Data) -> Issues {
     let mut issues = Issues::new();

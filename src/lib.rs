@@ -4,6 +4,7 @@ pub(crate) mod checks;
 pub(crate) mod database;
 pub(crate) mod help;
 pub(crate) mod issues;
+pub(crate) mod probes;
 pub(crate) mod stats;
 pub mod testhelpers;
 
