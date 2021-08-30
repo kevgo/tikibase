@@ -1,5 +1,5 @@
-use crate::checks::Issue;
 use crate::database::Tikibase;
+use crate::Issue;
 use std::path::PathBuf;
 
 pub struct SectionNoHeader {

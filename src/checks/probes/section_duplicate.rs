@@ -1,5 +1,5 @@
-use crate::checks::{issues, Issues};
 use crate::database::Tikibase;
+use crate::{issues, Issues};
 
 /// finds all duplicate sections in the given Tikibase
 pub fn process(base: &Tikibase) -> Issues {

@@ -1,5 +1,5 @@
-use crate::checks::Issue;
 use crate::database::{config, Tikibase};
+use crate::Issue;
 use std::path::PathBuf;
 
 /// describes an unknown section

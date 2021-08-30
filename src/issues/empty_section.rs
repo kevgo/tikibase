@@ -1,6 +1,6 @@
-use crate::checks::Issue;
 use crate::config;
 use crate::database::Tikibase;
+use crate::Issue;
 use std::path::PathBuf;
 
 /// describes the issue that a section is empty

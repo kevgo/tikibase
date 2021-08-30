@@ -1,5 +1,5 @@
-use crate::checks::{issues, Issues};
 use crate::database::Tikibase;
+use crate::{issues, Issues};
 
 /// finds all empty sections in the given Tikibase,
 /// fixes them if fix is enabled,

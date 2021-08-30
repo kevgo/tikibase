@@ -1,6 +1,6 @@
-use crate::checks::Issue;
 use crate::config;
 use crate::database::Tikibase;
+use crate::Issue;
 
 /// a resource that isn't linked to
 pub struct OrphanedResource {

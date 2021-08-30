@@ -1,5 +1,5 @@
-use crate::checks::Issue;
 use crate::database::{config, Tikibase};
+use crate::Issue;
 use std::path::PathBuf;
 
 /// indicates that a document contains an "occurrences" section

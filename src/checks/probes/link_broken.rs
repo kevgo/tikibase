@@ -1,7 +1,7 @@
-use crate::checks::{issues, Issues};
 use crate::database::DocLinks;
 use crate::database::Reference;
 use crate::database::Tikibase;
+use crate::{issues, Issues};
 
 pub struct LinksResult {
     pub issues: Issues,

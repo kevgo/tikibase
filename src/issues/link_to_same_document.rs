@@ -1,26 +1,23 @@
-use crate::checks::Issue;
 use crate::database::{config, Tikibase};
+use crate::Issue;
 use std::path::PathBuf;
 
-/// describes a broken image in the Tikibase
-pub struct BrokenImage {
+pub struct LinkToSameDocument {
     pub filename: PathBuf,
     pub line: u32,
-    pub target: String,
 }
 
-impl Issue for BrokenImage {
+impl Issue for LinkToSameDocument {
     fn describe(&self) -> String {
         format!(
-            "{}:{}  broken image \"{}\"",
+            "{}:{}  link to the same file",
             self.filename.to_string_lossy(),
-            self.line,
-            self.target
+            self.line
         )
     }
 
     fn fix(&self, _base: &mut Tikibase, _config: &config::Data) -> String {
-        panic!("not fixable")
+        panic!("not fixable");
     }
 
     fn fixable(&self) -> bool {

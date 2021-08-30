@@ -1,6 +1,6 @@
-use crate::checks::Issue;
 use crate::config;
 use crate::database::Tikibase;
+use crate::Issue;
 
 /// describes the issue that sections have mixed capitalization
 pub struct MixCapSection {

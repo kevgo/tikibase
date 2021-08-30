@@ -1,5 +1,5 @@
-use crate::checks::Issue;
 use crate::database::{config, Section, Tikibase};
+use crate::Issue;
 use std::path::PathBuf;
 
 /// describes the issue that a document has sections out of order

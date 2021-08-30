@@ -1,5 +1,5 @@
-use crate::checks::Issue;
 use crate::database::Tikibase;
+use crate::Issue;
 
 pub struct MissingSource {
     pub file: String,

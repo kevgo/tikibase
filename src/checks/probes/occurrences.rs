@@ -1,7 +1,6 @@
-use crate::checks::issues;
-use crate::checks::issues::Issues;
 use crate::database::DocLinks;
 use crate::database::Tikibase;
+use crate::{issues, Issues};
 use ahash::AHashSet;
 use std::path::PathBuf;
 

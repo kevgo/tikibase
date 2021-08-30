@@ -1,6 +1,6 @@
-use crate::checks::Issue;
 use crate::database::document;
 use crate::database::{config, Tikibase};
+use crate::Issue;
 use lazy_static::lazy_static;
 use regex::{Captures, Regex};
 use std::borrow::Cow;

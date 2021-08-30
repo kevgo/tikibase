@@ -3,11 +3,13 @@
 pub(crate) mod checks;
 pub(crate) mod database;
 pub(crate) mod help;
+pub(crate) mod issues;
 pub(crate) mod stats;
 pub mod testhelpers;
 
 use crate::database::config;
 use crate::database::Tikibase;
+use issues::{Issue, Issues};
 use std::path::PathBuf;
 
 #[derive(Debug, PartialEq)]
