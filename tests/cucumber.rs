@@ -29,7 +29,7 @@ impl World for MyWorld {
         Ok(MyWorld {
             dir: tmp_dir(),
             exitcode: 0,
-            findings: vec![],
+            findings: Vec::new(),
             original_contents: AHashMap::new(),
         })
     }
@@ -115,7 +115,7 @@ fn steps() -> Steps<MyWorld> {
     });
 
     steps.then("it finds no issues", |world, _ctx| {
-        let expected: Vec<&str> = vec![];
+        let expected: Vec<&str> = Vec::new();
         assert_eq!(world.findings, expected);
         assert_eq!(world.exitcode, 0);
         world

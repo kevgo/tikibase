@@ -180,7 +180,7 @@ mod tests {
         #[test]
         fn empty() {
             let schema = vec!["one".to_string(), "two".to_string(), "three".to_string()];
-            let give = vec![];
+            let give = Vec::new();
             assert!(matches_schema(&give, &schema));
         }
     }

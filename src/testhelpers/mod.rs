@@ -53,7 +53,7 @@ pub fn section_with_title(title: &str) -> Section {
     Section {
         line_number: 0,
         title_line: Line { text: title.into() },
-        body: vec![],
+        body: Vec::new(),
     }
 }
 

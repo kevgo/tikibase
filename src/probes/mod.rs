@@ -71,7 +71,7 @@ impl Issues {
 
     /// provides an empty Issues instance
     pub fn new() -> Self {
-        Issues(vec![])
+        Issues(Vec::new())
     }
 
     /// adds the given Issue to this Issue collection

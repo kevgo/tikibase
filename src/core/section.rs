@@ -63,7 +63,7 @@ impl Default for Section {
             title_line: Line {
                 text: "### section".into(),
             },
-            body: vec![],
+            body: Vec::new(),
         }
     }
 }
@@ -161,7 +161,7 @@ title content";
         #[test]
         fn no_body() {
             let mut section = Section {
-                body: vec![],
+                body: Vec::new(),
                 ..Section::default()
             };
             section.push_line("new line");
