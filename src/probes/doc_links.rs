@@ -2,7 +2,7 @@ use ahash::{AHashMap, AHashSet};
 use std::path::Path;
 use std::path::PathBuf;
 
-/// manages links to/from a document
+/// tracks all links between all documents
 pub struct DocLinks {
     /// key = file path, value = associated files
     pub data: AHashMap<PathBuf, AHashSet<PathBuf>>,
