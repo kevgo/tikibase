@@ -57,8 +57,8 @@ impl Issues {
         self.0.iter()
     }
 
-    /// indicates whether this collection contains any elements
     #[cfg(test)]
+    /// indicates whether this collection contains any elements
     pub fn is_empty(&self) -> bool {
         self.0.is_empty()
     }
