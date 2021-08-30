@@ -1,6 +1,6 @@
-use crate::core::config;
-use crate::core::line::Line;
-use crate::core::section::Section;
+use crate::database::config;
+use crate::database::Line;
+use crate::database::Section;
 use rand::Rng;
 use std::fs::File;
 use std::io::prelude::*;
@@ -53,7 +53,7 @@ pub fn section_with_title(title: &str) -> Section {
     Section {
         line_number: 0,
         title_line: Line { text: title.into() },
-        body: vec![],
+        body: Vec::new(),
     }
 }
 

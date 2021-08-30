@@ -19,7 +19,7 @@ Feature: Link to the same document
     And all files are unchanged
     And the exit code is 2
 
-  Scenario: fixing
+  Scenario: fix
     When fixing
     Then it finds no issues
     And all files are unchanged

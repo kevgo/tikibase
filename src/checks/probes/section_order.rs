@@ -1,9 +1,9 @@
 use std::path::PathBuf;
 
-use super::{Issue, Issues};
+use crate::checks::{Issue, Issues};
 use crate::config;
-use crate::core::section::Section;
-use crate::core::tikibase::Tikibase;
+use crate::database::Section;
+use crate::database::Tikibase;
 
 pub fn process(base: &Tikibase, config: &config::Data) -> Issues {
     let mut issues = Issues::new();
@@ -105,7 +105,7 @@ mod tests {
 
     mod reorder {
         use super::super::reorder;
-        use crate::core::section::Section;
+        use crate::database::Section;
         use crate::testhelpers::section_with_title;
 
         #[test]
@@ -180,7 +180,7 @@ mod tests {
         #[test]
         fn empty() {
             let schema = vec!["one".to_string(), "two".to_string(), "three".to_string()];
-            let give = vec![];
+            let give = Vec::new();
             assert!(matches_schema(&give, &schema));
         }
     }

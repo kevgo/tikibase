@@ -14,7 +14,7 @@ Feature: accept links to existing documents
       [one](1.md)
       """
 
-  Scenario: checking
+  Scenario: check
     When checking
     Then it finds no issues
     And all files are unchanged

@@ -1,8 +1,8 @@
 use std::path::PathBuf;
 
-use super::{Issue, Issues};
+use crate::checks::{Issue, Issues};
 use crate::config;
-use crate::core::tikibase::Tikibase;
+use crate::database::Tikibase;
 
 /// finds all duplicate sections in the given Tikibase
 pub fn process(base: &Tikibase) -> Issues {
@@ -52,7 +52,7 @@ impl Issue for DuplicateSection {
 mod tests {
 
     use super::process;
-    use crate::core::tikibase::Tikibase;
+    use crate::database::Tikibase;
     use crate::testhelpers::{create_file, empty_config, tmp_dir};
 
     #[test]

@@ -1,13 +1,13 @@
 #![feature(cow_is_borrowed)]
 
-pub mod core;
+pub mod checks;
+pub mod database;
 pub mod help;
-pub mod probes;
 pub mod stats;
 pub mod testhelpers;
 
-use crate::core::config;
-use crate::core::tikibase::Tikibase;
+use crate::database::config;
+use crate::database::Tikibase;
 use std::path::PathBuf;
 
 #[derive(Debug, PartialEq)]
@@ -57,7 +57,7 @@ pub fn process<P: Into<PathBuf>>(command: &Command, path: P) -> (Vec<String>, i3
     }
 
     // find all issues in the Tikibase
-    let issues = probes::run(&base, &config);
+    let issues = checks::run(&base, &config);
     let unfix_count = issues.iter().filter(|issue| !issue.fixable()).count() as i32;
 
     // take care of the issues

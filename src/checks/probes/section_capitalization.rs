@@ -1,6 +1,6 @@
-use super::{Issue, Issues};
+use crate::checks::{Issue, Issues};
 use crate::config;
-use crate::core::tikibase::Tikibase;
+use crate::database::Tikibase;
 use ahash::{AHashMap, AHashSet};
 use std::iter::FromIterator;
 
@@ -65,7 +65,7 @@ mod tests {
         assert_eq!(super::normalize("FOO"), "foo");
     }
 
-    use crate::core::tikibase::Tikibase;
+    use crate::database::Tikibase;
     use crate::testhelpers::{create_file, empty_config, tmp_dir};
 
     #[test]

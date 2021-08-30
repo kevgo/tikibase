@@ -63,7 +63,7 @@ impl Default for Section {
             title_line: Line {
                 text: "### section".into(),
             },
-            body: vec![],
+            body: Vec::new(),
         }
     }
 }
@@ -109,7 +109,7 @@ mod tests {
 
     mod last_line {
 
-        use crate::core::section::Section;
+        use crate::database::Section;
         use crate::testhelpers::line_with_text;
         use std::default::Default;
 
@@ -155,13 +155,13 @@ title content";
     }
 
     mod push_line {
-        use crate::core::section::Section;
+        use crate::database::Section;
         use crate::testhelpers::line_with_text;
 
         #[test]
         fn no_body() {
             let mut section = Section {
-                body: vec![],
+                body: Vec::new(),
                 ..Section::default()
             };
             section.push_line("new line");

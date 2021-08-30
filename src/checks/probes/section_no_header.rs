@@ -1,8 +1,8 @@
 use std::path::PathBuf;
 
-use crate::core::tikibase::Tikibase;
+use crate::database::Tikibase;
 
-use super::{Issue, Issues};
+use crate::checks::{Issue, Issues};
 
 pub fn process(base: &Tikibase) -> Issues {
     let mut issues = Issues::new();
@@ -33,7 +33,7 @@ impl Issue for SectionNoHeader {
         )
     }
 
-    fn fix(&self, _base: &mut Tikibase, _config: &crate::core::config::Data) -> String {
+    fn fix(&self, _base: &mut Tikibase, _config: &crate::database::config::Data) -> String {
         panic!("not fixable");
     }
 

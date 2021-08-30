@@ -2,7 +2,7 @@ use ahash::{AHashMap, AHashSet};
 use std::path::Path;
 use std::path::PathBuf;
 
-/// manages links to/from a document
+/// tracks all links between all documents
 pub struct DocLinks {
     /// key = file path, value = associated files
     pub data: AHashMap<PathBuf, AHashSet<PathBuf>>,
@@ -10,7 +10,7 @@ pub struct DocLinks {
 
 impl DocLinks {
     /// registers an association between `doc` and `other_doc`
-    pub fn add<P: Into<PathBuf>, Q: Into<PathBuf>>(&mut self, doc: P, other_doc: Q) {
+    pub fn add<P1: Into<PathBuf>, P2: Into<PathBuf>>(&mut self, doc: P1, other_doc: P2) {
         let doc_path = doc.into();
         match self.data.get_mut(&doc_path) {
             None => {
@@ -30,7 +30,7 @@ impl DocLinks {
     }
 
     /// provides an empty `DocLinks` instance
-    pub fn new() -> DocLinks {
+    pub fn new() -> Self {
         DocLinks {
             data: AHashMap::new(),
         }
@@ -63,7 +63,7 @@ mod tests {
 
     mod get {
 
-        use crate::probes::doc_links::DocLinks;
+        use crate::checks::doc_links::DocLinks;
         use std::path::PathBuf;
 
         #[test]
