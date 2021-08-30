@@ -168,8 +168,8 @@ pub fn process(
 #[cfg(test)]
 mod tests {
 
+    use crate::checks::doc_links::DocLinks;
     use crate::database::tikibase::Tikibase;
-    use crate::probes::doc_links::DocLinks;
     use crate::testhelpers::{create_file, empty_config, tmp_dir};
 
     #[test]
