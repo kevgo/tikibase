@@ -1,5 +1,5 @@
 use crate::database::config;
-use crate::database::line::Line;
+use crate::database::Line;
 use crate::database::Section;
 use rand::Rng;
 use std::fs::File;

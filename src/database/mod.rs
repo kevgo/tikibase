@@ -1,9 +1,10 @@
 pub mod config;
 pub mod document;
-pub mod line;
-pub mod resource;
+mod line;
+mod resource;
 mod section;
 mod tikibase;
 
+pub use line::{Line, Reference};
 pub use section::Section;
 pub use tikibase::Tikibase;
