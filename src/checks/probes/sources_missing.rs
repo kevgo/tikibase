@@ -1,4 +1,4 @@
-use super::{Issue, Issues};
+use crate::checks::{Issue, Issues};
 use crate::database::Tikibase;
 
 pub fn process(base: &Tikibase) -> Issues {

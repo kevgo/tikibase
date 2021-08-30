@@ -2,7 +2,7 @@ use std::path::PathBuf;
 
 use crate::database::Tikibase;
 
-use super::{Issue, Issues};
+use crate::checks::{Issue, Issues};
 
 pub fn process(base: &Tikibase) -> Issues {
     let mut issues = Issues::new();

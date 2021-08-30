@@ -1,6 +1,6 @@
 use crate::config;
 
-use super::{Issue, Issues};
+use crate::checks::{Issue, Issues};
 use crate::database::Tikibase;
 
 pub fn process(base: &Tikibase, resource_links: &[String]) -> Issues {

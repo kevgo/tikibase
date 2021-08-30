@@ -1,4 +1,4 @@
-use super::{Issue, Issues};
+use crate::checks::{Issue, Issues};
 use crate::config;
 use crate::database::Tikibase;
 use std::path::PathBuf;

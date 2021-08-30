@@ -1,5 +1,5 @@
-use super::doc_links::DocLinks;
-use super::{Issue, Issues};
+use crate::checks::doc_links::DocLinks;
+use crate::checks::{Issue, Issues};
 use crate::config;
 use crate::database::Reference;
 use crate::database::Tikibase;

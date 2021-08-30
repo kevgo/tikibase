@@ -3,29 +3,21 @@ use crate::database::Tikibase;
 use std::slice::Iter;
 
 mod doc_links;
-mod image_orphaned;
-mod link_broken;
 mod occurrences;
-mod section_capitalization;
-mod section_duplicate;
-mod section_empty;
-mod section_no_header;
-mod section_order;
-mod section_type;
-mod sources_missing;
+mod probes;
 
 pub fn run(base: &Tikibase, config: &config::Data) -> Issues {
     let mut issues = Issues::new();
-    issues.extend(section_duplicate::process(base));
-    issues.extend(section_empty::process(base));
-    issues.extend(section_capitalization::process(base));
-    issues.extend(section_type::process(base, config));
-    issues.extend(section_order::process(base, config));
-    issues.extend(section_no_header::process(base));
-    issues.extend(sources_missing::process(base));
-    let links_result = link_broken::process(base);
+    issues.extend(probes::section_duplicate::process(base));
+    issues.extend(probes::section_empty::process(base));
+    issues.extend(probes::section_capitalization::process(base));
+    issues.extend(probes::section_type::process(base, config));
+    issues.extend(probes::section_order::process(base, config));
+    issues.extend(probes::section_no_header::process(base));
+    issues.extend(probes::sources_missing::process(base));
+    let links_result = probes::link_broken::process(base);
     issues.extend(links_result.issues);
-    issues.extend(image_orphaned::process(
+    issues.extend(probes::image_orphaned::process(
         base,
         &links_result.outgoing_resource_links,
     ));
