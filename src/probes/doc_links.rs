@@ -10,7 +10,7 @@ pub struct DocLinks {
 
 impl DocLinks {
     /// registers an association between `doc` and `other_doc`
-    pub fn add<P: Into<PathBuf>, Q: Into<PathBuf>>(&mut self, doc: P, other_doc: Q) {
+    pub fn add<P1: Into<PathBuf>, P2: Into<PathBuf>>(&mut self, doc: P1, other_doc: P2) {
         let doc_path = doc.into();
         match self.data.get_mut(&doc_path) {
             None => {
