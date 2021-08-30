@@ -1,6 +1,6 @@
-use crate::checks::doc_links::DocLinks;
 use crate::checks::issues;
 use crate::checks::issues::Issues;
+use crate::database::DocLinks;
 use crate::database::Tikibase;
 use ahash::AHashSet;
 use std::path::PathBuf;
@@ -55,7 +55,7 @@ pub fn process(
 #[cfg(test)]
 mod tests {
 
-    use crate::checks::doc_links::DocLinks;
+    use crate::database::DocLinks;
     use crate::database::Tikibase;
     use crate::testhelpers::{create_file, empty_config, tmp_dir};
 

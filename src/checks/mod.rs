@@ -1,7 +1,6 @@
 use crate::config;
 use crate::database::Tikibase;
 
-mod doc_links;
 mod issues;
 mod probes;
 

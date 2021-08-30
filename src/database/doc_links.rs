@@ -63,7 +63,7 @@ mod tests {
 
     mod get {
 
-        use crate::checks::doc_links::DocLinks;
+        use super::super::DocLinks;
         use std::path::PathBuf;
 
         #[test]
