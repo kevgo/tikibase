@@ -8,4 +8,4 @@ mod resource;
 mod section;
 pub use section::Section;
 mod tikibase;
-pub use tikibase::Tikibase;
+pub use crate::database::tikibase::Tikibase;
