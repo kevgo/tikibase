@@ -1,5 +1,5 @@
 use crate::checks::doc_links::DocLinks;
-use crate::checks::{Issue, Issues};
+use crate::checks::{issues, Issue, Issues};
 use crate::config;
 use crate::database::Reference;
 use crate::database::Tikibase;
@@ -46,7 +46,7 @@ pub fn process(base: &Tikibase) -> LinksResult {
                                 destination.replace_range(..index, "");
                             }
                             if !existing_targets.contains(&destination) {
-                                result.issues.push(Box::new(BrokenLink {
+                                result.issues.push(Box::new(issues::BrokenLink {
                                     filename: doc.path.clone(),
                                     line: section.line_number + (i as u32) + 1,
                                     target: destination,
@@ -84,32 +84,6 @@ pub fn process(base: &Tikibase) -> LinksResult {
         }
     }
     result
-}
-
-/// describes a broken link in the Tikibase
-pub struct BrokenLink {
-    filename: PathBuf,
-    line: u32,
-    target: String,
-}
-
-impl Issue for BrokenLink {
-    fn describe(&self) -> String {
-        format!(
-            "{}:{}  broken link to \"{}\"",
-            self.filename.to_string_lossy(),
-            self.line,
-            self.target
-        )
-    }
-
-    fn fix(&self, _base: &mut Tikibase, _config: &config::Data) -> String {
-        panic!("not fixable")
-    }
-
-    fn fixable(&self) -> bool {
-        false
-    }
 }
 
 /// describes a broken image in the Tikibase
