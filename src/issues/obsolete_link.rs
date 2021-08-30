@@ -1,4 +1,5 @@
-use crate::database::{config, Tikibase};
+use crate::config;
+use crate::database::Tikibase;
 use crate::Issue;
 use std::path::PathBuf;
 

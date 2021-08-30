@@ -1,3 +1,4 @@
+//! everything around the CLI wrapper
 extern crate lazy_static;
 
 use tikibase::process;

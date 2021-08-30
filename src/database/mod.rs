@@ -1,4 +1,3 @@
-pub(crate) mod config;
 mod doc_links;
 pub(crate) mod document;
 mod line;

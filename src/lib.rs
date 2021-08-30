@@ -1,24 +1,16 @@
 #![feature(cow_is_borrowed)]
 
-mod commands;
+pub(crate) mod commands;
+pub(crate) mod config;
 pub(crate) mod database;
 pub(crate) mod issues;
 pub(crate) mod probes;
 pub mod testhelpers;
 
-use database::{config, Tikibase};
+pub use commands::Command;
+use database::Tikibase;
 use issues::{Issue, Issues};
 use std::path::PathBuf;
-
-#[derive(Debug, PartialEq)]
-pub enum Command {
-    Check,
-    Fix,
-    Help,
-    Pitstop,
-    Stats,
-    Version,
-}
 
 pub fn process<P: Into<PathBuf>>(command: &Command, path: P) -> (Vec<String>, i32) {
     let mut result = Vec::new();

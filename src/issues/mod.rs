@@ -30,7 +30,8 @@ pub(crate) use section_without_header::SectionWithoutHeader;
 pub(crate) use unknown_section::UnknownSection;
 pub(crate) use unordered_sections::UnorderedSections;
 
-use crate::database::{config, Tikibase};
+use crate::config;
+use crate::database::Tikibase;
 use std::slice::Iter;
 
 /// an issue that was identified in the Tikibase
