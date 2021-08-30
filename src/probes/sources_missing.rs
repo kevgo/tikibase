@@ -1,5 +1,5 @@
 use super::{Issue, Issues};
-use crate::core::tikibase::Tikibase;
+use crate::database::tikibase::Tikibase;
 
 pub fn process(base: &Tikibase) -> Issues {
     let mut issues = Issues::new();
@@ -35,7 +35,7 @@ impl Issue for MissingSource {
         )
     }
 
-    fn fix(&self, _base: &mut Tikibase, _config: &crate::core::config::Data) -> String {
+    fn fix(&self, _base: &mut Tikibase, _config: &crate::database::config::Data) -> String {
         panic!("not fixable");
     }
 

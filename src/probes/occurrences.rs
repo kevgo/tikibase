@@ -2,8 +2,8 @@ use super::doc_links::DocLinks;
 use super::Issue;
 use super::Issues;
 use crate::config;
-use crate::core::document::builder_with_title_line;
-use crate::core::tikibase::Tikibase;
+use crate::database::document::builder_with_title_line;
+use crate::database::tikibase::Tikibase;
 use ahash::AHashSet;
 use lazy_static::lazy_static;
 use regex::{Captures, Regex};
@@ -168,7 +168,7 @@ pub fn process(
 #[cfg(test)]
 mod tests {
 
-    use crate::core::tikibase::Tikibase;
+    use crate::database::tikibase::Tikibase;
     use crate::probes::doc_links::DocLinks;
     use crate::testhelpers::{create_file, empty_config, tmp_dir};
 

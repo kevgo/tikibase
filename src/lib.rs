@@ -1,13 +1,13 @@
 #![feature(cow_is_borrowed)]
 
-pub mod core;
+pub mod database;
 pub mod help;
 pub mod probes;
 pub mod stats;
 pub mod testhelpers;
 
-use crate::core::config;
-use crate::core::tikibase::Tikibase;
+use crate::database::config;
+use crate::database::tikibase::Tikibase;
 use std::path::PathBuf;
 
 #[derive(Debug, PartialEq)]

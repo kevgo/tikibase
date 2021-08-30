@@ -1,4 +1,4 @@
-use crate::core::tikibase::Tikibase;
+use crate::database::tikibase::Tikibase;
 use ahash::AHashMap;
 
 pub fn run(base: &Tikibase) {

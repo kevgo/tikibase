@@ -1,6 +1,6 @@
 use std::path::PathBuf;
 
-use crate::core::tikibase::Tikibase;
+use crate::database::tikibase::Tikibase;
 
 use super::{Issue, Issues};
 
@@ -33,7 +33,7 @@ impl Issue for SectionNoHeader {
         )
     }
 
-    fn fix(&self, _base: &mut Tikibase, _config: &crate::core::config::Data) -> String {
+    fn fix(&self, _base: &mut Tikibase, _config: &crate::database::config::Data) -> String {
         panic!("not fixable");
     }
 

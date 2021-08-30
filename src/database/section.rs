@@ -109,7 +109,7 @@ mod tests {
 
     mod last_line {
 
-        use crate::core::section::Section;
+        use crate::database::section::Section;
         use crate::testhelpers::line_with_text;
         use std::default::Default;
 
@@ -155,7 +155,7 @@ title content";
     }
 
     mod push_line {
-        use crate::core::section::Section;
+        use crate::database::section::Section;
         use crate::testhelpers::line_with_text;
 
         #[test]

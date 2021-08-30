@@ -1,6 +1,6 @@
 use super::{Issue, Issues};
 use crate::config;
-use crate::core::tikibase::Tikibase;
+use crate::database::tikibase::Tikibase;
 use std::path::PathBuf;
 
 pub fn process(base: &Tikibase, config: &config::Data) -> Issues {

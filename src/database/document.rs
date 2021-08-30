@@ -441,7 +441,7 @@ one
     }
 
     mod sources_defined {
-        use crate::core::document::Document;
+        use crate::database::document::Document;
         use std::collections::HashSet;
 
         #[test]
@@ -489,7 +489,7 @@ title text
     mod sources_used {
         use std::{collections::HashSet, path::PathBuf};
 
-        use crate::core::document::{Document, UsedSource};
+        use crate::database::document::{Document, UsedSource};
 
         #[test]
         fn no_sources() {
