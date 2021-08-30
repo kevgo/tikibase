@@ -1,9 +1,9 @@
 #![feature(cow_is_borrowed)]
 
-pub mod checks;
-pub mod database;
-pub mod help;
-pub mod stats;
+pub(crate) mod checks;
+pub(crate) mod database;
+pub(crate) mod help;
+pub(crate) mod stats;
 pub mod testhelpers;
 
 use crate::database::config;
