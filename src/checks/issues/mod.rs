@@ -1,14 +1,14 @@
-pub mod broken_image;
-pub mod broken_link;
-pub mod duplicate_section;
-pub mod empty_section;
-pub mod link_to_same_document;
-pub mod link_without_destination;
-pub mod mixed_section_capitalization;
-pub mod orphaned_resource;
-pub mod section_without_header;
-pub mod unknown_section;
-pub mod unordered_sections;
+mod broken_image;
+mod broken_link;
+mod duplicate_section;
+mod empty_section;
+mod link_to_same_document;
+mod link_without_destination;
+mod mixed_section_capitalization;
+mod orphaned_resource;
+mod section_without_header;
+mod unknown_section;
+mod unordered_sections;
 
 pub use broken_image::BrokenImage;
 pub use broken_link::BrokenLink;
