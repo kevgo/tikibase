@@ -1,6 +1,6 @@
-use super::doc_links::DocLinks;
-use super::Issues;
+use crate::checks::doc_links::DocLinks;
 use crate::checks::issues;
+use crate::checks::issues::Issues;
 use crate::database::Tikibase;
 use ahash::AHashSet;
 use std::path::PathBuf;

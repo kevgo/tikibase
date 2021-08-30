@@ -3,7 +3,6 @@ use crate::database::Tikibase;
 
 mod doc_links;
 mod issues;
-mod occurrences;
 mod probes;
 
 pub(crate) use issues::{Issue, Issues};
@@ -23,7 +22,7 @@ pub fn run(base: &Tikibase, config: &config::Data) -> Issues {
         base,
         &links_result.outgoing_resource_links,
     ));
-    let occ_res = occurrences::process(
+    let occ_res = probes::occurrences::process(
         base,
         &links_result.incoming_doc_links,
         &links_result.outgoing_doc_links,
