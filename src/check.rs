@@ -9,7 +9,7 @@ pub fn run(base: &Tikibase, config: &config::Data) -> Issues {
     issues.extend(probes::section_capitalization::process(base));
     issues.extend(probes::section_type::process(base, config));
     issues.extend(probes::section_order::process(base, config));
-    issues.extend(probes::section_no_header::process(base));
+    issues.extend(probes::section_without_header::process(base));
     issues.extend(probes::sources_missing::process(base));
     let links_result = probes::link_broken::process(base);
     issues.extend(links_result.issues);

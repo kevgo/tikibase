@@ -6,7 +6,7 @@ pub fn process(base: &Tikibase) -> Issues {
     for doc in &base.docs {
         for section in doc.sections() {
             if section.section_type().is_empty() {
-                issues.push(Box::new(issues::SectionNoHeader {
+                issues.push(Box::new(issues::SectionWithoutHeader {
                     file: doc.path.clone(),
                     line: section.line_number,
                 }));

@@ -26,7 +26,7 @@ pub(crate) use missing_source::MissingSource;
 pub(crate) use mixed_section_capitalization::MixCapSection;
 pub(crate) use obsolete_link::ObsoleteLink;
 pub(crate) use orphaned_resource::OrphanedResource;
-pub(crate) use section_without_header::SectionNoHeader;
+pub(crate) use section_without_header::SectionWithoutHeader;
 pub(crate) use unknown_section::UnknownSection;
 pub(crate) use unordered_sections::UnorderedSections;
 

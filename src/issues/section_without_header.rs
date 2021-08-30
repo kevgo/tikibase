@@ -2,12 +2,12 @@ use crate::database::Tikibase;
 use crate::Issue;
 use std::path::PathBuf;
 
-pub struct SectionNoHeader {
+pub struct SectionWithoutHeader {
     pub file: PathBuf,
     pub line: u32,
 }
 
-impl Issue for SectionNoHeader {
+impl Issue for SectionWithoutHeader {
     fn describe(&self) -> String {
         format!(
             "{}:{}  section has no title",
