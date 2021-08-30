@@ -8,7 +8,7 @@ Feature: recognize/fix links to non-existing documents
       [Google](https://google.com)
       """
 
-  Scenario: checking
+  Scenario: check
     When checking
     Then it finds no issues
     And all files are unchanged

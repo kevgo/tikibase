@@ -9,7 +9,7 @@ Feature: recognize/fix links to non-existing documents
       <a href="non-existing.md">zonk</a>
       """
 
-  Scenario: checking
+  Scenario: check
     When checking
     Then it prints:
       """
@@ -19,7 +19,7 @@ Feature: recognize/fix links to non-existing documents
     And all files are unchanged
     And the exit code is 2
 
-  Scenario: fixing
+  Scenario: fix
     When fixing
     Then it finds no issues
     And all files are unchanged

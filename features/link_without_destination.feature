@@ -8,7 +8,7 @@ Feature: recognize/fix links to non-existing documents
       [Google]()
       """
 
-  Scenario: checking
+  Scenario: check
     When checking
     Then it prints:
       """
