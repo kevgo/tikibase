@@ -1,7 +1,8 @@
 use super::doc_links::DocLinks;
 use super::{Issue, Issues};
+use crate::config;
+use crate::database::Reference;
 use crate::database::Tikibase;
-use crate::{config, database::Reference};
 use std::path::PathBuf;
 
 pub struct LinksResult {
