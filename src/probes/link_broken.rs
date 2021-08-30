@@ -1,6 +1,4 @@
-use crate::database::DocLinks;
-use crate::database::Reference;
-use crate::database::Tikibase;
+use crate::database::{DocLinks, Reference, Tikibase};
 use crate::{issues, Issues};
 
 pub struct LinksResult {
