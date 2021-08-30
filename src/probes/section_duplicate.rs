@@ -1,8 +1,5 @@
-use std::path::PathBuf;
-
-use crate::checks::{Issue, Issues};
-use crate::config;
 use crate::database::Tikibase;
+use crate::{issues, Issues};
 
 /// finds all duplicate sections in the given Tikibase
 pub fn process(base: &Tikibase) -> Issues {
@@ -12,7 +9,7 @@ pub fn process(base: &Tikibase) -> Issues {
         for section in &doc.content_sections {
             let section_type = section.section_type();
             if known_sections.contains(&section_type) {
-                issues.push(Box::new(DuplicateSection {
+                issues.push(Box::new(issues::DuplicateSection {
                     filename: doc.path.clone(),
                     section_type: section_type.into(),
                 }));
@@ -22,30 +19,6 @@ pub fn process(base: &Tikibase) -> Issues {
         }
     }
     issues
-}
-
-/// describes the issue that a document contains two sections with the same title
-pub struct DuplicateSection {
-    filename: PathBuf,
-    section_type: String,
-}
-
-impl Issue for DuplicateSection {
-    fn fixable(&self) -> bool {
-        false
-    }
-
-    fn fix(&self, _base: &mut Tikibase, _config: &config::Data) -> String {
-        panic!("not fixable");
-    }
-
-    fn describe(&self) -> String {
-        format!(
-            "{}  duplicate section: {}",
-            self.filename.to_string_lossy(),
-            self.section_type
-        )
-    }
 }
 
 #[cfg(test)]

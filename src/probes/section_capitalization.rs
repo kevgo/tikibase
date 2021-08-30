@@ -1,6 +1,5 @@
-use crate::checks::{Issue, Issues};
-use crate::config;
 use crate::database::Tikibase;
+use crate::{issues, Issues};
 use ahash::{AHashMap, AHashSet};
 use std::iter::FromIterator;
 
@@ -23,31 +22,9 @@ pub fn process(base: &Tikibase) -> Issues {
         }
         let mut sorted = Vec::from_iter(variants);
         sorted.sort();
-        issues.push(Box::new(MixCapSection { variants: sorted }));
+        issues.push(Box::new(issues::MixCapSection { variants: sorted }));
     }
     issues
-}
-
-/// describes the issue that sections have mixed capitalization
-pub struct MixCapSection {
-    variants: Vec<String>,
-}
-
-impl Issue for MixCapSection {
-    fn describe(&self) -> String {
-        format!(
-            "mixed capitalization of sections: {}",
-            self.variants.join("|")
-        )
-    }
-
-    fn fix(&self, _base: &mut Tikibase, _config: &config::Data) -> String {
-        panic!("not fixable")
-    }
-
-    fn fixable(&self) -> bool {
-        false
-    }
 }
 
 /// normalizes the given section type

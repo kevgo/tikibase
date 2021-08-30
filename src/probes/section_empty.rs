@@ -1,7 +1,5 @@
-use crate::checks::{Issue, Issues};
-use crate::config;
 use crate::database::Tikibase;
-use std::path::PathBuf;
+use crate::{issues, Issues};
 
 /// finds all empty sections in the given Tikibase,
 /// fixes them if fix is enabled,
@@ -12,7 +10,7 @@ pub fn process(base: &Tikibase) -> Issues {
         for section in &doc.content_sections {
             let has_content = section.body.iter().any(|line| !line.text.is_empty());
             if !has_content {
-                issues.push(Box::new(EmptySection {
+                issues.push(Box::new(issues::EmptySection {
                     filename: doc.path.clone(),
                     line: section.line_number,
                     section_type: section.section_type().into(),
@@ -21,42 +19,6 @@ pub fn process(base: &Tikibase) -> Issues {
         }
     }
     issues
-}
-
-/// describes the issue that a section is empty
-pub struct EmptySection {
-    filename: PathBuf,
-    line: u32,
-    section_type: String,
-}
-
-impl Issue for EmptySection {
-    fn fixable(&self) -> bool {
-        true
-    }
-
-    fn fix(&self, base: &mut Tikibase, _config: &config::Data) -> String {
-        let base_dir = &base.dir.clone();
-        let doc = base.get_doc_mut(&self.filename).unwrap();
-        doc.content_sections
-            .retain(|section| section.section_type() != self.section_type);
-        doc.flush(base_dir.as_ref());
-        format!(
-            "{}:{}  removed empty section \"{}\"",
-            self.filename.to_string_lossy(),
-            self.line + 1,
-            self.section_type
-        )
-    }
-
-    fn describe(&self) -> String {
-        format!(
-            "{}:{}  section \"{}\" has no content",
-            self.filename.to_string_lossy(),
-            self.line + 1,
-            self.section_type
-        )
-    }
 }
 
 #[cfg(test)]

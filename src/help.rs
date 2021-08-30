@@ -1,10 +1,10 @@
 const VERSION: &str = env!("CARGO_PKG_VERSION");
 
-pub fn version() {
+pub(crate) fn version() {
     println!("Tikibase v{}", VERSION);
 }
 
-pub fn run() {
+pub(crate) fn run() {
     println!(
         r#"Usage: tikibase <command>
 

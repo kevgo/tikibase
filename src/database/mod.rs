@@ -1,11 +1,14 @@
-pub mod config;
-pub mod document;
+pub(crate) mod config;
+mod doc_links;
+pub(crate) mod document;
 mod line;
-pub use line::Line;
 mod reference;
-pub use reference::Reference;
 mod resource;
 mod section;
-pub use section::Section;
 mod tikibase;
-pub use crate::database::tikibase::Tikibase;
+
+pub(crate) use crate::database::tikibase::Tikibase;
+pub(crate) use doc_links::DocLinks;
+pub(crate) use line::Line;
+pub(crate) use reference::Reference;
+pub(crate) use section::Section;

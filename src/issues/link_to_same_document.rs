@@ -1,0 +1,26 @@
+use crate::database::{config, Tikibase};
+use crate::Issue;
+use std::path::PathBuf;
+
+pub struct LinkToSameDocument {
+    pub filename: PathBuf,
+    pub line: u32,
+}
+
+impl Issue for LinkToSameDocument {
+    fn describe(&self) -> String {
+        format!(
+            "{}:{}  link to the same file",
+            self.filename.to_string_lossy(),
+            self.line
+        )
+    }
+
+    fn fix(&self, _base: &mut Tikibase, _config: &config::Data) -> String {
+        panic!("not fixable");
+    }
+
+    fn fixable(&self) -> bool {
+        false
+    }
+}
