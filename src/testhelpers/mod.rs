@@ -1,8 +1,7 @@
 //! The testhelpers module provides functions used in both unit and end-to-end tests.
 
 use crate::config;
-use crate::database::Line;
-use crate::database::Section;
+use crate::database::{Line, Section};
 use rand::Rng;
 use std::fs::File;
 use std::io::prelude::*;
