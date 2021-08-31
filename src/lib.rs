@@ -1,26 +1,16 @@
 #![feature(cow_is_borrowed)]
 
-mod check;
+pub(crate) mod commands;
+pub(crate) mod config;
 pub(crate) mod database;
-pub(crate) mod help;
 pub(crate) mod issues;
 pub(crate) mod probes;
-pub(crate) mod stats;
 pub mod testhelpers;
 
-use database::{config, Tikibase};
+pub use commands::Command;
+use database::Tikibase;
 use issues::{Issue, Issues};
 use std::path::PathBuf;
-
-#[derive(Debug, PartialEq)]
-pub enum Command {
-    Check,
-    Fix,
-    Help,
-    Pitstop,
-    Stats,
-    Version,
-}
 
 pub fn process<P: Into<PathBuf>>(command: &Command, path: P) -> (Vec<String>, i32) {
     let mut result = Vec::new();
@@ -35,11 +25,11 @@ pub fn process<P: Into<PathBuf>>(command: &Command, path: P) -> (Vec<String>, i3
     // handle non-repo commands
     let basic_command = match command {
         Command::Help => {
-            help::run();
+            commands::help();
             true
         }
         Command::Version => {
-            help::version();
+            commands::version();
             true
         }
         _ => false,
@@ -54,12 +44,12 @@ pub fn process<P: Into<PathBuf>>(command: &Command, path: P) -> (Vec<String>, i3
 
     // handle stats command
     if command == &Command::Stats {
-        stats::run(&base);
+        commands::stats(&base);
         return (result, 0);
     }
 
     // find all issues in the Tikibase
-    let issues = check::run(&base, &config);
+    let issues = commands::check(&base, &config);
     let unfix_count = issues.iter().filter(|issue| !issue.fixable()).count() as i32;
 
     // take care of the issues

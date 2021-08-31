@@ -1,4 +1,4 @@
-use super::line::Line;
+use super::Line;
 use super::Section;
 use lazy_static::lazy_static;
 use regex::Regex;

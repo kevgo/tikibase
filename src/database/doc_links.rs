@@ -1,6 +1,5 @@
 use ahash::{AHashMap, AHashSet};
-use std::path::Path;
-use std::path::PathBuf;
+use std::path::{Path, PathBuf};
 
 /// tracks all links between all documents
 pub struct DocLinks {

@@ -1,5 +1,6 @@
+use crate::config;
 use crate::database::document;
-use crate::database::{config, Tikibase};
+use crate::database::Tikibase;
 use crate::Issue;
 use lazy_static::lazy_static;
 use regex::{Captures, Regex};

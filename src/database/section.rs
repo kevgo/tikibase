@@ -1,4 +1,4 @@
-use super::line::Line;
+use super::Line;
 use heck::KebabCase;
 
 pub struct Section {

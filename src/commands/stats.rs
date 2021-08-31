@@ -1,7 +1,7 @@
 use crate::database::Tikibase;
 use ahash::AHashMap;
 
-pub fn run(base: &Tikibase) {
+pub fn stats(base: &Tikibase) {
     println!("documents: {}", base.docs.len());
     println!("resources: {}", base.resources.len());
     let section_types = collect_section_types(base);

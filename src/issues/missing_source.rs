@@ -1,3 +1,4 @@
+use crate::config;
 use crate::database::Tikibase;
 use crate::Issue;
 
@@ -17,7 +18,7 @@ impl Issue for MissingSource {
         )
     }
 
-    fn fix(&self, _base: &mut Tikibase, _config: &crate::database::config::Data) -> String {
+    fn fix(&self, _base: &mut Tikibase, _config: &config::Data) -> String {
         panic!("not fixable");
     }
 

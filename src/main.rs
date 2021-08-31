@@ -1,3 +1,5 @@
+//! the CLI wrapper around lib.rs
+
 extern crate lazy_static;
 
 use tikibase::process;
@@ -19,6 +21,7 @@ where
     I: Iterator<Item = String>,
 {
     argv.next(); // skip argv[0]
+
     match argv.next() {
         None => Command::Help,
         Some(command) => match command.as_str() {
