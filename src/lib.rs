@@ -1,5 +1,3 @@
-#![feature(cow_is_borrowed)]
-
 pub(crate) mod commands;
 pub(crate) mod config;
 pub(crate) mod database;

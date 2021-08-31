@@ -90,14 +90,12 @@ mod tests {
         #[test]
         fn with_links() {
             let have = super::super::strip_links("[one](1.md) [two](2.md)");
-            assert!(have.is_owned());
             assert_eq!(have, "one two");
         }
 
         #[test]
         fn without_links() {
             let have = super::super::strip_links("one two");
-            assert!(have.is_borrowed());
             assert_eq!(have, "one two");
         }
     }

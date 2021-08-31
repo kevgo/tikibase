@@ -1,4 +1,3 @@
-// TODO: find all features like this and see if we really need them
 #![feature(destructuring_assignment)]
 
 use crate::tikibase::testhelpers::{create_file, load_file, tmp_dir};
