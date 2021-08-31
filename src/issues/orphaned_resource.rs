@@ -4,7 +4,9 @@ use crate::Issue;
 
 /// a resource that isn't linked to
 pub struct OrphanedResource {
-    // TODO: make Path?
+    // This is a String and not a Path because we need a String (to print it),
+    // and we already converted the Path of this orphaned resource into a String
+    // during processing it.
     pub path: String,
 }
 
