@@ -35,7 +35,6 @@ unit:  # runs the unit tests
 	cargo test
 
 setup:  # prepares this codebase
-	(cd tools && yarn)
 	cargo install cargo-udeps --locked
 	echo
 	echo PLEASE DO THIS MANUALLY:
@@ -44,6 +43,7 @@ setup:  # prepares this codebase
 	echo    - Fedora: sudo dnf install openssl-devel
 	echo    - Debian: sudo apt install libssl-dev pkg-config
 	echo 3. cargo install cargo-edit
+	echo 4. cargo install dprint
 
 update:  # updates the dependencies
 	cargo upgrade
