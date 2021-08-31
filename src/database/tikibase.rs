@@ -1,5 +1,5 @@
-use super::document::Document;
-use super::resource::Resource;
+use super::Document;
+use super::Resource;
 use crate::config;
 use std::fs::File;
 use std::io::{BufRead, BufReader};
