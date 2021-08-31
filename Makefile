@@ -11,7 +11,7 @@ cukethis:  # tests only the scenario named "this"
 	cargo test --test cucumber -- -e this
 
 fix:  # auto-corrects issues
-	${CURDIR}/tools/node_modules/.bin/prettier --ignore-path=.prettierignore_make --write .
+	dprint fmt
 	cargo fmt
 
 help:  # shows all available Make commands
@@ -21,7 +21,7 @@ install:  # installs the binary in the system
 	cargo install --path .
 
 lint:  # checks formatting
-	${CURDIR}/tools/node_modules/.bin/prettier --ignore-path=.prettierignore_make --list-different .
+	dprint check
 	cargo fmt -- --check
 	cargo udeps
 
@@ -35,7 +35,6 @@ unit:  # runs the unit tests
 	cargo test
 
 setup:  # prepares this codebase
-	(cd tools && yarn)
 	cargo install cargo-udeps --locked
 	echo
 	echo PLEASE DO THIS MANUALLY:
@@ -44,6 +43,7 @@ setup:  # prepares this codebase
 	echo    - Fedora: sudo dnf install openssl-devel
 	echo    - Debian: sudo apt install libssl-dev pkg-config
 	echo 3. cargo install cargo-edit
+	echo 4. cargo install dprint
 
 update:  # updates the dependencies
 	cargo upgrade

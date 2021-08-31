@@ -259,7 +259,7 @@ foo
     #[test]
     fn load_hidden_file() {
         let dir = tmp_dir();
-        create_file(".prettierrc", "semi: false", &dir);
+        create_file(".hidden", "content", &dir);
         let (base, errs) = Tikibase::load(dir, &empty_config());
         assert_eq!(errs.len(), 0);
         assert_eq!(base.resources.len(), 0);

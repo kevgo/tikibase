@@ -14,20 +14,15 @@ jobs:
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v2
-      - name: Install latest nightly
-        uses: actions-rs/toolchain@v1
+      - uses: actions-rs/toolchain@v1
         with:
           toolchain: nightly
           profile: minimal
           override: true
           components: rustfmt, clippy
-      - name: Rust Cache
-        uses: Swatinem/rust-cache@v1.2.0
-      - name: Setup
-        run: make setup
-      - name: Unit tests
-        run: make unit
-      - name: Cucumber
-        run: make cuke
-      - name: Linters
-        run: make lint
+      - uses: Swatinem/rust-cache@v1.2.0
+      - uses: dprint/check@v1.5
+      - run: make setup
+      - run: make unit
+      - run: make cuke
+      - run: make lint

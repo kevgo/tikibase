@@ -1,7 +1,7 @@
 Feature: ignore hidden files
 
   Background:
-    Given file ".prettierrc"
+    Given file ".hidden"
 
   Scenario: check
     When checking
