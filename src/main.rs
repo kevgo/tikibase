@@ -1,4 +1,5 @@
-//! everything around the CLI wrapper
+//! the CLI wrapper around lib.rs
+
 extern crate lazy_static;
 
 use tikibase::process;
