@@ -1,4 +1,9 @@
-//! The issues module contains all possible issues that Tikibase can identify and fix.
+//! The issues module contains all possible issues
+//! that Tikibase can identify and fix.
+
+use crate::config;
+use crate::database::Tikibase;
+use std::slice::Iter;
 
 mod broken_image;
 mod broken_link;
@@ -30,10 +35,6 @@ pub(crate) use section_without_header::SectionWithoutHeader;
 pub(crate) use unknown_section::UnknownSection;
 pub(crate) use unordered_sections::UnorderedSections;
 
-use crate::config;
-use crate::database::Tikibase;
-use std::slice::Iter;
-
 /// an issue that was identified in the Tikibase
 pub trait Issue {
     /// provides a human-readable description of the issue
@@ -47,6 +48,7 @@ pub trait Issue {
 }
 
 /// a collection of issues
+// TODO: remove this pointless wrapper type
 pub struct Issues(Vec<Box<dyn Issue>>);
 
 impl Issues {
@@ -85,7 +87,6 @@ impl Default for Issues {
 
 impl IntoIterator for Issues {
     type Item = Box<dyn Issue>;
-
     type IntoIter = std::vec::IntoIter<Box<dyn Issue>>;
 
     fn into_iter(self) -> Self::IntoIter {
