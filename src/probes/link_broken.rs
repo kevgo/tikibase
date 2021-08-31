@@ -1,8 +1,9 @@
 use crate::database::{DocLinks, Reference, Tikibase};
-use crate::{issues, Issues};
+use crate::issues;
+use crate::Issue;
 
 pub struct LinksResult {
-    pub issues: Issues,
+    pub issues: Vec<Box<dyn Issue>>,
 
     /// all links to documents
     pub incoming_doc_links: DocLinks,
@@ -16,7 +17,7 @@ pub struct LinksResult {
 
 pub fn process(base: &Tikibase) -> LinksResult {
     let mut result = LinksResult {
-        issues: Issues::new(),
+        issues: Vec::new(),
         incoming_doc_links: DocLinks::new(),
         outgoing_doc_links: DocLinks::new(),
         outgoing_resource_links: Vec::new(),
