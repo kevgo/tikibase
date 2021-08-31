@@ -1,8 +1,9 @@
 use crate::database::Tikibase;
-use crate::{issues, Issues};
+use crate::issues;
+use crate::Issue;
 
-pub fn process(base: &Tikibase) -> Issues {
-    let mut issues = Issues::new();
+pub fn process(base: &Tikibase) -> Vec<Box<dyn Issue>> {
+    let mut issues = Vec::<Box<dyn Issue>>::new();
     for doc in &base.docs {
         let used_sources = doc.sources_used();
         let defined_source_ids = doc.sources_defined();

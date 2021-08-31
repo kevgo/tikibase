@@ -1,9 +1,10 @@
 use crate::config;
 use crate::database::Tikibase;
-use crate::{issues, Issues};
+use crate::issues;
+use crate::Issue;
 
-pub fn process(base: &Tikibase, config: &config::Data) -> Issues {
-    let mut issues = Issues::new();
+pub fn process(base: &Tikibase, config: &config::Data) -> Vec<Box<dyn Issue>> {
+    let mut issues = Vec::<Box<dyn Issue>>::new();
     let sections = match &config.sections {
         None => return issues,
         Some(sections) => sections,

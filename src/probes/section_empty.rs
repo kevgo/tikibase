@@ -1,11 +1,12 @@
 use crate::database::Tikibase;
-use crate::{issues, Issues};
+use crate::issues;
+use crate::Issue;
 
 /// finds all empty sections in the given Tikibase,
 /// fixes them if fix is enabled,
 /// returns the unfixed issues
-pub fn process(base: &Tikibase) -> Issues {
-    let mut issues = Issues::new();
+pub fn process(base: &Tikibase) -> Vec<Box<dyn Issue>> {
+    let mut issues = Vec::<Box<dyn Issue>>::new();
     for doc in &base.docs {
         for section in &doc.content_sections {
             let has_content = section.body.iter().any(|line| !line.text.is_empty());

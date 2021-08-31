@@ -1,6 +1,7 @@
 use crate::database::DocLinks;
 use crate::database::Tikibase;
-use crate::{issues, Issues};
+use crate::issues;
+use crate::Issue;
 use ahash::AHashSet;
 use std::path::PathBuf;
 
@@ -8,8 +9,8 @@ pub fn process(
     base: &Tikibase,
     incoming_doc_links: &DocLinks,
     outgoing_doc_links: &DocLinks,
-) -> Issues {
-    let mut issues = Issues::new();
+) -> Vec<Box<dyn Issue>> {
+    let mut issues = Vec::<Box<dyn Issue>>::new();
     for doc in &base.docs {
         let mut missing_outgoing: Vec<PathBuf> = incoming_doc_links
             .get(&doc.path)
