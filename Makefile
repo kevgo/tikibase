@@ -11,7 +11,7 @@ cukethis:  # tests only the scenario named "this"
 	cargo test --test cucumber -- -e this
 
 fix:  # auto-corrects issues
-	${CURDIR}/tools/node_modules/.bin/prettier --ignore-path=.prettierignore_make --write .
+	dprint fmt
 	cargo fmt
 
 help:  # shows all available Make commands
@@ -21,7 +21,7 @@ install:  # installs the binary in the system
 	cargo install --path .
 
 lint:  # checks formatting
-	${CURDIR}/tools/node_modules/.bin/prettier --ignore-path=.prettierignore_make --list-different .
+	dprint check
 	cargo fmt -- --check
 	cargo udeps
 
