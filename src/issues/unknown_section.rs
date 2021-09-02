@@ -28,7 +28,7 @@ impl Issue for UnknownSection {
     }
 
     fn fix(&self, _base: &mut Tikibase, _config: &config::Data) -> String {
-        panic!("not fixable")
+        unimplemented!()
     }
 
     fn fixable(&self) -> bool {
