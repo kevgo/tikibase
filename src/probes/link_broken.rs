@@ -37,11 +37,13 @@ pub fn process(base: &Tikibase) -> LinksResult {
                                 continue;
                             }
                             if destination.starts_with("http") {
+                                // ignore external links
                                 continue;
                             }
-                            if let Some(index) = destination.find('#') {
-                                destination.replace_range(..index, "");
-                            }
+                            link_anchor(&mut destination);
+                            // if let Some(index) = destination.find('#') {
+                            //     destination.replace_range(0..index, "");
+                            // }
                             if !existing_targets.contains(&destination) {
                                 result.issues.push(Box::new(issues::BrokenLink {
                                     filename: doc.path.clone(),
@@ -83,8 +85,23 @@ pub fn process(base: &Tikibase) -> LinksResult {
     result
 }
 
+fn link_anchor(link: &mut String) {
+    if let Some(index) = link.find('#') {
+        link.replace_range(0..index, "");
+    }
+}
+
 #[cfg(test)]
 mod tests {
+
+    mod link_anchor {
+        #[test]
+        fn with_anchor() {
+            let mut give = "1.md#foo".into();
+            super::super::link_anchor(&mut give);
+            assert_eq!(give, "#foo".to_string());
+        }
+    }
 
     mod process {
         use std::path::PathBuf;
