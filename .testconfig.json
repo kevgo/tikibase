@@ -8,9 +8,9 @@
     {
       "trigger": {
         "command": "testFile",
-        "file": "\\.rs$"
+        "file": "**/*.rs"
       },
-      "run": "echo testing file {{file}}"
+      "run": "cargo test {{file}}"
     },
 
     {
