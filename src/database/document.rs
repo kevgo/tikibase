@@ -241,9 +241,7 @@ pub fn placeholder_builder() -> SectionBuilder {
 
 impl SectionBuilder {
     pub fn add_body_line<S: Into<String>>(&mut self, line: S) {
-        if !self.valid {
-            panic!("cannot add to an invalid builder");
-        }
+        assert!(self.valid, "cannot add to an invalid builder");
         self.body.push(Line { text: line.into() });
     }
 
