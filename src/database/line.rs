@@ -46,6 +46,7 @@ impl Line {
         result
     }
 
+    /// provides the text of this line
     pub fn text(&self) -> &str {
         &self.0
     }
