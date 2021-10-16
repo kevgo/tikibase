@@ -59,7 +59,6 @@ impl Document {
                 sections.push(section);
             }
         }
-        let content_sections = sections.split_off(1);
         if inside_fence {
             return Err(format!(
                 "{}:{}  unclosed fence",
@@ -67,6 +66,7 @@ impl Document {
                 fence_start_line + 1,
             ));
         }
+        let content_sections = sections.split_off(1);
         Ok(Document {
             path,
             title_section: sections.pop().unwrap(),
