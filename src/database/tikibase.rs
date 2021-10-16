@@ -138,7 +138,6 @@ mod tests {
     }
 
     mod get_doc_mut {
-
         use super::super::Tikibase;
         use crate::testhelpers::{create_file, empty_config, tmp_dir};
 
@@ -157,10 +156,7 @@ mod tests {
             let dir = tmp_dir();
             let (mut base, errs) = Tikibase::load(dir, &empty_config());
             assert_eq!(errs.len(), 0);
-            match base.get_doc_mut("zonk.md") {
-                None => {}
-                Some(_) => panic!("should have found nothing"),
-            }
+            assert!(base.get_doc_mut("zonk.md").is_none());
         }
     }
 
