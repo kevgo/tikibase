@@ -110,15 +110,15 @@ pub struct Builder {
 
 impl Builder {
     /// Provides a builder instance loaded with the given title line.
-    pub fn new<S: Into<String>>(text: S, line_number: u32) -> Builder {
+    pub fn new<S: Into<String>>(title: S, line_number: u32) -> Builder {
         Builder {
-            title_line: text.into(),
+            title_line: title.into(),
             line_number,
             body: Vec::new(),
         }
     }
 
-    pub fn add_body_line<S: Into<String>>(&mut self, text: S) {
+    pub fn add_line<S: Into<String>>(&mut self, text: S) {
         self.body.push(Line::new(text));
     }
 

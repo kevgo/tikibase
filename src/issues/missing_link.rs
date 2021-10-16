@@ -28,9 +28,9 @@ impl Issue for MissingLinks {
 
         // insert occurrences section
         let mut section_builder = section::Builder::new("### occurrences", doc.lines_count() + 1);
-        section_builder.add_body_line("");
+        section_builder.add_line("");
         for link in &self.links {
-            section_builder.add_body_line(format!(
+            section_builder.add_line(format!(
                 "- [{}]({})",
                 strip_links(&link.title),
                 link.path.to_string_lossy()

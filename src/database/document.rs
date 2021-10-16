@@ -46,7 +46,7 @@ impl Document {
                 fence_line = line_number;
             }
             match &mut section_builder {
-                Some(section_builder) => section_builder.add_body_line(line),
+                Some(section_builder) => section_builder.add_line(line),
                 None => return Err(format!("{}  no title section", path.to_string_lossy())),
             }
         }
