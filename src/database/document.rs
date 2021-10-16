@@ -25,33 +25,38 @@ impl Document {
     {
         let path = path.into();
         let mut sections: Vec<Section> = Vec::new();
-        let mut section_builder = placeholder_builder();
+        let mut section_builder: Option<SectionBuilder> = None;
         let mut inside_fence = false;
         let mut fence_start_line = 0;
-        let mut had_occurrences_section = None;
+        let mut occurrences_section_line: Option<u32> = None;
         for (line_number, line) in lines.enumerate() {
+            if line.starts_with('#') && !inside_fence {
+                if let Some(section_builder) = section_builder {
+                    let section = section_builder.result();
+                    if section.section_type() == "occurrences" {
+                        occurrences_section_line = Some(section.line_number);
+                    } else {
+                        sections.push(section);
+                    }
+                }
+                section_builder = Some(builder_with_title_line(line, line_number as u32));
+                continue;
+            }
             if line.starts_with("```") {
                 inside_fence = !inside_fence;
                 fence_start_line = line_number;
             }
-            if line.starts_with('#') && !inside_fence {
-                if let Some(section) = section_builder.result() {
-                    match section.section_type() {
-                        "occurrences" => had_occurrences_section = Some(section.line_number),
-                        _ => sections.push(section),
-                    }
-                }
-                section_builder = builder_with_title_line(line, line_number as u32);
-            } else if section_builder.valid {
-                section_builder.add_body_line(line);
-            } else {
-                return Err(format!("{}  no title section", path.to_string_lossy()));
+            match &mut section_builder {
+                Some(section_builder) => section_builder.add_body_line(line),
+                None => return Err(format!("{}  no title section", path.to_string_lossy())),
             }
         }
-        if let Some(section) = section_builder.result() {
-            match section.section_type() {
-                "occurrences" => had_occurrences_section = Some(section.line_number),
-                _ => sections.push(section),
+        if let Some(section_builder) = section_builder {
+            let section = section_builder.result();
+            if section.section_type() == "occurrences" {
+                occurrences_section_line = Some(section.line_number);
+            } else {
+                sections.push(section);
             }
         }
         let content_sections = sections.split_off(1);
@@ -66,7 +71,7 @@ impl Document {
             path,
             title_section: sections.pop().unwrap(),
             content_sections,
-            occurrences_section_line: had_occurrences_section,
+            occurrences_section_line,
         })
     }
 
@@ -230,16 +235,6 @@ pub fn builder_with_title_line<S: Into<String>>(text: S, line_number: u32) -> Se
     }
 }
 
-/// Null value for `SectionBuilder` instances
-pub fn placeholder_builder() -> SectionBuilder {
-    SectionBuilder {
-        title_line: "".into(),
-        line_number: 0,
-        body: Vec::new(),
-        valid: false,
-    }
-}
-
 impl SectionBuilder {
     pub fn add_body_line<S: Into<String>>(&mut self, line: S) {
         assert!(self.valid, "cannot add to an invalid builder");
@@ -247,16 +242,13 @@ impl SectionBuilder {
     }
 
     /// Provides the content this builder has accumulated.
-    pub fn result(self) -> Option<Section> {
-        match self.valid {
-            false => None,
-            true => Some(Section {
-                title_line: Line {
-                    text: self.title_line,
-                },
-                line_number: self.line_number,
-                body: self.body,
-            }),
+    pub fn result(self) -> Section {
+        Section {
+            title_line: Line {
+                text: self.title_line,
+            },
+            line_number: self.line_number,
+            body: self.body,
         }
     }
 }
