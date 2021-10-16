@@ -37,7 +37,7 @@ impl Issue for MissingLinks {
                 link.path.to_string_lossy()
             ));
         }
-        let occurrences_section = section_builder.result().unwrap();
+        let occurrences_section = section_builder.result();
         let result = format!(
             "{}:{}  added occurrences section",
             doc.path.to_string_lossy(),
