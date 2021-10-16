@@ -111,12 +111,10 @@ impl FileType {
 
 #[cfg(test)]
 mod tests {
-
     use super::*;
     use crate::testhelpers::{create_file, empty_config, tmp_dir};
 
     mod get_doc {
-
         use super::super::Tikibase;
         use crate::testhelpers::{create_file, empty_config, tmp_dir};
 
@@ -135,10 +133,7 @@ mod tests {
             let dir = tmp_dir();
             let (base, errs) = Tikibase::load(dir, &empty_config());
             assert_eq!(errs.len(), 0);
-            match base.get_doc("zonk.md") {
-                None => {}
-                Some(_) => panic!("should have found nothing"),
-            }
+            assert!(base.get_doc("zonk.md").is_none());
         }
     }
 
