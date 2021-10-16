@@ -218,12 +218,11 @@ pub struct UsedSource {
 // HELPERS
 // -------------------------------------------------------------------------------------
 
-/// Allows building up sections one line at a time.
+/// allows building up sections one line at a time
 pub struct SectionBuilder {
     pub line_number: u32,
     title_line: String,
     body: Vec<Line>,
-    valid: bool,
 }
 
 /// Provides a builder instance loaded with the given title line.
@@ -232,13 +231,11 @@ pub fn builder_with_title_line<S: Into<String>>(text: S, line_number: u32) -> Se
         title_line: text.into(),
         line_number,
         body: Vec::new(),
-        valid: true,
     }
 }
 
 impl SectionBuilder {
     pub fn add_body_line<S: Into<String>>(&mut self, line: S) {
-        assert!(self.valid, "cannot add to an invalid builder");
         self.body.push(Line { text: line.into() });
     }
 
