@@ -157,6 +157,7 @@ impl Document {
             for (line_idx, line) in section.lines().enumerate() {
                 if line.text.starts_with("```") {
                     in_code_block = !in_code_block;
+                    continue;
                 }
                 if !in_code_block {
                     for index in line.used_sources() {
