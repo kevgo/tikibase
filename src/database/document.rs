@@ -96,10 +96,10 @@ impl Document {
 
     /// provides the last section in this document
     pub fn last_section_mut(&mut self) -> &mut Section {
-        match self.content_sections.len() {
-            0 => &mut self.title_section,
-            index => self.content_sections.get_mut(index - 1).unwrap(),
-        }
+        self.content_sections
+            .last_mut()
+            .or(Some(&mut self.title_section))
+            .unwrap()
     }
 
     /// provides the number of lines in this document
