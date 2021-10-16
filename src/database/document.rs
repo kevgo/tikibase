@@ -104,10 +104,11 @@ impl Document {
 
     /// provides the number of lines in this document
     pub fn lines_count(&self) -> u32 {
-        match self.content_sections.len() {
-            0 => self.title_section.last_line_abs(),
-            cnt => self.content_sections[cnt - 1].last_line_abs(),
-        }
+        self.content_sections
+            .last()
+            .or(Some(&self.title_section))
+            .unwrap()
+            .last_line_abs()
     }
 
     /// provides a non-consuming iterator for all sections in this document
