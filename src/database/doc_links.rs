@@ -11,9 +11,9 @@ impl DocLinks {
     /// registers an association between `doc` and `other_doc`
     pub fn add<P1: Into<PathBuf>, P2: Into<PathBuf>>(&mut self, doc: P1, other_doc: P2) {
         self.data
-            .entry(doc.into())
-            .or_insert_with(AHashSet::new)
-            .insert(other_doc.into());
+            .entry(doc.into()) // get a mutable reference to the entry for doc
+            .or_insert_with(AHashSet::new) // no entry found --> set this entry to a new HashSet
+            .insert(other_doc.into()); // insert other_doc into the entry
     }
 
     /// provides all documents that are associated with the given document
