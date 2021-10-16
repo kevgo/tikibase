@@ -26,10 +26,9 @@ impl Tikibase {
     }
 
     /// indicates whether this Tikibase contains a resource with the given path
-    pub fn has_resource<P: AsRef<Path>>(&self, filename: P) -> bool {
-        self.resources
-            .iter()
-            .any(|resource| resource.path == filename.as_ref())
+    pub fn has_resource<P: AsRef<Path>>(&self, path: P) -> bool {
+        let path = path.as_ref();
+        self.resources.iter().any(|resource| resource.path == path)
     }
 
     /// provides all valid link targets in this Tikibase
