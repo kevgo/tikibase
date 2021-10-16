@@ -10,7 +10,7 @@ pub fn process(base: &Tikibase) -> Vec<Box<dyn Issue>> {
         for used_source in used_sources {
             if !defined_source_ids.contains(&used_source.index) {
                 issues.push(Box::new(issues::MissingSource {
-                    file: used_source.file.to_string_lossy().into(),
+                    file: doc.path.to_string_lossy().to_string(),
                     line: used_source.line,
                     index: used_source.index,
                 }));

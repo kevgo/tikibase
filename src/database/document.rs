@@ -149,19 +149,18 @@ impl Document {
     /// provides all the sources used in this document
     pub fn sources_used(&self) -> AHashSet<UsedSource> {
         let mut result = AHashSet::new();
-        let mut line_inside_code_block = false;
+        let mut in_code_block = false;
         for section in self.sections() {
             if section.section_type() == "occurrences" {
                 continue;
             }
             for (line_idx, line) in section.lines().enumerate() {
                 if line.text.starts_with("```") {
-                    line_inside_code_block = !line_inside_code_block;
+                    in_code_block = !in_code_block;
                 }
-                if !line_inside_code_block {
+                if !in_code_block {
                     for index in line.used_sources() {
                         result.insert(UsedSource {
-                            file: &self.path,
                             line: section.line_number + (line_idx as u32),
                             index,
                         });
@@ -208,9 +207,9 @@ impl<'a> Iterator for SectionIterator<'a> {
 }
 
 #[derive(Debug, PartialEq, Eq, Hash)]
-pub struct UsedSource<'a> {
-    pub file: &'a PathBuf,
+pub struct UsedSource {
     pub line: u32,
+    /// the index used for the source, e.g. "[1]"
     pub index: String,
 }
 
@@ -481,7 +480,6 @@ title text
     mod sources_used {
         use crate::database::document::{Document, UsedSource};
         use ahash::AHashSet;
-        use std::path::PathBuf;
 
         #[test]
         fn no_sources() {
@@ -504,20 +502,16 @@ text [1] [3]
 ";
             let doc = Document::from_str("test.md", give).unwrap();
             let have = doc.sources_used();
-            let pathbuf = PathBuf::from("test.md");
             let mut want = AHashSet::new();
             want.insert(UsedSource {
-                file: &pathbuf,
                 line: 1,
                 index: "2".into(),
             });
             want.insert(UsedSource {
-                file: &pathbuf,
                 line: 3,
                 index: "1".into(),
             });
             want.insert(UsedSource {
-                file: &pathbuf,
                 line: 3,
                 index: "3".into(),
             });
