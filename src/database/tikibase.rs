@@ -15,7 +15,8 @@ pub struct Tikibase {
 impl Tikibase {
     /// provides the document with the given relative filename
     pub fn get_doc<P: AsRef<Path>>(&self, filename: P) -> Option<&Document> {
-        self.docs.iter().find(|doc| doc.path == filename.as_ref())
+        let path = filename.as_ref();
+        self.docs.iter().find(|doc| doc.path == path)
     }
 
     /// provides the document with the given relative filename as a mutable reference
@@ -70,7 +71,7 @@ impl Tikibase {
                 None => {}
             }
             let path = entry.path();
-            let filepath = path.strip_prefix(&dir).unwrap().to_owned();
+            let filepath = path.strip_prefix(&dir).unwrap();
             match FileType::from_ext(path.extension()) {
                 FileType::Document => {
                     let file = File::open(&path).unwrap();
@@ -80,7 +81,9 @@ impl Tikibase {
                         Err(err) => errors.push(err),
                     }
                 }
-                FileType::Resource => resources.push(Resource { path: filepath }),
+                FileType::Resource => resources.push(Resource {
+                    path: filepath.into(),
+                }),
             }
         }
         (
