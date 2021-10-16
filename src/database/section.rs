@@ -57,7 +57,7 @@ impl Section {
         result
     }
 
-    /// provides a section with the given title for testing
+    /// provides a section with the given title
     #[cfg(test)]
     pub fn with_title(title: &str) -> Section {
         Section {
