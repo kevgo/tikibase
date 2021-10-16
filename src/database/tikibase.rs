@@ -36,8 +36,7 @@ impl Tikibase {
         let mut result: Vec<String> = Vec::new();
         for doc in &self.docs {
             let filename = doc.path.to_string_lossy().to_string();
-            result.push(format!("{}{}", &filename, doc.title_section.anchor()));
-            for section in &doc.content_sections {
+            for section in doc.sections() {
                 result.push(format!("{}{}", &filename, section.anchor()));
             }
             result.push(filename);
