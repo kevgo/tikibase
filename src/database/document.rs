@@ -25,13 +25,13 @@ impl Document {
     {
         let path = path.into();
         let mut sections: Vec<Section> = Vec::new();
-        let mut section_builder_opt: Option<SectionBuilder> = None;
+        let mut section_builder: Option<SectionBuilder> = None;
         let mut inside_fence = false;
         let mut fence_start_line = 0;
         let mut occurrences_section_line: Option<u32> = None;
         for (line_number, line) in lines.enumerate() {
             if line.starts_with('#') && !inside_fence {
-                if let Some(section_builder) = section_builder_opt.take() {
+                if let Some(section_builder) = section_builder.take() {
                     let section = section_builder.result();
                     if section.section_type() == "occurrences" {
                         occurrences_section_line = Some(section.line_number);
@@ -39,19 +39,19 @@ impl Document {
                         sections.push(section);
                     }
                 }
-                section_builder_opt = Some(builder_with_title_line(line, line_number as u32));
+                section_builder = Some(builder_with_title_line(line, line_number as u32));
                 continue;
             }
             if line.starts_with("```") {
                 inside_fence = !inside_fence;
                 fence_start_line = line_number;
             }
-            match &mut section_builder_opt {
+            match &mut section_builder {
                 Some(section_builder) => section_builder.add_body_line(line),
                 None => return Err(format!("{}  no title section", path.to_string_lossy())),
             }
         }
-        if let Some(section_builder) = section_builder_opt {
+        if let Some(section_builder) = section_builder {
             let section = section_builder.result();
             if section.section_type() == "occurrences" {
                 occurrences_section_line = Some(section.line_number);
