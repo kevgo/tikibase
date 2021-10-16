@@ -45,7 +45,7 @@ impl Tikibase {
         result
     }
 
-    /// Provides a Tikibase instance for the given directory.
+    /// provides a Tikibase instance for the given directory
     pub fn load(dir: PathBuf, config: &config::Data) -> (Tikibase, Vec<String>) {
         let mut docs = Vec::new();
         let mut resources = Vec::new();
@@ -56,7 +56,7 @@ impl Tikibase {
                 continue;
             }
             let filename = entry.file_name().to_string_lossy();
-            if filename == "tikibase.json" || filename.starts_with('.') {
+            if filename.starts_with('.') || filename == "tikibase.json" {
                 continue;
             }
             match &config.ignore {
