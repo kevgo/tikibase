@@ -20,10 +20,9 @@ impl Tikibase {
     }
 
     /// provides the document with the given relative filename as a mutable reference
-    pub fn get_doc_mut<P: AsRef<Path>>(&mut self, filename: P) -> Option<&mut Document> {
-        self.docs
-            .iter_mut()
-            .find(|doc| doc.path == filename.as_ref())
+    pub fn get_doc_mut<P: AsRef<Path>>(&mut self, path: P) -> Option<&mut Document> {
+        let path = path.as_ref();
+        self.docs.iter_mut().find(|doc| doc.path == path)
     }
 
     /// indicates whether this Tikibase contains a resource with the given path
