@@ -180,17 +180,12 @@ mod tests {
 title content";
         let doc = Document::from_str("foo", content).unwrap();
         let mut lines = doc.title_section.lines();
-        match lines.next() {
-            None => panic!("expected title line"),
-            Some(line) => assert_eq!(line.text(), "# test"),
-        }
-        match lines.next() {
-            None => panic!("expected body line 1"),
-            Some(line) => assert_eq!(line.text(), "title content"),
-        }
-        match lines.next() {
-            None => {}
-            Some(_) => panic!("unexpected line"),
+        let line = lines.next().expect("expected title line");
+        assert_eq!(line.text(), "# test");
+        let line = lines.next().expect("expected body line 1");
+        assert_eq!(line.text(), "title content");
+        if lines.next().is_some() {
+            panic!("unexpected line");
         }
     }
 
