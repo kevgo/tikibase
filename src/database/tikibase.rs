@@ -161,7 +161,6 @@ mod tests {
     }
 
     mod has_resource {
-
         use super::super::Tikibase;
         use crate::testhelpers::{create_file, empty_config, tmp_dir};
 
@@ -226,23 +225,39 @@ foo
         create_file("file.md", content, &dir);
         let (base, errs) = Tikibase::load(dir, &empty_config());
         assert_eq!(errs.len(), 0);
-        assert_eq!(base.docs.len(), 1);
+        let doc_paths: Vec<String> = base
+            .docs
+            .iter()
+            .map(|d| d.path.to_string_lossy().to_string())
+            .collect();
+        assert_eq!(doc_paths, vec!["file.md"]);
         let doc = &base.docs[0];
-        assert_eq!(doc.path.to_string_lossy(), "file.md");
+        // verify title of doc 0
         assert_eq!(doc.title_section.title_line.text(), "# Title");
         assert_eq!(doc.title_section.line_number, 0);
-        assert_eq!(doc.title_section.body.len(), 1);
-        assert_eq!(doc.title_section.body[0].text(), "title text");
-        assert_eq!(doc.content_sections.len(), 2);
-        assert_eq!(doc.content_sections[0].title_line.text(), "### Section 1");
+        let body: Vec<&str> = doc.title_section.body.iter().map(|l| l.text()).collect();
+        assert_eq!(body, vec!["title text"]);
+        // verify body of doc 0
+        let content_sections: Vec<&str> = doc
+            .content_sections
+            .iter()
+            .map(|s| s.title_line.text())
+            .collect();
+        assert_eq!(content_sections, vec!["### Section 1", "### Section 2"]);
         assert_eq!(doc.content_sections[0].line_number, 2);
-        assert_eq!(doc.content_sections[0].body.len(), 2);
-        assert_eq!(doc.content_sections[0].body[0].text(), "one");
-        assert_eq!(doc.content_sections[0].body[1].text(), "two");
-        assert_eq!(doc.content_sections[1].title_line.text(), "### Section 2");
+        let sec0_lines: Vec<&str> = doc.content_sections[0]
+            .body
+            .iter()
+            .map(|l| l.text())
+            .collect();
+        assert_eq!(sec0_lines, vec!["one", "two"]);
         assert_eq!(doc.content_sections[1].line_number, 5);
-        assert_eq!(doc.content_sections[1].body.len(), 1);
-        assert_eq!(doc.content_sections[1].body[0].text(), "foo");
+        let sec1_lines: Vec<&str> = doc.content_sections[1]
+            .body
+            .iter()
+            .map(|l| l.text())
+            .collect();
+        assert_eq!(sec1_lines, vec!["foo"]);
     }
 
     #[test]
