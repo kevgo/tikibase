@@ -44,7 +44,7 @@ impl Issue for MissingLinks {
             occurrences_section.line_number + 1
         );
         doc.content_sections.push(occurrences_section);
-        doc.flush(&base_dir);
+        doc.save(&base_dir);
         result
     }
 

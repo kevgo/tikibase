@@ -82,7 +82,7 @@ impl Document {
     }
 
     /// persists the changes made to this document to disk
-    pub fn flush(&self, root: &Path) {
+    pub fn save(&self, root: &Path) {
         let mut file = std::fs::File::create(root.join(&self.path)).unwrap();
         file.write_all(self.text().as_bytes()).unwrap();
     }

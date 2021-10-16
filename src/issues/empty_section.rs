@@ -20,7 +20,7 @@ impl Issue for EmptySection {
         let doc = base.get_doc_mut(&self.filename).unwrap();
         doc.content_sections
             .retain(|section| section.section_type() != self.section_type);
-        doc.flush(base_dir.as_ref());
+        doc.save(base_dir.as_ref());
         format!(
             "{}:{}  removed empty section \"{}\"",
             self.filename.to_string_lossy(),

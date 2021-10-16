@@ -18,7 +18,7 @@ impl Issue for UnorderedSections {
         let mut doc = base.get_doc_mut(&self.file).unwrap();
         doc.content_sections =
             reorder(&mut doc.content_sections, config.sections.as_ref().unwrap());
-        doc.flush(&base_dir);
+        doc.save(&base_dir);
         format!("{}  fixed section order", &doc.path.to_string_lossy())
     }
 
