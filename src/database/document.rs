@@ -88,7 +88,7 @@ impl Document {
     }
 
     /// provides the section with the given title
-    pub fn get_section(&self, section_type: &str) -> Option<&Section> {
+    pub fn section_with_title(&self, section_type: &str) -> Option<&Section> {
         self.content_sections
             .iter()
             .find(|section| section.section_type() == section_type)
@@ -130,7 +130,7 @@ impl Document {
     /// provides all the sources that this document defines
     pub fn sources_defined(&self) -> HashSet<String> {
         let mut result = HashSet::new();
-        let links_section = match self.get_section("links") {
+        let links_section = match self.section_with_title("links") {
             None => return result,
             Some(section) => section,
         };
