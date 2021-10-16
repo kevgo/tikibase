@@ -14,8 +14,8 @@ pub struct Tikibase {
 
 impl Tikibase {
     /// provides the document with the given relative filename
-    pub fn get_doc<P: AsRef<Path>>(&self, filename: P) -> Option<&Document> {
-        let path = filename.as_ref();
+    pub fn get_doc<P: AsRef<Path>>(&self, path: P) -> Option<&Document> {
+        let path = path.as_ref();
         self.docs.iter().find(|doc| doc.path == path)
     }
 
