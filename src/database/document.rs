@@ -1,5 +1,4 @@
-use super::Line;
-use super::Section;
+use super::{section, Section};
 use ahash::AHashSet;
 use lazy_static::lazy_static;
 use regex::Regex;
@@ -25,7 +24,7 @@ impl Document {
     {
         let path = path.into();
         let mut sections: Vec<Section> = Vec::new();
-        let mut section_builder: Option<SectionBuilder> = None;
+        let mut section_builder: Option<section::Builder> = None;
         let mut inside_fence = false;
         let mut fence_start_line = 0;
         let mut occurrences_section_line: Option<u32> = None;
@@ -39,7 +38,7 @@ impl Document {
                         sections.push(section);
                     }
                 }
-                section_builder = Some(builder_with_title_line(line, line_number as u32));
+                section_builder = Some(section::Builder::new(line, line_number as u32));
                 continue;
             }
             if line.starts_with("```") {
@@ -215,43 +214,7 @@ pub struct UsedSource {
 }
 
 // -------------------------------------------------------------------------------------
-// HELPERS
-// -------------------------------------------------------------------------------------
 
-/// allows building up sections one line at a time
-pub struct SectionBuilder {
-    pub line_number: u32,
-    title_line: String,
-    body: Vec<Line>,
-}
-
-/// Provides a builder instance loaded with the given title line.
-pub fn builder_with_title_line<S: Into<String>>(text: S, line_number: u32) -> SectionBuilder {
-    SectionBuilder {
-        title_line: text.into(),
-        line_number,
-        body: Vec::new(),
-    }
-}
-
-impl SectionBuilder {
-    pub fn add_body_line<S: Into<String>>(&mut self, line: S) {
-        self.body.push(Line { text: line.into() });
-    }
-
-    /// Provides the content this builder has accumulated.
-    pub fn result(self) -> Section {
-        Section {
-            title_line: Line {
-                text: self.title_line,
-            },
-            line_number: self.line_number,
-            body: self.body,
-        }
-    }
-}
-
-// -------------------------------------------------------------------------------------
 // TESTS
 // -------------------------------------------------------------------------------------
 

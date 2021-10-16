@@ -88,6 +88,43 @@ impl<'a> Iterator for LinesIterator<'a> {
     }
 }
 
+// -------------------------------------------------------------------------------------
+// HELPERS
+// -------------------------------------------------------------------------------------
+
+/// allows building up sections one line at a time
+pub struct Builder {
+    pub line_number: u32,
+    title_line: String,
+    body: Vec<Line>,
+}
+
+impl Builder {
+    /// Provides a builder instance loaded with the given title line.
+    pub fn new<S: Into<String>>(text: S, line_number: u32) -> Builder {
+        Builder {
+            title_line: text.into(),
+            line_number,
+            body: Vec::new(),
+        }
+    }
+
+    pub fn add_body_line<S: Into<String>>(&mut self, line: S) {
+        self.body.push(Line { text: line.into() });
+    }
+
+    /// Provides the content this builder has accumulated.
+    pub fn result(self) -> Section {
+        Section {
+            title_line: Line {
+                text: self.title_line,
+            },
+            line_number: self.line_number,
+            body: self.body,
+        }
+    }
+}
+
 #[cfg(test)]
 mod tests {
     use super::super::document::Document;

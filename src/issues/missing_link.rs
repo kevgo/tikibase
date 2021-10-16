@@ -1,5 +1,5 @@
 use crate::config;
-use crate::database::document;
+use crate::database::section;
 use crate::database::Tikibase;
 use crate::Issue;
 use lazy_static::lazy_static;
@@ -27,8 +27,7 @@ impl Issue for MissingLinks {
         doc.last_section_mut().push_line("");
 
         // insert occurrences section
-        let mut section_builder =
-            document::builder_with_title_line("### occurrences", doc.lines_count() + 1);
+        let mut section_builder = section::Builder::new("### occurrences", doc.lines_count() + 1);
         section_builder.add_body_line("");
         for link in &self.links {
             section_builder.add_body_line(format!(
