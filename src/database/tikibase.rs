@@ -59,13 +59,10 @@ impl Tikibase {
             if filename.starts_with('.') || filename == "tikibase.json" {
                 continue;
             }
-            match &config.ignore {
-                Some(ignore) => {
-                    if ignore.iter().any(|i| i == &filename) {
-                        continue;
-                    }
+            if let Some(ignore) = &config.ignore {
+                if ignore.iter().any(|i| i == &filename) {
+                    continue;
                 }
-                None => {}
             }
             let path = entry.path();
             let filepath = path.strip_prefix(&dir).unwrap();
