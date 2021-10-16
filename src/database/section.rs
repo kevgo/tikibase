@@ -1,17 +1,18 @@
 use super::Line;
 use heck::KebabCase;
 
+/// a section in a document, from one heading to above the next heading
 pub struct Section {
-    /// The line number at which this section starts, 0-based.
+    /// the line number at which this section starts, 0-based
     pub line_number: u32,
-    /// Complete textual content of this section's title line, e.g. "# Title"
+    /// complete textual content of this section's title line, e.g. "# Title"
     pub title_line: Line,
-    /// Optional content of this section
+    /// optional content of this section
     pub body: Vec<Line>,
 }
 
 impl Section {
-    /// provides an link anchor for this section, in GitHub format
+    /// provides the link anchor for this section, in GitHub format
     pub fn anchor(&self) -> String {
         format!("#{}", self.section_type().to_kebab_case())
     }
@@ -35,6 +36,7 @@ impl Section {
         self.body.push(Line::new(text));
     }
 
+    /// provides a human-readable description of this section, e.g. "Hello" for a section with the title "# Hello"
     pub fn section_type(&self) -> &str {
         for (i, c) in self.title_line.text().char_indices() {
             if c != '#' && c != ' ' {
