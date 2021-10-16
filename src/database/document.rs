@@ -26,7 +26,7 @@ impl Document {
         let mut sections: Vec<Section> = Vec::new();
         let mut section_builder: Option<section::Builder> = None;
         let mut inside_fence = false;
-        let mut fence_start_line = 0;
+        let mut fence_line = 0;
         let mut occurrences_section_line: Option<u32> = None;
         for (line_number, line) in lines.enumerate() {
             if line.starts_with('#') && !inside_fence {
@@ -43,7 +43,7 @@ impl Document {
             }
             if line.starts_with("```") {
                 inside_fence = !inside_fence;
-                fence_start_line = line_number;
+                fence_line = line_number;
             }
             match &mut section_builder {
                 Some(section_builder) => section_builder.add_body_line(line),
@@ -62,7 +62,7 @@ impl Document {
             return Err(format!(
                 "{}:{}  unclosed fence",
                 path.to_string_lossy(),
-                fence_start_line + 1,
+                fence_line + 1,
             ));
         }
         let content_sections = sections.split_off(1);
