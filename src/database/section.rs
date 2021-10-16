@@ -36,6 +36,15 @@ impl Section {
         self.body.push(Line::new(text));
     }
 
+    #[cfg(test)]
+    fn scaffold() -> Self {
+        Section {
+            line_number: 0,
+            title_line: Line::new("### section"),
+            body: Vec::new(),
+        }
+    }
+
     /// provides a human-readable description of this section, e.g. "Hello" for a section with the title "# Hello"
     pub fn section_type(&self) -> &str {
         for (i, c) in self.title_line.text().char_indices() {
@@ -63,16 +72,6 @@ impl Section {
         Section {
             line_number: 0,
             title_line: Line::new(title),
-            body: Vec::new(),
-        }
-    }
-}
-
-impl Default for Section {
-    fn default() -> Self {
-        Section {
-            line_number: 0,
-            title_line: Line::new("### section"),
             body: Vec::new(),
         }
     }
@@ -152,15 +151,13 @@ mod tests {
     }
 
     mod last_line {
-
         use crate::database::{Line, Section};
-        use std::default::Default;
 
         #[test]
         fn no_body() {
             let section = Section {
                 line_number: 12,
-                ..Section::default()
+                ..Section::scaffold()
             };
             assert_eq!(section.last_line_abs(), 12);
         }
@@ -170,7 +167,7 @@ mod tests {
             let section = Section {
                 line_number: 12,
                 body: vec![Line::new("")],
-                ..Section::default()
+                ..Section::scaffold()
             };
             assert_eq!(section.last_line_abs(), 13);
         }
@@ -204,7 +201,7 @@ title content";
         fn no_body() {
             let mut section = Section {
                 body: Vec::new(),
-                ..Section::default()
+                ..Section::scaffold()
             };
             section.push_line("new line");
             assert_eq!(section.body.len(), 1);
@@ -215,7 +212,7 @@ title content";
         fn with_body() {
             let mut section = Section {
                 body: vec![Line::new("l1")],
-                ..Section::default()
+                ..Section::scaffold()
             };
             section.push_line("new line");
             assert_eq!(section.body.len(), 2);
@@ -261,7 +258,7 @@ title content";
         let section = Section {
             title_line: Line::new("### welcome"),
             body: vec![Line::new(""), Line::new("content")],
-            ..Section::default()
+            ..Section::scaffold()
         };
         assert_eq!(section.text(), "### welcome\n\ncontent\n");
     }
