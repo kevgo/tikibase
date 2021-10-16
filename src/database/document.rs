@@ -19,20 +19,17 @@ pub struct Document {
 
 impl Document {
     /// provides a Document instance containing the given text
-    pub fn from_lines<T>(lines: T, path: PathBuf) -> Result<Document, String>
+    pub fn from_lines<T, P: Into<PathBuf>>(lines: T, path: P) -> Result<Document, String>
     where
         T: Iterator<Item = String>,
     {
+        let path = path.into();
         let mut sections: Vec<Section> = Vec::new();
         let mut section_builder_opt: Option<SectionBuilder> = None;
         let mut inside_fence = false;
         let mut fence_start_line = 0;
         let mut had_occurrences_section: Option<u32> = None;
-        for (line, line_number) in lines.zip(0..) {
-            if line.starts_with("```") {
-                inside_fence = !inside_fence;
-                fence_start_line = line_number;
-            }
+        for (line_number, line) in lines.enumerate() {
             if line.starts_with('#') && !inside_fence {
                 if let Some(section_builder) = section_builder_opt.take() {
                     let section = section_builder.result();
@@ -41,11 +38,16 @@ impl Document {
                         _ => sections.push(section),
                     }
                 }
-                section_builder_opt = Some(builder_with_title_line(line, line_number));
-            } else if let Some(mut section_builder) = section_builder_opt {
-                section_builder.add_body_line(line);
-            } else {
-                return Err(format!("{}  no title section", path.to_string_lossy()));
+                section_builder_opt = Some(builder_with_title_line(line, line_number as u32));
+                continue;
+            }
+            if line.starts_with("```") {
+                inside_fence = !inside_fence;
+                fence_start_line = line_number;
+            }
+            match &mut section_builder_opt {
+                Some(section_builder) => section_builder.add_body_line(line),
+                None => return Err(format!("{}  no title section", path.to_string_lossy())),
             }
         }
         if let Some(section_builder) = section_builder_opt {
@@ -75,7 +77,7 @@ impl Document {
     #[cfg(test)]
     /// provides Document instances in tests
     pub fn from_str<P: Into<PathBuf>>(path: P, text: &str) -> Result<Document, String> {
-        Document::from_lines(text.lines().map(|line| line.to_string()), path.into())
+        Document::from_lines(text.lines().map(|line| line.to_string()), path)
     }
 
     /// persists the changes made to this document to disk
