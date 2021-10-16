@@ -1,8 +1,8 @@
 use super::Line;
 use super::Section;
+use ahash::AHashSet;
 use lazy_static::lazy_static;
 use regex::Regex;
-use std::collections::HashSet;
 use std::io::prelude::*;
 use std::path::{Path, PathBuf};
 
@@ -129,8 +129,8 @@ impl Document {
     }
 
     /// provides all the sources that this document defines
-    pub fn sources_defined(&self) -> HashSet<String> {
-        let mut result = HashSet::new();
+    pub fn sources_defined(&self) -> AHashSet<String> {
+        let mut result = AHashSet::new();
         let links_section = match self.section_with_title("links") {
             None => return result,
             Some(section) => section,
@@ -147,8 +147,8 @@ impl Document {
     }
 
     /// provides all the sources used in this document
-    pub fn sources_used(&self) -> HashSet<UsedSource> {
-        let mut result = HashSet::new();
+    pub fn sources_used(&self) -> AHashSet<UsedSource> {
+        let mut result = AHashSet::new();
         let mut line_inside_code_block = false;
         for section in self.sections() {
             if section.section_type() == "occurrences" {
@@ -434,7 +434,7 @@ one
 
     mod sources_defined {
         use crate::database::document::Document;
-        use std::collections::HashSet;
+        use ahash::AHashSet;
 
         #[test]
         fn no_links() {
@@ -471,7 +471,7 @@ title text
 ";
             let doc = Document::from_str("test.md", give).unwrap();
             let have = doc.sources_defined();
-            let mut want = HashSet::new();
+            let mut want = AHashSet::new();
             want.insert("1".into());
             want.insert("2".into());
             assert_eq!(have, want);
@@ -479,9 +479,9 @@ title text
     }
 
     mod sources_used {
-        use std::{collections::HashSet, path::PathBuf};
-
         use crate::database::document::{Document, UsedSource};
+        use ahash::AHashSet;
+        use std::path::PathBuf;
 
         #[test]
         fn no_sources() {
@@ -505,7 +505,7 @@ text [1] [3]
             let doc = Document::from_str("test.md", give).unwrap();
             let have = doc.sources_used();
             let pathbuf = PathBuf::from("test.md");
-            let mut want = HashSet::new();
+            let mut want = AHashSet::new();
             want.insert(UsedSource {
                 file: &pathbuf,
                 line: 1,
