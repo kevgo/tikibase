@@ -33,9 +33,10 @@ impl Document {
             if line.starts_with('#') && !inside_fence {
                 if let Some(section_builder) = section_builder_opt.take() {
                     let section = section_builder.result();
-                    match section.section_type() {
-                        "occurrences" => had_occurrences_section = Some(section.line_number),
-                        _ => sections.push(section),
+                    if section.section_type() == "occurrences" {
+                        had_occurrences_section = Some(section.line_number);
+                    } else {
+                        sections.push(section);
                     }
                 }
                 section_builder_opt = Some(builder_with_title_line(line, line_number as u32));
