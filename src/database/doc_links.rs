@@ -1,26 +1,19 @@
 use ahash::{AHashMap, AHashSet};
 use std::path::{Path, PathBuf};
 
-/// tracks all links between all documents
+/// tracks all links between documents
 pub struct DocLinks {
-    /// key = file path, value = associated files
+    /// key = file path, value = files that the key document points to
     pub data: AHashMap<PathBuf, AHashSet<PathBuf>>,
 }
 
 impl DocLinks {
     /// registers an association between `doc` and `other_doc`
     pub fn add<P1: Into<PathBuf>, P2: Into<PathBuf>>(&mut self, doc: P1, other_doc: P2) {
-        let doc_path = doc.into();
-        match self.data.get_mut(&doc_path) {
-            None => {
-                let mut docs = AHashSet::new();
-                docs.insert(other_doc.into());
-                self.data.insert(doc_path, docs);
-            }
-            Some(docs) => {
-                docs.insert(other_doc.into());
-            }
-        };
+        self.data
+            .entry(doc.into()) // get a mutable reference to the entry for doc
+            .or_insert_with(AHashSet::new) // no entry found --> set this entry to a new HashSet
+            .insert(other_doc.into()); // insert other_doc into the entry
     }
 
     /// provides all documents that are associated with the given document
