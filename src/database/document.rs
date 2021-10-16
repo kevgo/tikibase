@@ -19,10 +19,11 @@ pub struct Document {
 
 impl Document {
     /// provides a Document instance containing the given text
-    pub fn from_lines<T>(lines: T, path: PathBuf) -> Result<Document, String>
+    pub fn from_lines<T, P: Into<PathBuf>>(lines: T, path: P) -> Result<Document, String>
     where
         T: Iterator<Item = String>,
     {
+        let path = path.into();
         let mut sections: Vec<Section> = Vec::new();
         let mut section_builder = placeholder_builder();
         let mut inside_fence = false;
@@ -72,7 +73,7 @@ impl Document {
     #[cfg(test)]
     /// provides Document instances in tests
     pub fn from_str<P: Into<PathBuf>>(path: P, text: &str) -> Result<Document, String> {
-        Document::from_lines(text.lines().map(|line| line.to_string()), path.into())
+        Document::from_lines(text.lines().map(|line| line.to_string()), path)
     }
 
     /// persists the changes made to this document to disk
