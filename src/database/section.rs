@@ -184,9 +184,7 @@ title content";
         assert_eq!(line.text(), "# test");
         let line = lines.next().expect("expected body line 1");
         assert_eq!(line.text(), "title content");
-        if lines.next().is_some() {
-            panic!("unexpected line");
-        }
+        assert!(lines.next().is_none(), "unexpected line");
     }
 
     mod push_line {

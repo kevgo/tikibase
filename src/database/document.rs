@@ -236,9 +236,7 @@ content";
             assert_eq!(section.title_line.text(), "# test");
             let section = sections.next().expect("expected s1");
             assert_eq!(section.title_line.text(), "### section 1");
-            if sections.next().is_some() {
-                panic!("unexpected section");
-            }
+            assert!(sections.next().is_none(), "unexpected section");
         }
 
         #[test]
