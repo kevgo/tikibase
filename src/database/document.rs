@@ -29,7 +29,7 @@ impl Document {
         let mut inside_fence = false;
         let mut fence_start_line = 0;
         let mut had_occurrences_section = None;
-        for (line, line_number) in lines.zip(0..) {
+        for (line_number, line) in lines.enumerate() {
             if line.starts_with("```") {
                 inside_fence = !inside_fence;
                 fence_start_line = line_number;
@@ -41,7 +41,7 @@ impl Document {
                         _ => sections.push(section),
                     }
                 }
-                section_builder = builder_with_title_line(line, line_number);
+                section_builder = builder_with_title_line(line, line_number as u32);
             } else if section_builder.valid {
                 section_builder.add_body_line(line);
             } else {
