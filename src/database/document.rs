@@ -232,17 +232,12 @@ mod tests {
 content";
             let doc = Document::from_str("one.md", content).unwrap();
             let mut sections = doc.sections();
-            match sections.next() {
-                None => panic!("expected title section"),
-                Some(s1) => assert_eq!(s1.title_line.text, "# test"),
-            }
-            match sections.next() {
-                None => panic!("expected s1"),
-                Some(s1) => assert_eq!(s1.title_line.text, "### section 1"),
-            }
-            match sections.next() {
-                None => {}
-                Some(_) => panic!("unexpected section"),
+            let section = sections.next().expect("expected title section");
+            assert_eq!(section.title_line.text, "# test");
+            let section = sections.next().expect("expected s1");
+            assert_eq!(section.title_line.text, "### section 1");
+            if sections.next().is_some() {
+                panic!("unexpected section");
             }
         }
 
