@@ -54,6 +54,16 @@ impl Section {
         }
         result
     }
+
+    /// provides a section with the given title for testing
+    #[cfg(test)]
+    pub fn with_title(title: &str) -> Section {
+        Section {
+            line_number: 0,
+            title_line: Line::new(title),
+            body: Vec::new(),
+        }
+    }
 }
 
 impl Default for Section {
@@ -125,7 +135,6 @@ impl Builder {
 mod tests {
     use super::super::document::Document;
     use super::*;
-    use crate::testhelpers::section_with_title;
 
     #[test]
     fn anchor() {
@@ -135,7 +144,7 @@ mod tests {
             ("A Complex Section", "#a-complex-section"),
         ];
         for (give, want) in tests {
-            let section = section_with_title(give);
+            let section = Section::with_title(give);
             assert_eq!(section.anchor(), want);
         }
     }
@@ -214,32 +223,32 @@ title content";
     }
 
     mod section_type {
-        use crate::testhelpers::section_with_title;
+        use crate::database::Section;
 
         #[test]
         fn h1() {
-            let section = section_with_title("# Title");
+            let section = Section::with_title("# Title");
             let have = section.section_type();
             assert_eq!(have, "Title");
         }
 
         #[test]
         fn h3() {
-            let section = section_with_title("### Title");
+            let section = Section::with_title("### Title");
             let have = section.section_type();
             assert_eq!(have, "Title");
         }
 
         #[test]
         fn no_header() {
-            let section = section_with_title("Title");
+            let section = Section::with_title("Title");
             let have = section.section_type();
             assert_eq!(have, "Title");
         }
 
         #[test]
         fn no_text() {
-            let section = section_with_title("###");
+            let section = Section::with_title("###");
             let have = section.section_type();
             assert_eq!(have, "");
         }

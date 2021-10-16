@@ -47,13 +47,14 @@ mod tests {
 
     use super::reorder;
     use crate::database::Section;
-    use crate::testhelpers::section_with_title;
 
     #[test]
     fn perfect_match() {
         let schema = vec!["one".to_string(), "two".to_string()];
-        let mut give: Vec<Section> =
-            vec![section_with_title("### one"), section_with_title("### two")];
+        let mut give: Vec<Section> = vec![
+            Section::with_title("### one"),
+            Section::with_title("### two"),
+        ];
         let have = reorder(&mut give, &schema);
         let have: Vec<&str> = have.iter().map(Section::section_type).collect();
         assert_eq!(have, vec!["one", "two"]);
@@ -63,8 +64,8 @@ mod tests {
     fn match_but_missing() {
         let schema = vec!["one".to_string(), "two".to_string(), "three".to_string()];
         let mut give: Vec<Section> = vec![
-            section_with_title("### one"),
-            section_with_title("### three"),
+            Section::with_title("### one"),
+            Section::with_title("### three"),
         ];
         let have = reorder(&mut give, &schema);
         let have: Vec<&str> = have.iter().map(Section::section_type).collect();
@@ -75,9 +76,9 @@ mod tests {
     fn wrong_order() {
         let schema = vec!["one".to_string(), "two".to_string(), "three".to_string()];
         let mut give: Vec<Section> = vec![
-            section_with_title("### three"),
-            section_with_title("### two"),
-            section_with_title("### one"),
+            Section::with_title("### three"),
+            Section::with_title("### two"),
+            Section::with_title("### one"),
         ];
         let have = reorder(&mut give, &schema);
         let have: Vec<&str> = have.iter().map(Section::section_type).collect();
@@ -87,7 +88,7 @@ mod tests {
     #[test]
     fn single_section() {
         let schema = vec!["one".to_string(), "two".to_string(), "three".to_string()];
-        let mut give: Vec<Section> = vec![section_with_title("### three")];
+        let mut give: Vec<Section> = vec![Section::with_title("### three")];
         let have = reorder(&mut give, &schema);
         let have: Vec<&str> = have.iter().map(Section::section_type).collect();
         assert_eq!(have, vec!["three"]);

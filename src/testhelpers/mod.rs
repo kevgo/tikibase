@@ -1,7 +1,6 @@
 //! The testhelpers module provides functions used in both unit and end-to-end tests.
 
 use crate::config;
-use crate::database::{Line, Section};
 use rand::Rng;
 use std::fs::File;
 use std::io::prelude::*;
@@ -42,15 +41,6 @@ pub fn load_file<P: AsRef<Path>>(filename: P, dir: &Path) -> String {
     trim_end(&mut result);
     result.push('\n');
     result
-}
-
-/// provides a section with the given title for testing
-pub fn section_with_title(title: &str) -> Section {
-    Section {
-        line_number: 0,
-        title_line: Line::new(title),
-        body: Vec::new(),
-    }
 }
 
 /// trims whitespace from the end of this string,
