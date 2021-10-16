@@ -31,7 +31,7 @@ impl Document {
         let mut occurrences_section_line: Option<u32> = None;
         for (line_number, line) in lines.enumerate() {
             if line.starts_with('#') && !inside_fence {
-                if let Some(section_builder) = section_builder.take() {
+                if let Some(section_builder) = section_builder {
                     let section = section_builder.result();
                     if section.section_type() == "occurrences" {
                         occurrences_section_line = Some(section.line_number);
