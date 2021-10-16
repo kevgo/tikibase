@@ -28,13 +28,13 @@ impl Document {
         let mut section_builder_opt: Option<SectionBuilder> = None;
         let mut inside_fence = false;
         let mut fence_start_line = 0;
-        let mut had_occurrences_section: Option<u32> = None;
+        let mut occurrences_section_line: Option<u32> = None;
         for (line_number, line) in lines.enumerate() {
             if line.starts_with('#') && !inside_fence {
                 if let Some(section_builder) = section_builder_opt.take() {
                     let section = section_builder.result();
                     if section.section_type() == "occurrences" {
-                        had_occurrences_section = Some(section.line_number);
+                        occurrences_section_line = Some(section.line_number);
                     } else {
                         sections.push(section);
                     }
@@ -54,7 +54,7 @@ impl Document {
         if let Some(section_builder) = section_builder_opt {
             let section = section_builder.result();
             if section.section_type() == "occurrences" {
-                had_occurrences_section = Some(section.line_number);
+                occurrences_section_line = Some(section.line_number);
             } else {
                 sections.push(section);
             }
@@ -71,7 +71,7 @@ impl Document {
             path,
             title_section: sections.pop().unwrap(),
             content_sections,
-            occurrences_section_line: had_occurrences_section,
+            occurrences_section_line,
         })
     }
 
