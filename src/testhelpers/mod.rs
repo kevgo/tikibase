@@ -37,11 +37,6 @@ pub fn empty_config() -> config::Data {
     }
 }
 
-/// provides a Line with the given text
-pub fn line_with_text(text: &str) -> Line {
-    Line { text: text.into() }
-}
-
 pub fn load_file<P: AsRef<Path>>(filename: P, dir: &Path) -> String {
     let mut result = std::fs::read_to_string(dir.join(filename)).unwrap();
     trim_end(&mut result);
@@ -53,7 +48,7 @@ pub fn load_file<P: AsRef<Path>>(filename: P, dir: &Path) -> String {
 pub fn section_with_title(title: &str) -> Section {
     Section {
         line_number: 0,
-        title_line: Line { text: title.into() },
+        title_line: Line::new(title),
         body: Vec::new(),
     }
 }

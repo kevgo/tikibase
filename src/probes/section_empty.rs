@@ -9,7 +9,7 @@ pub fn process(base: &Tikibase) -> Vec<Box<dyn Issue>> {
     let mut issues = Vec::<Box<dyn Issue>>::new();
     for doc in &base.docs {
         for section in &doc.content_sections {
-            let has_content = section.body.iter().any(|line| !line.text.is_empty());
+            let has_content = section.body.iter().any(|line| !line.text().is_empty());
             if !has_content {
                 issues.push(Box::new(issues::EmptySection {
                     filename: doc.path.clone(),

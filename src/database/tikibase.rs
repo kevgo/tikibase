@@ -132,7 +132,7 @@ mod tests {
             let (base, errs) = Tikibase::load(dir, &empty_config());
             assert_eq!(errs.len(), 0);
             let doc = base.get_doc("one.md").expect("document not found");
-            assert_eq!(doc.title_section.title_line.text, "# test doc");
+            assert_eq!(doc.title_section.title_line.text(), "# test doc");
         }
 
         #[test]
@@ -159,7 +159,7 @@ mod tests {
             let (mut base, errs) = Tikibase::load(dir, &empty_config());
             assert_eq!(errs.len(), 0);
             let doc = base.get_doc_mut("one.md").expect("document not found");
-            assert_eq!(doc.title_section.title_line.text, "# test doc");
+            assert_eq!(doc.title_section.title_line.text(), "# test doc");
         }
 
         #[test]
@@ -243,20 +243,20 @@ foo
         assert_eq!(base.docs.len(), 1);
         let doc = &base.docs[0];
         assert_eq!(doc.path.to_string_lossy(), "file.md");
-        assert_eq!(doc.title_section.title_line.text, "# Title");
+        assert_eq!(doc.title_section.title_line.text(), "# Title");
         assert_eq!(doc.title_section.line_number, 0);
         assert_eq!(doc.title_section.body.len(), 1);
-        assert_eq!(doc.title_section.body[0].text, "title text");
+        assert_eq!(doc.title_section.body[0].text(), "title text");
         assert_eq!(doc.content_sections.len(), 2);
-        assert_eq!(doc.content_sections[0].title_line.text, "### Section 1");
+        assert_eq!(doc.content_sections[0].title_line.text(), "### Section 1");
         assert_eq!(doc.content_sections[0].line_number, 2);
         assert_eq!(doc.content_sections[0].body.len(), 2);
-        assert_eq!(doc.content_sections[0].body[0].text, "one");
-        assert_eq!(doc.content_sections[0].body[1].text, "two");
-        assert_eq!(doc.content_sections[1].title_line.text, "### Section 2");
+        assert_eq!(doc.content_sections[0].body[0].text(), "one");
+        assert_eq!(doc.content_sections[0].body[1].text(), "two");
+        assert_eq!(doc.content_sections[1].title_line.text(), "### Section 2");
         assert_eq!(doc.content_sections[1].line_number, 5);
         assert_eq!(doc.content_sections[1].body.len(), 1);
-        assert_eq!(doc.content_sections[1].body[0].text, "foo");
+        assert_eq!(doc.content_sections[1].body[0].text(), "foo");
     }
 
     #[test]

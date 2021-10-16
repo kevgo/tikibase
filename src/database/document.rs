@@ -138,7 +138,7 @@ impl Document {
             static ref SOURCE_RE: Regex = Regex::new("^(\\d+)\\.").unwrap();
         }
         for line in links_section.lines() {
-            for cap in SOURCE_RE.captures_iter(&line.text) {
+            for cap in SOURCE_RE.captures_iter(line.text()) {
                 result.insert(cap[1].to_string());
             }
         }
@@ -154,7 +154,7 @@ impl Document {
                 continue;
             }
             for (line_idx, line) in section.lines().enumerate() {
-                if line.text.starts_with("```") {
+                if line.text().starts_with("```") {
                     in_code_block = !in_code_block;
                     continue;
                 }
@@ -233,9 +233,9 @@ content";
             let doc = Document::from_str("one.md", content).unwrap();
             let mut sections = doc.sections();
             let section = sections.next().expect("expected title section");
-            assert_eq!(section.title_line.text, "# test");
+            assert_eq!(section.title_line.text(), "# test");
             let section = sections.next().expect("expected s1");
-            assert_eq!(section.title_line.text, "### section 1");
+            assert_eq!(section.title_line.text(), "### section 1");
             if sections.next().is_some() {
                 panic!("unexpected section");
             }
@@ -326,7 +326,7 @@ text
 ";
             let mut doc = Document::from_str("test.md", give).unwrap();
             let have = doc.last_section_mut();
-            assert_eq!(have.title_line.text, "### s1");
+            assert_eq!(have.title_line.text(), "### s1");
         }
 
         #[test]
@@ -337,7 +337,7 @@ title text
 ";
             let mut doc = Document::from_str("test.md", give).unwrap();
             let have = doc.last_section_mut();
-            assert_eq!(have.title_line.text, "# Title");
+            assert_eq!(have.title_line.text(), "# Title");
         }
     }
 

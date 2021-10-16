@@ -32,13 +32,13 @@ impl Section {
 
     /// adds a new line with the given text to this section
     pub fn push_line<S: Into<String>>(&mut self, text: S) {
-        self.body.push(Line { text: text.into() });
+        self.body.push(Line::new(text));
     }
 
     pub fn section_type(&self) -> &str {
-        for (i, c) in self.title_line.text.char_indices() {
+        for (i, c) in self.title_line.text().char_indices() {
             if c != '#' && c != ' ' {
-                return &self.title_line.text[i..];
+                return &self.title_line.text()[i..];
             }
         }
         ""
@@ -46,10 +46,10 @@ impl Section {
 
     /// provides the complete text of this section
     pub fn text(&self) -> String {
-        let mut result = self.title_line.text.clone();
+        let mut result = self.title_line.text().to_string();
         result.push('\n');
         for line in &self.body {
-            result.push_str(&line.text);
+            result.push_str(line.text());
             result.push('\n');
         }
         result
@@ -60,9 +60,7 @@ impl Default for Section {
     fn default() -> Self {
         Section {
             line_number: 0,
-            title_line: Line {
-                text: "### section".into(),
-            },
+            title_line: Line::new("### section"),
             body: Vec::new(),
         }
     }
@@ -109,16 +107,14 @@ impl Builder {
         }
     }
 
-    pub fn add_body_line<S: Into<String>>(&mut self, line: S) {
-        self.body.push(Line { text: line.into() });
+    pub fn add_body_line<S: Into<String>>(&mut self, text: S) {
+        self.body.push(Line::new(text));
     }
 
     /// Provides the content this builder has accumulated.
     pub fn result(self) -> Section {
         Section {
-            title_line: Line {
-                text: self.title_line,
-            },
+            title_line: Line::new(self.title_line),
             line_number: self.line_number,
             body: self.body,
         }
@@ -129,7 +125,7 @@ impl Builder {
 mod tests {
     use super::super::document::Document;
     use super::*;
-    use crate::testhelpers::{line_with_text, section_with_title};
+    use crate::testhelpers::section_with_title;
 
     #[test]
     fn anchor() {
@@ -146,8 +142,7 @@ mod tests {
 
     mod last_line {
 
-        use crate::database::Section;
-        use crate::testhelpers::line_with_text;
+        use crate::database::{Line, Section};
         use std::default::Default;
 
         #[test]
@@ -163,7 +158,7 @@ mod tests {
         fn with_body() {
             let section = Section {
                 line_number: 12,
-                body: vec![line_with_text("")],
+                body: vec![Line::new("")],
                 ..Section::default()
             };
             assert_eq!(section.last_line_abs(), 13);
@@ -179,11 +174,11 @@ title content";
         let mut lines = doc.title_section.lines();
         match lines.next() {
             None => panic!("expected title line"),
-            Some(line) => assert_eq!(line.text, "# test"),
+            Some(line) => assert_eq!(line.text(), "# test"),
         }
         match lines.next() {
             None => panic!("expected body line 1"),
-            Some(line) => assert_eq!(line.text, "title content"),
+            Some(line) => assert_eq!(line.text(), "title content"),
         }
         match lines.next() {
             None => {}
@@ -192,8 +187,7 @@ title content";
     }
 
     mod push_line {
-        use crate::database::Section;
-        use crate::testhelpers::line_with_text;
+        use crate::database::{Line, Section};
 
         #[test]
         fn no_body() {
@@ -203,19 +197,19 @@ title content";
             };
             section.push_line("new line");
             assert_eq!(section.body.len(), 1);
-            assert_eq!(section.body[0].text, "new line");
+            assert_eq!(section.body[0].text(), "new line");
         }
 
         #[test]
         fn with_body() {
             let mut section = Section {
-                body: vec![line_with_text("l1")],
+                body: vec![Line::new("l1")],
                 ..Section::default()
             };
             section.push_line("new line");
             assert_eq!(section.body.len(), 2);
-            assert_eq!(section.body[0].text, "l1");
-            assert_eq!(section.body[1].text, "new line");
+            assert_eq!(section.body[0].text(), "l1");
+            assert_eq!(section.body[1].text(), "new line");
         }
     }
 
@@ -254,8 +248,8 @@ title content";
     #[test]
     fn text() {
         let section = Section {
-            title_line: line_with_text("### welcome"),
-            body: vec![line_with_text(""), line_with_text("content")],
+            title_line: Line::new("### welcome"),
+            body: vec![Line::new(""), Line::new("content")],
             ..Section::default()
         };
         assert_eq!(section.text(), "### welcome\n\ncontent\n");
