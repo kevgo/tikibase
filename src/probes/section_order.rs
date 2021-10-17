@@ -1,10 +1,10 @@
 use crate::config;
 use crate::database::Tikibase;
 use crate::issues;
-use crate::Issue;
+use crate::Fix;
 
-pub fn scan(base: &Tikibase, config: &config::Data) -> Vec<Box<dyn Issue>> {
-    let mut issues = Vec::<Box<dyn Issue>>::new();
+pub fn scan(base: &Tikibase, config: &config::Data) -> Vec<Box<dyn Fix>> {
+    let mut issues = Vec::<Box<dyn Fix>>::new();
     let expected_order = match &config.sections {
         None => return issues,
         Some(expected_sections) => expected_sections,

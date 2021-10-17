@@ -1,6 +1,6 @@
 use crate::config;
 use crate::database::{Section, Tikibase};
-use crate::Issue;
+use crate::Fix;
 use std::fmt::{self, Display, Formatter};
 use std::path::PathBuf;
 
@@ -15,7 +15,7 @@ impl Display for UnorderedSections {
     }
 }
 
-impl Issue for UnorderedSections {
+impl Fix for UnorderedSections {
     fn fix(&self, base: &mut Tikibase, config: &config::Data) -> String {
         let base_dir = base.dir.clone();
         let mut doc = base.get_doc_mut(&self.file).unwrap();

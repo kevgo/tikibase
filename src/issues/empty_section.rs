@@ -1,6 +1,6 @@
 use crate::config;
 use crate::database::Tikibase;
-use crate::Issue;
+use crate::Fix;
 use std::fmt::{self, Display, Formatter};
 use std::path::PathBuf;
 
@@ -23,7 +23,7 @@ impl Display for EmptySection {
     }
 }
 
-impl Issue for EmptySection {
+impl Fix for EmptySection {
     fn fixable(&self) -> bool {
         true
     }

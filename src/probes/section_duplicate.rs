@@ -1,10 +1,10 @@
 use crate::database::Tikibase;
 use crate::issues;
-use crate::Issue;
+use crate::Fix;
 
 /// finds all duplicate sections in the given Tikibase
-pub fn scan(base: &Tikibase) -> Vec<Box<dyn Issue>> {
-    let mut issues = Vec::<Box<dyn Issue>>::new();
+pub fn scan(base: &Tikibase) -> Vec<Box<dyn Fix>> {
+    let mut issues = Vec::<Box<dyn Fix>>::new();
     for doc in &base.docs {
         let mut known_sections = Vec::new();
         for section in &doc.content_sections {

@@ -1,4 +1,4 @@
-use crate::Issue;
+use crate::Fix;
 use std::fmt::{self, Display, Formatter};
 use std::path::PathBuf;
 
@@ -18,7 +18,7 @@ impl Display for LinkToSameDocument {
     }
 }
 
-impl Issue for LinkToSameDocument {
+impl Fix for LinkToSameDocument {
     fn fixable(&self) -> bool {
         false
     }

@@ -1,7 +1,7 @@
 use crate::config;
 use crate::database::section;
 use crate::database::Tikibase;
-use crate::Issue;
+use crate::Fix;
 use lazy_static::lazy_static;
 use regex::{Captures, Regex};
 use std::borrow::Cow;
@@ -19,7 +19,7 @@ pub struct MissingLinks {
     pub links: Vec<MissingLink>,
 }
 
-impl Issue for MissingLinks {
+impl Fix for MissingLinks {
     fn fix(&self, base: &mut Tikibase, _config: &config::Data) -> String {
         let base_dir = base.dir.clone();
         let doc = base.get_doc_mut(&self.file).unwrap();

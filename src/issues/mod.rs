@@ -35,7 +35,7 @@ pub(crate) use unknown_section::UnknownSection;
 pub(crate) use unordered_sections::UnorderedSections;
 
 /// an issue that was identified in the Tikibase
-pub trait Issue {
+pub trait Fix {
     /// fixes this issue, returns a human-readable description of what it did
     fn fix(&self, _base: &mut Tikibase, _config: &config::Data) -> String {
         unimplemented!()

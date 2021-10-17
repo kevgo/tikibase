@@ -1,6 +1,6 @@
 use crate::config;
 use crate::database::Tikibase;
-use crate::Issue;
+use crate::Fix;
 use std::fmt::{self, Display, Formatter};
 use std::path::PathBuf;
 
@@ -30,7 +30,7 @@ impl Display for UnknownSection {
     }
 }
 
-impl Issue for UnknownSection {
+impl Fix for UnknownSection {
     fn fix(&self, _base: &mut Tikibase, _config: &config::Data) -> String {
         unimplemented!()
     }

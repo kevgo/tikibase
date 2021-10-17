@@ -1,4 +1,4 @@
-use crate::Issue;
+use crate::Fix;
 use std::fmt::{self, Display, Formatter};
 use std::path::PathBuf;
 
@@ -18,7 +18,7 @@ impl Display for SectionWithoutHeader {
     }
 }
 
-impl Issue for SectionWithoutHeader {
+impl Fix for SectionWithoutHeader {
     fn fixable(&self) -> bool {
         false
     }

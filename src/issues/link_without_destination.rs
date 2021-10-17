@@ -1,4 +1,4 @@
-use crate::Issue;
+use crate::Fix;
 use std::fmt::{self, Display, Formatter};
 use std::path::PathBuf;
 
@@ -18,7 +18,7 @@ impl Display for LinkWithoutDestination {
     }
 }
 
-impl Issue for LinkWithoutDestination {
+impl Fix for LinkWithoutDestination {
     fn fixable(&self) -> bool {
         false
     }

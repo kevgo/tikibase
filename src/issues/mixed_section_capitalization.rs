@@ -1,4 +1,4 @@
-use crate::Issue;
+use crate::Fix;
 use std::fmt::{self, Display, Formatter};
 
 /// describes the issue that sections have mixed capitalization
@@ -16,7 +16,7 @@ impl Display for MixCapSection {
     }
 }
 
-impl Issue for MixCapSection {
+impl Fix for MixCapSection {
     fn fixable(&self) -> bool {
         false
     }

@@ -1,4 +1,4 @@
-use crate::Issue;
+use crate::Fix;
 use std::fmt::{self, Display, Formatter};
 use std::path::PathBuf;
 
@@ -19,7 +19,7 @@ impl Display for DuplicateSection {
     }
 }
 
-impl Issue for DuplicateSection {
+impl Fix for DuplicateSection {
     fn fixable(&self) -> bool {
         false
     }

@@ -1,4 +1,4 @@
-use crate::Issue;
+use crate::Fix;
 use std::fmt::{self, Display, Formatter};
 
 /// a resource that isn't linked to
@@ -15,7 +15,7 @@ impl Display for OrphanedResource {
     }
 }
 
-impl Issue for OrphanedResource {
+impl Fix for OrphanedResource {
     fn fixable(&self) -> bool {
         false
     }

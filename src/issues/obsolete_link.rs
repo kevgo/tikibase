@@ -1,6 +1,6 @@
 use crate::config;
 use crate::database::Tikibase;
-use crate::Issue;
+use crate::Fix;
 use std::fmt::{self, Display, Formatter};
 use std::path::PathBuf;
 
@@ -22,7 +22,7 @@ impl Display for ObsoleteLink {
     }
 }
 
-impl Issue for ObsoleteLink {
+impl Fix for ObsoleteLink {
     fn fix(&self, base: &mut Tikibase, _config: &config::Data) -> String {
         let base_dir = base.dir.clone();
         let doc = base.get_doc_mut(&self.file).unwrap();

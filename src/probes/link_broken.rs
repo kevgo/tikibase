@@ -1,9 +1,9 @@
 use crate::database::{DocLinks, Reference, Tikibase};
 use crate::issues;
-use crate::Issue;
+use crate::Fix;
 
 pub struct LinksResult {
-    pub issues: Vec<Box<dyn Issue>>,
+    pub issues: Vec<Box<dyn Fix>>,
 
     /// all links to documents
     pub incoming_doc_links: DocLinks,

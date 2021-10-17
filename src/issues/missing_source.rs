@@ -1,4 +1,4 @@
-use crate::Issue;
+use crate::Fix;
 use std::fmt::{self, Display, Formatter};
 
 pub struct MissingSource {
@@ -19,7 +19,7 @@ impl Display for MissingSource {
     }
 }
 
-impl Issue for MissingSource {
+impl Fix for MissingSource {
     fn fixable(&self) -> bool {
         false
     }
