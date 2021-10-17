@@ -1,6 +1,7 @@
 use crate::config;
 use crate::database::Tikibase;
-use crate::Issue;
+use crate::Fix;
+use std::fmt::{self, Display, Formatter};
 use std::path::PathBuf;
 
 /// describes the issue that a section is empty
@@ -10,7 +11,19 @@ pub struct EmptySection {
     pub section_type: String,
 }
 
-impl Issue for EmptySection {
+impl Display for EmptySection {
+    fn fmt(&self, f: &mut Formatter<'_>) -> fmt::Result {
+        write!(
+            f,
+            "{}:{}  section \"{}\" has no content",
+            self.filename.to_string_lossy(),
+            self.line + 1,
+            self.section_type
+        )
+    }
+}
+
+impl Fix for EmptySection {
     fn fixable(&self) -> bool {
         true
     }
@@ -23,15 +36,6 @@ impl Issue for EmptySection {
         doc.save(base_dir.as_ref());
         format!(
             "{}:{}  removed empty section \"{}\"",
-            self.filename.to_string_lossy(),
-            self.line + 1,
-            self.section_type
-        )
-    }
-
-    fn describe(&self) -> String {
-        format!(
-            "{}:{}  section \"{}\" has no content",
             self.filename.to_string_lossy(),
             self.line + 1,
             self.section_type

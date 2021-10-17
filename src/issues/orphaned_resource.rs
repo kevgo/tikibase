@@ -1,4 +1,5 @@
-use crate::Issue;
+use crate::Fix;
+use std::fmt::{self, Display, Formatter};
 
 /// a resource that isn't linked to
 pub struct OrphanedResource {
@@ -8,11 +9,13 @@ pub struct OrphanedResource {
     pub path: String,
 }
 
-impl Issue for OrphanedResource {
-    fn describe(&self) -> String {
-        format!("unused resource \"{}\"", self.path)
+impl Display for OrphanedResource {
+    fn fmt(&self, f: &mut Formatter<'_>) -> fmt::Result {
+        write!(f, "unused resource \"{}\"", self.path)
     }
+}
 
+impl Fix for OrphanedResource {
     fn fixable(&self) -> bool {
         false
     }

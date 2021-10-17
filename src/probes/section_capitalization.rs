@@ -68,7 +68,7 @@ content";
         assert_eq!(errs.len(), 0);
         let have: Vec<String> = super::scan(&base)
             .iter()
-            .map(|issue| issue.describe())
+            .map(|issue| issue.to_string())
             .collect();
         assert_eq!(have.len(), 1);
         assert_eq!(have[0], "mixed capitalization of sections: ONE|One|one");

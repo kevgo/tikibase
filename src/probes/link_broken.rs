@@ -99,7 +99,7 @@ mod tests {
             let (base, errs) = Tikibase::load(dir, &empty_config());
             assert_eq!(errs.len(), 0);
             let have = super::super::scan(&base);
-            let outcomes: Vec<String> = have.issues.iter().map(|issue| issue.describe()).collect();
+            let outcomes: Vec<String> = have.issues.iter().map(|issue| issue.to_string()).collect();
             assert_eq!(
                 outcomes,
                 vec!["one.md:3  broken link to \"non-existing.md\""]
@@ -150,7 +150,7 @@ Here is a link to [Three](3.md) that also works.
             let (base, errs) = Tikibase::load(dir, &empty_config());
             assert_eq!(errs.len(), 0);
             let have = super::super::scan(&base);
-            let outcomes: Vec<String> = have.issues.iter().map(|issue| issue.describe()).collect();
+            let outcomes: Vec<String> = have.issues.iter().map(|issue| issue.to_string()).collect();
             assert_eq!(outcomes, vec!["one.md:3  link without destination"]);
             assert_eq!(have.incoming_doc_links.data.len(), 0);
             assert_eq!(have.outgoing_doc_links.data.len(), 0);
@@ -199,7 +199,7 @@ Here is a link to [Three](3.md) that also works.
             let (base, errs) = Tikibase::load(dir, &empty_config());
             assert_eq!(errs.len(), 0);
             let have = super::super::scan(&base);
-            let outcomes: Vec<String> = have.issues.iter().map(|issue| issue.describe()).collect();
+            let outcomes: Vec<String> = have.issues.iter().map(|issue| issue.to_string()).collect();
             assert_eq!(outcomes.len(), 1);
             assert_eq!(outcomes[0], "1.md:3  broken image \"zonk.png\"");
             assert_eq!(have.outgoing_resource_links.len(), 1);

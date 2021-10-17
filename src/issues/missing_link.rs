@@ -1,10 +1,11 @@
 use crate::config;
 use crate::database::section;
 use crate::database::Tikibase;
-use crate::Issue;
+use crate::Fix;
 use lazy_static::lazy_static;
 use regex::{Captures, Regex};
 use std::borrow::Cow;
+use std::fmt::{self, Display, Formatter};
 use std::path::PathBuf;
 
 pub struct MissingLink {
@@ -18,7 +19,7 @@ pub struct MissingLinks {
     pub links: Vec<MissingLink>,
 }
 
-impl Issue for MissingLinks {
+impl Fix for MissingLinks {
     fn fix(&self, base: &mut Tikibase, _config: &config::Data) -> String {
         let base_dir = base.dir.clone();
         let doc = base.get_doc_mut(&self.file).unwrap();
@@ -50,14 +51,17 @@ impl Issue for MissingLinks {
     fn fixable(&self) -> bool {
         true
     }
+}
 
-    fn describe(&self) -> String {
+impl Display for MissingLinks {
+    fn fmt(&self, f: &mut Formatter<'_>) -> fmt::Result {
         let links: Vec<Cow<str>> = self
             .links
             .iter()
             .map(|ml| ml.path.to_string_lossy())
             .collect();
-        format!(
+        write!(
+            f,
             "{}  missing link to {}",
             self.file.to_string_lossy(),
             links.join(", "),

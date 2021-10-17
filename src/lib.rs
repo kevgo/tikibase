@@ -7,7 +7,7 @@ pub mod testhelpers;
 
 pub use commands::Command;
 use database::Tikibase;
-use issues::Issue;
+use issues::{Fix, Issue};
 use std::path::PathBuf;
 
 pub fn process<P: Into<PathBuf>>(command: &Command, path: P) -> (Vec<String>, i32) {
@@ -52,7 +52,7 @@ pub fn process<P: Into<PathBuf>>(command: &Command, path: P) -> (Vec<String>, i3
 
     // take care of the issues
     let mut outcomes: Vec<String> = match command {
-        Command::Check => issues.into_iter().map(|issue| issue.describe()).collect(),
+        Command::Check => issues.into_iter().map(|issue| issue.to_string()).collect(),
         Command::Fix => issues
             .into_iter()
             .filter(|issue| issue.fixable())
@@ -62,7 +62,7 @@ pub fn process<P: Into<PathBuf>>(command: &Command, path: P) -> (Vec<String>, i3
             .into_iter()
             .map(|issue| match issue.fixable() {
                 true => issue.fix(&mut base, &config),
-                false => issue.describe(),
+                false => issue.to_string(),
             })
             .collect(),
         _ => {

@@ -74,7 +74,7 @@ mod tests {
         incoming_links.add("1.md", "3.md");
         incoming_links.add("1.md", "2.md");
         let have = super::scan(&base, &incoming_links, &outgoing_links);
-        let issues: Vec<String> = have.iter().map(|issue| issue.describe()).collect();
+        let issues: Vec<String> = have.iter().map(|issue| issue.to_string()).collect();
         assert_eq!(issues, vec!["1.md  missing link to 2.md, 3.md"]);
     }
 }

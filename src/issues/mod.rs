@@ -3,6 +3,7 @@
 
 use crate::config;
 use crate::database::Tikibase;
+use std::fmt::Display;
 
 mod broken_image;
 mod broken_link;
@@ -35,10 +36,7 @@ pub(crate) use unknown_section::UnknownSection;
 pub(crate) use unordered_sections::UnorderedSections;
 
 /// an issue that was identified in the Tikibase
-pub trait Issue {
-    /// provides a human-readable description of the issue
-    fn describe(&self) -> String;
-
+pub trait Fix {
     /// fixes this issue, returns a human-readable description of what it did
     fn fix(&self, _base: &mut Tikibase, _config: &config::Data) -> String {
         unimplemented!()
@@ -47,3 +45,7 @@ pub trait Issue {
     /// indicates whether this issue is fixable
     fn fixable(&self) -> bool;
 }
+
+pub trait Issue: Fix + Display {}
+// NOTE: this is necessary until https://github.com/rust-lang/rfcs/issues/2035 ships
+impl<T> Issue for T where T: Fix + Display {}
