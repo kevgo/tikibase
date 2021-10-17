@@ -1,7 +1,7 @@
 use crate::config;
 use crate::database::Tikibase;
 use crate::issues;
-use crate::issues::Issue;
+use crate::Issue;
 
 pub fn scan(base: &Tikibase, config: &config::Data) -> Vec<Box<dyn Issue>> {
     let mut issues = Vec::<Box<dyn Issue>>::new();

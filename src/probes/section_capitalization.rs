@@ -1,6 +1,6 @@
 use crate::database::Tikibase;
 use crate::issues;
-use crate::issues::Issue;
+use crate::Issue;
 use ahash::{AHashMap, AHashSet};
 use std::iter::FromIterator;
 

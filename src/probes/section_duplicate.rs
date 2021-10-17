@@ -1,6 +1,6 @@
 use crate::database::Tikibase;
 use crate::issues;
-use crate::issues::Issue;
+use crate::Issue;
 
 /// finds all duplicate sections in the given Tikibase
 pub fn scan(base: &Tikibase) -> Vec<Box<dyn Issue>> {
