@@ -1,7 +1,7 @@
 use crate::database::DocLinks;
 use crate::database::Tikibase;
 use crate::issues;
-use crate::issues::Issue;
+use crate::Issue;
 use ahash::AHashSet;
 use std::path::PathBuf;
 
