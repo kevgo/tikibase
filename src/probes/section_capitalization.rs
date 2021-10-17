@@ -1,10 +1,10 @@
 use crate::database::Tikibase;
 use crate::issues;
-use crate::Fix;
+use crate::issues::Issue;
 use ahash::{AHashMap, AHashSet};
 use std::iter::FromIterator;
 
-pub fn scan(base: &Tikibase) -> Vec<Box<dyn Fix>> {
+pub fn scan(base: &Tikibase) -> Vec<Box<dyn Issue>> {
     // registers variants of section titles: normalized title --> Vec<existing titles>
     let mut title_variants: AHashMap<String, AHashSet<String>> = AHashMap::new();
     for doc in &base.docs {
@@ -16,7 +16,7 @@ pub fn scan(base: &Tikibase) -> Vec<Box<dyn Fix>> {
                 .insert(section_type.into());
         }
     }
-    let mut issues = Vec::<Box<dyn Fix>>::new();
+    let mut issues = Vec::<Box<dyn Issue>>::new();
     for (_, variants) in title_variants.drain() {
         if variants.len() < 2 {
             continue;
@@ -68,7 +68,7 @@ content";
         assert_eq!(errs.len(), 0);
         let have: Vec<String> = super::scan(&base)
             .iter()
-            .map(|issue| issue.describe())
+            .map(|issue| issue.to_string())
             .collect();
         assert_eq!(have.len(), 1);
         assert_eq!(have[0], "mixed capitalization of sections: ONE|One|one");

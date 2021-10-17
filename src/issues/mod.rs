@@ -3,6 +3,7 @@
 
 use crate::config;
 use crate::database::Tikibase;
+use std::fmt::Display;
 
 mod broken_image;
 mod broken_link;
@@ -44,3 +45,6 @@ pub trait Fix {
     /// indicates whether this issue is fixable
     fn fixable(&self) -> bool;
 }
+
+pub trait Issue: Fix + Display {}
+impl<T> Issue for T where T: Fix + Display {}

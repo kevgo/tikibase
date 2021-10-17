@@ -1,9 +1,9 @@
 use crate::database::Tikibase;
 use crate::issues;
-use crate::Fix;
+use crate::issues::Issue;
 
-pub fn scan(base: &Tikibase) -> Vec<Box<dyn Fix>> {
-    let mut issues = Vec::<Box<dyn Fix>>::new();
+pub fn scan(base: &Tikibase) -> Vec<Box<dyn Issue>> {
+    let mut issues = Vec::<Box<dyn Issue>>::new();
     for doc in &base.docs {
         for section in doc.sections() {
             if section.section_type().is_empty() {

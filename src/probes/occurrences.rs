@@ -1,7 +1,7 @@
 use crate::database::DocLinks;
 use crate::database::Tikibase;
 use crate::issues;
-use crate::Fix;
+use crate::issues::Issue;
 use ahash::AHashSet;
 use std::path::PathBuf;
 
@@ -9,8 +9,8 @@ pub fn scan(
     base: &Tikibase,
     incoming_doc_links: &DocLinks,
     outgoing_doc_links: &DocLinks,
-) -> Vec<Box<dyn Fix>> {
-    let mut issues = Vec::<Box<dyn Fix>>::new();
+) -> Vec<Box<dyn Issue>> {
+    let mut issues = Vec::<Box<dyn Issue>>::new();
     for doc in &base.docs {
         let mut missing_outgoing: Vec<PathBuf> = incoming_doc_links
             .get(&doc.path)
@@ -74,7 +74,7 @@ mod tests {
         incoming_links.add("1.md", "3.md");
         incoming_links.add("1.md", "2.md");
         let have = super::scan(&base, &incoming_links, &outgoing_links);
-        let issues: Vec<String> = have.iter().map(|issue| issue.describe()).collect();
+        let issues: Vec<String> = have.iter().map(|issue| issue.to_string()).collect();
         assert_eq!(issues, vec!["1.md  missing link to 2.md, 3.md"]);
     }
 }

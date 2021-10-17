@@ -1,12 +1,12 @@
 use crate::database::Tikibase;
 use crate::issues;
-use crate::Fix;
+use crate::issues::Issue;
 
 /// finds all empty sections in the given Tikibase,
 /// fixes them if fix is enabled,
 /// returns the unfixed issues
-pub fn scan(base: &Tikibase) -> Vec<Box<dyn Fix>> {
-    let mut issues = Vec::<Box<dyn Fix>>::new();
+pub fn scan(base: &Tikibase) -> Vec<Box<dyn Issue>> {
+    let mut issues = Vec::<Box<dyn Issue>>::new();
     for doc in &base.docs {
         for section in &doc.content_sections {
             let has_content = section.body.iter().any(|line| !line.text().is_empty());
@@ -42,7 +42,7 @@ content";
         create_file("test.md", content, &dir);
         let (base, errs) = Tikibase::load(dir, &empty_config());
         assert_eq!(errs.len(), 0);
-        let have: Vec<String> = scan(&base).iter().map(|issue| issue.describe()).collect();
+        let have: Vec<String> = scan(&base).iter().map(|issue| issue.to_string()).collect();
         assert_eq!(have.len(), 1);
         assert_eq!(
             have[0],
@@ -64,7 +64,7 @@ content";
         create_file("test.md", content, &dir);
         let (base, errs) = Tikibase::load(dir, &empty_config());
         assert_eq!(errs.len(), 0);
-        let have: Vec<String> = scan(&base).iter().map(|issue| issue.describe()).collect();
+        let have: Vec<String> = scan(&base).iter().map(|issue| issue.to_string()).collect();
         assert_eq!(have.len(), 1);
         assert_eq!(
             have[0],
