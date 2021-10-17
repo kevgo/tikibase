@@ -4,7 +4,7 @@ use crate::issues::Issue;
 use crate::probes;
 
 pub(crate) fn check(base: &Tikibase, config: &config::Data) -> Vec<Box<dyn Issue>> {
-    let mut issues = Vec::<Box<dyn Issue>>::new();
+    let mut issues = Vec::new();
     issues.extend(probes::section_duplicate::scan(base));
     issues.extend(probes::section_empty::scan(base));
     issues.extend(probes::section_capitalization::scan(base));
