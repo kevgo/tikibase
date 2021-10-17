@@ -1,4 +1,5 @@
 use crate::Issue;
+use std::fmt::{self, Display, Formatter};
 use std::path::PathBuf;
 
 pub struct SectionWithoutHeader {
@@ -6,15 +7,18 @@ pub struct SectionWithoutHeader {
     pub line: u32,
 }
 
-impl Issue for SectionWithoutHeader {
-    fn describe(&self) -> String {
-        format!(
+impl Display for SectionWithoutHeader {
+    fn fmt(&self, f: &mut Formatter<'_>) -> fmt::Result {
+        write!(
+            f,
             "{}:{}  section has no title",
             self.file.to_string_lossy(),
             self.line + 1
         )
     }
+}
 
+impl Issue for SectionWithoutHeader {
     fn fixable(&self) -> bool {
         false
     }

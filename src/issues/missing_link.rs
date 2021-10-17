@@ -5,6 +5,7 @@ use crate::Issue;
 use lazy_static::lazy_static;
 use regex::{Captures, Regex};
 use std::borrow::Cow;
+use std::fmt::{self, Display, Formatter};
 use std::path::PathBuf;
 
 pub struct MissingLink {
@@ -50,14 +51,17 @@ impl Issue for MissingLinks {
     fn fixable(&self) -> bool {
         true
     }
+}
 
-    fn describe(&self) -> String {
+impl Display for MissingLinks {
+    fn fmt(&self, f: &mut Formatter<'_>) -> fmt::Result {
         let links: Vec<Cow<str>> = self
             .links
             .iter()
             .map(|ml| ml.path.to_string_lossy())
             .collect();
-        format!(
+        write!(
+            f,
             "{}  missing link to {}",
             self.file.to_string_lossy(),
             links.join(", "),

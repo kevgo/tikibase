@@ -1,4 +1,5 @@
 use crate::Issue;
+use std::fmt::{self, Display, Formatter};
 use std::path::PathBuf;
 
 pub struct LinkWithoutDestination {
@@ -6,15 +7,18 @@ pub struct LinkWithoutDestination {
     pub line: u32,
 }
 
-impl Issue for LinkWithoutDestination {
-    fn describe(&self) -> String {
-        format!(
+impl Display for LinkWithoutDestination {
+    fn fmt(&self, f: &mut Formatter<'_>) -> fmt::Result {
+        write!(
+            f,
             "{}:{}  link without destination",
             self.filename.to_string_lossy(),
             self.line
         )
     }
+}
 
+impl Issue for LinkWithoutDestination {
     fn fixable(&self) -> bool {
         false
     }

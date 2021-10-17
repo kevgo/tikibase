@@ -1,4 +1,5 @@
 use crate::Issue;
+use std::fmt::{self, Display, Formatter};
 use std::path::PathBuf;
 
 /// describes the issue that a document contains two sections with the same title
@@ -7,16 +8,19 @@ pub struct DuplicateSection {
     pub section_type: String,
 }
 
-impl Issue for DuplicateSection {
-    fn fixable(&self) -> bool {
-        false
-    }
-
-    fn describe(&self) -> String {
-        format!(
+impl Display for DuplicateSection {
+    fn fmt(&self, f: &mut Formatter<'_>) -> fmt::Result {
+        write!(
+            f,
             "{}  duplicate section: {}",
             self.filename.to_string_lossy(),
             self.section_type
         )
+    }
+}
+
+impl Issue for DuplicateSection {
+    fn fixable(&self) -> bool {
+        false
     }
 }

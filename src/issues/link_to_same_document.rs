@@ -1,4 +1,5 @@
 use crate::Issue;
+use std::fmt::{self, Display, Formatter};
 use std::path::PathBuf;
 
 pub struct LinkToSameDocument {
@@ -6,15 +7,18 @@ pub struct LinkToSameDocument {
     pub line: u32,
 }
 
-impl Issue for LinkToSameDocument {
-    fn describe(&self) -> String {
-        format!(
+impl Display for LinkToSameDocument {
+    fn fmt(&self, f: &mut Formatter<'_>) -> fmt::Result {
+        write!(
+            f,
             "{}:{}  link to the same file",
             self.filename.to_string_lossy(),
             self.line
         )
     }
+}
 
+impl Issue for LinkToSameDocument {
     fn fixable(&self) -> bool {
         false
     }

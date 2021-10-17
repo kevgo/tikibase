@@ -1,6 +1,7 @@
 use crate::config;
 use crate::database::{Section, Tikibase};
 use crate::Issue;
+use std::fmt::{self, Display, Formatter};
 use std::path::PathBuf;
 
 /// describes the issue that a document has sections out of order
@@ -8,11 +9,13 @@ pub struct UnorderedSections {
     pub file: PathBuf,
 }
 
-impl Issue for UnorderedSections {
-    fn describe(&self) -> String {
-        format!("{}  wrong section order", self.file.to_string_lossy())
+impl Display for UnorderedSections {
+    fn fmt(&self, f: &mut Formatter<'_>) -> fmt::Result {
+        write!(f, "{}  wrong section order", self.file.to_string_lossy())
     }
+}
 
+impl Issue for UnorderedSections {
     fn fix(&self, base: &mut Tikibase, config: &config::Data) -> String {
         let base_dir = base.dir.clone();
         let mut doc = base.get_doc_mut(&self.file).unwrap();
