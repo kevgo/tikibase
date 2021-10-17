@@ -1,6 +1,6 @@
 use crate::database::Tikibase;
 use crate::issues;
-use crate::issues::Issue;
+use crate::Issue;
 
 pub fn scan(base: &Tikibase, resource_links: &[String]) -> Vec<Box<dyn Issue>> {
     let mut result = Vec::<Box<dyn Issue>>::new();
