@@ -7,7 +7,7 @@ pub mod testhelpers;
 
 pub use commands::Command;
 use database::Tikibase;
-use issues::Fix;
+use issues::{Fix, Issue};
 use std::path::PathBuf;
 
 pub fn process<P: Into<PathBuf>>(command: &Command, path: P) -> (Vec<String>, i32) {
