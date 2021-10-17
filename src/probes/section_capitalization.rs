@@ -4,7 +4,7 @@ use crate::Issue;
 use ahash::{AHashMap, AHashSet};
 use std::iter::FromIterator;
 
-pub fn process(base: &Tikibase) -> Vec<Box<dyn Issue>> {
+pub fn scan(base: &Tikibase) -> Vec<Box<dyn Issue>> {
     // registers variants of section titles: normalized title --> Vec<existing titles>
     let mut title_variants: AHashMap<String, AHashSet<String>> = AHashMap::new();
     for doc in &base.docs {
@@ -66,7 +66,7 @@ content";
         create_file("2.md", content2, &dir);
         let (base, errs) = Tikibase::load(dir, &empty_config());
         assert_eq!(errs.len(), 0);
-        let have: Vec<String> = super::process(&base)
+        let have: Vec<String> = super::scan(&base)
             .iter()
             .map(|issue| issue.describe())
             .collect();

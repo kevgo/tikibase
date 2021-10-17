@@ -3,7 +3,7 @@ use crate::database::Tikibase;
 use crate::issues;
 use crate::Issue;
 
-pub fn process(base: &Tikibase, config: &config::Data) -> Vec<Box<dyn Issue>> {
+pub fn scan(base: &Tikibase, config: &config::Data) -> Vec<Box<dyn Issue>> {
     let mut issues = Vec::<Box<dyn Issue>>::new();
     let expected_order = match &config.sections {
         None => return issues,

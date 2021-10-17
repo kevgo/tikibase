@@ -15,7 +15,7 @@ pub struct LinksResult {
     pub outgoing_resource_links: Vec<String>,
 }
 
-pub fn process(base: &Tikibase) -> LinksResult {
+pub fn scan(base: &Tikibase) -> LinksResult {
     let mut result = LinksResult {
         issues: Vec::new(),
         incoming_doc_links: DocLinks::new(),
@@ -98,7 +98,7 @@ mod tests {
             create_file("one.md", "# One\n\n[invalid](non-existing.md)\n", &dir);
             let (base, errs) = Tikibase::load(dir, &empty_config());
             assert_eq!(errs.len(), 0);
-            let have = super::super::process(&base);
+            let have = super::super::scan(&base);
             let outcomes: Vec<String> = have.issues.iter().map(|issue| issue.describe()).collect();
             assert_eq!(
                 outcomes,
@@ -126,7 +126,7 @@ Here is a link to [Three](3.md) that also works.
             create_file("3.md", "# Three", &dir);
             let (base, errs) = Tikibase::load(dir, &empty_config());
             assert_eq!(errs.len(), 0);
-            let have = super::super::process(&base);
+            let have = super::super::scan(&base);
             assert!(have.issues.is_empty());
             assert_eq!(have.outgoing_doc_links.data.len(), 1);
             let out_one = have.outgoing_doc_links.get("1.md").unwrap();
@@ -149,7 +149,7 @@ Here is a link to [Three](3.md) that also works.
             create_file("one.md", "# One\n\n[invalid]()\n", &dir);
             let (base, errs) = Tikibase::load(dir, &empty_config());
             assert_eq!(errs.len(), 0);
-            let have = super::super::process(&base);
+            let have = super::super::scan(&base);
             let outcomes: Vec<String> = have.issues.iter().map(|issue| issue.describe()).collect();
             assert_eq!(outcomes, vec!["one.md:3  link without destination"]);
             assert_eq!(have.incoming_doc_links.data.len(), 0);
@@ -170,7 +170,7 @@ Here is a link to [Three](3.md) that also works.
             create_file("two.md", "# Two", &dir);
             let (base, errs) = Tikibase::load(dir, &empty_config());
             assert_eq!(errs.len(), 0);
-            let have = super::super::process(&base);
+            let have = super::super::scan(&base);
             assert!(have.issues.is_empty());
             assert_eq!(have.incoming_doc_links.data.len(), 0);
             assert_eq!(have.outgoing_doc_links.data.len(), 0);
@@ -184,7 +184,7 @@ Here is a link to [Three](3.md) that also works.
             create_file("foo.png", "image content", &dir);
             let (base, errs) = Tikibase::load(dir, &empty_config());
             assert_eq!(errs.len(), 0);
-            let have = super::super::process(&base);
+            let have = super::super::scan(&base);
             assert!(have.issues.is_empty());
             assert_eq!(have.outgoing_resource_links.len(), 1);
             assert_eq!(have.outgoing_resource_links[0], "foo.png");
@@ -198,7 +198,7 @@ Here is a link to [Three](3.md) that also works.
             create_file("1.md", "# One\n\n![image](zonk.png)\n", &dir);
             let (base, errs) = Tikibase::load(dir, &empty_config());
             assert_eq!(errs.len(), 0);
-            let have = super::super::process(&base);
+            let have = super::super::scan(&base);
             let outcomes: Vec<String> = have.issues.iter().map(|issue| issue.describe()).collect();
             assert_eq!(outcomes.len(), 1);
             assert_eq!(outcomes[0], "1.md:3  broken image \"zonk.png\"");
