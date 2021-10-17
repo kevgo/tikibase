@@ -47,4 +47,5 @@ pub trait Fix {
 }
 
 pub trait Issue: Fix + Display {}
+// NOTE: this is necessary until https://github.com/rust-lang/rfcs/issues/2035 ships
 impl<T> Issue for T where T: Fix + Display {}
