@@ -1,5 +1,3 @@
-use crate::config;
-use crate::database::Tikibase;
 use crate::Issue;
 
 /// describes the issue that sections have mixed capitalization
@@ -13,10 +11,6 @@ impl Issue for MixCapSection {
             "mixed capitalization of sections: {}",
             self.variants.join("|")
         )
-    }
-
-    fn fix(&self, _base: &mut Tikibase, _config: &config::Data) -> String {
-        unimplemented!()
     }
 
     fn fixable(&self) -> bool {

@@ -1,5 +1,3 @@
-use crate::config;
-use crate::database::Tikibase;
 use crate::Issue;
 use std::path::PathBuf;
 
@@ -12,10 +10,6 @@ pub struct DuplicateSection {
 impl Issue for DuplicateSection {
     fn fixable(&self) -> bool {
         false
-    }
-
-    fn fix(&self, _base: &mut Tikibase, _config: &config::Data) -> String {
-        unimplemented!()
     }
 
     fn describe(&self) -> String {

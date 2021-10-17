@@ -1,5 +1,3 @@
-use crate::config;
-use crate::database::Tikibase;
 use crate::Issue;
 
 pub struct MissingSource {
@@ -16,10 +14,6 @@ impl Issue for MissingSource {
             self.line + 1,
             self.index
         )
-    }
-
-    fn fix(&self, _base: &mut Tikibase, _config: &config::Data) -> String {
-        unimplemented!()
     }
 
     fn fixable(&self) -> bool {

@@ -1,5 +1,3 @@
-use crate::config;
-use crate::database::Tikibase;
 use crate::Issue;
 use std::path::PathBuf;
 
@@ -18,10 +16,6 @@ impl Issue for BrokenLink {
             self.line,
             self.target
         )
-    }
-
-    fn fix(&self, _base: &mut Tikibase, _config: &config::Data) -> String {
-        unimplemented!()
     }
 
     fn fixable(&self) -> bool {

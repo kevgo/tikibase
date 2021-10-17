@@ -40,7 +40,9 @@ pub trait Issue {
     fn describe(&self) -> String;
 
     /// fixes this issue, returns a human-readable description of what it did
-    fn fix(&self, base: &mut Tikibase, config: &config::Data) -> String;
+    fn fix(&self, _base: &mut Tikibase, _config: &config::Data) -> String {
+        unimplemented!()
+    }
 
     /// indicates whether this issue is fixable
     fn fixable(&self) -> bool;

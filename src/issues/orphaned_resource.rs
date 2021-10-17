@@ -1,5 +1,3 @@
-use crate::config;
-use crate::database::Tikibase;
 use crate::Issue;
 
 /// a resource that isn't linked to
@@ -11,10 +9,6 @@ pub struct OrphanedResource {
 }
 
 impl Issue for OrphanedResource {
-    fn fix(&self, _base: &mut Tikibase, _config: &config::Data) -> String {
-        unimplemented!()
-    }
-
     fn fixable(&self) -> bool {
         false
     }
