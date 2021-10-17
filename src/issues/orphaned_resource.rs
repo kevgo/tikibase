@@ -9,11 +9,11 @@ pub struct OrphanedResource {
 }
 
 impl Issue for OrphanedResource {
-    fn fixable(&self) -> bool {
-        false
-    }
-
     fn describe(&self) -> String {
         format!("unused resource \"{}\"", self.path)
+    }
+
+    fn fixable(&self) -> bool {
+        false
     }
 }
