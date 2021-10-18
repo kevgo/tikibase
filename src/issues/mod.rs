@@ -35,9 +35,8 @@ pub(crate) use unknown_section::UnknownSection;
 pub(crate) use unordered_sections::UnorderedSections;
 
 /// A problem that was identified in the Tikibase.
-/// If the problem is fixable, the `fixer` method will emit
-/// an implementation of the Fixer trait.
 pub(crate) trait Problem {
+    /// if this problem is fixable, provides the Fixer implementation
     fn fixer(self: Box<Self>) -> Option<Box<dyn Fix>>;
 }
 
