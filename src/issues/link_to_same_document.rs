@@ -1,4 +1,5 @@
-use crate::Fix;
+use super::Problem;
+use crate::fixers::Fix;
 use std::fmt::{self, Display, Formatter};
 use std::path::PathBuf;
 
@@ -18,8 +19,8 @@ impl Display for LinkToSameDocument {
     }
 }
 
-impl Fix for LinkToSameDocument {
-    fn fixable(&self) -> bool {
-        false
+impl Problem for LinkToSameDocument {
+    fn fixer(self: Box<Self>) -> Option<Box<dyn Fix>> {
+        None
     }
 }

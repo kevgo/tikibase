@@ -1,17 +1,19 @@
 pub(crate) mod commands;
 pub(crate) mod config;
 pub(crate) mod database;
+pub(crate) mod fixers;
 pub(crate) mod issues;
 pub(crate) mod probes;
 pub mod testhelpers;
 
 pub use commands::Command;
 use database::Tikibase;
-use issues::{Fix, Issue};
+use issues::Issue;
 use std::path::PathBuf;
 
 pub fn process<P: Into<PathBuf>>(command: &Command, path: P) -> (Vec<String>, i32) {
-    let mut result = Vec::new();
+    let mut outcomes = Vec::new();
+    let mut exit_code = 0;
     let path = path.into();
 
     // load the configuration
@@ -33,48 +35,55 @@ pub fn process<P: Into<PathBuf>>(command: &Command, path: P) -> (Vec<String>, i3
         _ => false,
     };
     if basic_command {
-        return (result, 0);
+        return (outcomes, exit_code);
     }
 
     // load the Tikibase
     let (mut base, mut errors) = Tikibase::load(path, &config);
-    result.append(&mut errors);
+    exit_code += errors.len() as i32;
+    outcomes.append(&mut errors);
 
     // handle stats command
     if command == &Command::Stats {
         commands::stats(&base);
-        return (result, 0);
+        return (outcomes, exit_code);
     }
 
     // find all issues in the Tikibase
     let issues = commands::check(&base, &config);
-    let unfix_count = issues.iter().filter(|issue| !issue.fixable()).count() as i32;
 
     // take care of the issues
-    let mut outcomes: Vec<String> = match command {
-        Command::Check => issues.into_iter().map(|issue| issue.to_string()).collect(),
-        Command::Fix => issues
-            .into_iter()
-            .filter(|issue| issue.fixable())
-            .map(|fixable_issue| fixable_issue.fix(&mut base, &config))
-            .collect(),
-        Command::Pitstop => issues
-            .into_iter()
-            .map(|issue| match issue.fixable() {
-                true => issue.fix(&mut base, &config),
-                false => issue.to_string(),
-            })
-            .collect(),
+    match command {
+        Command::Check => {
+            for issue in issues {
+                outcomes.push(issue.to_string());
+                exit_code += 1;
+            }
+        }
+        Command::Fix => {
+            for issue in issues.into_iter() {
+                if let Some(fixer) = issue.fixer() {
+                    outcomes.push(fixer.fix(&mut base, &config));
+                }
+            }
+        }
+        Command::Pitstop => {
+            for issue in issues.into_iter() {
+                let issue_desc = issue.to_string();
+                match issue.fixer() {
+                    Some(fixer) => {
+                        outcomes.push(fixer.fix(&mut base, &config));
+                    }
+                    None => {
+                        outcomes.push(issue_desc);
+                        exit_code += 1;
+                    }
+                }
+            }
+        }
         _ => {
             panic!("unexpected complex command: {:?}", command);
         }
     };
-    let exitcode = match command {
-        Command::Check => outcomes.len() as i32,
-        Command::Fix => 0,
-        Command::Pitstop => unfix_count,
-        _ => 0,
-    };
-    result.append(&mut outcomes);
-    (result, exitcode)
+    (outcomes, exit_code)
 }

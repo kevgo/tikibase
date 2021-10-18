@@ -5,7 +5,7 @@ use crate::Issue;
 use ahash::AHashSet;
 use std::path::PathBuf;
 
-pub fn scan(
+pub(crate) fn scan(
     base: &Tikibase,
     incoming_doc_links: &DocLinks,
     outgoing_doc_links: &DocLinks,

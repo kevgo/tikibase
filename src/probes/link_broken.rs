@@ -2,7 +2,7 @@ use crate::database::{DocLinks, Reference, Tikibase};
 use crate::issues;
 use crate::Issue;
 
-pub struct LinksResult {
+pub(crate) struct LinksResult {
     pub issues: Vec<Box<dyn Issue>>,
 
     /// all links to documents
@@ -15,7 +15,7 @@ pub struct LinksResult {
     pub outgoing_resource_links: Vec<String>,
 }
 
-pub fn scan(base: &Tikibase) -> LinksResult {
+pub(crate) fn scan(base: &Tikibase) -> LinksResult {
     let mut result = LinksResult {
         issues: Vec::new(),
         incoming_doc_links: DocLinks::new(),

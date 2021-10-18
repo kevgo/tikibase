@@ -3,7 +3,7 @@ use crate::database::Tikibase;
 use crate::issues;
 use crate::Issue;
 
-pub fn scan(base: &Tikibase, config: &config::Data) -> Vec<Box<dyn Issue>> {
+pub(crate) fn scan(base: &Tikibase, config: &config::Data) -> Vec<Box<dyn Issue>> {
     let mut issues = Vec::<Box<dyn Issue>>::new();
     let sections = match &config.sections {
         None => return issues,
