@@ -34,7 +34,7 @@ pub(crate) use section_without_header::SectionWithoutHeader;
 pub(crate) use unknown_section::UnknownSection;
 pub(crate) use unordered_sections::UnorderedSections;
 
-/// A problem that was identified in the Tikibase.
+/// a problem that was identified in the Tikibase
 pub(crate) trait Problem {
     /// if this problem is fixable, provides the Fixer implementation
     fn fixer(self: Box<Self>) -> Option<Box<dyn Fix>>;
