@@ -87,7 +87,3 @@ pub fn process<P: Into<PathBuf>>(command: &Command, path: P) -> (Vec<String>, i3
     };
     (outcomes, exit_code)
 }
-
-// fn run_checks(issues: Vec<Box<dyn Issue>>) -> Vec<String> {
-//     issues.iter().map(|issue| issue.to_string()).collect()
-// }
