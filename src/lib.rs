@@ -69,13 +69,12 @@ pub fn process<P: Into<PathBuf>>(command: &Command, path: P) -> (Vec<String>, i3
         }
         Command::Pitstop => {
             for issue in issues.into_iter() {
-                let issue_desc = issue.to_string();
                 match issue.fixer() {
                     Some(fixer) => {
                         outcomes.push(fixer.fix(&mut base, &config));
                     }
                     None => {
-                        outcomes.push(issue_desc);
+                        outcomes.push(issue.to_string());
                         exit_code += 1;
                     }
                 }
