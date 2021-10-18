@@ -1,9 +1,8 @@
+use super::Problem;
 use crate::fixers::unordered_sections::UnorderedSectionFixer;
 use crate::fixers::Fix;
 use std::fmt::{self, Display, Formatter};
 use std::path::PathBuf;
-
-use super::Problem;
 
 /// describes the issue that a document has sections out of order
 pub struct UnorderedSections {
