@@ -56,8 +56,8 @@ pub fn process<P: Into<PathBuf>>(command: &Command, path: P) -> (Vec<String>, i3
     match command {
         Command::Check => {
             for issue in issues {
-                exit_code += 1;
                 outcomes.push(issue.to_string());
+                exit_code += 1;
             }
         }
         Command::Fix => {
@@ -75,8 +75,8 @@ pub fn process<P: Into<PathBuf>>(command: &Command, path: P) -> (Vec<String>, i3
                         outcomes.push(fixer.fix(&mut base, &config));
                     }
                     None => {
-                        exit_code += 1;
                         outcomes.push(issue_desc);
+                        exit_code += 1;
                     }
                 }
             }
