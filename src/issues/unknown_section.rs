@@ -30,7 +30,7 @@ impl Display for UnknownSection {
 }
 
 impl Problem for UnknownSection {
-    fn fixer(self: Box<Self>) -> Option<Box<dyn Fix>> {
+    fn fixer(&self) -> Option<Box<dyn Fix>> {
         None
     }
 }

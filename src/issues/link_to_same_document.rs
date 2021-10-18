@@ -20,7 +20,7 @@ impl Display for LinkToSameDocument {
 }
 
 impl Problem for LinkToSameDocument {
-    fn fixer(self: Box<Self>) -> Option<Box<dyn Fix>> {
+    fn fixer(&self) -> Option<Box<dyn Fix>> {
         None
     }
 }

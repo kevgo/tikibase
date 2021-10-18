@@ -37,7 +37,7 @@ pub(crate) use unordered_sections::UnorderedSections;
 /// a problem that was identified in the Tikibase
 pub(crate) trait Problem {
     /// if this problem is fixable, provides the Fixer implementation
-    fn fixer(self: Box<Self>) -> Option<Box<dyn Fix>>;
+    fn fixer(&self) -> Option<Box<dyn Fix + '_>>;
 }
 
 /// This is the public type. It is a problem that can be displayed.
