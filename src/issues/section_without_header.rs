@@ -1,4 +1,5 @@
-use crate::Fix;
+use super::Problem;
+use crate::fixers::Fix;
 use std::fmt::{self, Display, Formatter};
 use std::path::PathBuf;
 
@@ -18,8 +19,8 @@ impl Display for SectionWithoutHeader {
     }
 }
 
-impl Fix for SectionWithoutHeader {
-    fn fixable(&self) -> bool {
-        false
+impl Problem for SectionWithoutHeader {
+    fn fixer(self) -> Option<Box<dyn Fix>> {
+        None
     }
 }

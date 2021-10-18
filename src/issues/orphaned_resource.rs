@@ -1,3 +1,5 @@
+use super::Problem;
+use crate::fixers::Fix;
 use std::fmt::{self, Display, Formatter};
 
 /// a resource that isn't linked to
@@ -14,8 +16,8 @@ impl Display for OrphanedResource {
     }
 }
 
-impl Fix for OrphanedResource {
-    fn fixable(&self) -> bool {
-        false
+impl Problem for OrphanedResource {
+    fn fixer(self) -> Option<Box<dyn Fix>> {
+        None
     }
 }

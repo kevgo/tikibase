@@ -7,17 +7,17 @@ pub struct EmptySectionFixer {
 }
 
 impl Fix for EmptySectionFixer {
-    fn fix(self, base: &mut Tikibase, _config: &config::Data) -> String {
+    fn fix(&self, base: &mut Tikibase, _config: &config::Data) -> String {
         let base_dir = &base.dir.clone();
-        let doc = base.get_doc_mut(&self.filename).unwrap();
+        let doc = base.get_doc_mut(&self.issue.filename).unwrap();
         doc.content_sections
-            .retain(|section| section.section_type() != self.section_type);
+            .retain(|section| section.section_type() != self.issue.section_type);
         doc.save(base_dir.as_ref());
         format!(
             "{}:{}  removed empty section \"{}\"",
-            self.filename.to_string_lossy(),
-            self.line + 1,
-            self.section_type
+            self.issue.filename.to_string_lossy(),
+            self.issue.line + 1,
+            self.issue.section_type
         )
     }
 }

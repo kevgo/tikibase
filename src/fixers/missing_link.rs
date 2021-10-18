@@ -1,19 +1,19 @@
 use super::Fix;
 use crate::config;
 use crate::database::{section, Tikibase};
-use crate::issues::MissingLink;
+use crate::issues::MissingLinks;
 use lazy_static::lazy_static;
 use regex::{Captures, Regex};
 use std::borrow::Cow;
 
 pub struct MissingLinkFixer {
-    issue: MissingLink,
+    issue: MissingLinks,
 }
 
 impl Fix for MissingLinkFixer {
     fn fix(&self, base: &mut Tikibase, _config: &config::Data) -> String {
         let base_dir = base.dir.clone();
-        let doc = base.get_doc_mut(&self.file).unwrap();
+        let doc = base.get_doc_mut(&self.issue.file).unwrap();
 
         // append a newline to the section before
         doc.last_section_mut().push_line("");
@@ -21,7 +21,7 @@ impl Fix for MissingLinkFixer {
         // insert occurrences section
         let mut section_builder = section::Builder::new("### occurrences", doc.lines_count() + 1);
         section_builder.add_line("");
-        for link in &self.links {
+        for link in &self.issue.links {
             section_builder.add_line(format!(
                 "- [{}]({})",
                 strip_links(&link.title),

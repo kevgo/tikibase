@@ -1,5 +1,6 @@
-use crate::config;
-use crate::database::Tikibase;
+use super::Problem;
+use crate::fixers::obsolete_link::ObsoleteLinkFixer;
+use crate::fixers::Fix;
 use std::fmt::{self, Display, Formatter};
 use std::path::PathBuf;
 
@@ -21,21 +22,8 @@ impl Display for ObsoleteLink {
     }
 }
 
-impl Fix for ObsoleteLink {
-    fn fix(&self, base: &mut Tikibase, _config: &config::Data) -> String {
-        let base_dir = base.dir.clone();
-        let doc = base.get_doc_mut(&self.file).unwrap();
-        // we can simply flush the document here because
-        // its "occurrences" section was filtered out when loading the document
-        doc.save(&base_dir);
-        format!(
-            "{}:{}  removed obsolete occurrences section",
-            self.file.to_string_lossy(),
-            self.line + 1,
-        )
-    }
-
-    fn fixable(&self) -> bool {
-        true
+impl Problem for ObsoleteLink {
+    fn fixer(self) -> Option<Box<dyn Fix>> {
+        Some(ObsoleteLinkFixer { ..self })
     }
 }

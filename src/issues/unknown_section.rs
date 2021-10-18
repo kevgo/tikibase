@@ -1,8 +1,8 @@
-use crate::config;
-use crate::database::Tikibase;
-use crate::Fix;
+use crate::fixers::Fix;
 use std::fmt::{self, Display, Formatter};
 use std::path::PathBuf;
+
+use super::Problem;
 
 /// describes an unknown section
 pub struct UnknownSection {
@@ -30,12 +30,8 @@ impl Display for UnknownSection {
     }
 }
 
-impl Fix for UnknownSection {
-    fn fix(&self, _base: &mut Tikibase, _config: &config::Data) -> String {
-        unimplemented!()
-    }
-
-    fn fixable(&self) -> bool {
-        false
+impl Problem for UnknownSection {
+    fn fixer(self) -> Option<Box<dyn Fix>> {
+        None
     }
 }
