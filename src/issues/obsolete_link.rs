@@ -24,6 +24,6 @@ impl Display for ObsoleteLink {
 
 impl Problem for ObsoleteLink {
     fn fixer(self) -> Option<Box<dyn Fix>> {
-        Some(ObsoleteLinkFixer { ..self })
+        Some(Box::new(ObsoleteLinkFixer { issue: self }))
     }
 }

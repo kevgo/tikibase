@@ -2,6 +2,11 @@ use std::borrow::Cow;
 use std::fmt::{self, Display, Formatter};
 use std::path::PathBuf;
 
+use crate::fixers::missing_link::MissingLinksFixer;
+use crate::fixers::Fix;
+
+use super::Problem;
+
 pub struct MissingLink {
     pub path: PathBuf,
     pub title: String,
@@ -26,5 +31,11 @@ impl Display for MissingLinks {
             self.file.to_string_lossy(),
             links.join(", "),
         )
+    }
+}
+
+impl Problem for MissingLinks {
+    fn fixer(self) -> Option<Box<dyn Fix>> {
+        Some(Box::new(MissingLinksFixer { issue: self }))
     }
 }
