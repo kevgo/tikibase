@@ -1,8 +1,7 @@
+use super::Problem;
 use crate::fixers::Fix;
 use std::fmt::{self, Display, Formatter};
 use std::path::PathBuf;
-
-use super::Problem;
 
 /// describes an unknown section
 pub struct UnknownSection {
