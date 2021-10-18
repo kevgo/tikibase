@@ -7,7 +7,7 @@ use crate::{
 use super::Fix;
 
 pub struct UnorderedSectionFixer {
-    issue: UnorderedSections,
+    pub issue: UnorderedSections,
 }
 
 impl Fix for UnorderedSectionFixer {

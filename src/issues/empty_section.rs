@@ -24,7 +24,7 @@ impl Display for EmptySection {
 }
 
 impl Problem for EmptySection {
-    fn fixer(self) -> Option<Box<dyn Fix>> {
-        Some(Box::new(EmptySectionFixer { issue: self }))
+    fn fixer(self: Box<Self>) -> Option<Box<dyn Fix>> {
+        Some(Box::new(EmptySectionFixer { issue: *self }))
     }
 }

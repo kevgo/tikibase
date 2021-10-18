@@ -18,7 +18,7 @@ impl Display for MixCapSection {
 }
 
 impl Problem for MixCapSection {
-    fn fixer(self) -> Option<Box<dyn Fix>> {
+    fn fixer(self: Box<Self>) -> Option<Box<dyn Fix>> {
         None
     }
 }

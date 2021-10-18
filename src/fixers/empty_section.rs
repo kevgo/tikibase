@@ -3,7 +3,7 @@ use crate::{config, database::Tikibase, issues::EmptySection};
 
 /// repairs the EmptySection issue
 pub struct EmptySectionFixer {
-    issue: EmptySection,
+    pub issue: EmptySection,
 }
 
 impl Fix for EmptySectionFixer {

@@ -38,10 +38,10 @@ pub(crate) use unordered_sections::UnorderedSections;
 /// If the problem is fixable, the `fixer` method will emit
 /// an implementation of the Fixer trait.
 pub(crate) trait Problem {
-    fn fixer(self) -> Option<Box<dyn Fix>>;
+    fn fixer(self: Box<Self>) -> Option<Box<dyn Fix>>;
 }
 
 /// This is the public type. It is a problem that can be displayed.
-pub trait Issue: Problem + Display {}
+pub(crate) trait Issue: Problem + Display {}
 // NOTE: this is necessary until https://github.com/rust-lang/rfcs/issues/2035 ships
 impl<T> Issue for T where T: Problem + Display {}

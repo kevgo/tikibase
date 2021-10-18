@@ -7,7 +7,7 @@ use regex::{Captures, Regex};
 use std::borrow::Cow;
 
 pub struct MissingLinksFixer {
-    issue: MissingLinks,
+    pub issue: MissingLinks,
 }
 
 impl Fix for MissingLinksFixer {

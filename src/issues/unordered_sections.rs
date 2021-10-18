@@ -17,7 +17,7 @@ impl Display for UnorderedSections {
 }
 
 impl Problem for UnorderedSections {
-    fn fixer(self) -> Option<Box<dyn Fix>> {
-        Some(Box::new(UnorderedSectionFixer { issue: self }))
+    fn fixer(self: Box<Self>) -> Option<Box<dyn Fix>> {
+        Some(Box::new(UnorderedSectionFixer { issue: *self }))
     }
 }

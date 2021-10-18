@@ -49,25 +49,37 @@ pub fn process<P: Into<PathBuf>>(command: &Command, path: P) -> (Vec<String>, i3
 
     // find all issues in the Tikibase
     let issues = commands::check(&base, &config);
-    // let unfix_count = issues.iter().filter(|issue| !issue.fixable()).count() as i32;
+    let mut unfix_count = 0;
+    let mut outcomes: Vec<String> = Vec::new();
 
     // take care of the issues
-    let mut outcomes: Vec<String> = match command {
-        Command::Check => issues.into_iter().map(|issue| issue.to_string()).collect(),
-        Command::Fix => issues
-            .into_iter()
-            .map(|issue| issue.fixer())
-            .filter(|fix_opt| fix_opt.is_some())
-            .map(|fix_some| fix_some.unwrap())
-            .map(|fixer| fixer.fix(&mut base, &config))
-            .collect(),
-        Command::Pitstop => issues
-            .into_iter()
-            .map(|issue| match issue.fixer() {
-                Some(fixer) => fixer.fix(&mut base, &config),
-                None => issue.to_string(),
-            })
-            .collect(),
+    match command {
+        Command::Check => {
+            for issue in issues {
+                outcomes.push(issue.to_string());
+            }
+        }
+        Command::Fix => {
+            for issue in issues.into_iter() {
+                if let Some(fixer) = issue.fixer() {
+                    outcomes.push(fixer.fix(&mut base, &config));
+                }
+            }
+        }
+        Command::Pitstop => {
+            for issue in issues.into_iter() {
+                let issue_desc = issue.to_string();
+                match issue.fixer() {
+                    Some(fixer) => {
+                        outcomes.push(fixer.fix(&mut base, &config));
+                    }
+                    None => {
+                        unfix_count += 1;
+                        outcomes.push(issue_desc);
+                    }
+                }
+            }
+        }
         _ => {
             panic!("unexpected complex command: {:?}", command);
         }
@@ -81,3 +93,5 @@ pub fn process<P: Into<PathBuf>>(command: &Command, path: P) -> (Vec<String>, i3
     result.append(&mut outcomes);
     (result, exitcode)
 }
+
+// fn run_checks(issue: Vec<Box<dyn Issue>>) {

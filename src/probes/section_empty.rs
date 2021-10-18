@@ -5,7 +5,7 @@ use crate::Issue;
 /// finds all empty sections in the given Tikibase,
 /// fixes them if fix is enabled,
 /// returns the unfixed issues
-pub fn scan(base: &Tikibase) -> Vec<Box<dyn Issue>> {
+pub(crate) fn scan(base: &Tikibase) -> Vec<Box<dyn Issue>> {
     let mut issues = Vec::<Box<dyn Issue>>::new();
     for doc in &base.docs {
         for section in &doc.content_sections {

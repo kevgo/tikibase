@@ -4,7 +4,7 @@ use crate::database::Tikibase;
 use crate::issues::ObsoleteLink;
 
 pub struct ObsoleteLinkFixer {
-    issue: ObsoleteLink,
+    pub issue: ObsoleteLink,
 }
 
 impl Fix for ObsoleteLinkFixer {
