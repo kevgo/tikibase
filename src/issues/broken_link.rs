@@ -1,4 +1,5 @@
-use crate::Fix;
+use super::Problem;
+use crate::fixers::Fix;
 use std::fmt::{self, Display, Formatter};
 use std::path::PathBuf;
 
@@ -21,8 +22,8 @@ impl Display for BrokenLink {
     }
 }
 
-impl Fix for BrokenLink {
-    fn fixable(&self) -> bool {
-        false
+impl Problem for BrokenLink {
+    fn fixer(self) -> Option<Box<dyn Fix>> {
+        None
     }
 }

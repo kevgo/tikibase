@@ -1,4 +1,3 @@
-use crate::Fix;
 use std::fmt::{self, Display, Formatter};
 
 /// a resource that isn't linked to

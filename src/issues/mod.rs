@@ -1,8 +1,7 @@
 //! The issues module contains all possible issues
 //! that Tikibase can identify and fix.
 
-use crate::config;
-use crate::database::Tikibase;
+use crate::fixers::Fix;
 use std::fmt::Display;
 
 mod broken_image;
@@ -35,17 +34,14 @@ pub(crate) use section_without_header::SectionWithoutHeader;
 pub(crate) use unknown_section::UnknownSection;
 pub(crate) use unordered_sections::UnorderedSections;
 
-/// an issue that was identified in the Tikibase
-pub trait Fix {
-    /// fixes this issue, returns a human-readable description of what it did
-    fn fix(&self, _base: &mut Tikibase, _config: &config::Data) -> String {
-        unimplemented!()
-    }
-
-    /// indicates whether this issue is fixable
-    fn fixable(&self) -> bool;
+/// A problem that was identified in the Tikibase.
+/// If the problem is fixable, the `fixer` method will emit
+/// an implementation of the Fixer trait.
+trait Problem {
+    fn fixer(self) -> Option<Box<dyn Fix>>;
 }
 
-pub trait Issue: Fix + Display {}
+/// This is the public type. It is a problem that can be displayed.
+pub trait Issue: Problem + Display {}
 // NOTE: this is necessary until https://github.com/rust-lang/rfcs/issues/2035 ships
-impl<T> Issue for T where T: Fix + Display {}
+impl<T> Issue for T where T: Problem + Display {}

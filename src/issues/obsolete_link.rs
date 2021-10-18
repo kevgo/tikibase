@@ -1,6 +1,5 @@
 use crate::config;
 use crate::database::Tikibase;
-use crate::Fix;
 use std::fmt::{self, Display, Formatter};
 use std::path::PathBuf;
 

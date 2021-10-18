@@ -1,13 +1,14 @@
 pub(crate) mod commands;
 pub(crate) mod config;
 pub(crate) mod database;
+pub(crate) mod fixers;
 pub(crate) mod issues;
 pub(crate) mod probes;
 pub mod testhelpers;
 
 pub use commands::Command;
 use database::Tikibase;
-use issues::{Fix, Issue};
+use issues::Issue;
 use std::path::PathBuf;
 
 pub fn process<P: Into<PathBuf>>(command: &Command, path: P) -> (Vec<String>, i32) {

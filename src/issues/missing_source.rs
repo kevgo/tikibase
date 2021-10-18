@@ -1,4 +1,5 @@
-use crate::Fix;
+use super::Problem;
+use crate::fixers::Fix;
 use std::fmt::{self, Display, Formatter};
 
 pub struct MissingSource {
@@ -19,8 +20,8 @@ impl Display for MissingSource {
     }
 }
 
-impl Fix for MissingSource {
-    fn fixable(&self) -> bool {
-        false
+impl Problem for MissingSource {
+    fn fixer(self) -> Option<Box<dyn Fix>> {
+        None
     }
 }
