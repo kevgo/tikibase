@@ -49,21 +49,23 @@ pub fn process<P: Into<PathBuf>>(command: &Command, path: P) -> (Vec<String>, i3
 
     // find all issues in the Tikibase
     let issues = commands::check(&base, &config);
-    let unfix_count = issues.iter().filter(|issue| !issue.fixable()).count() as i32;
+    // let unfix_count = issues.iter().filter(|issue| !issue.fixable()).count() as i32;
 
     // take care of the issues
     let mut outcomes: Vec<String> = match command {
         Command::Check => issues.into_iter().map(|issue| issue.to_string()).collect(),
         Command::Fix => issues
             .into_iter()
-            .filter(|issue| issue.fixable())
-            .map(|fixable_issue| fixable_issue.fix(&mut base, &config))
+            .map(|issue| issue.fixer())
+            .filter(|fix_opt| fix_opt.is_some())
+            .map(|fix_some| fix_some.unwrap())
+            .map(|fixer| fixer.fix(&mut base, &config))
             .collect(),
         Command::Pitstop => issues
             .into_iter()
-            .map(|issue| match issue.fixable() {
-                true => issue.fix(&mut base, &config),
-                false => issue.to_string(),
+            .map(|issue| match issue.fixer() {
+                Some(fixer) => fixer.fix(&mut base, &config),
+                None => issue.to_string(),
             })
             .collect(),
         _ => {
