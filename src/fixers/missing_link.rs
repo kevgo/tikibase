@@ -6,11 +6,11 @@ use lazy_static::lazy_static;
 use regex::{Captures, Regex};
 use std::borrow::Cow;
 
-pub struct MissingLinksFixer {
-    pub issue: MissingLinks,
+pub struct MissingLinksFixer<'a> {
+    pub issue: &'a MissingLinks,
 }
 
-impl Fix for MissingLinksFixer {
+impl Fix for MissingLinksFixer<'_> {
     fn fix(&self, base: &mut Tikibase, _config: &config::Data) -> String {
         let base_dir = base.dir.clone();
         let doc = base.get_doc_mut(&self.issue.file).unwrap();

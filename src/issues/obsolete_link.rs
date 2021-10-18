@@ -23,7 +23,7 @@ impl Display for ObsoleteLink {
 }
 
 impl Problem for ObsoleteLink {
-    fn fixer(self: Box<Self>) -> Option<Box<dyn Fix>> {
-        Some(Box::new(ObsoleteLinkFixer { issue: *self }))
+    fn fixer(&self) -> Option<Box<dyn Fix + '_>> {
+        Some(Box::new(ObsoleteLinkFixer { issue: self }))
     }
 }

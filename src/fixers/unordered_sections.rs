@@ -6,11 +6,11 @@ use crate::{
 
 use super::Fix;
 
-pub struct UnorderedSectionFixer {
-    pub issue: UnorderedSections,
+pub struct UnorderedSectionFixer<'a> {
+    pub issue: &'a UnorderedSections,
 }
 
-impl Fix for UnorderedSectionFixer {
+impl Fix for UnorderedSectionFixer<'_> {
     fn fix(&self, base: &mut Tikibase, config: &config::Data) -> String {
         let base_dir = base.dir.clone();
         let mut doc = base.get_doc_mut(&self.issue.file).unwrap();

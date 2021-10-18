@@ -23,7 +23,7 @@ impl Display for BrokenLink {
 }
 
 impl Problem for BrokenLink {
-    fn fixer(self: Box<Self>) -> Option<Box<dyn Fix>> {
+    fn fixer(&self) -> Option<Box<dyn Fix>> {
         None
     }
 }

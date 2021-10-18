@@ -2,11 +2,11 @@ use super::Fix;
 use crate::{config, database::Tikibase, issues::EmptySection};
 
 /// repairs the EmptySection issue
-pub struct EmptySectionFixer {
-    pub issue: EmptySection,
+pub struct EmptySectionFixer<'a> {
+    pub issue: &'a EmptySection,
 }
 
-impl Fix for EmptySectionFixer {
+impl Fix for EmptySectionFixer<'_> {
     fn fix(&self, base: &mut Tikibase, _config: &config::Data) -> String {
         let base_dir = &base.dir.clone();
         let doc = base.get_doc_mut(&self.issue.filename).unwrap();

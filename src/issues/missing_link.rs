@@ -35,7 +35,7 @@ impl Display for MissingLinks {
 }
 
 impl Problem for MissingLinks {
-    fn fixer(self: Box<Self>) -> Option<Box<dyn Fix>> {
-        Some(Box::new(MissingLinksFixer { issue: *self }))
+    fn fixer(&self) -> Option<Box<dyn Fix + '_>> {
+        Some(Box::new(MissingLinksFixer { issue: self }))
     }
 }

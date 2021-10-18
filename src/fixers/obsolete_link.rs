@@ -3,11 +3,11 @@ use crate::config;
 use crate::database::Tikibase;
 use crate::issues::ObsoleteLink;
 
-pub struct ObsoleteLinkFixer {
-    pub issue: ObsoleteLink,
+pub struct ObsoleteLinkFixer<'a> {
+    pub issue: &'a ObsoleteLink,
 }
 
-impl Fix for ObsoleteLinkFixer {
+impl Fix for ObsoleteLinkFixer<'_> {
     fn fix(&self, base: &mut Tikibase, _config: &config::Data) -> String {
         let base_dir = base.dir.clone();
         let doc = base.get_doc_mut(&self.issue.file).unwrap();
