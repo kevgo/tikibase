@@ -8,5 +8,5 @@ pub(crate) mod unordered_sections;
 
 pub(crate) trait Fix {
     /// fixes the associated issue, returns a human-readable description of what it did
-    fn fix(&self, _base: &mut Tikibase, _config: &config::Data) -> String;
+    fn fix(&self, base: &mut Tikibase, config: &config::Data) -> String;
 }
