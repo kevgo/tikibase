@@ -2,6 +2,7 @@ use ahash::{AHashMap, AHashSet};
 use std::path::{Path, PathBuf};
 
 /// tracks all links between documents
+#[derive(Default)]
 pub struct DocLinks {
     /// key = file path, value = files that the key document points to
     pub data: AHashMap<PathBuf, AHashSet<PathBuf>>,
@@ -20,13 +21,6 @@ impl DocLinks {
     pub fn get<P: AsRef<Path>>(&self, doc: P) -> Option<&AHashSet<PathBuf>> {
         self.data.get(doc.as_ref())
     }
-
-    /// provides an empty `DocLinks` instance
-    pub fn new() -> Self {
-        DocLinks {
-            data: AHashMap::new(),
-        }
-    }
 }
 
 #[cfg(test)]
@@ -37,13 +31,13 @@ mod tests {
 
     #[test]
     fn new() {
-        let doc_links = DocLinks::new();
+        let doc_links = DocLinks::default();
         assert_eq!(doc_links.data.len(), 0);
     }
 
     #[test]
     fn add() {
-        let mut doc_links = DocLinks::new();
+        let mut doc_links = DocLinks::default();
         doc_links.add("1.md", "2.md");
         doc_links.add("1.md", "3.md");
         assert_eq!(doc_links.data.len(), 1);
@@ -60,7 +54,7 @@ mod tests {
 
         #[test]
         fn exists() {
-            let mut doc_links = DocLinks::new();
+            let mut doc_links = DocLinks::default();
             doc_links.add("1.md", "2.md");
             let have = doc_links.get("1.md").unwrap();
             assert_eq!(have.len(), 1);
@@ -69,7 +63,7 @@ mod tests {
 
         #[test]
         fn doesnt_exist() {
-            let doc_links = DocLinks::new();
+            let doc_links = DocLinks::default();
             let have = doc_links.get("zonk.md");
             assert_eq!(have, None);
         }

@@ -18,9 +18,9 @@ pub(crate) struct LinksResult {
 pub(crate) fn scan(base: &Tikibase) -> LinksResult {
     let mut result = LinksResult {
         issues: Vec::new(),
-        incoming_doc_links: DocLinks::new(),
-        outgoing_doc_links: DocLinks::new(),
-        outgoing_resource_links: Vec::new(),
+        incoming_doc_links: DocLinks::default(),
+        outgoing_doc_links: DocLinks::default(),
+        outgoing_resource_links: Vec::default(),
     };
     let existing_targets = base.link_targets();
     for doc in &base.docs {
