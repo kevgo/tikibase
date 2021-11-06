@@ -3,11 +3,13 @@ use lazy_static::lazy_static;
 use regex::Regex;
 
 #[derive(Debug, PartialEq)]
-pub struct Line {
-    pub text: String,
-}
+pub struct Line(String);
 
 impl Line {
+    pub fn new<S: Into<String>>(text: S) -> Line {
+        Line(text.into())
+    }
+
     /// provides all links and images in this line
     pub fn references(&self) -> Vec<Reference> {
         lazy_static! {
@@ -16,7 +18,7 @@ impl Line {
             static ref IMG_HTML_RE: Regex = Regex::new(r#"<img src="([^"]*)"[^>]*>"#).unwrap();
         }
         let mut result = Vec::new();
-        for cap in MD_RE.captures_iter(&self.text) {
+        for cap in MD_RE.captures_iter(&self.0) {
             match &cap[1] {
                 "!" => result.push(Reference::Image {
                     src: cap[2].to_string(),
@@ -31,17 +33,22 @@ impl Line {
                 _ => panic!("unexpected capture: '{}'", &cap[1]),
             }
         }
-        for cap in A_HTML_RE.captures_iter(&self.text) {
+        for cap in A_HTML_RE.captures_iter(&self.0) {
             result.push(Reference::Link {
                 destination: cap[1].to_string(),
             });
         }
-        for cap in IMG_HTML_RE.captures_iter(&self.text) {
+        for cap in IMG_HTML_RE.captures_iter(&self.0) {
             result.push(Reference::Image {
                 src: cap[1].to_string(),
             });
         }
         result
+    }
+
+    /// provides the text of this line
+    pub fn text(&self) -> &str {
+        &self.0
     }
 
     /// provides the indexes of all sources used in this line
@@ -50,7 +57,7 @@ impl Line {
             static ref SOURCE_RE: Regex = Regex::new(r#"\[(\d+)\]"#).unwrap();
             static ref CODE_RE: Regex = Regex::new("`[^`]+`").unwrap();
         }
-        let sanitized = CODE_RE.replace_all(&self.text, "");
+        let sanitized = CODE_RE.replace_all(&self.0, "");
         SOURCE_RE
             .captures_iter(&sanitized)
             .map(|cap| cap[1].to_string())
@@ -62,12 +69,12 @@ impl Line {
 mod tests {
 
     mod references {
-        use crate::testhelpers::line_with_text;
-
         use super::super::Reference;
+        use crate::database::Line;
+
         #[test]
         fn link_md() {
-            let line = line_with_text(
+            let line = Line::new(
                 r#"an MD link: [one](one.md) and one to a section: [two pieces](two.md#pieces)!"#,
             );
             let have = line.references();
@@ -88,7 +95,7 @@ mod tests {
 
         #[test]
         fn link_html() {
-            let line = line_with_text(r#"an HTML link: <a href="two.md">two</a>"#);
+            let line = Line::new(r#"an HTML link: <a href="two.md">two</a>"#);
             let have = line.references();
             assert_eq!(have.len(), 1);
             match &have[0] {
@@ -101,7 +108,7 @@ mod tests {
 
         #[test]
         fn img_md() {
-            let line = line_with_text(r#"an MD image: ![zonk](zonk.md)"#);
+            let line = Line::new(r#"an MD image: ![zonk](zonk.md)"#);
             let have = line.references();
             assert_eq!(have.len(), 1);
             match &have[0] {
@@ -114,7 +121,7 @@ mod tests {
 
         #[test]
         fn img_html() {
-            let line = line_with_text(r#"<img src="zonk.md">"#);
+            let line = Line::new(r#"<img src="zonk.md">"#);
             let have = line.references();
             assert_eq!(have.len(), 1);
             match &have[0] {
@@ -127,7 +134,7 @@ mod tests {
 
         #[test]
         fn img_html_extra_attributes() {
-            let line = line_with_text(r#"<img src="zonk.md" width="10" height="10">"#);
+            let line = Line::new(r#"<img src="zonk.md" width="10" height="10">"#);
             let have = line.references();
             assert_eq!(have.len(), 1);
             match &have[0] {
@@ -140,7 +147,7 @@ mod tests {
 
         #[test]
         fn img_xml_nospace() {
-            let line = line_with_text(r#"<img src="zonk.md"/>"#);
+            let line = Line::new(r#"<img src="zonk.md"/>"#);
             let have = line.references();
             assert_eq!(have.len(), 1);
             match &have[0] {
@@ -153,7 +160,7 @@ mod tests {
 
         #[test]
         fn img_xml_space() {
-            let line = line_with_text(r#"<img src="zonk.md" />"#);
+            let line = Line::new(r#"<img src="zonk.md" />"#);
             let have = line.references();
             assert_eq!(have.len(), 1);
             match &have[0] {
@@ -166,32 +173,32 @@ mod tests {
     }
 
     mod used_sources {
-        use crate::testhelpers::line_with_text;
+        use crate::database::Line;
 
         #[test]
         fn no_source() {
-            let line = line_with_text("text");
+            let line = Line::new("text");
             let have = line.used_sources();
             assert_eq!(have.len(), 0);
         }
 
         #[test]
         fn single_source() {
-            let line = line_with_text("- text [1]");
+            let line = Line::new("- text [1]");
             let have = line.used_sources();
             assert_eq!(have, vec!["1".to_string()]);
         }
 
         #[test]
         fn multiple_sources() {
-            let line = line_with_text("- text [1] [2]");
+            let line = Line::new("- text [1] [2]");
             let have = line.used_sources();
             assert_eq!(have, vec!["1".to_string(), "2".to_string()]);
         }
 
         #[test]
         fn code_segment() {
-            let line = line_with_text("code: `map[0]`");
+            let line = Line::new("code: `map[0]`");
             let have = line.used_sources();
             let want: Vec<String> = Vec::new();
             assert_eq!(have, want);

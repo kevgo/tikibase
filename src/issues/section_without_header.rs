@@ -1,6 +1,6 @@
-use crate::config;
-use crate::database::Tikibase;
-use crate::Issue;
+use super::Problem;
+use crate::fixers::Fix;
+use std::fmt::{self, Display, Formatter};
 use std::path::PathBuf;
 
 pub struct SectionWithoutHeader {
@@ -8,20 +8,19 @@ pub struct SectionWithoutHeader {
     pub line: u32,
 }
 
-impl Issue for SectionWithoutHeader {
-    fn describe(&self) -> String {
-        format!(
+impl Display for SectionWithoutHeader {
+    fn fmt(&self, f: &mut Formatter<'_>) -> fmt::Result {
+        write!(
+            f,
             "{}:{}  section has no title",
             self.file.to_string_lossy(),
             self.line + 1
         )
     }
+}
 
-    fn fix(&self, _base: &mut Tikibase, _config: &config::Data) -> String {
-        unimplemented!()
-    }
-
-    fn fixable(&self) -> bool {
-        false
+impl Problem for SectionWithoutHeader {
+    fn fixer(&self) -> Option<Box<dyn Fix>> {
+        None
     }
 }

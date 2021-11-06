@@ -5,20 +5,20 @@ use crate::Issue;
 
 pub(crate) fn check(base: &Tikibase, config: &config::Data) -> Vec<Box<dyn Issue>> {
     let mut issues = Vec::new();
-    issues.extend(probes::section_duplicate::process(base));
-    issues.extend(probes::section_empty::process(base));
-    issues.extend(probes::section_capitalization::process(base));
-    issues.extend(probes::section_type::process(base, config));
-    issues.extend(probes::section_order::process(base, config));
-    issues.extend(probes::section_without_header::process(base));
-    issues.extend(probes::sources_missing::process(base));
-    let links_result = probes::link_broken::process(base);
+    issues.extend(probes::section_duplicate::scan(base));
+    issues.extend(probes::section_empty::scan(base));
+    issues.extend(probes::section_capitalization::scan(base));
+    issues.extend(probes::section_type::scan(base, config));
+    issues.extend(probes::section_order::scan(base, config));
+    issues.extend(probes::section_without_header::scan(base));
+    issues.extend(probes::sources_missing::scan(base));
+    let links_result = probes::link_broken::scan(base);
     issues.extend(links_result.issues);
-    issues.extend(probes::image_orphaned::process(
+    issues.extend(probes::image_orphaned::scan(
         base,
         &links_result.outgoing_resource_links,
     ));
-    issues.extend(probes::occurrences::process(
+    issues.extend(probes::occurrences::scan(
         base,
         &links_result.incoming_doc_links,
         &links_result.outgoing_doc_links,

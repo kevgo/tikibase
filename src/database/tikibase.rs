@@ -14,22 +14,21 @@ pub struct Tikibase {
 
 impl Tikibase {
     /// provides the document with the given relative filename
-    pub fn get_doc<P: AsRef<Path>>(&self, filename: P) -> Option<&Document> {
-        self.docs.iter().find(|doc| doc.path == filename.as_ref())
+    pub fn get_doc<P: AsRef<Path>>(&self, path: P) -> Option<&Document> {
+        let path = path.as_ref();
+        self.docs.iter().find(|doc| doc.path == path)
     }
 
     /// provides the document with the given relative filename as a mutable reference
-    pub fn get_doc_mut<P: AsRef<Path>>(&mut self, filename: P) -> Option<&mut Document> {
-        self.docs
-            .iter_mut()
-            .find(|doc| doc.path == filename.as_ref())
+    pub fn get_doc_mut<P: AsRef<Path>>(&mut self, path: P) -> Option<&mut Document> {
+        let path = path.as_ref();
+        self.docs.iter_mut().find(|doc| doc.path == path)
     }
 
     /// indicates whether this Tikibase contains a resource with the given path
-    pub fn has_resource<P: AsRef<Path>>(&self, filename: P) -> bool {
-        self.resources
-            .iter()
-            .any(|resource| resource.path == filename.as_ref())
+    pub fn has_resource<P: AsRef<Path>>(&self, path: P) -> bool {
+        let path = path.as_ref();
+        self.resources.iter().any(|resource| resource.path == path)
     }
 
     /// provides all valid link targets in this Tikibase
@@ -37,8 +36,7 @@ impl Tikibase {
         let mut result: Vec<String> = Vec::new();
         for doc in &self.docs {
             let filename = doc.path.to_string_lossy().to_string();
-            result.push(format!("{}{}", &filename, doc.title_section.anchor()));
-            for section in &doc.content_sections {
+            for section in doc.sections() {
                 result.push(format!("{}{}", &filename, section.anchor()));
             }
             result.push(filename);
@@ -47,7 +45,7 @@ impl Tikibase {
         result
     }
 
-    /// Provides a Tikibase instance for the given directory.
+    /// provides a Tikibase instance for the given directory
     pub fn load(dir: PathBuf, config: &config::Data) -> (Tikibase, Vec<String>) {
         let mut docs = Vec::new();
         let mut resources = Vec::new();
@@ -58,19 +56,17 @@ impl Tikibase {
                 continue;
             }
             let filename = entry.file_name().to_string_lossy();
-            if filename == "tikibase.json" || filename.starts_with('.') {
+            if filename.starts_with('.') || filename == "tikibase.json" {
                 continue;
             }
-            match &config.ignore {
-                Some(ignore) => {
-                    if ignore.iter().any(|i| i == &filename) {
-                        continue;
-                    }
+            if let Some(ignore) = &config.ignore {
+                // TODO: merge this line with the previous one once https://github.com/rust-lang/rust/issues/53667 ships
+                if ignore.iter().any(|i| i == &filename) {
+                    continue;
                 }
-                None => {}
             }
             let path = entry.path();
-            let filepath = path.strip_prefix(&dir).unwrap().to_owned();
+            let filepath = path.strip_prefix(&dir).unwrap();
             match FileType::from_ext(path.extension()) {
                 FileType::Document => {
                     let file = File::open(&path).unwrap();
@@ -80,7 +76,9 @@ impl Tikibase {
                         Err(err) => errors.push(err),
                     }
                 }
-                FileType::Resource => resources.push(Resource { path: filepath }),
+                FileType::Resource => resources.push(Resource {
+                    path: filepath.into(),
+                }),
             }
         }
         (
@@ -113,12 +111,10 @@ impl FileType {
 
 #[cfg(test)]
 mod tests {
-
     use super::*;
     use crate::testhelpers::{create_file, empty_config, tmp_dir};
 
     mod get_doc {
-
         use super::super::Tikibase;
         use crate::testhelpers::{create_file, empty_config, tmp_dir};
 
@@ -129,7 +125,7 @@ mod tests {
             let (base, errs) = Tikibase::load(dir, &empty_config());
             assert_eq!(errs.len(), 0);
             let doc = base.get_doc("one.md").expect("document not found");
-            assert_eq!(doc.title_section.title_line.text, "# test doc");
+            assert_eq!(doc.title_section.title_line.text(), "# test doc");
         }
 
         #[test]
@@ -137,15 +133,11 @@ mod tests {
             let dir = tmp_dir();
             let (base, errs) = Tikibase::load(dir, &empty_config());
             assert_eq!(errs.len(), 0);
-            match base.get_doc("zonk.md") {
-                None => {}
-                Some(_) => panic!("should have found nothing"),
-            }
+            assert!(base.get_doc("zonk.md").is_none());
         }
     }
 
     mod get_doc_mut {
-
         use super::super::Tikibase;
         use crate::testhelpers::{create_file, empty_config, tmp_dir};
 
@@ -156,7 +148,7 @@ mod tests {
             let (mut base, errs) = Tikibase::load(dir, &empty_config());
             assert_eq!(errs.len(), 0);
             let doc = base.get_doc_mut("one.md").expect("document not found");
-            assert_eq!(doc.title_section.title_line.text, "# test doc");
+            assert_eq!(doc.title_section.title_line.text(), "# test doc");
         }
 
         #[test]
@@ -164,15 +156,11 @@ mod tests {
             let dir = tmp_dir();
             let (mut base, errs) = Tikibase::load(dir, &empty_config());
             assert_eq!(errs.len(), 0);
-            match base.get_doc_mut("zonk.md") {
-                None => {}
-                Some(_) => panic!("should have found nothing"),
-            }
+            assert!(base.get_doc_mut("zonk.md").is_none());
         }
     }
 
     mod has_resource {
-
         use super::super::Tikibase;
         use crate::testhelpers::{create_file, empty_config, tmp_dir};
 
@@ -237,23 +225,39 @@ foo
         create_file("file.md", content, &dir);
         let (base, errs) = Tikibase::load(dir, &empty_config());
         assert_eq!(errs.len(), 0);
-        assert_eq!(base.docs.len(), 1);
+        let doc_paths: Vec<String> = base
+            .docs
+            .iter()
+            .map(|d| d.path.to_string_lossy().to_string())
+            .collect();
+        assert_eq!(doc_paths, vec!["file.md"]);
         let doc = &base.docs[0];
-        assert_eq!(doc.path.to_string_lossy(), "file.md");
-        assert_eq!(doc.title_section.title_line.text, "# Title");
+        // verify title of doc 0
+        assert_eq!(doc.title_section.title_line.text(), "# Title");
         assert_eq!(doc.title_section.line_number, 0);
-        assert_eq!(doc.title_section.body.len(), 1);
-        assert_eq!(doc.title_section.body[0].text, "title text");
-        assert_eq!(doc.content_sections.len(), 2);
-        assert_eq!(doc.content_sections[0].title_line.text, "### Section 1");
+        let body: Vec<&str> = doc.title_section.body.iter().map(|l| l.text()).collect();
+        assert_eq!(body, vec!["title text"]);
+        // verify body of doc 0
+        let content_sections: Vec<&str> = doc
+            .content_sections
+            .iter()
+            .map(|s| s.title_line.text())
+            .collect();
+        assert_eq!(content_sections, vec!["### Section 1", "### Section 2"]);
         assert_eq!(doc.content_sections[0].line_number, 2);
-        assert_eq!(doc.content_sections[0].body.len(), 2);
-        assert_eq!(doc.content_sections[0].body[0].text, "one");
-        assert_eq!(doc.content_sections[0].body[1].text, "two");
-        assert_eq!(doc.content_sections[1].title_line.text, "### Section 2");
+        let sec0_lines: Vec<&str> = doc.content_sections[0]
+            .body
+            .iter()
+            .map(|l| l.text())
+            .collect();
+        assert_eq!(sec0_lines, vec!["one", "two"]);
         assert_eq!(doc.content_sections[1].line_number, 5);
-        assert_eq!(doc.content_sections[1].body.len(), 1);
-        assert_eq!(doc.content_sections[1].body[0].text, "foo");
+        let sec1_lines: Vec<&str> = doc.content_sections[1]
+            .body
+            .iter()
+            .map(|l| l.text())
+            .collect();
+        assert_eq!(sec1_lines, vec!["foo"]);
     }
 
     #[test]

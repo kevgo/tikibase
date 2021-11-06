@@ -1,6 +1,6 @@
-use crate::config;
-use crate::database::Tikibase;
-use crate::Issue;
+use super::Problem;
+use crate::fixers::Fix;
+use std::fmt::{self, Display, Formatter};
 
 pub struct MissingSource {
     pub file: String,
@@ -8,21 +8,20 @@ pub struct MissingSource {
     pub index: String,
 }
 
-impl Issue for MissingSource {
-    fn describe(&self) -> String {
-        format!(
+impl Display for MissingSource {
+    fn fmt(&self, f: &mut Formatter<'_>) -> fmt::Result {
+        write!(
+            f,
             "{}:{}  missing source [{}]",
             self.file,
             self.line + 1,
             self.index
         )
     }
+}
 
-    fn fix(&self, _base: &mut Tikibase, _config: &config::Data) -> String {
-        unimplemented!()
-    }
-
-    fn fixable(&self) -> bool {
-        false
+impl Problem for MissingSource {
+    fn fixer(&self) -> Option<Box<dyn Fix>> {
+        None
     }
 }

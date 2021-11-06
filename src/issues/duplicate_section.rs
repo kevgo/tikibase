@@ -1,6 +1,6 @@
-use crate::config;
-use crate::database::Tikibase;
-use crate::Issue;
+use super::Problem;
+use crate::fixers::Fix;
+use std::fmt::{self, Display, Formatter};
 use std::path::PathBuf;
 
 /// describes the issue that a document contains two sections with the same title
@@ -9,20 +9,19 @@ pub struct DuplicateSection {
     pub section_type: String,
 }
 
-impl Issue for DuplicateSection {
-    fn fixable(&self) -> bool {
-        false
-    }
-
-    fn fix(&self, _base: &mut Tikibase, _config: &config::Data) -> String {
-        unimplemented!()
-    }
-
-    fn describe(&self) -> String {
-        format!(
+impl Display for DuplicateSection {
+    fn fmt(&self, f: &mut Formatter<'_>) -> fmt::Result {
+        write!(
+            f,
             "{}  duplicate section: {}",
             self.filename.to_string_lossy(),
             self.section_type
         )
+    }
+}
+
+impl Problem for DuplicateSection {
+    fn fixer(&self) -> Option<Box<dyn Fix>> {
+        None
     }
 }
