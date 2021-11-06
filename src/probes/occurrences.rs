@@ -5,7 +5,7 @@ use crate::Issue;
 use ahash::AHashSet;
 use std::path::PathBuf;
 
-pub fn process(
+pub(crate) fn scan(
     base: &Tikibase,
     incoming_doc_links: &DocLinks,
     outgoing_doc_links: &DocLinks,
@@ -67,14 +67,14 @@ mod tests {
         create_file("3.md", "# Three\n\n[one](1.md)\n", &dir);
         let (base, errs) = Tikibase::load(dir, &empty_config());
         assert_eq!(errs.len(), 0);
-        let mut outgoing_links = DocLinks::new();
+        let mut outgoing_links = DocLinks::default();
         outgoing_links.add("3.md", "1.md");
         outgoing_links.add("2.md", "1.md");
-        let mut incoming_links = DocLinks::new();
+        let mut incoming_links = DocLinks::default();
         incoming_links.add("1.md", "3.md");
         incoming_links.add("1.md", "2.md");
-        let have = super::process(&base, &incoming_links, &outgoing_links);
-        let issues: Vec<String> = have.iter().map(|issue| issue.describe()).collect();
+        let have = super::scan(&base, &incoming_links, &outgoing_links);
+        let issues: Vec<String> = have.iter().map(|issue| issue.to_string()).collect();
         assert_eq!(issues, vec!["1.md  missing link to 2.md, 3.md"]);
     }
 }

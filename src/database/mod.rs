@@ -3,7 +3,7 @@ pub(crate) mod document;
 mod line;
 mod reference;
 mod resource;
-mod section;
+pub(crate) mod section;
 mod tikibase;
 
 pub(crate) use crate::database::tikibase::Tikibase;

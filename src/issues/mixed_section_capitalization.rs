@@ -1,25 +1,24 @@
-use crate::config;
-use crate::database::Tikibase;
-use crate::Issue;
+use super::Problem;
+use crate::fixers::Fix;
+use std::fmt::{self, Display, Formatter};
 
 /// describes the issue that sections have mixed capitalization
 pub struct MixCapSection {
     pub variants: Vec<String>,
 }
 
-impl Issue for MixCapSection {
-    fn describe(&self) -> String {
-        format!(
+impl Display for MixCapSection {
+    fn fmt(&self, f: &mut Formatter<'_>) -> fmt::Result {
+        write!(
+            f,
             "mixed capitalization of sections: {}",
             self.variants.join("|")
         )
     }
+}
 
-    fn fix(&self, _base: &mut Tikibase, _config: &config::Data) -> String {
-        unimplemented!()
-    }
-
-    fn fixable(&self) -> bool {
-        false
+impl Problem for MixCapSection {
+    fn fixer(&self) -> Option<Box<dyn Fix>> {
+        None
     }
 }

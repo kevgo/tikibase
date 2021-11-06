@@ -1,8 +1,7 @@
-use super::Line;
-use super::Section;
+use super::{section, Section};
+use ahash::AHashSet;
 use lazy_static::lazy_static;
 use regex::Regex;
-use std::collections::HashSet;
 use std::io::prelude::*;
 use std::path::{Path, PathBuf};
 
@@ -19,70 +18,76 @@ pub struct Document {
 
 impl Document {
     /// provides a Document instance containing the given text
-    pub fn from_lines<T>(lines: T, path: PathBuf) -> Result<Document, String>
+    pub fn from_lines<T, P: Into<PathBuf>>(lines: T, path: P) -> Result<Document, String>
     where
         T: Iterator<Item = String>,
     {
+        let path = path.into();
         let mut sections: Vec<Section> = Vec::new();
-        let mut section_builder = placeholder_builder();
+        let mut section_builder: Option<section::Builder> = None;
         let mut inside_fence = false;
-        let mut fence_start_line = 0;
-        let mut had_occurrences_section = None;
-        for (line, line_number) in lines.zip(0..) {
-            if line.starts_with("```") {
-                inside_fence = !inside_fence;
-                fence_start_line = line_number;
-            }
+        let mut fence_line = 0;
+        let mut occurrences_section_line: Option<u32> = None;
+        for (line_number, line) in lines.enumerate() {
             if line.starts_with('#') && !inside_fence {
-                if let Some(section) = section_builder.result() {
-                    match section.section_type() {
-                        "occurrences" => had_occurrences_section = Some(section.line_number),
-                        _ => sections.push(section),
+                if let Some(section_builder) = section_builder {
+                    let section = section_builder.result();
+                    if section.section_type() == "occurrences" {
+                        occurrences_section_line = Some(section.line_number);
+                    } else {
+                        sections.push(section);
                     }
                 }
-                section_builder = builder_with_title_line(line, line_number);
-            } else if section_builder.valid {
-                section_builder.add_body_line(line);
+                section_builder = Some(section::Builder::new(line, line_number as u32));
+                continue;
+            }
+            if line.starts_with("```") {
+                inside_fence = !inside_fence;
+                fence_line = line_number;
+            }
+            match &mut section_builder {
+                Some(section_builder) => section_builder.add_line(line),
+                None => return Err(format!("{}  no title section", path.to_string_lossy())),
+            }
+        }
+        if let Some(section_builder) = section_builder {
+            let section = section_builder.result();
+            if section.section_type() == "occurrences" {
+                occurrences_section_line = Some(section.line_number);
             } else {
-                return Err(format!("{}  no title section", path.to_string_lossy()));
+                sections.push(section);
             }
         }
-        if let Some(section) = section_builder.result() {
-            match section.section_type() {
-                "occurrences" => had_occurrences_section = Some(section.line_number),
-                _ => sections.push(section),
-            }
-        }
-        let content_sections = sections.split_off(1);
         if inside_fence {
             return Err(format!(
                 "{}:{}  unclosed fence",
                 path.to_string_lossy(),
-                fence_start_line + 1,
+                fence_line + 1,
             ));
         }
+        let content_sections = sections.split_off(1);
         Ok(Document {
             path,
             title_section: sections.pop().unwrap(),
             content_sections,
-            occurrences_section_line: had_occurrences_section,
+            occurrences_section_line,
         })
     }
 
     #[cfg(test)]
     /// provides Document instances in tests
     pub fn from_str<P: Into<PathBuf>>(path: P, text: &str) -> Result<Document, String> {
-        Document::from_lines(text.lines().map(|line| line.to_string()), path.into())
+        Document::from_lines(text.lines().map(|line| line.to_string()), path)
     }
 
     /// persists the changes made to this document to disk
-    pub fn flush(&self, root: &Path) {
+    pub fn save(&self, root: &Path) {
         let mut file = std::fs::File::create(root.join(&self.path)).unwrap();
         file.write_all(self.text().as_bytes()).unwrap();
     }
 
     /// provides the section with the given title
-    pub fn get_section(&self, section_type: &str) -> Option<&Section> {
+    pub fn section_with_title(&self, section_type: &str) -> Option<&Section> {
         self.content_sections
             .iter()
             .find(|section| section.section_type() == section_type)
@@ -90,18 +95,19 @@ impl Document {
 
     /// provides the last section in this document
     pub fn last_section_mut(&mut self) -> &mut Section {
-        match self.content_sections.len() {
-            0 => &mut self.title_section,
-            index => self.content_sections.get_mut(index - 1).unwrap(),
-        }
+        self.content_sections
+            .last_mut()
+            .or(Some(&mut self.title_section))
+            .unwrap()
     }
 
     /// provides the number of lines in this document
     pub fn lines_count(&self) -> u32 {
-        match self.content_sections.len() {
-            0 => self.title_section.last_line_abs(),
-            cnt => self.content_sections[cnt - 1].last_line_abs(),
-        }
+        self.content_sections
+            .last()
+            .or(Some(&self.title_section))
+            .unwrap()
+            .last_line_abs()
     }
 
     /// provides a non-consuming iterator for all sections in this document
@@ -122,9 +128,9 @@ impl Document {
     }
 
     /// provides all the sources that this document defines
-    pub fn sources_defined(&self) -> HashSet<String> {
-        let mut result = HashSet::new();
-        let links_section = match self.get_section("links") {
+    pub fn sources_defined(&self) -> AHashSet<String> {
+        let mut result = AHashSet::new();
+        let links_section = match self.section_with_title("links") {
             None => return result,
             Some(section) => section,
         };
@@ -132,7 +138,7 @@ impl Document {
             static ref SOURCE_RE: Regex = Regex::new("^(\\d+)\\.").unwrap();
         }
         for line in links_section.lines() {
-            for cap in SOURCE_RE.captures_iter(&line.text) {
+            for cap in SOURCE_RE.captures_iter(line.text()) {
                 result.insert(cap[1].to_string());
             }
         }
@@ -140,21 +146,21 @@ impl Document {
     }
 
     /// provides all the sources used in this document
-    pub fn sources_used(&self) -> HashSet<UsedSource> {
-        let mut result = HashSet::new();
-        let mut line_inside_code_block = false;
+    pub fn sources_used(&self) -> AHashSet<UsedSource> {
+        let mut result = AHashSet::new();
+        let mut in_code_block = false;
         for section in self.sections() {
             if section.section_type() == "occurrences" {
                 continue;
             }
             for (line_idx, line) in section.lines().enumerate() {
-                if line.text.starts_with("```") {
-                    line_inside_code_block = !line_inside_code_block;
+                if line.text().starts_with("```") {
+                    in_code_block = !in_code_block;
+                    continue;
                 }
-                if !line_inside_code_block {
+                if !in_code_block {
                     for index in line.used_sources() {
                         result.insert(UsedSource {
-                            file: &self.path,
                             line: section.line_number + (line_idx as u32),
                             index,
                         });
@@ -191,75 +197,20 @@ impl<'a> Iterator for SectionIterator<'a> {
     type Item = &'a Section;
 
     fn next(&mut self) -> Option<Self::Item> {
-        if self.emitted_title {
-            self.body_iter.next()
-        } else {
+        if !self.emitted_title {
             self.emitted_title = true;
             Some(self.title_section)
+        } else {
+            self.body_iter.next()
         }
     }
 }
 
 #[derive(Debug, PartialEq, Eq, Hash)]
-pub struct UsedSource<'a> {
-    pub file: &'a PathBuf,
+pub struct UsedSource {
     pub line: u32,
+    /// the index used for the source, e.g. "[1]"
     pub index: String,
-}
-
-// -------------------------------------------------------------------------------------
-// HELPERS
-// -------------------------------------------------------------------------------------
-
-/// Allows building up sections one line at a time.
-pub struct SectionBuilder {
-    pub line_number: u32,
-    title_line: String,
-    body: Vec<Line>,
-    valid: bool,
-}
-
-/// Provides a builder instance loaded with the given title line.
-pub fn builder_with_title_line<S: Into<String>>(text: S, line_number: u32) -> SectionBuilder {
-    SectionBuilder {
-        title_line: text.into(),
-        line_number,
-        body: Vec::new(),
-        valid: true,
-    }
-}
-
-/// Null value for `SectionBuilder` instances
-pub fn placeholder_builder() -> SectionBuilder {
-    SectionBuilder {
-        title_line: "".into(),
-        line_number: 0,
-        body: Vec::new(),
-        valid: false,
-    }
-}
-
-impl SectionBuilder {
-    pub fn add_body_line<S: Into<String>>(&mut self, line: S) {
-        if !self.valid {
-            panic!("cannot add to an invalid builder");
-        }
-        self.body.push(Line { text: line.into() });
-    }
-
-    /// Provides the content this builder has accumulated.
-    pub fn result(self) -> Option<Section> {
-        match self.valid {
-            false => None,
-            true => Some(Section {
-                title_line: Line {
-                    text: self.title_line,
-                },
-                line_number: self.line_number,
-                body: self.body,
-            }),
-        }
-    }
 }
 
 // -------------------------------------------------------------------------------------
@@ -281,18 +232,11 @@ mod tests {
 content";
             let doc = Document::from_str("one.md", content).unwrap();
             let mut sections = doc.sections();
-            match sections.next() {
-                None => panic!("expected title section"),
-                Some(s1) => assert_eq!(s1.title_line.text, "# test"),
-            }
-            match sections.next() {
-                None => panic!("expected s1"),
-                Some(s1) => assert_eq!(s1.title_line.text, "### section 1"),
-            }
-            match sections.next() {
-                None => {}
-                Some(_) => panic!("unexpected section"),
-            }
+            let section = sections.next().expect("expected title section");
+            assert_eq!(section.title_line.text(), "# test");
+            let section = sections.next().expect("expected s1");
+            assert_eq!(section.title_line.text(), "### section 1");
+            assert!(sections.next().is_none(), "unexpected section");
         }
 
         #[test]
@@ -380,7 +324,7 @@ text
 ";
             let mut doc = Document::from_str("test.md", give).unwrap();
             let have = doc.last_section_mut();
-            assert_eq!(have.title_line.text, "### s1");
+            assert_eq!(have.title_line.text(), "### s1");
         }
 
         #[test]
@@ -391,7 +335,7 @@ title text
 ";
             let mut doc = Document::from_str("test.md", give).unwrap();
             let have = doc.last_section_mut();
-            assert_eq!(have.title_line.text, "# Title");
+            assert_eq!(have.title_line.text(), "# Title");
         }
     }
 
@@ -442,7 +386,7 @@ one
 
     mod sources_defined {
         use crate::database::document::Document;
-        use std::collections::HashSet;
+        use ahash::AHashSet;
 
         #[test]
         fn no_links() {
@@ -479,7 +423,7 @@ title text
 ";
             let doc = Document::from_str("test.md", give).unwrap();
             let have = doc.sources_defined();
-            let mut want = HashSet::new();
+            let mut want = AHashSet::new();
             want.insert("1".into());
             want.insert("2".into());
             assert_eq!(have, want);
@@ -487,9 +431,8 @@ title text
     }
 
     mod sources_used {
-        use std::{collections::HashSet, path::PathBuf};
-
         use crate::database::document::{Document, UsedSource};
+        use ahash::AHashSet;
 
         #[test]
         fn no_sources() {
@@ -512,20 +455,16 @@ text [1] [3]
 ";
             let doc = Document::from_str("test.md", give).unwrap();
             let have = doc.sources_used();
-            let pathbuf = PathBuf::from("test.md");
-            let mut want = HashSet::new();
+            let mut want = AHashSet::new();
             want.insert(UsedSource {
-                file: &pathbuf,
                 line: 1,
                 index: "2".into(),
             });
             want.insert(UsedSource {
-                file: &pathbuf,
                 line: 3,
                 index: "1".into(),
             });
             want.insert(UsedSource {
-                file: &pathbuf,
                 line: 3,
                 index: "3".into(),
             });

@@ -1,6 +1,6 @@
-use crate::config;
-use crate::database::Tikibase;
-use crate::Issue;
+use super::Problem;
+use crate::fixers::Fix;
+use std::fmt::{self, Display, Formatter};
 use std::path::PathBuf;
 
 /// describes a broken image in the Tikibase
@@ -10,21 +10,20 @@ pub struct BrokenImage {
     pub target: String,
 }
 
-impl Issue for BrokenImage {
-    fn describe(&self) -> String {
-        format!(
+impl Display for BrokenImage {
+    fn fmt(&self, f: &mut Formatter<'_>) -> fmt::Result {
+        write!(
+            f,
             "{}:{}  broken image \"{}\"",
             self.filename.to_string_lossy(),
             self.line,
             self.target
         )
     }
+}
 
-    fn fix(&self, _base: &mut Tikibase, _config: &config::Data) -> String {
-        unimplemented!()
-    }
-
-    fn fixable(&self) -> bool {
-        false
+impl Problem for BrokenImage {
+    fn fixer(&self) -> Option<Box<dyn Fix>> {
+        None
     }
 }
