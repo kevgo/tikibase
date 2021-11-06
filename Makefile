@@ -25,6 +25,7 @@ lint:  # checks formatting
 	dprint check
 	cargo fmt -- --check
 	cargo udeps
+	git diff --check
 
 lint_pedantic:  # runs all lints, including false positives
 	cargo clippy --all-targets --all-features -- -W clippy::pedantic -A clippy::cast_possible_wrap -A clippy::cast_possible_truncation -A clippy::missing_panics_doc -A clippy::must_use_candidate -A clippy::match_bool -A clippy::missing_errors_doc
