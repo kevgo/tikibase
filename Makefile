@@ -38,6 +38,8 @@ unit:  # runs the unit tests
 
 setup:  # prepares this codebase
 	cargo install cargo-udeps --locked
+	curl -s https://raw.githubusercontent.com/rhysd/actionlint/main/scripts/download-actionlint.bash | bash
+	mv actionlint tools
 	echo
 	echo PLEASE DO THIS MANUALLY:
 	echo 1. install musl, e.g. "sudo apt install musl"
