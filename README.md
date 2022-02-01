@@ -35,7 +35,8 @@ issues:
 - **missing sources:** you can name sources by creating an ordered list in the
   `### links` section. You can reference sources like `[1]` in the document.
 
-When the config file defines the allowed section names:
+When the config file defines the allowed section names, Tikibase verifies these
+additional properties:
 
 - **unknown sections**
 - **section order**
@@ -81,3 +82,5 @@ Create a file `tikibase.json` in your Tikibase directory. Here is an example:
   knowledge base including its own editor/viewer and many plugins. Easier and to
   get started but - like all application-based solutions - will be outdated at
   some point and unavailable on future platforms.
+- [TiddlyWiki](https://tiddlywiki.com): nice non-linear micro-wiki, similar
+  concerns about long-term durability
