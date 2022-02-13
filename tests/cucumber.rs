@@ -1,6 +1,8 @@
 use crate::tikibase::testhelpers::{create_file, load_file, tmp_dir};
+use std::convert::Infallible;
 use ahash::AHashMap;
-use cucumber_rust::{async_trait, Cucumber, Steps, World};
+use async_trait::async_trait;
+use cucumber::{given, when, then, World, WorldInit, Step};
 use std::io;
 use std::path::PathBuf;
 use tikibase;
@@ -22,8 +24,9 @@ pub struct MyWorld {
 
 #[async_trait(?Send)]
 impl World for MyWorld {
-    type Error = io::Error;
-    async fn new() -> Result<Self, io::Error> {
+    type Error = Infallible;
+
+    async fn new() -> Result<Self, Infallible> {
         Ok(MyWorld {
             dir: tmp_dir(),
             exitcode: 0,
@@ -33,112 +36,98 @@ impl World for MyWorld {
     }
 }
 
-fn steps() -> Steps<MyWorld> {
-    let mut steps: Steps<MyWorld> = Steps::new();
-
-    steps.given_regex(r#"^file "(.*)" with content:$"#, |mut world, ctx| {
-        let filename = ctx.matches.get(1).expect("no filename provided");
-        let content = ctx.step.docstring().unwrap().trim_start();
-        create_file(filename, content, &world.dir);
-        world
-            .original_contents
-            .insert(PathBuf::from(filename), content.into());
-        world
-    });
-
-    steps.given_regex(r#"^file "(.*)"$"#, |world, ctx| {
-        let filename = ctx.matches.get(1).expect("no filename provided");
-        create_file(filename, "content", &world.dir);
-        world
-    });
-
-    steps.when("checking", |mut world, _ctx| {
-        let result = tikibase::process(&Command::Check, world.dir.clone());
-        (world.findings, world.exitcode) = result;
-        world
-    });
-
-    steps.when("doing a pitstop", |mut world, _ctx| {
-        (world.findings, world.exitcode) = tikibase::process(&Command::Pitstop, world.dir.clone());
-        world
-    });
-
-    steps.when("fixing", |mut world, _ctx| {
-        (world.findings, world.exitcode) = tikibase::process(&Command::Fix, world.dir.clone());
-        world
-    });
-
-    steps.then("all files are unchanged", |world, _ctx| {
-        for (filename, original_content) in &world.original_contents {
-            let current_content = load_file(filename, &world.dir);
-            assert_eq!(&current_content, original_content);
-        }
-        world
-    });
-
-    steps.then_regex(r#"^file "(.*)" is unchanged$"#, |world, ctx| {
-        let filename = ctx.matches.get(1).expect("no filename provided");
-        let have = &load_file(&filename, &world.dir);
-        let want = world
-            .original_contents
-            .get(&PathBuf::from(filename))
-            .unwrap();
-        assert_eq!(have, want);
-        world
-    });
-
-    steps.then_regex(r#"^file "(.*)" should contain:$"#, |world, ctx| {
-        let want = ctx.step.docstring().unwrap().trim_start();
-        let filename = ctx.matches.get(1).expect("no filename provided");
-        let have = load_file(&filename, &world.dir);
-        assert_eq!(have, want);
-        world
-    });
-
-    steps.then("it prints:", |world, ctx| {
-        let have: Vec<&str> = world
-            .findings
-            .iter()
-            .map(|line| line.split('\n'))
-            .flatten()
-            .collect();
-        let want: Vec<&str> = ctx.step.docstring().unwrap().trim().split("\n").collect();
-        assert_eq!(have, want);
-        world
-    });
-
-    steps.then("it prints nothing", |world, _ctx| {
-        assert_eq!(world.findings, Vec::<String>::new());
-        world
-    });
-
-    steps.then("it finds no issues", |world, _ctx| {
-        let expected: Vec<&str> = Vec::new();
-        assert_eq!(world.findings, expected);
-        assert_eq!(world.exitcode, 0);
-        world
-    });
-
-    steps.then_regex("^the exit code is (\\d+)$", |world, ctx| {
-        let want: i32 = ctx
-            .matches
-            .get(1)
-            .expect("no exit code provided")
-            .parse()
-            .unwrap();
-        assert_eq!(world.exitcode, want);
-        world
-    });
-
-    steps
+#[given(regex = r#"^file "(.*)" with content:$"#)]
+fn file_with_content(world: &mut MyWorld, step: &Step<MyWorld>, filename: String) {
+    let content = step.docstring.as_ref();
+    create_file(&filename, &content, &world.dir);
+    world
+        .original_contents
+        .insert(PathBuf::from(filename), content);
 }
 
-#[tokio::main]
-async fn main() {
-    Cucumber::<MyWorld>::new()
-        .features(&["./features"])
-        .steps(steps())
-        .cli() // parse command line arguments
-        .run_and_exit()
-        .await
+#[given(regex = r#"^file "(.*)"$"#)]
+fn file(world: &mut MyWorld, filename: String) {
+    create_file(&filename, "content", &world.dir);
+}
+
+#[when("checking")]
+fn checking(world: &mut MyWorld){
+    let result = tikibase::process(&Command::Check, world.dir.clone());
+    (world.findings, world.exitcode) = result;
+    // TODO: make one line
+}
+
+#[when("doing a pitstop")]
+fn doing_a_pitstop(world: &mut MyWorld) {
+    (world.findings, world.exitcode) = tikibase::process(&Command::Pitstop, world.dir.clone());
+}
+
+#[when("fixing")]
+fn fixing(world: &mut MyWorld){
+    (world.findings, world.exitcode) = tikibase::process(&Command::Fix, world.dir.clone());
+}
+
+#[then("all files are unchanged")]
+fn all_files_unchanged(world: &mut MyWorld) {
+    for (filename, original_content) in &world.original_contents {
+        let current_content = load_file(filename, &world.dir);
+        assert_eq!(&current_content, original_content);
+    }
+}
+
+#[then(regex = r#"^file "(.*)" is unchanged$"#)]
+fn file_is_unchanged(world: &mut MyWorld, filename: String) {
+    let have = &load_file(&filename, &world.dir);
+    let want = world
+        .original_contents
+        .get(&PathBuf::from(filename))
+        .unwrap();
+    assert_eq!(have, want);
+}
+
+#[then(regex = r#"^file "(.*)" should contain:$"#)]
+fn file_should_contain(world: &mut MyWorld, step: &Step<MyWorld>, filename: String) {
+    let want = step.docstring;
+    let have = load_file(&filename, &world.dir);
+    assert_eq!(have, want);
+}
+
+#[then("it prints:")]
+fn it_prints(world: &mut MyWorld, step: &Step<MyWorld>) {
+    let have: Vec<&str> = world
+        .findings
+        .iter()
+        .map(|line| line.split('\n'))
+        .flatten()
+        .collect();
+    let want: Vec<&str> = step.docstring.trim().split("\n").collect();
+    assert_eq!(have, want);
+}
+
+#[then("it prints nothing")]
+fn it_prints_nothing(world: &mut MyWorld) {
+    assert_eq!(world.findings, Vec::<String>::new());
+}
+
+#[then("it finds no issues")]
+fn it_finds_no_issues(world: &mut MyWorld) {
+    let expected: Vec<&str> = Vec::new();
+    assert_eq!(world.findings, expected);
+    assert_eq!(world.exitcode, 0);
+}
+
+#[then(regex = "^the exit code is (\\d+)$")]
+fn the_exit_code_is(world: &mut MyWorld, exit_code: i32) {
+    // let want: i32 = ctx
+    //     .matches
+    //     .get(1)
+    //     .expect("no exit code provided")
+    //     .parse()
+    //     .unwrap();
+    assert_eq!(world.exitcode, exit_code);
+}
+
+
+fn main() {
+    futures::executor::block_on(MyWorld::run("features"));
 }
