@@ -1,5 +1,5 @@
 use super::Line;
-use heck::KebabCase;
+use heck::ToKebabCase;
 
 /// a section in a document, from one heading to above the next heading
 pub struct Section {
