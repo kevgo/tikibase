@@ -4,9 +4,9 @@ version = 3
 
 [[package]]
 name = "ahash"
-version = "0.7.4"
+version = "0.7.6"
 source = "registry+https://github.com/rust-lang/crates.io-index"
-checksum = "43bb833f0bf979d8475d38fbf09ed3b8a55e1885fe93ad3f93239fc6a4f17b98"
+checksum = "fcb51a0695d8f838b1ee009b3fbf66bda078cd64590202a864a8f3e8c4315c47"
 dependencies = [
  "getrandom",
  "once_cell",
@@ -24,9 +24,9 @@ dependencies = [
 
 [[package]]
 name = "async-trait"
-version = "0.1.50"
+version = "0.1.52"
 source = "registry+https://github.com/rust-lang/crates.io-index"
-checksum = "0b98e84bbb4cbcdd97da190ba0c58a1bb0de2c1fdf67d159e192ed766aeca722"
+checksum = "061a7acccaa286c011ddc30970520b98fa40e00c9d644633fb26b5fc63a265e3"
 dependencies = [
  "proc-macro2",
  "quote",
@@ -472,9 +472,9 @@ dependencies = [
 
 [[package]]
 name = "itoa"
-version = "0.4.7"
+version = "1.0.1"
 source = "registry+https://github.com/rust-lang/crates.io-index"
-checksum = "dd25036021b0de88a0aff6b850051563c6516d0bf53f8638938edbb9de732736"
+checksum = "1aab8fc367588b89dcee83ab0fd66b72b50b72fa1904d7095045ace2b0c81c35"
 
 [[package]]
 name = "lazy_static"
@@ -789,18 +789,18 @@ dependencies = [
 
 [[package]]
 name = "serde"
-version = "1.0.130"
+version = "1.0.136"
 source = "registry+https://github.com/rust-lang/crates.io-index"
-checksum = "f12d06de37cf59146fbdecab66aa99f9fe4f78722e3607577a5375d66bd0c913"
+checksum = "ce31e24b01e1e524df96f1c2fdd054405f8d7376249a5110886fb4b658484789"
 dependencies = [
  "serde_derive",
 ]
 
 [[package]]
 name = "serde_derive"
-version = "1.0.130"
+version = "1.0.136"
 source = "registry+https://github.com/rust-lang/crates.io-index"
-checksum = "d7bc1a1ab1961464eae040d96713baa5a724a8152c1222492465b54322ec508b"
+checksum = "08597e7152fcd306f41838ed3e37be9eaeed2b61c42e2117266a554fab4662f9"
 dependencies = [
  "proc-macro2",
  "quote",
@@ -809,9 +809,9 @@ dependencies = [
 
 [[package]]
 name = "serde_json"
-version = "1.0.67"
+version = "1.0.79"
 source = "registry+https://github.com/rust-lang/crates.io-index"
-checksum = "a7f9e390c27c3c0ce8bc5d725f6e4d30a29d26659494aa4b17535f7522c5c950"
+checksum = "8e8d9fa5c3b304765ce1fd9c4c8a3de2c8db365a5b91be52f186efc675681d95"
 dependencies = [
  "itoa",
  "ryu",
@@ -951,7 +951,7 @@ dependencies = [
  "async-trait",
  "cucumber",
  "futures",
- "heck 0.3.3",
+ "heck 0.4.0",
  "once_cell",
  "rand",
  "regex",
