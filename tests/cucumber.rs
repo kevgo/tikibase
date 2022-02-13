@@ -125,12 +125,6 @@ fn it_finds_no_issues(world: &mut MyWorld) {
 
 #[then(regex = "^the exit code is (\\d+)$")]
 fn the_exit_code_is(world: &mut MyWorld, exit_code: i32) {
-    // let want: i32 = ctx
-    //     .matches
-    //     .get(1)
-    //     .expect("no exit code provided")
-    //     .parse()
-    //     .unwrap();
     assert_eq!(world.exitcode, exit_code);
 }
 
