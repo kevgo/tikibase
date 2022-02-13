@@ -37,7 +37,7 @@ unit:  # runs the unit tests
 	cargo test
 
 setup:  # prepares this codebase
-	cargo install cargo-udeps --locked
+	cargo install cargo-udeps cargo-edit cargo-upgrades --locked
 	curl -s https://raw.githubusercontent.com/rhysd/actionlint/main/scripts/download-actionlint.bash | bash
 	mv actionlint tools
 	echo
