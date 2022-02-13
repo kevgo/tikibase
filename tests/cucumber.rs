@@ -89,7 +89,7 @@ fn file_is_unchanged(world: &mut MyWorld, filename: String) {
 fn file_should_contain(world: &mut MyWorld, step: &Step, filename: String) {
     let want = step.docstring.as_ref().unwrap();
     let have = load_file(&filename, &world.dir);
-    assert_eq!(have.trim(), want);
+    assert_eq!(have.trim(), want.trim());
 }
 
 #[then("it prints:")]
@@ -99,9 +99,9 @@ fn it_prints(world: &mut MyWorld, step: &Step) {
         .iter()
         .map(|line| line.split('\n'))
         .flatten()
-        .filter(|line| !line.trim().is_empty())
+        .filter(|line| !line.is_empty())
         .collect();
-    let want: Vec<&str> = step.docstring.as_ref().unwrap().trim().split("\n").filter(|line| !line.is_empty()).collect();
+    let want: Vec<&str> = step.docstring.as_ref().unwrap().split("\n").filter(|line| !line.is_empty()).collect();
     assert_eq!(have, want);
 }
 
