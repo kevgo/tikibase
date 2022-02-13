@@ -8,7 +8,7 @@ cuke:  # runs the integration tests
 	cargo test --test cucumber
 
 cukethis:  # tests only the scenario named "this"
-	cargo test --test cucumber -- -e this
+	cargo test --test cucumber -- -t @this
 
 fix:  # auto-corrects issues
 	dprint fmt
