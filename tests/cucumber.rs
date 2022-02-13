@@ -2,12 +2,12 @@ use crate::tikibase::testhelpers::{create_file, load_file, tmp_dir};
 use std::convert::Infallible;
 use ahash::AHashMap;
 use async_trait::async_trait;
-use cucumber::{given, when, then, World, WorldInit, Step};
-use std::io;
+use cucumber::{given, when, then, World, WorldInit, gherkin::Step};
 use std::path::PathBuf;
 use tikibase;
 use tikibase::Command;
 
+#[derive(Debug, WorldInit)]
 pub struct MyWorld {
     /// the directory in which the Tikibase under test is located
     pub dir: PathBuf,
@@ -37,12 +37,12 @@ impl World for MyWorld {
 }
 
 #[given(regex = r#"^file "(.*)" with content:$"#)]
-fn file_with_content(world: &mut MyWorld, step: &Step<MyWorld>, filename: String) {
-    let content = step.docstring.as_ref();
+fn file_with_content(world: &mut MyWorld, step: &Step, filename: String) {
+    let content = step.docstring.as_ref().unwrap();
     create_file(&filename, &content, &world.dir);
     world
         .original_contents
-        .insert(PathBuf::from(filename), content);
+        .insert(PathBuf::from(filename), content.into());
 }
 
 #[given(regex = r#"^file "(.*)"$"#)]
@@ -86,21 +86,21 @@ fn file_is_unchanged(world: &mut MyWorld, filename: String) {
 }
 
 #[then(regex = r#"^file "(.*)" should contain:$"#)]
-fn file_should_contain(world: &mut MyWorld, step: &Step<MyWorld>, filename: String) {
-    let want = step.docstring;
+fn file_should_contain(world: &mut MyWorld, step: &Step, filename: String) {
+    let want = step.docstring.as_ref().unwrap();
     let have = load_file(&filename, &world.dir);
-    assert_eq!(have, want);
+    assert_eq!(&have, want);
 }
 
 #[then("it prints:")]
-fn it_prints(world: &mut MyWorld, step: &Step<MyWorld>) {
+fn it_prints(world: &mut MyWorld, step: &Step) {
     let have: Vec<&str> = world
         .findings
         .iter()
         .map(|line| line.split('\n'))
         .flatten()
         .collect();
-    let want: Vec<&str> = step.docstring.trim().split("\n").collect();
+    let want: Vec<&str> = step.docstring.as_ref().unwrap().trim().split("\n").collect();
     assert_eq!(have, want);
 }
 
