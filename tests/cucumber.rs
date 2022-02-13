@@ -38,7 +38,7 @@ impl World for MyWorld {
 
 #[given(regex = r#"^file "(.*)" with content:$"#)]
 fn file_with_content(world: &mut MyWorld, step: &Step, filename: String) {
-    let content = step.docstring.as_ref().unwrap();
+    let content = step.docstring.as_ref().unwrap().trim();
     create_file(&filename, &content, &world.dir);
     world
         .original_contents
@@ -71,25 +71,27 @@ fn fixing(world: &mut MyWorld){
 fn all_files_unchanged(world: &mut MyWorld) {
     for (filename, original_content) in &world.original_contents {
         let current_content = load_file(filename, &world.dir);
-        assert_eq!(&current_content, original_content);
+        assert_eq!(&current_content.trim(), original_content);
     }
 }
 
 #[then(regex = r#"^file "(.*)" is unchanged$"#)]
 fn file_is_unchanged(world: &mut MyWorld, filename: String) {
-    let have = &load_file(&filename, &world.dir);
+    let have = load_file(&filename, &world.dir);
+    let have = have.trim();
     let want = world
         .original_contents
         .get(&PathBuf::from(filename))
-        .unwrap();
-    assert_eq!(have, want);
+        .unwrap().trim();
+    assert_eq!(have.trim(), want);
 }
 
 #[then(regex = r#"^file "(.*)" should contain:$"#)]
 fn file_should_contain(world: &mut MyWorld, step: &Step, filename: String) {
     let want = step.docstring.as_ref().unwrap();
     let have = load_file(&filename, &world.dir);
-    assert_eq!(&have, want);
+    let have = have.trim();
+    assert_eq!(have.trim(), want.trim());
 }
 
 #[then("it prints:")]
@@ -99,8 +101,9 @@ fn it_prints(world: &mut MyWorld, step: &Step) {
         .iter()
         .map(|line| line.split('\n'))
         .flatten()
+        .filter(|line| !line.trim().is_empty())
         .collect();
-    let want: Vec<&str> = step.docstring.as_ref().unwrap().trim().split("\n").collect();
+    let want: Vec<&str> = step.docstring.as_ref().unwrap().trim().split("\n").filter(|line| !line.is_empty()).collect();
     assert_eq!(have, want);
 }
 
