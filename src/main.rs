@@ -8,7 +8,7 @@ fn main() {
     let (mut outcomes, exitcode) = process(&command, ".");
     outcomes.sort();
     for outcome in outcomes {
-        println!("{}", outcome);
+        println!("{outcome}");
     }
     std::process::exit(exitcode);
 }
