@@ -7,13 +7,13 @@ authors = ["Kevin Goslar <kevin.goslar@gmail.com>"]
 edition = "2018"
 
 [dependencies]
-ahash = "0.7.4"
-heck = "0.3.3"
+ahash = "0.7.6"
+heck = "0.4.0"
 once_cell = "1.9.0"
 rand = "0.8.4"
 regex = "1.5.4"
-serde = { version = "1.0.130", features = ["derive"] }
-serde_json = "1.0.67"
+serde = { version = "1.0.136", features = ["derive"] }
+serde_json = "1.0.79"
 walkdir = "2.3.2"
 
 [[test]]
@@ -22,9 +22,9 @@ harness = false # Allows Cucumber to print output instead of libtest
 test = false
 
 [dev-dependencies]
-async-trait = "0.1"
-cucumber = "0.12"
-futures = "0.3"
+async-trait = "0.1.52"
+cucumber = "0.12.0"
+futures = "0.3.21"
 
 [profile.release]
 strip = "symbols"
