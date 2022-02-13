@@ -1,8 +1,8 @@
 use crate::tikibase::testhelpers::{create_file, load_file, tmp_dir};
-use std::convert::Infallible;
 use ahash::AHashMap;
 use async_trait::async_trait;
-use cucumber::{given, when, then, World, WorldInit, gherkin::Step};
+use cucumber::{gherkin::Step, given, then, when, World, WorldInit};
+use std::convert::Infallible;
 use std::path::PathBuf;
 use tikibase;
 use tikibase::Command;
@@ -51,7 +51,7 @@ fn file(world: &mut MyWorld, filename: String) {
 }
 
 #[when("checking")]
-fn checking(world: &mut MyWorld){
+fn checking(world: &mut MyWorld) {
     let result = tikibase::process(&Command::Check, world.dir.clone());
     (world.findings, world.exitcode) = result;
     // TODO: make one line
@@ -63,7 +63,7 @@ fn doing_a_pitstop(world: &mut MyWorld) {
 }
 
 #[when("fixing")]
-fn fixing(world: &mut MyWorld){
+fn fixing(world: &mut MyWorld) {
     (world.findings, world.exitcode) = tikibase::process(&Command::Fix, world.dir.clone());
 }
 
@@ -101,7 +101,13 @@ fn it_prints(world: &mut MyWorld, step: &Step) {
         .flatten()
         .filter(|line| !line.is_empty())
         .collect();
-    let want: Vec<&str> = step.docstring.as_ref().unwrap().split("\n").filter(|line| !line.is_empty()).collect();
+    let want: Vec<&str> = step
+        .docstring
+        .as_ref()
+        .unwrap()
+        .split("\n")
+        .filter(|line| !line.is_empty())
+        .collect();
     assert_eq!(have, want);
 }
 
@@ -127,7 +133,6 @@ fn the_exit_code_is(world: &mut MyWorld, exit_code: i32) {
     //     .unwrap();
     assert_eq!(world.exitcode, exit_code);
 }
-
 
 fn main() {
     futures::executor::block_on(MyWorld::run("features"));

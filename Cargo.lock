@@ -144,9 +144,9 @@ dependencies = [
 
 [[package]]
 name = "cucumber"
-version = "0.11.3"
+version = "0.12.0"
 source = "registry+https://github.com/rust-lang/crates.io-index"
-checksum = "17c2113609da80892316eeacd21e63c359536814b07146d4caa17ad7676e0db3"
+checksum = "6cb294919eb4890dcea9db1401d635b65718491487a6f26a3c344dd44258f77e"
 dependencies = [
  "async-trait",
  "atty",
@@ -169,9 +169,9 @@ dependencies = [
 
 [[package]]
 name = "cucumber-codegen"
-version = "0.11.3"
+version = "0.12.0"
 source = "registry+https://github.com/rust-lang/crates.io-index"
-checksum = "57569af2742cb38e213e8cc686fffc76e0ee4119cad3a122753c27107dc26e58"
+checksum = "345df796843cd6b86886bab217065ece2678746b1aadceb2670e9d6c6c878e76"
 dependencies = [
  "cucumber-expressions",
  "inflections",
@@ -185,15 +185,16 @@ dependencies = [
 
 [[package]]
 name = "cucumber-expressions"
-version = "0.1.2"
+version = "0.2.0"
 source = "registry+https://github.com/rust-lang/crates.io-index"
-checksum = "68a512c03bf9dbe0abcd486181027bddf2cc2153b8cb258b3b27e29dee621daa"
+checksum = "329a5035a7b23d5f40f66649e65e53e708bca32b38b1fe3233c724b470c3e0db"
 dependencies = [
  "derive_more",
  "either",
  "nom",
  "nom_locate",
  "regex",
+ "regex-syntax",
 ]
 
 [[package]]

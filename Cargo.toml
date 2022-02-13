@@ -23,7 +23,7 @@ test = false
 
 [dev-dependencies]
 async-trait = "0.1"
-cucumber = "0.11"
+cucumber = "0.12"
 futures = "0.3"
 
 [profile.release]
