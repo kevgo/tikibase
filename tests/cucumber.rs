@@ -78,11 +78,10 @@ fn all_files_unchanged(world: &mut MyWorld) {
 #[then(regex = r#"^file "(.*)" is unchanged$"#)]
 fn file_is_unchanged(world: &mut MyWorld, filename: String) {
     let have = load_file(&filename, &world.dir);
-    let have = have.trim();
     let want = world
         .original_contents
         .get(&PathBuf::from(filename))
-        .unwrap().trim();
+        .unwrap();
     assert_eq!(have.trim(), want);
 }
 
@@ -90,7 +89,6 @@ fn file_is_unchanged(world: &mut MyWorld, filename: String) {
 fn file_should_contain(world: &mut MyWorld, step: &Step, filename: String) {
     let want = step.docstring.as_ref().unwrap();
     let have = load_file(&filename, &world.dir);
-    let have = have.trim();
     assert_eq!(have.trim(), want.trim());
 }
 
