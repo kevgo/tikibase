@@ -1,5 +1,3 @@
-#![feature(destructuring_assignment)]
-
 use crate::tikibase::testhelpers::{create_file, load_file, tmp_dir};
 use ahash::AHashMap;
 use cucumber_rust::{async_trait, Cucumber, Steps, World};
