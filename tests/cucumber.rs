@@ -89,7 +89,7 @@ fn file_is_unchanged(world: &mut MyWorld, filename: String) {
 fn file_should_contain(world: &mut MyWorld, step: &Step, filename: String) {
     let want = step.docstring.as_ref().unwrap();
     let have = load_file(&filename, &world.dir);
-    assert_eq!(have.trim(), want.trim());
+    assert_eq!(have.trim(), want);
 }
 
 #[then("it prints:")]
