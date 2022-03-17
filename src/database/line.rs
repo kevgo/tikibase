@@ -1,9 +1,15 @@
 use super::Reference;
-use lazy_static::lazy_static;
+use once_cell::sync::Lazy;
 use regex::Regex;
 
 #[derive(Debug, PartialEq)]
 pub struct Line(String);
+
+static MD_RE: Lazy<Regex> = Lazy::new(|| Regex::new("(!?)\\[[^\\]]*\\]\\(([^)]*)\\)").unwrap());
+static A_HTML_RE: Lazy<Regex> = Lazy::new(|| Regex::new(r#"<a href="(.*)">(.*)</a>"#).unwrap());
+static IMG_HTML_RE: Lazy<Regex> = Lazy::new(|| Regex::new(r#"<img src="([^"]*)"[^>]*>"#).unwrap());
+static SOURCE_RE: Lazy<Regex> = Lazy::new(|| Regex::new(r#"\[(\d+)\]"#).unwrap());
+static CODE_RE: Lazy<Regex> = Lazy::new(|| Regex::new("`[^`]+`").unwrap());
 
 impl Line {
     pub fn new<S: Into<String>>(text: S) -> Line {
@@ -12,11 +18,6 @@ impl Line {
 
     /// provides all links and images in this line
     pub fn references(&self) -> Vec<Reference> {
-        lazy_static! {
-            static ref MD_RE: Regex = Regex::new("(!?)\\[[^\\]]*\\]\\(([^)]*)\\)").unwrap();
-            static ref A_HTML_RE: Regex = Regex::new(r#"<a href="(.*)">(.*)</a>"#).unwrap();
-            static ref IMG_HTML_RE: Regex = Regex::new(r#"<img src="([^"]*)"[^>]*>"#).unwrap();
-        }
         let mut result = Vec::new();
         for cap in MD_RE.captures_iter(&self.0) {
             match &cap[1] {
@@ -53,10 +54,6 @@ impl Line {
 
     /// provides the indexes of all sources used in this line
     pub fn used_sources(&self) -> Vec<String> {
-        lazy_static! {
-            static ref SOURCE_RE: Regex = Regex::new(r#"\[(\d+)\]"#).unwrap();
-            static ref CODE_RE: Regex = Regex::new("`[^`]+`").unwrap();
-        }
         let sanitized = CODE_RE.replace_all(&self.0, "");
         SOURCE_RE
             .captures_iter(&sanitized)

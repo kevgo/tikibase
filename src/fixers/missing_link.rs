@@ -2,7 +2,7 @@ use super::Fix;
 use crate::config;
 use crate::database::{section, Tikibase};
 use crate::issues::MissingLinks;
-use lazy_static::lazy_static;
+use once_cell::sync::Lazy;
 use regex::{Captures, Regex};
 use std::borrow::Cow;
 
@@ -42,9 +42,6 @@ impl Fix for MissingLinksFixer<'_> {
 
 /// removes all links from the given string
 fn strip_links(text: &str) -> Cow<str> {
-    lazy_static! {
-        static ref SOURCE_RE: Regex = Regex::new(r#"\[([^]]*)\]\([^)]*\)"#).unwrap();
-    }
     let matches: Vec<Captures> = SOURCE_RE.captures_iter(text).collect();
     if matches.is_empty() {
         return Cow::Borrowed(text);
@@ -55,6 +52,7 @@ fn strip_links(text: &str) -> Cow<str> {
     }
     Cow::Owned(result)
 }
+static SOURCE_RE: Lazy<Regex> = Lazy::new(|| Regex::new(r#"\[([^]]*)\]\([^)]*\)"#).unwrap());
 
 #[cfg(test)]
 mod tests {
