@@ -1,7 +1,5 @@
 //! the CLI wrapper around lib.rs
 
-extern crate lazy_static;
-
 use tikibase::process;
 use tikibase::Command;
 
@@ -10,7 +8,7 @@ fn main() {
     let (mut outcomes, exitcode) = process(&command, ".");
     outcomes.sort();
     for outcome in outcomes {
-        println!("{}", outcome);
+        println!("{outcome}");
     }
     std::process::exit(exitcode);
 }

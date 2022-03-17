@@ -1,6 +1,6 @@
 use super::{section, Section};
 use ahash::AHashSet;
-use lazy_static::lazy_static;
+use once_cell::sync::Lazy;
 use regex::Regex;
 use std::io::prelude::*;
 use std::path::{Path, PathBuf};
@@ -15,6 +15,8 @@ pub struct Document {
     /// None => this document had no occurrences section when loading it.
     pub occurrences_section_line: Option<u32>,
 }
+
+static SOURCE_RE: Lazy<Regex> = Lazy::new(|| Regex::new("^(\\d+)\\.").unwrap());
 
 impl Document {
     /// provides a Document instance containing the given text
@@ -134,9 +136,6 @@ impl Document {
             None => return result,
             Some(section) => section,
         };
-        lazy_static! {
-            static ref SOURCE_RE: Regex = Regex::new("^(\\d+)\\.").unwrap();
-        }
         for line in links_section.lines() {
             for cap in SOURCE_RE.captures_iter(line.text()) {
                 result.insert(cap[1].to_string());

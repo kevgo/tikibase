@@ -8,7 +8,7 @@ cuke:  # runs the integration tests
 	cargo test --test cucumber
 
 cukethis:  # tests only the scenario named "this"
-	cargo test --test cucumber -- -e this
+	cargo test --test cucumber -- -t @this
 
 fix:  # auto-corrects issues
 	dprint fmt
@@ -37,9 +37,8 @@ unit:  # runs the unit tests
 	cargo clippy --all-targets --all-features -- -D warnings
 	cargo test
 
-setup:  # prepares this codebase
-	cargo install cargo-udeps --locked
-	scripts/install_actionlint
+setup: setup-ci  # prepares this codebase
+	cargo install cargo-edit cargo-upgrades --locked
 	echo
 	echo PLEASE DO THIS MANUALLY:
 	echo 1. install musl, e.g. "sudo apt install musl"
@@ -48,6 +47,10 @@ setup:  # prepares this codebase
 	echo    - Debian: sudo apt install libssl-dev pkg-config
 	echo 3. cargo install cargo-edit
 	echo 4. cargo install dprint
+
+setup-ci:  # prepares the CI server
+	cargo install cargo-udeps --locked
+	scripts/install_actionlint
 
 update:  # updates the dependencies
 	cargo upgrade
