@@ -36,8 +36,8 @@ unit:  # runs the unit tests
 	cargo clippy --all-targets --all-features -- -D warnings
 	cargo test
 
-setup:  # prepares this codebase
-	cargo install cargo-udeps cargo-edit cargo-upgrades --locked
+setup: setup-ci  # prepares this codebase
+	cargo install cargo-edit cargo-upgrades --locked
 	curl -s https://raw.githubusercontent.com/rhysd/actionlint/main/scripts/download-actionlint.bash | bash
 	mv actionlint tools
 	echo
@@ -48,6 +48,9 @@ setup:  # prepares this codebase
 	echo    - Debian: sudo apt install libssl-dev pkg-config
 	echo 3. cargo install cargo-edit
 	echo 4. cargo install dprint
+
+setup-ci:  # prepares the CI server
+	cargo install cargo-udeps --locked
 
 update:  # updates the dependencies
 	cargo upgrade
