@@ -1,3 +1,4 @@
+pub mod cli;
 pub(crate) mod commands;
 pub(crate) mod config;
 pub(crate) mod database;
@@ -6,7 +7,7 @@ pub(crate) mod issues;
 pub(crate) mod probes;
 pub mod testhelpers;
 
-pub use commands::Command;
+pub use cli::Command;
 use database::Tikibase;
 use issues::Issue;
 use std::path::PathBuf;
@@ -21,22 +22,6 @@ pub fn process<P: Into<PathBuf>>(command: &Command, path: P) -> (Vec<String>, i3
         Ok(config) => config,
         Err(err) => return (vec![err], 1),
     };
-
-    // handle non-repo commands
-    let basic_command = match command {
-        Command::Help => {
-            commands::help();
-            true
-        }
-        Command::Version => {
-            commands::version();
-            true
-        }
-        _ => false,
-    };
-    if basic_command {
-        return (outcomes, exit_code);
-    }
 
     // load the Tikibase
     let (mut base, mut errors) = Tikibase::load(path, &config);
