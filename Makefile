@@ -24,7 +24,7 @@ install:  # installs the binary in the system
 lint:  # checks formatting
 	dprint check
 	cargo fmt -- --check
-	cargo udeps
+# cargo udeps   # requires nightly
 	git diff --check
 
 lint_pedantic:  # runs all lints, including false positives
