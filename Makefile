@@ -26,6 +26,7 @@ lint:  # checks formatting
 	cargo fmt -- --check
 # cargo udeps   # requires nightly
 	git diff --check
+	tools/actionlint
 
 lint_pedantic:  # runs all lints, including false positives
 	cargo clippy --all-targets --all-features -- -W clippy::pedantic -A clippy::cast_possible_wrap -A clippy::cast_possible_truncation -A clippy::missing_panics_doc -A clippy::must_use_candidate -A clippy::match_bool -A clippy::missing_errors_doc
@@ -38,8 +39,6 @@ unit:  # runs the unit tests
 
 setup: setup-ci  # prepares this codebase
 	cargo install cargo-edit cargo-upgrades --locked
-	curl -s https://raw.githubusercontent.com/rhysd/actionlint/main/scripts/download-actionlint.bash | bash
-	mv actionlint tools
 	echo
 	echo PLEASE DO THIS MANUALLY:
 	echo 1. install musl, e.g. "sudo apt install musl"
@@ -51,6 +50,7 @@ setup: setup-ci  # prepares this codebase
 
 setup-ci:  # prepares the CI server
 	cargo install cargo-udeps --locked
+	scripts/install_actionlint
 
 update:  # updates the dependencies
 	cargo upgrade
