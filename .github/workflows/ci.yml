@@ -23,6 +23,7 @@ jobs:
           components: rustfmt, clippy
       - uses: Swatinem/rust-cache@v1.2.0
       - uses: dprint/check@v1.5
+      - run: make setup-ci
       - run: make unit
       - run: make cuke
       - run: make lint
