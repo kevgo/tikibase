@@ -1,5 +1,5 @@
 use super::Fix;
-use crate::{config, database::Tikibase, issues::EmptySection};
+use crate::{config, database::Tikibase};
 
 /// repairs the EmptySection issue
 pub struct EmptySectionFixer<'a> {

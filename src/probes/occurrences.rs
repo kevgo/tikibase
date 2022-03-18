@@ -1,7 +1,6 @@
 use crate::database::DocLinks;
 use crate::database::Tikibase;
-use crate::issues;
-use crate::Issue;
+use crate::issue::Issue;
 use ahash::AHashSet;
 use std::path::PathBuf;
 
@@ -9,8 +8,8 @@ pub(crate) fn scan(
     base: &Tikibase,
     incoming_doc_links: &DocLinks,
     outgoing_doc_links: &DocLinks,
-) -> Vec<Box<dyn Issue>> {
-    let mut issues = Vec::<Box<dyn Issue>>::new();
+) -> Vec<Issue> {
+    let mut issues = Vec::<Issue>::new();
     for doc in &base.docs {
         let mut missing_outgoing: Vec<PathBuf> = incoming_doc_links
             .get(&doc.path)
@@ -27,27 +26,27 @@ pub(crate) fn scan(
         // no missing links --> done here
         if missing_outgoing.is_empty() {
             if let Some(occurrences_section_line) = doc.occurrences_section_line {
-                issues.push(Box::new(issues::ObsoleteLink {
+                issues.push(Issue::ObsoleteLink {
                     file: doc.path.clone(),
                     line: occurrences_section_line,
-                }));
+                });
             }
             continue;
         }
 
         // register missing occurrences
         missing_outgoing.sort();
-        issues.push(Box::new(issues::MissingLinks {
+        issues.push(Issue::MissingLinks {
             file: doc.path.clone(),
             links: missing_outgoing
                 .into_iter()
                 .map(|path| base.get_doc(&path).unwrap())
-                .map(|doc| issues::MissingLink {
+                .map(|doc| Issue::MissingLink {
                     path: doc.path.clone(),
                     title: doc.title().into(),
                 })
                 .collect(),
-        }));
+        });
     }
     issues
 }

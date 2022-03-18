@@ -1,19 +1,18 @@
 use crate::database::Tikibase;
-use crate::issues;
-use crate::Issue;
+use crate::issue::Issue;
 
 /// finds all duplicate sections in the given Tikibase
-pub(crate) fn scan(base: &Tikibase) -> Vec<Box<dyn Issue>> {
-    let mut issues = Vec::<Box<dyn Issue>>::new();
+pub(crate) fn scan(base: &Tikibase) -> Vec<Issue> {
+    let mut issues = Vec::new();
     for doc in &base.docs {
         let mut known_sections = Vec::new();
         for section in &doc.content_sections {
             let section_type = section.section_type();
             if known_sections.contains(&section_type) {
-                issues.push(Box::new(issues::DuplicateSection {
+                issues.push(Issue::DuplicateSection {
                     filename: doc.path.clone(),
                     section_type: section_type.into(),
-                }));
+                });
             } else {
                 known_sections.push(section_type);
             }

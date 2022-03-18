@@ -1,10 +1,9 @@
 use crate::config;
 use crate::database::Tikibase;
-use crate::issues;
-use crate::Issue;
+use crate::issue::Issue;
 
-pub(crate) fn scan(base: &Tikibase, config: &config::Data) -> Vec<Box<dyn Issue>> {
-    let mut issues = Vec::<Box<dyn Issue>>::new();
+pub(crate) fn scan(base: &Tikibase, config: &config::Data) -> Vec<Issue> {
+    let mut issues = Vec::<Issue>::new();
     let sections = match &config.sections {
         None => return issues,
         Some(sections) => sections,
@@ -14,12 +13,12 @@ pub(crate) fn scan(base: &Tikibase, config: &config::Data) -> Vec<Box<dyn Issue>
             let section_type = section.section_type();
             // HACK: see https://github.com/rust-lang/rust/issues/42671
             if !sections.iter().any(|s| s == section_type) {
-                issues.push(Box::new(issues::UnknownSection {
+                issues.push(Issue::UnknownSection {
                     file: doc.path.clone(),
                     line: section.line_number,
                     section_type: section_type.into(),
                     allowed_types: config.sections.clone().unwrap(),
-                }));
+                });
             }
         }
     }

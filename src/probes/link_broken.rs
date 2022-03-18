@@ -1,9 +1,8 @@
 use crate::database::{DocLinks, Reference, Tikibase};
-use crate::issues;
-use crate::Issue;
+use crate::issue::Issue;
 
 pub(crate) struct LinksResult {
-    pub issues: Vec<Box<dyn Issue>>,
+    pub issues: Vec<Issue>,
 
     /// all links to documents
     pub incoming_doc_links: DocLinks,
@@ -30,10 +29,10 @@ pub(crate) fn scan(base: &Tikibase) -> LinksResult {
                     match reference {
                         Reference::Link { mut destination } => {
                             if destination.is_empty() {
-                                result.issues.push(Box::new(issues::LinkWithoutDestination {
+                                result.issues.push(Issue::LinkWithoutDestination {
                                     filename: doc.path.clone(),
                                     line: section.line_number + (i as u32) + 1,
-                                }));
+                                });
                                 continue;
                             }
                             if destination.starts_with("http") {
@@ -42,18 +41,18 @@ pub(crate) fn scan(base: &Tikibase) -> LinksResult {
                             }
                             make_link_anchor(&mut destination);
                             if !existing_targets.contains(&destination) {
-                                result.issues.push(Box::new(issues::BrokenLink {
+                                result.issues.push(Issue::BrokenLink {
                                     filename: doc.path.clone(),
                                     line: section.line_number + (i as u32) + 1,
                                     target: destination,
-                                }));
+                                });
                                 continue;
                             }
                             if destination == doc.path.to_string_lossy() {
-                                result.issues.push(Box::new(issues::LinkToSameDocument {
+                                result.issues.push(Issue::LinkToSameDocument {
                                     filename: doc.path.clone(),
                                     line: section.line_number + (i as u32) + 1,
-                                }));
+                                });
                                 continue;
                             }
                             result
@@ -66,11 +65,11 @@ pub(crate) fn scan(base: &Tikibase) -> LinksResult {
                                 continue;
                             }
                             if !base.has_resource(&src) {
-                                result.issues.push(Box::new(issues::BrokenImage {
+                                result.issues.push(Issue::BrokenImage {
                                     filename: doc.path.clone(),
                                     line: section.line_number + (i as u32) + 1,
                                     target: src.clone(),
-                                }));
+                                });
                             }
                             result.outgoing_resource_links.push(src);
                         }
