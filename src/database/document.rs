@@ -83,6 +83,7 @@ impl Document {
     }
 
     /// persists the changes made to this document to disk
+    /// TODO: move into base for more clear data ownership (needs "dir" attribute of containing base anyways)
     pub fn save(&self, root: &Path) {
         let mut file = std::fs::File::create(root.join(&self.path)).unwrap();
         file.write_all(self.text().as_bytes()).unwrap();
