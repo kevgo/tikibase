@@ -120,7 +120,7 @@ mod tests {
             let outcomes: Vec<String> = have.issues.iter().map(|issue| issue.to_string()).collect();
             assert_eq!(
                 outcomes,
-                vec!["one.md:3  broken link to \"non-existing.md\""]
+                vec!["one.md:3  link to non-existing file \"non-existing.md\""]
             );
             assert_eq!(have.incoming_doc_links.data.len(), 0);
             assert_eq!(have.outgoing_doc_links.data.len(), 0);
@@ -219,7 +219,10 @@ Here is a link to [Three](3.md) that also works.
             let have = super::super::scan(&base);
             let outcomes: Vec<String> = have.issues.iter().map(|issue| issue.to_string()).collect();
             assert_eq!(outcomes.len(), 1);
-            assert_eq!(outcomes[0], "1.md:3  broken image \"zonk.png\"");
+            assert_eq!(
+                outcomes[0],
+                "1.md:3  image link to non-existing file \"zonk.png\""
+            );
             assert_eq!(have.outgoing_resource_links.len(), 1);
             assert_eq!(have.outgoing_resource_links[0], "zonk.png");
             assert_eq!(have.incoming_doc_links.data.len(), 0);

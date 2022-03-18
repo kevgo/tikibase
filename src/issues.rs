@@ -4,66 +4,68 @@ use std::path::PathBuf;
 
 /// possible issues that this linter can find
 pub enum Issue {
-    /// image link to a non-existing file
     BrokenImage {
         filename: PathBuf,
         line: u32,
         target: String,
     },
-    /// link to a non-existing file
     BrokenLink {
         filename: PathBuf,
         line: u32,
         target: String,
     },
-    /// a document contains two sections with the same title
     DuplicateSection {
         filename: PathBuf,
         section_type: String,
     },
-    /// a section has no content
     EmptySection {
         filename: PathBuf,
         line: u32,
         section_type: String,
     },
-    /// a document contains a link to itself
-    LinkToSameDocument { filename: PathBuf, line: u32 },
-    /// a link contains no target
-    LinkWithoutDestination { filename: PathBuf, line: u32 },
-    /// the "occurrences" section of the document is missing these links
+    LinkToSameDocument {
+        filename: PathBuf,
+        line: u32,
+    },
+    LinkWithoutDestination {
+        filename: PathBuf,
+        line: u32,
+    },
     MissingLinks {
         file: PathBuf,
         links: Vec<MissingLink>,
     },
-    /// a document references a source that doesn't exist
     MissingSource {
         file: String,
         line: u32,
         index: String,
     },
-    /// a section title occurs with inconsistent capitalizations
-    MixCapSection { variants: Vec<String> },
-    /// a document contains an "occurrences" section that should no longer be there
-    ObsoleteLink { file: PathBuf, line: u32 },
-    /// a file that isn't linked to
+    MixCapSection {
+        variants: Vec<String>,
+    },
+    ObsoleteLink {
+        file: PathBuf,
+        line: u32,
+    },
     OrphanedResource {
         // This is a String and not a Path because we need a String (to print it),
         // and we already converted the Path of this orphaned resource into a String
         // during processing it.
         path: String,
     },
-    /// a section whose title is empty
-    SectionWithoutHeader { file: PathBuf, line: u32 },
-    /// a section that isn't listed in tikibase.json
+    SectionWithoutHeader {
+        file: PathBuf,
+        line: u32,
+    },
     UnknownSection {
         file: PathBuf,
         line: u32,
         section_type: String,
         allowed_types: Vec<String>,
     },
-    /// a document contains sections in a different order than specified in tikibase.json
-    UnorderedSections { file: PathBuf },
+    UnorderedSections {
+        file: PathBuf,
+    },
 }
 
 pub struct MissingLink {
@@ -80,7 +82,7 @@ impl Display for Issue {
                 target,
             } => write!(
                 f,
-                "{}:{}  broken image \"{}\"",
+                "{}:{}  image link to non-existing file \"{}\"",
                 filename.to_string_lossy(),
                 line,
                 target
@@ -91,7 +93,7 @@ impl Display for Issue {
                 target,
             } => write!(
                 f,
-                "{}:{}  broken link to \"{}\"",
+                "{}:{}  link to non-existing file \"{}\"",
                 filename.to_string_lossy(),
                 line,
                 target
@@ -101,7 +103,7 @@ impl Display for Issue {
                 section_type,
             } => write!(
                 f,
-                "{}  duplicate section: {}",
+                "{}  document contains multiple \"{}\" sections",
                 filename.to_string_lossy(),
                 section_type
             ),
@@ -118,7 +120,7 @@ impl Display for Issue {
             ),
             Issue::LinkToSameDocument { filename, line } => write!(
                 f,
-                "{}:{}  link to the same file",
+                "{}:{}  document contains link to itself",
                 filename.to_string_lossy(),
                 line
             ),
@@ -139,23 +141,23 @@ impl Display for Issue {
                 )
             }
             Issue::MissingSource { file, line, index } => {
-                write!(f, "{}:{}  missing source [{}]", file, line + 1, index)
+                write!(f, "{}:{}  source [{}] doesn't exist", file, line + 1, index)
             }
             Issue::MixCapSection { variants } => write!(
                 f,
-                "mixed capitalization of sections: {}",
+                "section title occurs with inconsistent capitalization: {}",
                 variants.join("|")
             ),
             Issue::ObsoleteLink { file, line } => write!(
                 f,
-                "{}:{}  obsolete occurrences section",
+                "{}:{}  obsolete \"occurrences\" section",
                 file.to_string_lossy(),
                 line + 1,
             ),
-            Issue::OrphanedResource { path } => write!(f, "unused resource \"{}\"", path),
+            Issue::OrphanedResource { path } => write!(f, "file \"{}\" isn't linked to", path),
             Issue::SectionWithoutHeader { file, line } => write!(
                 f,
-                "{}:{}  section has no title",
+                "{}:{}  section with empty title",
                 file.to_string_lossy(),
                 line + 1
             ),
@@ -171,7 +173,7 @@ impl Display for Issue {
                     .collect();
                 write!(
                     f,
-                    "{}:{}  unknown section \"{}\", allowed sections:{}",
+                    "{}:{}  section \"{}\" isn't listed in tikibase.json, allowed sections:{}",
                     file.to_string_lossy(),
                     line + 1,
                     section_type,
@@ -179,7 +181,11 @@ impl Display for Issue {
                 )
             }
             Issue::UnorderedSections { file } => {
-                write!(f, "{}  wrong section order", file.to_string_lossy())
+                write!(
+                    f,
+                    "{}  sections occur in different order than specified by tikibase.json",
+                    file.to_string_lossy()
+                )
             }
         }
     }

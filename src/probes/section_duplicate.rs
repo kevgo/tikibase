@@ -43,6 +43,9 @@ content";
         assert_eq!(errs.len(), 0);
         let have: Vec<String> = scan(&base).iter().map(|issue| issue.to_string()).collect();
         assert_eq!(have.len(), 1);
-        assert_eq!(have[0], "test.md  duplicate section: One");
+        assert_eq!(
+            have[0],
+            "test.md  document contains multiple \"One\" sections"
+        );
     }
 }
