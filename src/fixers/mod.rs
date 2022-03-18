@@ -41,7 +41,10 @@ pub fn fix(issue: &Issue, base: &mut Tikibase, config: &config::Data) -> Option<
             filename: _,
             line: _,
         } => None,
-        Issue::LinkWithoutDestination { filename, line } => None,
+        Issue::LinkWithoutDestination {
+            filename: _,
+            line: _,
+        } => None,
         Issue::MissingLinks { file, links } => Some(add_missing_links(base, file, links)),
         Issue::MissingSource { file, line, index } => None,
         Issue::MixCapSection { variants } => None,
