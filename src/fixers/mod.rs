@@ -31,12 +31,7 @@ pub fn fix(issue: &Issue, base: &mut Tikibase, config: &config::Data) -> Option<
             filename,
             line,
             section_type,
-        } => Some(remove_empty_section(
-            base,
-            section_type,
-            filename,
-            line.clone(),
-        )),
+        } => Some(remove_empty_section(base, section_type, filename, *line)),
         Issue::LinkToSameDocument {
             filename: _,
             line: _,
@@ -52,7 +47,7 @@ pub fn fix(issue: &Issue, base: &mut Tikibase, config: &config::Data) -> Option<
             index: _,
         } => None,
         Issue::MixCapSection { variants: _ } => None,
-        Issue::ObsoleteLink { file, line } => Some(remove_obsolete_links(base, file, line.clone())),
+        Issue::ObsoleteLink { file, line } => Some(remove_obsolete_links(base, file, *line)),
         Issue::OrphanedResource { path: _ } => None,
         Issue::SectionWithoutHeader { file: _, line: _ } => None,
         Issue::UnknownSection {
@@ -64,7 +59,7 @@ pub fn fix(issue: &Issue, base: &mut Tikibase, config: &config::Data) -> Option<
         Issue::UnorderedSections { file } => Some(sort_unordered_sections(
             base,
             file,
-            &config.sections.as_ref().unwrap(),
+            config.sections.as_ref().unwrap(),
         )),
     }
 }

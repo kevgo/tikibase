@@ -5,7 +5,7 @@ use regex::{Captures, Regex};
 use std::borrow::Cow;
 use std::path::Path;
 
-pub fn add_missing_links(base: &mut Tikibase, file: &Path, links: &Vec<MissingLink>) -> String {
+pub fn add_missing_links(base: &mut Tikibase, file: &Path, links: &[MissingLink]) -> String {
     let base_dir = base.dir.clone();
     let doc = base.get_doc_mut(file).unwrap();
 
