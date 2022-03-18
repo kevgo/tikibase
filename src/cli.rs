@@ -8,7 +8,7 @@ pub struct Args {
     #[clap(subcommand)]
     pub command: Command,
 
-    #[clap(arg_enum, long, short)]
+    #[clap(arg_enum, long, short, default_value_t)]
     pub format: Format,
 }
 
@@ -28,4 +28,10 @@ pub enum Command {
 pub enum Format {
     Text,
     Json,
+}
+
+impl Default for Format {
+    fn default() -> Self {
+        Format::Text
+    }
 }
