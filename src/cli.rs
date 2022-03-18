@@ -1,6 +1,6 @@
 use clap::StructOpt;
 
-/// Linter for Markdown-based semantic knowledge wiki s
+/// Linter for Markdown-based semantic knowledge-bases
 #[derive(Debug, StructOpt)]
 #[clap(version, about, long_about = None)]
 pub struct Args {
@@ -8,6 +8,7 @@ pub struct Args {
     #[clap(subcommand)]
     pub command: Command,
 
+    /// output format
     #[clap(arg_enum, long, short, default_value_t)]
     pub format: Format,
 }

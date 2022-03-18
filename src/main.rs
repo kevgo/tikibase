@@ -7,8 +7,17 @@ fn main() {
     let args = cli::Args::parse();
     let (mut outcomes, exitcode) = process(&args.command, ".");
     outcomes.sort();
-    for outcome in outcomes {
-        println!("{outcome}");
+    match args.format {
+        cli::Format::Text => print_text(outcomes),
+        cli::Format::Json => print_json(outcomes),
     }
     std::process::exit(exitcode);
 }
+
+fn print_text(outcomes: Vec<String>) {
+    for outcome in outcomes {
+        println!("{outcome}");
+    }
+}
+
+fn print_json(outcomes: Vec<String>) {}

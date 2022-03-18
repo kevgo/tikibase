@@ -9,10 +9,9 @@ pub mod testhelpers;
 
 pub use cli::Command;
 use database::Tikibase;
-use issues::Issue;
 use std::path::PathBuf;
 
-pub fn process<P: Into<PathBuf>>(command: &Command, path: P) -> (Vec<String>, i32) {
+pub fn process<P: Into<PathBuf>>(command: &Command, path: P) -> (Vec<Issue>, i32) {
     let mut outcomes = Vec::new();
     let mut exit_code = 0;
     let path = path.into();
