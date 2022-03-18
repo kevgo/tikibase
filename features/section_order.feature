@@ -29,7 +29,7 @@ Feature: verify the ordering of content sections
     When checking
     Then it prints:
       """
-      test.md  wrong section order
+      test.md  sections occur in different order than specified by tikibase.json
       """
     And the exit code is 1
 

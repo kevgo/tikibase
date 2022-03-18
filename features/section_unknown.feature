@@ -27,7 +27,7 @@ Feature: verify section types
     When checking
     Then it prints:
       """
-      1.md:7  unknown section "zonk", allowed sections:
+      1.md:7  section "zonk" isn't listed in tikibase.json, allowed sections:
         - what is it
         - links
       """
@@ -42,7 +42,7 @@ Feature: verify section types
     When doing a pitstop
     Then it prints:
       """
-      1.md:7  unknown section "zonk", allowed sections:
+      1.md:7  section "zonk" isn't listed in tikibase.json, allowed sections:
         - what is it
         - links
       """

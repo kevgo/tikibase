@@ -18,7 +18,7 @@ Feature: obsolete occurrence sections
     When checking
     Then it prints:
       """
-      1.md:7  obsolete occurrences section
+      1.md:7  obsolete "occurrences" section
       """
     And the exit code is 1
 
