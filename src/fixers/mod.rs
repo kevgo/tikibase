@@ -14,18 +14,18 @@ use unordered_sections::sort_unordered_sections;
 pub fn fix(issue: &Issue, base: &mut Tikibase, config: &config::Data) -> Option<String> {
     match issue {
         Issue::BrokenImage {
-            filename,
-            line,
-            target,
+            filename: _,
+            line: _,
+            target: _,
         } => None,
         Issue::BrokenLink {
-            filename,
-            line,
-            target,
+            filename: _,
+            line: _,
+            target: _,
         } => None,
         Issue::DuplicateSection {
-            filename,
-            section_type,
+            filename: _,
+            section_type: _,
         } => None,
         Issue::EmptySection {
             filename,
@@ -37,7 +37,10 @@ pub fn fix(issue: &Issue, base: &mut Tikibase, config: &config::Data) -> Option<
             filename,
             line.clone(),
         )),
-        Issue::LinkToSameDocument { filename, line } => None,
+        Issue::LinkToSameDocument {
+            filename: _,
+            line: _,
+        } => None,
         Issue::LinkWithoutDestination { filename, line } => None,
         Issue::MissingLinks { file, links } => Some(add_missing_links(base, file, links)),
         Issue::MissingSource { file, line, index } => None,
