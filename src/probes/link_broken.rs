@@ -99,8 +99,9 @@ mod tests {
         #[test]
         fn with_anchor() {
             let mut give = "1.md#foo".into();
+            let want = "#foo".to_string();
             super::super::make_link_anchor(&mut give);
-            assert_eq!(give, "#foo".to_string());
+            assert_eq!(give, want);
         }
     }
 
