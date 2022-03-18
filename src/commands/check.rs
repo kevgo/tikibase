@@ -1,5 +1,6 @@
 use crate::config;
 use crate::database::Tikibase;
+use crate::issue::Issue;
 use crate::probes;
 
 pub(crate) fn check(base: &Tikibase, config: &config::Data) -> Vec<Issue> {

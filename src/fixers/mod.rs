@@ -11,7 +11,7 @@ use missing_link::add_missing_links;
 use obsolete_link::remove_obsolete_links;
 use unordered_sections::sort_unordered_sections;
 
-pub fn fix(issue: Issue, base: &mut Tikibase, config: config::Data) -> Option<String> {
+pub fn fix(issue: &Issue, base: &mut Tikibase, config: &config::Data) -> Option<String> {
     match issue {
         Issue::BrokenImage {
             filename,
@@ -31,13 +31,18 @@ pub fn fix(issue: Issue, base: &mut Tikibase, config: config::Data) -> Option<St
             filename,
             line,
             section_type,
-        } => Some(remove_empty_section(base, &section_type, &filename, line)),
+        } => Some(remove_empty_section(
+            base,
+            section_type,
+            filename,
+            line.clone(),
+        )),
         Issue::LinkToSameDocument { filename, line } => None,
         Issue::LinkWithoutDestination { filename, line } => None,
-        Issue::MissingLinks { file, links } => Some(add_missing_links(base, &file, links)),
+        Issue::MissingLinks { file, links } => Some(add_missing_links(base, file, links)),
         Issue::MissingSource { file, line, index } => None,
         Issue::MixCapSection { variants } => None,
-        Issue::ObsoleteLink { file, line } => Some(remove_obsolete_links(base, &file, line)),
+        Issue::ObsoleteLink { file, line } => Some(remove_obsolete_links(base, file, line.clone())),
         Issue::OrphanedResource { path } => None,
         Issue::SectionWithoutHeader { file, line } => None,
         Issue::UnknownSection {
@@ -48,8 +53,8 @@ pub fn fix(issue: Issue, base: &mut Tikibase, config: config::Data) -> Option<St
         } => None,
         Issue::UnorderedSections { file } => Some(sort_unordered_sections(
             base,
-            &file,
-            config.sections.as_ref().unwrap(),
+            file,
+            &config.sections.unwrap(),
         )),
     }
 }

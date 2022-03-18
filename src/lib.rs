@@ -9,6 +9,7 @@ pub mod testhelpers;
 
 pub use cli::Command;
 use database::Tikibase;
+use fixers::fix;
 use std::path::PathBuf;
 
 pub fn process<P: Into<PathBuf>>(command: &Command, path: P) -> (Vec<String>, i32) {
@@ -39,6 +40,7 @@ pub fn process<P: Into<PathBuf>>(command: &Command, path: P) -> (Vec<String>, i3
     // take care of the issues
     match command {
         Command::Check => {
+            // TODO: remove loop
             for issue in issues {
                 outcomes.push(issue.to_string());
                 exit_code += 1;
@@ -46,17 +48,15 @@ pub fn process<P: Into<PathBuf>>(command: &Command, path: P) -> (Vec<String>, i3
         }
         Command::Fix => {
             for issue in issues {
-                if let Some(fixer) = issue.fixer() {
-                    outcomes.push(fixer.fix(&mut base, &config));
+                if let Some(fixed) = fix(&issue, &mut base, &config) {
+                    outcomes.push(fixed);
                 }
             }
         }
         Command::Pitstop => {
             for issue in issues {
-                match issue.fixer() {
-                    Some(fixer) => {
-                        outcomes.push(fixer.fix(&mut base, &config));
-                    }
+                match fix(&issue, &mut base, &config) {
+                    Some(fix_outcome) => outcomes.push(fix_outcome),
                     None => {
                         outcomes.push(issue.to_string());
                         exit_code += 1;
