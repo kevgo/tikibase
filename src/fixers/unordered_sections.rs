@@ -1,6 +1,5 @@
-use std::path::Path;
-
 use crate::database::{Section, Tikibase};
+use std::path::Path;
 
 pub fn sort_unordered_sections(base: &mut Tikibase, file: &Path, sections: &[String]) -> String {
     let base_dir = base.dir.clone();
