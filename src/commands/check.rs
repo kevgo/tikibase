@@ -1,9 +1,9 @@
 use crate::config;
-use crate::database::Tikibase;
+use crate::issues::Issue;
 use crate::probes;
-use crate::Issue;
+use crate::Tikibase;
 
-pub(crate) fn check(base: &Tikibase, config: &config::Data) -> Vec<Box<dyn Issue>> {
+pub(crate) fn check(base: &Tikibase, config: &config::Data) -> Vec<Issue> {
     let mut issues = Vec::new();
     issues.extend(probes::section_duplicate::scan(base));
     issues.extend(probes::section_empty::scan(base));

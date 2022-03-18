@@ -1,19 +1,18 @@
 use crate::config;
-use crate::database::Tikibase;
-use crate::issues;
-use crate::Issue;
+use crate::issues::Issue;
+use crate::Tikibase;
 
-pub(crate) fn scan(base: &Tikibase, config: &config::Data) -> Vec<Box<dyn Issue>> {
-    let mut issues = Vec::<Box<dyn Issue>>::new();
+pub(crate) fn scan(base: &Tikibase, config: &config::Data) -> Vec<Issue> {
+    let mut issues = Vec::new();
     let expected_order = match &config.sections {
         None => return issues,
         Some(expected_sections) => expected_sections,
     };
     for doc in &base.docs {
         if !matches_schema(&doc.section_types(), expected_order) {
-            issues.push(Box::new(issues::UnorderedSections {
+            issues.push(Issue::UnorderedSections {
                 file: doc.path.clone(),
-            }));
+            });
         }
     }
     issues

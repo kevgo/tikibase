@@ -1,9 +1,8 @@
 use crate::database::{DocLinks, Reference, Tikibase};
-use crate::issues;
-use crate::Issue;
+use crate::issues::Issue;
 
 pub(crate) struct LinksResult {
-    pub issues: Vec<Box<dyn Issue>>,
+    pub issues: Vec<Issue>,
 
     /// all links to documents
     pub incoming_doc_links: DocLinks,
@@ -30,10 +29,10 @@ pub(crate) fn scan(base: &Tikibase) -> LinksResult {
                     match reference {
                         Reference::Link { mut destination } => {
                             if destination.is_empty() {
-                                result.issues.push(Box::new(issues::LinkWithoutDestination {
+                                result.issues.push(Issue::LinkWithoutDestination {
                                     filename: doc.path.clone(),
                                     line: section.line_number + (i as u32) + 1,
-                                }));
+                                });
                                 continue;
                             }
                             if destination.starts_with("http") {
@@ -42,18 +41,18 @@ pub(crate) fn scan(base: &Tikibase) -> LinksResult {
                             }
                             make_link_anchor(&mut destination);
                             if !existing_targets.contains(&destination) {
-                                result.issues.push(Box::new(issues::BrokenLink {
+                                result.issues.push(Issue::BrokenLink {
                                     filename: doc.path.clone(),
                                     line: section.line_number + (i as u32) + 1,
                                     target: destination,
-                                }));
+                                });
                                 continue;
                             }
                             if destination == doc.path.to_string_lossy() {
-                                result.issues.push(Box::new(issues::LinkToSameDocument {
+                                result.issues.push(Issue::LinkToSameDocument {
                                     filename: doc.path.clone(),
                                     line: section.line_number + (i as u32) + 1,
-                                }));
+                                });
                                 continue;
                             }
                             result
@@ -66,11 +65,11 @@ pub(crate) fn scan(base: &Tikibase) -> LinksResult {
                                 continue;
                             }
                             if !base.has_resource(&src) {
-                                result.issues.push(Box::new(issues::BrokenImage {
+                                result.issues.push(Issue::BrokenImage {
                                     filename: doc.path.clone(),
                                     line: section.line_number + (i as u32) + 1,
                                     target: src.clone(),
-                                }));
+                                });
                             }
                             result.outgoing_resource_links.push(src);
                         }
@@ -108,8 +107,8 @@ mod tests {
     mod process {
         use std::path::PathBuf;
 
-        use crate::database::Tikibase;
         use crate::testhelpers::{create_file, empty_config, tmp_dir};
+        use crate::Tikibase;
 
         #[test]
         fn link_to_non_existing_file() {
@@ -121,7 +120,7 @@ mod tests {
             let outcomes: Vec<String> = have.issues.iter().map(|issue| issue.to_string()).collect();
             assert_eq!(
                 outcomes,
-                vec!["one.md:3  broken link to \"non-existing.md\""]
+                vec!["one.md:3  link to non-existing file \"non-existing.md\""]
             );
             assert_eq!(have.incoming_doc_links.data.len(), 0);
             assert_eq!(have.outgoing_doc_links.data.len(), 0);
@@ -220,7 +219,10 @@ Here is a link to [Three](3.md) that also works.
             let have = super::super::scan(&base);
             let outcomes: Vec<String> = have.issues.iter().map(|issue| issue.to_string()).collect();
             assert_eq!(outcomes.len(), 1);
-            assert_eq!(outcomes[0], "1.md:3  broken image \"zonk.png\"");
+            assert_eq!(
+                outcomes[0],
+                "1.md:3  image link to non-existing file \"zonk.png\""
+            );
             assert_eq!(have.outgoing_resource_links.len(), 1);
             assert_eq!(have.outgoing_resource_links[0], "zonk.png");
             assert_eq!(have.incoming_doc_links.data.len(), 0);
