@@ -3,6 +3,9 @@ mod missing_link;
 mod obsolete_link;
 mod unordered_sections;
 
+use std::fmt::{self, Display, Formatter};
+use std::path::PathBuf;
+
 use crate::config;
 use crate::issues::Issue;
 use crate::Tikibase;
@@ -11,7 +14,7 @@ use missing_link::add_missing_links;
 use obsolete_link::remove_obsolete_links;
 use unordered_sections::sort_unordered_sections;
 
-pub fn fix(issue: &Issue, base: &mut Tikibase, config: &config::Data) -> Option<String> {
+pub fn fix(issue: Issue, base: &mut Tikibase, config: &config::Data) -> Option<Fix> {
     match issue {
         Issue::BrokenImage {
             filename: _,
@@ -31,7 +34,7 @@ pub fn fix(issue: &Issue, base: &mut Tikibase, config: &config::Data) -> Option<
             filename,
             line,
             section_type,
-        } => Some(remove_empty_section(base, section_type, filename, *line)),
+        } => Some(remove_empty_section(base, section_type, filename, line)),
         Issue::LinkToSameDocument {
             filename: _,
             line: _,
@@ -47,7 +50,7 @@ pub fn fix(issue: &Issue, base: &mut Tikibase, config: &config::Data) -> Option<
             index: _,
         } => None,
         Issue::MixCapSection { variants: _ } => None,
-        Issue::ObsoleteLink { file, line } => Some(remove_obsolete_links(base, file, *line)),
+        Issue::ObsoleteLink { file, line } => Some(remove_obsolete_links(base, file, line)),
         Issue::OrphanedResource { path: _ } => None,
         Issue::SectionWithoutHeader { file: _, line: _ } => None,
         Issue::UnknownSection {
@@ -61,5 +64,58 @@ pub fn fix(issue: &Issue, base: &mut Tikibase, config: &config::Data) -> Option<
             file,
             config.sections.as_ref().unwrap(),
         )),
+    }
+}
+
+/// the fixes that this linter can perform
+pub enum Fix {
+    AddedOccurrencesSection {
+        file: PathBuf,
+        line: u32,
+    },
+    RemovedEmptySection {
+        section_type: String,
+        filename: PathBuf,
+        line: u32,
+    },
+    RemovedObsoleteOccurrencesSection {
+        file: PathBuf,
+        line: u32,
+    },
+    SortedSections {
+        file: PathBuf,
+    },
+}
+
+impl Display for Fix {
+    fn fmt(&self, f: &mut Formatter<'_>) -> fmt::Result {
+        match self {
+            Fix::RemovedEmptySection {
+                section_type,
+                filename,
+                line,
+            } => write!(
+                f,
+                "{}:{}  removed empty section \"{}\"",
+                filename.to_string_lossy(),
+                line + 1,
+                section_type
+            ),
+            Fix::AddedOccurrencesSection { file, line } => write!(
+                f,
+                "{}:{}  added occurrences section",
+                file.to_string_lossy(),
+                line
+            ),
+            Fix::RemovedObsoleteOccurrencesSection { file, line } => write!(
+                f,
+                "{}:{}  removed obsolete occurrences section",
+                file.to_string_lossy(),
+                line + 1,
+            ),
+            Fix::SortedSections { file } => {
+                write!(f, "{}  fixed section order", file.to_string_lossy())
+            }
+        }
     }
 }

@@ -2,7 +2,7 @@ use std::borrow::Cow;
 use std::fmt::{self, Display, Formatter};
 use std::path::PathBuf;
 
-/// possible issues that this linter can find
+/// the issues that this linter can find
 pub enum Issue {
     BrokenImage {
         filename: PathBuf,

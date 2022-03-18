@@ -1,11 +1,12 @@
+use super::Fix;
 use crate::database::{section, Tikibase};
 use crate::issues::MissingLink;
 use once_cell::sync::Lazy;
 use regex::{Captures, Regex};
 use std::borrow::Cow;
-use std::path::Path;
+use std::path::PathBuf;
 
-pub fn add_missing_links(base: &mut Tikibase, file: &Path, links: &[MissingLink]) -> String {
+pub fn add_missing_links(base: &mut Tikibase, file: PathBuf, links: Vec<MissingLink>) -> Fix {
     let base_dir = base.dir.clone();
     let doc = base.get_doc_mut(file).unwrap();
 
@@ -23,14 +24,10 @@ pub fn add_missing_links(base: &mut Tikibase, file: &Path, links: &[MissingLink]
         ));
     }
     let occurrences_section = section_builder.result();
-    let result = format!(
-        "{}:{}  added occurrences section",
-        doc.path.to_string_lossy(),
-        occurrences_section.line_number + 1
-    );
+    let line = occurrences_section.line_number + 1;
     doc.content_sections.push(occurrences_section);
     doc.save(&base_dir);
-    result
+    Fix::AddedOccurrencesSection { file, line }
 }
 
 /// removes all links from the given string
