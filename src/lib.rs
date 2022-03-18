@@ -1,10 +1,10 @@
 pub mod cli;
-pub(crate) mod commands;
-pub(crate) mod config;
-pub(crate) mod database;
-pub(crate) mod fixers;
-pub(crate) mod issue;
-pub(crate) mod probes;
+mod commands;
+mod config;
+mod database;
+mod fixers;
+mod issue;
+mod probes;
 pub mod testhelpers;
 
 pub use cli::Command;
