@@ -1,5 +1,5 @@
-use crate::database::Tikibase;
 use crate::issue::Issue;
+use crate::Tikibase;
 
 pub(crate) fn scan(base: &Tikibase) -> Vec<Issue> {
     let mut issues = Vec::<Issue>::new();

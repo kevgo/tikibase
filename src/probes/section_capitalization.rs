@@ -1,5 +1,5 @@
-use crate::database::Tikibase;
 use crate::issue::Issue;
+use crate::Tikibase;
 use ahash::{AHashMap, AHashSet};
 use std::iter::FromIterator;
 
@@ -42,8 +42,8 @@ mod tests {
         assert_eq!(super::normalize("FOO"), "foo");
     }
 
-    use crate::database::Tikibase;
     use crate::testhelpers::{create_file, empty_config, tmp_dir};
+    use crate::Tikibase;
 
     #[test]
     fn progress() {

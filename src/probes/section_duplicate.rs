@@ -1,5 +1,5 @@
-use crate::database::Tikibase;
 use crate::issue::Issue;
+use crate::Tikibase;
 
 /// finds all duplicate sections in the given Tikibase
 pub(crate) fn scan(base: &Tikibase) -> Vec<Issue> {
@@ -25,8 +25,8 @@ pub(crate) fn scan(base: &Tikibase) -> Vec<Issue> {
 mod tests {
 
     use super::scan;
-    use crate::database::Tikibase;
     use crate::testhelpers::{create_file, empty_config, tmp_dir};
+    use crate::Tikibase;
 
     #[test]
     fn duplicate_sections() {

@@ -1,7 +1,7 @@
 use crate::database::DocLinks;
-use crate::database::Tikibase;
 use crate::issue::Issue;
 use crate::issue::MissingLink;
+use crate::Tikibase;
 use ahash::AHashSet;
 use std::path::PathBuf;
 
@@ -56,8 +56,8 @@ pub(crate) fn scan(
 mod tests {
 
     use crate::database::DocLinks;
-    use crate::database::Tikibase;
     use crate::testhelpers::{create_file, empty_config, tmp_dir};
+    use crate::Tikibase;
 
     #[test]
     fn process() {

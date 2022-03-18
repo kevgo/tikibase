@@ -1,4 +1,4 @@
-use crate::database::Tikibase;
+use crate::Tikibase;
 use std::path::Path;
 
 pub fn remove_obsolete_links(base: &mut Tikibase, file: &Path, line: u32) -> String {

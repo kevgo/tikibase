@@ -1,5 +1,5 @@
-use crate::database::Tikibase;
 use crate::issue::Issue;
+use crate::Tikibase;
 
 /// finds all empty sections in the given Tikibase,
 /// fixes them if fix is enabled,
@@ -25,8 +25,8 @@ pub(crate) fn scan(base: &Tikibase) -> Vec<Issue> {
 mod tests {
 
     use super::scan;
-    use crate::database::Tikibase;
     use crate::testhelpers::{create_file, empty_config, tmp_dir};
+    use crate::Tikibase;
 
     #[test]
     fn empty_section() {

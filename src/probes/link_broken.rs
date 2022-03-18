@@ -107,8 +107,8 @@ mod tests {
     mod process {
         use std::path::PathBuf;
 
-        use crate::database::Tikibase;
         use crate::testhelpers::{create_file, empty_config, tmp_dir};
+        use crate::Tikibase;
 
         #[test]
         fn link_to_non_existing_file() {
