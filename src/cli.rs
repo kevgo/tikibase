@@ -1,7 +1,8 @@
 use clap::StructOpt;
 
+/// Linter for Markdown-based semantic knowledge wiki s
 #[derive(Debug, StructOpt)]
-#[clap(author, version, about, long_about = None)]
+#[clap(version, about, long_about = None)]
 pub struct Args {
     /// the command to run
     #[clap(subcommand)]
