@@ -66,7 +66,7 @@ pub enum Issue {
     UnorderedSections { file: PathBuf },
 }
 
-struct MissingLink {
+pub struct MissingLink {
     pub path: PathBuf,
     pub title: String,
 }
@@ -81,9 +81,9 @@ impl Display for Issue {
             } => write!(
                 f,
                 "{}:{}  broken image \"{}\"",
-                self.filename.to_string_lossy(),
-                self.line,
-                self.target
+                filename.to_string_lossy(),
+                line,
+                target
             ),
             Issue::BrokenLink {
                 filename,
@@ -92,9 +92,9 @@ impl Display for Issue {
             } => write!(
                 f,
                 "{}:{}  broken link to \"{}\"",
-                self.filename.to_string_lossy(),
-                self.line,
-                self.target
+                filename.to_string_lossy(),
+                line,
+                target
             ),
             Issue::DuplicateSection {
                 filename,
@@ -102,8 +102,8 @@ impl Display for Issue {
             } => write!(
                 f,
                 "{}  duplicate section: {}",
-                self.filename.to_string_lossy(),
-                self.section_type
+                filename.to_string_lossy(),
+                section_type
             ),
             Issue::EmptySection {
                 filename,
@@ -112,59 +112,52 @@ impl Display for Issue {
             } => write!(
                 f,
                 "{}:{}  section \"{}\" has no content",
-                self.filename.to_string_lossy(),
-                self.line + 1,
-                self.section_type
+                filename.to_string_lossy(),
+                line + 1,
+                section_type
             ),
             Issue::LinkToSameDocument { filename, line } => write!(
                 f,
                 "{}:{}  link to the same file",
-                self.filename.to_string_lossy(),
-                self.line
+                filename.to_string_lossy(),
+                line
             ),
             Issue::LinkWithoutDestination { filename, line } => write!(
                 f,
                 "{}:{}  link without destination",
-                self.filename.to_string_lossy(),
-                self.line
+                filename.to_string_lossy(),
+                line
             ),
             Issue::MissingLinks { file, links } => {
-                let links: Vec<Cow<str>> = self
-                    .links
-                    .iter()
-                    .map(|ml| ml.path.to_string_lossy())
-                    .collect();
+                let links: Vec<Cow<str>> =
+                    links.iter().map(|ml| ml.path.to_string_lossy()).collect();
                 write!(
                     f,
                     "{}  missing link to {}",
-                    self.file.to_string_lossy(),
+                    file.to_string_lossy(),
                     links.join(", "),
                 )
             }
-            Issue::MissingSource { file, line, index } => write!(
-                f,
-                "{}:{}  missing source [{}]",
-                self.file,
-                self.line + 1,
-                self.index
-            ),
+            Issue::MissingSource { file, line, index } => {
+                write!(f, "{}:{}  missing source [{}]", file, line + 1, index)
+            }
             Issue::MixCapSection { variants } => write!(
                 f,
                 "mixed capitalization of sections: {}",
-                self.variants.join("|")
+                variants.join("|")
             ),
             Issue::ObsoleteLink { file, line } => write!(
                 f,
                 "{}:{}  obsolete occurrences section",
-                self.file.to_string_lossy(),
-                self.line + 1,
+                file.to_string_lossy(),
+                line + 1,
             ),
-            Issue::OrphanedResource { path } => write!(f, "unused resource \"{}\"", self.path),
+            Issue::OrphanedResource { path } => write!(f, "unused resource \"{}\"", path),
             Issue::SectionWithoutHeader { file, line } => write!(
                 f,
                 "{}:{}  section has no title",
-                self.file.to_string_lossy(),
-                self.line + 1
+                file.to_string_lossy(),
+                line + 1
             ),
             Issue::UnknownSection {
                 file,
@@ -172,22 +165,21 @@ impl Display for Issue {
                 section_type,
                 allowed_types,
             } => {
-                let alloweds: Vec<String> = self
-                    .allowed_types
+                let alloweds: Vec<String> = allowed_types
                     .iter()
                     .map(|allowed| format!("\n  - {}", allowed))
                     .collect();
                 write!(
                     f,
                     "{}:{}  unknown section \"{}\", allowed sections:{}",
-                    self.file.to_string_lossy(),
-                    self.line + 1,
-                    self.section_type,
+                    file.to_string_lossy(),
+                    line + 1,
+                    section_type,
                     alloweds.join("")
                 )
             }
             Issue::UnorderedSections { file } => {
-                write!(f, "{}  wrong section order", self.file.to_string_lossy())
+                write!(f, "{}  wrong section order", file.to_string_lossy())
             }
         }
     }

@@ -1,23 +1,17 @@
+mod empty_section;
+mod missing_link;
+mod obsolete_link;
+mod unordered_sections;
+
 use crate::config;
 use crate::database::Tikibase;
 use crate::issue::Issue;
+use empty_section::remove_empty_section;
+use missing_link::add_missing_links;
+use obsolete_link::remove_obsolete_links;
+use unordered_sections::sort_unordered_sections;
 
-use self::empty_section::EmptySectionFixer;
-use self::missing_link::MissingLinksFixer;
-use self::obsolete_link::ObsoleteLinkFixer;
-use self::unordered_sections::UnorderedSectionFixer;
-
-pub(crate) mod empty_section;
-pub(crate) mod missing_link;
-pub(crate) mod obsolete_link;
-pub(crate) mod unordered_sections;
-
-pub(crate) trait Fix {
-    /// fixes the associated issue, returns a human-readable description of what it did
-    fn fix(&self, base: &mut Tikibase, config: &config::Data) -> String;
-}
-
-pub fn fixer(issue: Issue) -> Option<Fix> {
+pub fn fix(issue: Issue, base: &mut Tikibase, config: config::Data) -> Option<String> {
     match issue {
         Issue::BrokenImage {
             filename,
@@ -37,13 +31,13 @@ pub fn fixer(issue: Issue) -> Option<Fix> {
             filename,
             line,
             section_type,
-        } => Some(Box::new(EmptySectionFixer { issue })),
+        } => Some(remove_empty_section(base, &section_type, &filename, line)),
         Issue::LinkToSameDocument { filename, line } => None,
         Issue::LinkWithoutDestination { filename, line } => None,
-        Issue::MissingLinks { file, links } => Some(Box::new(MissingLinksFixer { issue })),
+        Issue::MissingLinks { file, links } => Some(add_missing_links(base, &file, links)),
         Issue::MissingSource { file, line, index } => None,
         Issue::MixCapSection { variants } => None,
-        Issue::ObsoleteLink { file, line } => Some(Box::new(ObsoleteLinkFixer { issue })),
+        Issue::ObsoleteLink { file, line } => Some(remove_obsolete_links(base, &file, line)),
         Issue::OrphanedResource { path } => None,
         Issue::SectionWithoutHeader { file, line } => None,
         Issue::UnknownSection {
@@ -52,6 +46,10 @@ pub fn fixer(issue: Issue) -> Option<Fix> {
             section_type,
             allowed_types,
         } => None,
-        Issue::UnorderedSections { file } => Some(Box::new(UnorderedSectionFixer { issue })),
+        Issue::UnorderedSections { file } => Some(sort_unordered_sections(
+            base,
+            &file,
+            config.sections.as_ref().unwrap(),
+        )),
     }
 }
