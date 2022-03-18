@@ -1,5 +1,5 @@
 use crate::config;
-use crate::issue::Issue;
+use crate::issues::Issue;
 use crate::probes;
 use crate::Tikibase;
 

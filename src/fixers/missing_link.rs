@@ -1,5 +1,5 @@
 use crate::database::{section, Tikibase};
-use crate::issue::MissingLink;
+use crate::issues::MissingLink;
 use once_cell::sync::Lazy;
 use regex::{Captures, Regex};
 use std::borrow::Cow;

@@ -1,5 +1,5 @@
 use crate::config;
-use crate::issue::Issue;
+use crate::issues::Issue;
 use crate::Tikibase;
 
 pub(crate) fn scan(base: &Tikibase, config: &config::Data) -> Vec<Issue> {

@@ -1,6 +1,6 @@
 use crate::database::DocLinks;
-use crate::issue::Issue;
-use crate::issue::MissingLink;
+use crate::issues::Issue;
+use crate::issues::MissingLink;
 use crate::Tikibase;
 use ahash::AHashSet;
 use std::path::PathBuf;

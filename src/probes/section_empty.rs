@@ -1,4 +1,4 @@
-use crate::issue::Issue;
+use crate::issues::Issue;
 use crate::Tikibase;
 
 /// finds all empty sections in the given Tikibase,

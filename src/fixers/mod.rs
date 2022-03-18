@@ -4,7 +4,7 @@ mod obsolete_link;
 mod unordered_sections;
 
 use crate::config;
-use crate::issue::Issue;
+use crate::issues::Issue;
 use crate::Tikibase;
 use empty_section::remove_empty_section;
 use missing_link::add_missing_links;

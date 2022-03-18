@@ -3,7 +3,7 @@ mod commands;
 mod config;
 mod database;
 mod fixers;
-mod issue;
+mod issues;
 mod probes;
 pub mod testhelpers;
 
