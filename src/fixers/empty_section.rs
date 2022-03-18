@@ -1,4 +1,4 @@
-use crate::database::Tikibase;
+use crate::Tikibase;
 use std::path::Path;
 
 pub fn remove_empty_section(
