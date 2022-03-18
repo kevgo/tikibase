@@ -7,10 +7,11 @@ pub fn remove_empty_section(
     filename: &Path,
     line: u32,
 ) -> String {
+    let base_dir = base.dir.clone();
     let doc = base.get_doc_mut(filename).unwrap();
     doc.content_sections
         .retain(|section| section.section_type() != section_type);
-    doc.save(&base.dir);
+    doc.save(&base_dir);
     format!(
         "{}:{}  removed empty section \"{}\"",
         filename.to_string_lossy(),

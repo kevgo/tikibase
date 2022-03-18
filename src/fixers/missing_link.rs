@@ -6,6 +6,7 @@ use std::borrow::Cow;
 use std::path::Path;
 
 pub fn add_missing_links(base: &mut Tikibase, file: &Path, links: &Vec<MissingLink>) -> String {
+    let base_dir = base.dir.clone();
     let doc = base.get_doc_mut(file).unwrap();
 
     // append a newline to the section before
@@ -28,7 +29,7 @@ pub fn add_missing_links(base: &mut Tikibase, file: &Path, links: &Vec<MissingLi
         occurrences_section.line_number + 1
     );
     doc.content_sections.push(occurrences_section);
-    doc.save(&base.dir);
+    doc.save(&base_dir);
     result
 }
 
