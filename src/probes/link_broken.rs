@@ -37,11 +37,10 @@ pub(crate) fn scan(base: &Tikibase) -> LinksResult {
                                 continue;
                             }
                             if destination.starts_with("http") {
+                                // ignore external links
                                 continue;
                             }
-                            if let Some(index) = destination.find('#') {
-                                destination.replace_range(..index, "");
-                            }
+                            make_link_anchor(&mut destination);
                             if !existing_targets.contains(&destination) {
                                 result.issues.push(Box::new(issues::BrokenLink {
                                     filename: doc.path.clone(),
@@ -83,8 +82,28 @@ pub(crate) fn scan(base: &Tikibase) -> LinksResult {
     result
 }
 
+/// converts the given URL into the anchor portion of it
+fn make_link_anchor(url: &mut String) {
+    // NOTE: it would probably be cleaner to return a &str to the portion of the given &String,
+    // but that isn't needed here and it yields to type incompatibilities.
+    // We are therefore reducing the string in place.
+    if let Some(index) = url.find('#') {
+        url.replace_range(0..index, "");
+    }
+}
+
 #[cfg(test)]
 mod tests {
+
+    mod link_anchor {
+        #[test]
+        fn with_anchor() {
+            let mut give = "1.md#foo".to_string();
+            let want = "#foo".to_string();
+            super::super::make_link_anchor(&mut give);
+            assert_eq!(give, want);
+        }
+    }
 
     mod process {
         use std::path::PathBuf;
