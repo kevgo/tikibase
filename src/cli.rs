@@ -7,6 +7,9 @@ pub struct Args {
     /// the command to run
     #[clap(subcommand)]
     pub command: Command,
+
+    #[clap(arg_enum, long, short)]
+    pub format: Format,
 }
 
 #[derive(Debug, PartialEq, clap::Subcommand)]
@@ -19,4 +22,10 @@ pub enum Command {
     Pitstop,
     /// displays statistics about this Tikibase
     Stats,
+}
+
+#[derive(clap::ArgEnum, Clone, Debug)]
+pub enum Format {
+    Text,
+    Json,
 }
