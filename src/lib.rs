@@ -49,7 +49,7 @@ pub struct Outcome {
 }
 
 /// renders the given issues and fixes into human-readable output
-pub fn render_text(outcome: Outcome) -> (Vec<String>, i32) {
+pub fn render_text(outcome: &Outcome) -> (Vec<String>, i32) {
     let mut result: Vec<String> = Vec::with_capacity(outcome.issues.len() + outcome.fixes.len());
     result.extend(outcome.issues.iter().map(|issue| issue.to_string()));
     result.extend(outcome.fixes.iter().map(|fix| fix.to_string()));

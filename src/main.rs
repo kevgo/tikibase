@@ -16,7 +16,7 @@ fn main() {
 }
 
 fn print_text(outcome: Outcome) -> i32 {
-    let (output, exit_code) = render_text(outcome);
+    let (output, exit_code) = render_text(&outcome);
     for line in output {
         println!("{line}");
     }
