@@ -277,18 +277,15 @@ text
 ### not a document section
 text
 ";
-            match Document::from_str("test.md", content) {
-                Err(msg) => {
-                    assert_eq!(
-                        msg,
-                        Issue::UnclosedFence {
-                            file: PathBuf::from("test.md"),
-                            line: 3,
-                        }
-                    )
-                }
+            let have = match Document::from_str("test.md", content) {
+                Err(issue) => issue,
                 Ok(_) => panic!(),
-            }
+            };
+            let want = Issue::UnclosedFence {
+                file: PathBuf::from("test.md"),
+                line: 3,
+            };
+            assert_eq!(have, want)
         }
     }
 
