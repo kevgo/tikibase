@@ -46,16 +46,16 @@ additional properties:
 Download the [binary](https://github.com/kevgo/tikibase/releases/latest) for
 your platform or install from source:
 
-- [install Rust](https://rustup.rs) nightly
+- [install Rust](https://rustup.rs) stable
 - `cargo install --git https://github.com/kevgo/tikibase.git`
 - add `~/.cargo/bin` to your shell's `$PATH`
 
 ### usage
 
-- on your developer machine: run `tikibase ps` ("pitstop") in the folder with
-  the Markdown files. The pitstop command does everything it can after changes
-  have been made: it finds all issues, fixes as many as it can, and lists the
-  remaining ones.
+- while working on Markdown files, run `tikibase ps` ("pitstop") in the folder
+  with the Markdown files. The pitstop command does everything it can after
+  changes have been made: fixes all auto-fixable issues and lists the remaining
+  ones.
 - in your tests/CI: run `tikibase check` (lists all issues)
 - to see all available commands: `tikibase help`
 
