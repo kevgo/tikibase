@@ -72,14 +72,14 @@ pub struct Args {
     pub format: Format,
 }
 
-/// possible output formats
+/// possible output formats for the CLI app
 #[derive(clap::ArgEnum, Clone, Debug)]
 pub enum Format {
     Text,
     Json,
 }
 
-/// the default output format
+/// the default output format of the CLI app
 impl Default for Format {
     fn default() -> Self {
         Format::Text
