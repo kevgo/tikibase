@@ -24,13 +24,10 @@ fn print_text(outcome: Outcome) -> i32 {
 }
 
 fn print_json(outcome: Outcome) -> i32 {
-    let out = io::stdout();
-    match serde_json::to_writer_pretty(out, &outcome) {
-        Ok(_) => {}
-        Err(err) => {
-            println!("Error: {}", err);
-            return 1;
-        }
+    // NOTE: using a buffered writer doesn't seem to improve performance here
+    if let Err(err) = serde_json::to_writer_pretty(io::stdout(), &outcome) {
+        println!("Error serializing JSON: {}", err);
+        return 1;
     }
     outcome.issues.len() as i32
 }
