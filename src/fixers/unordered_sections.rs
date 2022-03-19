@@ -3,7 +3,7 @@ use crate::database::Section;
 use crate::Tikibase;
 use std::path::PathBuf;
 
-pub fn sort_unordered_sections(base: &mut Tikibase, file: PathBuf, sections: &[String]) -> Fix {
+pub fn sort_sections(base: &mut Tikibase, file: PathBuf, sections: &[String]) -> Fix {
     let base_dir = base.dir.clone();
     let mut doc = base.get_doc_mut(&file).unwrap();
     doc.content_sections = reorder(&mut doc.content_sections, sections);

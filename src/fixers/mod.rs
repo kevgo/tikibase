@@ -68,7 +68,7 @@ pub fn fix(issue: Issue, base: &mut Tikibase, config: &config::Data) -> Option<F
             section_type: _,
             allowed_types: _,
         } => None,
-        Issue::UnorderedSections { file } => Some(unordered_sections::sort_unordered_sections(
+        Issue::UnorderedSections { file } => Some(unordered_sections::sort_sections(
             base,
             file,
             config.sections.as_ref().unwrap(),
