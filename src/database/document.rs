@@ -1,5 +1,5 @@
 use super::{section, Section};
-use crate::issues::Issue;
+use crate::Issue;
 use ahash::AHashSet;
 use once_cell::sync::Lazy;
 use regex::Regex;
