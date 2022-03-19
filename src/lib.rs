@@ -44,11 +44,13 @@ pub fn run(command: Command, dir: PathBuf) -> Outcome {
 /// result of running a Tikibase command
 #[derive(Default, Serialize)]
 pub struct Outcome {
+    /// the issues identified but not fixed
     pub issues: Vec<Issue>,
+    /// the fixes applied
     pub fixes: Vec<Fix>,
 }
 
-/// renders the given issues and fixes into human-readable output
+/// renders the given outcome into human-readable output
 pub fn render_text(outcome: &Outcome) -> (Vec<String>, i32) {
     let mut result: Vec<String> = Vec::with_capacity(outcome.issues.len() + outcome.fixes.len());
     result.extend(outcome.issues.iter().map(|issue| issue.to_string()));
@@ -70,18 +72,21 @@ pub struct Args {
     pub format: Format,
 }
 
+/// possible output formats
 #[derive(clap::ArgEnum, Clone, Debug)]
 pub enum Format {
     Text,
     Json,
 }
 
+/// the default output format
 impl Default for Format {
     fn default() -> Self {
         Format::Text
     }
 }
 
+/// the subcommands of the CLI app
 #[derive(Debug, PartialEq, clap::Subcommand)]
 pub enum Command {
     /// Finds and prints issues, does not make changes
