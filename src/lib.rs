@@ -13,6 +13,7 @@ pub use fixers::Fix;
 pub use issues::Issue;
 use std::path::PathBuf;
 
+/// runs the given Command in the given directory, returns structured data
 pub fn run(command: Command, dir: PathBuf) -> (Vec<Issue>, Vec<Fix>) {
     let (mut base, config) = match crate::open(dir) {
         Ok(data) => data,
@@ -26,6 +27,7 @@ pub fn run(command: Command, dir: PathBuf) -> (Vec<Issue>, Vec<Fix>) {
     }
 }
 
+/// renders the given issues and fixes into human-readable output
 pub fn render_text(issues: Vec<Issue>, fixes: Vec<Fix>) -> (Vec<String>, i32) {
     let mut result: Vec<String> = vec![];
     for issue in &issues {
@@ -38,6 +40,7 @@ pub fn render_text(issues: Vec<Issue>, fixes: Vec<Fix>) -> (Vec<String>, i32) {
     (result, issues.len() as i32)
 }
 
+/// the CLI args that this application accepts
 #[derive(Debug, StructOpt)]
 #[clap(author, version, about, long_about = None)]
 pub struct Args {
