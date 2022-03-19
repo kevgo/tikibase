@@ -76,8 +76,8 @@ Create a file `tikibase.json` in your Tikibase directory. Here is an example:
 
 ### related
 
-- [VSCode Markdown IDE](https://github.com/kevgo/vscode-markdown-ide) allows
-  convenient editing of Tikibase content using VSCode.
+- [VSCode Markdown IDE](https://github.com/kevgo/vscode-markdown-ide) provides
+  IDE-grade refactoring for Tikibases and runs this `tikibase` linter for you.
 - [Obsidian](https://obsidian.md): a more fully featured Markdown-based
   knowledge base including its own editor/viewer and many plugins. Easier and to
   get started but - like all application-based solutions - will be outdated at
