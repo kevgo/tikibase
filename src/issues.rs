@@ -53,7 +53,7 @@ pub enum Issue {
     NoTitleSection {
         file: PathBuf,
     },
-    ObsoleteLink {
+    ObsoleteOccurrencesSection {
         file: PathBuf,
         line: u32,
     },
@@ -176,7 +176,7 @@ impl Display for Issue {
             Issue::NoTitleSection { file } => {
                 write!(f, "{}  no title section", file.to_string_lossy())
             }
-            Issue::ObsoleteLink { file, line } => write!(
+            Issue::ObsoleteOccurrencesSection { file, line } => write!(
                 f,
                 "{}:{}  obsolete \"occurrences\" section",
                 file.to_string_lossy(),

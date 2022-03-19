@@ -1,5 +1,5 @@
 mod check;
-pub mod fix;
+mod fix;
 mod pitstop;
 mod stats;
 

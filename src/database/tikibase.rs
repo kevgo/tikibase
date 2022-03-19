@@ -1,7 +1,5 @@
-use super::config;
-use super::Document;
-use super::Resource;
-use crate::issues::Issue;
+use super::{Document, Resource};
+use crate::{config, Issue};
 use std::fs::File;
 use std::io::{BufRead, BufReader};
 use std::path::{Path, PathBuf};

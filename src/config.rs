@@ -1,9 +1,8 @@
+use crate::issues::Issue;
 use serde::Deserialize;
 use std::fs::File;
 use std::io::ErrorKind;
 use std::path::Path;
-
-use crate::issues::Issue;
 
 /// Tikibase configuration data
 #[derive(Deserialize, Default, PartialEq, Debug)]
@@ -45,8 +44,8 @@ mod tests {
     }
 
     mod load {
-        use crate::issues::Issue;
         use crate::testhelpers::{create_file, tmp_dir};
+        use crate::Issue;
 
         #[test]
         fn no_config_file() {
@@ -96,13 +95,11 @@ mod tests {
 }
 "#;
             create_file("tikibase.json", content, &dir);
-            let err = super::super::load(&dir);
-            assert_eq!(
-                err,
-                Err(Issue::InvalidConfigurationFile {
-                    message: "expected value at line 3 column 1".into()
-                })
-            )
+            let have = super::super::load(&dir);
+            let want = Err(Issue::InvalidConfigurationFile {
+                message: "expected value at line 3 column 1".into(),
+            });
+            assert_eq!(have, want)
         }
     }
 }

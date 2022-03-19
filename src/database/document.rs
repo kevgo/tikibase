@@ -1,6 +1,5 @@
-use crate::issues::Issue;
-
 use super::{section, Section};
+use crate::Issue;
 use ahash::AHashSet;
 use once_cell::sync::Lazy;
 use regex::Regex;
@@ -12,9 +11,10 @@ pub struct Document {
     pub path: PathBuf,
     pub title_section: Section,
     pub content_sections: Vec<Section>,
-    /// Loading filters out "occurrences" sections.
-    /// Some => this document had an "occurrences" section at the given line when loading it.
-    /// None => this document had no occurrences section when loading it.
+    /// The line where the "occurrences" section in this document starts.
+    /// Loading a document filters out its "occurrences" section to we have to store this value separately.
+    /// `Some` means this document had an "occurrences" section at the given line when loading it.
+    /// `None` means this document had no occurrences section when loading it.
     pub occurrences_section_line: Option<u32>,
 }
 
@@ -224,7 +224,7 @@ mod tests {
 
     mod from_str {
         use super::super::Document;
-        use crate::issues::Issue;
+        use crate::Issue;
         use std::path::PathBuf;
 
         #[test]
@@ -244,17 +244,14 @@ content";
 
         #[test]
         fn invalid() {
-            match Document::from_str("one.md", "content") {
-                Err(e) => {
-                    assert_eq!(
-                        e,
-                        Issue::NoTitleSection {
-                            file: PathBuf::from("one.md"),
-                        }
-                    )
-                }
+            let have = match Document::from_str("one.md", "content") {
+                Err(issue) => issue,
                 Ok(_) => panic!(),
-            }
+            };
+            let want = Issue::NoTitleSection {
+                file: PathBuf::from("one.md"),
+            };
+            assert_eq!(have, want)
         }
 
         #[test]
@@ -281,18 +278,15 @@ text
 ### not a document section
 text
 ";
-            match Document::from_str("test.md", content) {
-                Err(msg) => {
-                    assert_eq!(
-                        msg,
-                        Issue::UnclosedFence {
-                            file: PathBuf::from("test.md"),
-                            line: 3,
-                        }
-                    )
-                }
+            let have = match Document::from_str("test.md", content) {
+                Err(issue) => issue,
                 Ok(_) => panic!(),
-            }
+            };
+            let want = Issue::UnclosedFence {
+                file: PathBuf::from("test.md"),
+                line: 3,
+            };
+            assert_eq!(have, want)
         }
     }
 
