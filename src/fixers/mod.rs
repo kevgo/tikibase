@@ -3,12 +3,11 @@ mod missing_links;
 mod obsolete_link;
 mod unordered_sections;
 
-use std::fmt::{self, Display, Formatter};
-use std::path::PathBuf;
-
 use super::config;
 use crate::issues::Issue;
 use crate::Tikibase;
+use std::fmt::{self, Display, Formatter};
+use std::path::PathBuf;
 
 /// fixes the given Issue
 pub fn fix(issue: Issue, base: &mut Tikibase, config: &config::Data) -> Option<Fix> {
