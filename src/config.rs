@@ -44,8 +44,8 @@ mod tests {
     }
 
     mod load {
-        use crate::issues::Issue;
         use crate::testhelpers::{create_file, tmp_dir};
+        use crate::Issue;
 
         #[test]
         fn no_config_file() {
