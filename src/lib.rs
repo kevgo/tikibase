@@ -10,17 +10,28 @@ use clap::StructOpt;
 use database::Tikibase;
 pub use fixers::Fix;
 pub use issues::Issue;
+use serde::Serialize;
 use std::path::PathBuf;
 
 /// runs the given Command in the given directory, returns structured data
-pub fn run(command: Command, dir: PathBuf) -> (Vec<Issue>, Vec<Fix>) {
+pub fn run(command: Command, dir: PathBuf) -> Outcome {
     let config = match config::load(&dir) {
         Ok(config) => config,
-        Err(issue) => return (vec![issue], vec![]),
+        Err(issue) => {
+            return Outcome {
+                issues: vec![issue],
+                fixes: vec![],
+            }
+        }
     };
     let mut base = match Tikibase::load(dir, &config) {
         Ok(base) => base,
-        Err(issues) => return (issues, vec![]),
+        Err(issues) => {
+            return Outcome {
+                issues,
+                fixes: vec![],
+            }
+        }
     };
     match command {
         Command::Check => commands::check(&mut base, &config),
@@ -30,13 +41,20 @@ pub fn run(command: Command, dir: PathBuf) -> (Vec<Issue>, Vec<Fix>) {
     }
 }
 
+/// result of running a Tikibase command
+#[derive(Default, Serialize)]
+pub struct Outcome {
+    pub issues: Vec<Issue>,
+    pub fixes: Vec<Fix>,
+}
+
 /// renders the given issues and fixes into human-readable output
-pub fn render_text(issues: Vec<Issue>, fixes: Vec<Fix>) -> (Vec<String>, i32) {
-    let mut result: Vec<String> = Vec::with_capacity(issues.len() + fixes.len());
-    result.extend(issues.iter().map(|issue| issue.to_string()));
-    result.extend(fixes.iter().map(|fix| fix.to_string()));
+pub fn render_text(outcome: Outcome) -> (Vec<String>, i32) {
+    let mut result: Vec<String> = Vec::with_capacity(outcome.issues.len() + outcome.fixes.len());
+    result.extend(outcome.issues.iter().map(|issue| issue.to_string()));
+    result.extend(outcome.fixes.iter().map(|fix| fix.to_string()));
     result.sort();
-    (result, issues.len() as i32)
+    (result, outcome.issues.len() as i32)
 }
 
 /// the CLI args that this application accepts

@@ -6,6 +6,7 @@ mod unordered_sections;
 use super::config;
 use crate::issues::Issue;
 use crate::Tikibase;
+use serde::Serialize;
 use std::fmt::{self, Display, Formatter};
 use std::path::PathBuf;
 
@@ -77,6 +78,7 @@ pub fn fix(issue: Issue, base: &mut Tikibase, config: &config::Data) -> Option<F
 }
 
 /// documents the fixes that this linter performs
+#[derive(Serialize)]
 pub enum Fix {
     AddedOccurrencesSection {
         file: PathBuf,

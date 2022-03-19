@@ -1,13 +1,17 @@
-use crate::{commands, config, fixers::fix, Fix, Issue, Tikibase};
+use crate::Outcome;
+use crate::{commands, config, fixers::fix, Tikibase};
 
-pub fn pitstop(base: &mut Tikibase, config: &config::Data) -> (Vec<Issue>, Vec<Fix>) {
-    let (issues, mut fixes) = commands::check(base, config);
-    let mut unfixable_issues: Vec<Issue> = vec![];
-    for issue in issues {
+pub fn pitstop(base: &mut Tikibase, config: &config::Data) -> Outcome {
+    let mut outcome = commands::check(base, config);
+    let mut unfixable_issues = vec![];
+    for issue in outcome.issues {
         match fix(issue.clone(), base, config) {
-            Some(fix) => fixes.push(fix),
+            Some(fix) => outcome.fixes.push(fix),
             None => unfixable_issues.push(issue),
         }
     }
-    (unfixable_issues, fixes)
+    Outcome {
+        issues: unfixable_issues,
+        fixes: outcome.fixes,
+    }
 }

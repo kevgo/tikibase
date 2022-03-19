@@ -2,26 +2,26 @@
 
 use clap::StructOpt;
 use std::path::PathBuf;
-use tikibase::{render_text, run, Args, Fix, Format, Issue};
+use tikibase::{render_text, run, Args, Format, Outcome};
 
 fn main() {
     let args = Args::parse();
-    let (issues, fixes) = run(args.command, PathBuf::from("."));
+    let outcome = run(args.command, PathBuf::from("."));
     let exit_code = match args.format {
-        Format::Text => print_text(issues, fixes),
-        Format::Json => print_json(issues, fixes),
+        Format::Text => print_text(outcome),
+        Format::Json => print_json(outcome),
     };
     std::process::exit(exit_code);
 }
 
-fn print_text(issues: Vec<Issue>, fixes: Vec<Fix>) -> i32 {
-    let (output, exit_code) = render_text(issues, fixes);
+fn print_text(outcome: Outcome) -> i32 {
+    let (output, exit_code) = render_text(outcome);
     for line in output {
         println!("{line}");
     }
     exit_code
 }
 
-fn print_json(issues: Vec<Issue>, fixes: Vec<Fix>) -> i32 {
-    0
+fn print_json(outcome: Outcome) -> i32 {
+    outcome.issues.len() as i32
 }

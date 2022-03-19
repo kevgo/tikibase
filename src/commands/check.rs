@@ -1,6 +1,6 @@
-use crate::{config, probes, Fix, Issue, Tikibase};
+use crate::{config, probes, Outcome, Tikibase};
 
-pub fn check(base: &mut Tikibase, config: &config::Data) -> (Vec<Issue>, Vec<Fix>) {
+pub fn check(base: &mut Tikibase, config: &config::Data) -> Outcome {
     let mut issues = Vec::new();
     issues.extend(probes::section_duplicate::scan(base));
     issues.extend(probes::section_empty::scan(base));
@@ -20,5 +20,8 @@ pub fn check(base: &mut Tikibase, config: &config::Data) -> (Vec<Issue>, Vec<Fix
         &links_result.incoming_doc_links,
         &links_result.outgoing_doc_links,
     ));
-    (issues, vec![])
+    Outcome {
+        issues,
+        fixes: vec![],
+    }
 }

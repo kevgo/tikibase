@@ -1,11 +1,15 @@
-use crate::{commands, config, fixers, Fix, Issue, Tikibase};
+use crate::{commands, config, fixers, Outcome, Tikibase};
 
-pub fn fix(base: &mut Tikibase, config: &config::Data) -> (Vec<Issue>, Vec<Fix>) {
-    let (issues, mut fixes) = commands::check(base, config);
-    for issue in issues {
+pub fn fix(base: &mut Tikibase, config: &config::Data) -> Outcome {
+    let outcome = commands::check(base, config);
+    let mut fixes = vec![];
+    for issue in outcome.issues {
         if let Some(fixed) = fixers::fix(issue, base, config) {
             fixes.push(fixed);
         }
     }
-    (vec![], fixes)
+    Outcome {
+        issues: vec![],
+        fixes,
+    }
 }

@@ -1,7 +1,7 @@
-use crate::{Fix, Issue, Tikibase};
+use crate::{Outcome, Tikibase};
 use ahash::AHashMap;
 
-pub fn stats(base: &Tikibase) -> (Vec<Issue>, Vec<Fix>) {
+pub fn stats(base: &Tikibase) -> Outcome {
     println!("documents: {}", base.docs.len());
     println!("resources: {}", base.resources.len());
     let section_types = collect_section_types(base);
@@ -12,7 +12,7 @@ pub fn stats(base: &Tikibase) -> (Vec<Issue>, Vec<Fix>) {
     for key in keys {
         println!("- {} ({})", key, section_types.get(key).unwrap());
     }
-    (vec![], vec![])
+    Outcome::default()
 }
 
 fn collect_section_types(tb: &Tikibase) -> AHashMap<&str, u32> {

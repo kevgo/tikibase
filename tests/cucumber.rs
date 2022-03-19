@@ -51,20 +51,20 @@ fn file(world: &mut MyWorld, filename: String) {
 
 #[when("checking")]
 fn checking(world: &mut MyWorld) {
-    let (issues, fixes) = tikibase::run(tikibase::Command::Check, world.dir.clone());
-    (world.findings, world.exitcode) = tikibase::render_text(issues, fixes);
+    let outcome = tikibase::run(tikibase::Command::Check, world.dir.clone());
+    (world.findings, world.exitcode) = tikibase::render_text(outcome);
 }
 
 #[when("doing a pitstop")]
 fn doing_a_pitstop(world: &mut MyWorld) {
-    let (issues, fixes) = tikibase::run(tikibase::Command::Pitstop, world.dir.clone());
-    (world.findings, world.exitcode) = tikibase::render_text(issues, fixes);
+    let outcome = tikibase::run(tikibase::Command::Pitstop, world.dir.clone());
+    (world.findings, world.exitcode) = tikibase::render_text(outcome);
 }
 
 #[when("fixing")]
 fn fixing(world: &mut MyWorld) {
-    let (issues, fixes) = tikibase::run(tikibase::Command::Fix, world.dir.clone());
-    (world.findings, world.exitcode) = tikibase::render_text(issues, fixes);
+    let outcome = tikibase::run(tikibase::Command::Fix, world.dir.clone());
+    (world.findings, world.exitcode) = tikibase::render_text(outcome);
 }
 
 #[then("all files are unchanged")]

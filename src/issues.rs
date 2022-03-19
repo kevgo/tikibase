@@ -1,9 +1,10 @@
+use serde::Serialize;
 use std::borrow::Cow;
 use std::fmt::{self, Display, Formatter};
 use std::path::PathBuf;
 
 /// the issues that this linter can find
-#[derive(Clone, Debug, PartialEq)]
+#[derive(Clone, Debug, PartialEq, Serialize)]
 pub enum Issue {
     BrokenImage {
         filename: PathBuf,
@@ -82,7 +83,7 @@ pub enum Issue {
     },
 }
 
-#[derive(Clone, Debug, PartialEq)]
+#[derive(Clone, Debug, PartialEq, Serialize)]
 pub struct MissingLink {
     pub path: PathBuf,
     pub title: String,
