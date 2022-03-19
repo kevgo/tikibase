@@ -76,7 +76,7 @@ pub fn fix(issue: Issue, base: &mut Tikibase, config: &config::Data) -> Option<F
     }
 }
 
-/// the fixes that this linter can perform
+/// documents the fixes that this linter performs
 pub enum Fix {
     AddedOccurrencesSection {
         file: PathBuf,
