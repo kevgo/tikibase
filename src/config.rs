@@ -95,9 +95,9 @@ mod tests {
 }
 "#;
             create_file("tikibase.json", content, &dir);
-            let err = super::super::load(&dir);
+            let result = super::super::load(&dir);
             assert_eq!(
-                err,
+                result,
                 Err(Issue::InvalidConfigurationFile {
                     message: "expected value at line 3 column 1".into()
                 })
