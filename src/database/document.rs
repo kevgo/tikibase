@@ -223,7 +223,7 @@ mod tests {
 
     mod from_str {
         use super::super::Document;
-        use crate::issues::Issue;
+        use crate::Issue;
         use std::path::PathBuf;
 
         #[test]
@@ -243,17 +243,14 @@ content";
 
         #[test]
         fn invalid() {
-            match Document::from_str("one.md", "content") {
-                Err(e) => {
-                    assert_eq!(
-                        e,
-                        Issue::NoTitleSection {
-                            file: PathBuf::from("one.md"),
-                        }
-                    )
-                }
+            let have = match Document::from_str("one.md", "content") {
+                Err(issue) => issue,
                 Ok(_) => panic!(),
-            }
+            };
+            let want = Issue::NoTitleSection {
+                file: PathBuf::from("one.md"),
+            };
+            assert_eq!(have, want)
         }
 
         #[test]
