@@ -1,5 +1,6 @@
 use super::Fix;
-use crate::database::{Section, Tikibase};
+use crate::database::Section;
+use crate::Tikibase;
 use std::path::PathBuf;
 
 pub fn sort_unordered_sections(base: &mut Tikibase, file: PathBuf, sections: &[String]) -> Fix {
