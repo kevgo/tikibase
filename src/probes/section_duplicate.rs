@@ -1,4 +1,4 @@
-use crate::issues::Issue;
+use crate::Issue;
 use crate::Tikibase;
 
 /// finds all duplicate sections in the given Tikibase
