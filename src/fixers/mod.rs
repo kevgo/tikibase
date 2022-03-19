@@ -1,5 +1,5 @@
 mod empty_section;
-mod missing_link;
+mod missing_links;
 mod obsolete_link;
 mod unordered_sections;
 
@@ -9,10 +9,6 @@ use std::path::PathBuf;
 use super::config;
 use crate::issues::Issue;
 use crate::Tikibase;
-use empty_section::remove_empty_section;
-use missing_link::add_missing_links;
-use obsolete_link::remove_obsolete_links;
-use unordered_sections::sort_unordered_sections;
 
 pub fn fix(issue: Issue, base: &mut Tikibase, config: &config::Data) -> Option<Fix> {
     match issue {
@@ -35,7 +31,12 @@ pub fn fix(issue: Issue, base: &mut Tikibase, config: &config::Data) -> Option<F
             filename,
             line,
             section_type,
-        } => Some(remove_empty_section(base, section_type, filename, line)),
+        } => Some(empty_section::remove_empty_section(
+            base,
+            section_type,
+            filename,
+            line,
+        )),
         Issue::InvalidConfigurationFile { message: _ } => None,
         Issue::LinkToSameDocument {
             filename: _,
@@ -45,7 +46,9 @@ pub fn fix(issue: Issue, base: &mut Tikibase, config: &config::Data) -> Option<F
             filename: _,
             line: _,
         } => None,
-        Issue::MissingLinks { file, links } => Some(add_missing_links(base, file, links)),
+        Issue::MissingLinks { file, links } => {
+            Some(missing_links::add_occurrences(base, file, links))
+        }
         Issue::MissingSource {
             file: _,
             line: _,
@@ -53,7 +56,9 @@ pub fn fix(issue: Issue, base: &mut Tikibase, config: &config::Data) -> Option<F
         } => None,
         Issue::MixCapSection { variants: _ } => None,
         Issue::NoTitleSection { file: _ } => None,
-        Issue::ObsoleteLink { file, line } => Some(remove_obsolete_links(base, file, line)),
+        Issue::ObsoleteLink { file, line } => {
+            Some(obsolete_link::remove_obsolete_links(base, file, line))
+        }
         Issue::OrphanedResource { path: _ } => None,
         Issue::SectionWithoutHeader { file: _, line: _ } => None,
         Issue::UnclosedFence { file: _, line: _ } => None,
@@ -63,7 +68,7 @@ pub fn fix(issue: Issue, base: &mut Tikibase, config: &config::Data) -> Option<F
             section_type: _,
             allowed_types: _,
         } => None,
-        Issue::UnorderedSections { file } => Some(sort_unordered_sections(
+        Issue::UnorderedSections { file } => Some(unordered_sections::sort_unordered_sections(
             base,
             file,
             config.sections.as_ref().unwrap(),

@@ -6,7 +6,7 @@ use regex::{Captures, Regex};
 use std::borrow::Cow;
 use std::path::PathBuf;
 
-pub fn add_missing_links(base: &mut Tikibase, file: PathBuf, links: Vec<MissingLink>) -> Fix {
+pub fn add_occurrences(base: &mut Tikibase, file: PathBuf, links: Vec<MissingLink>) -> Fix {
     let base_dir = base.dir.clone();
     let doc = base.get_doc_mut(&file).unwrap();
 
