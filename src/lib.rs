@@ -1,7 +1,7 @@
 pub mod commands;
 pub mod config;
 mod database;
-pub mod fixers;
+mod fixers;
 mod issues;
 mod probes;
 pub mod testhelpers;
