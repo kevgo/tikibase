@@ -24,7 +24,7 @@ pub(crate) fn scan(
             .collect();
 
         if missing_outgoing.is_empty() {
-            // no missing links --> done here
+            // no missing links --> done with this document
             if let Some(occurrences_section_line) = doc.occurrences_section_line {
                 issues.push(Issue::ObsoleteOccurrencesSection {
                     file: doc.path.clone(),
