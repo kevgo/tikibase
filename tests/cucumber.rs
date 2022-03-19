@@ -94,6 +94,7 @@ fn file_should_contain(world: &mut MyWorld, step: &Step, filename: String) {
 
 #[then("it prints:")]
 fn it_prints(world: &mut MyWorld, step: &Step) {
+    // TODO: make both of these strings
     let have: Vec<&str> = world
         .output
         .iter()
