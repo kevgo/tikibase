@@ -1,7 +1,4 @@
-use crate::database::Tikibase;
-use crate::fixers::fix;
-use crate::{commands, config};
-use crate::{Fix, Issue};
+use crate::{commands, config, fixers::fix, Fix, Issue, Tikibase};
 
 pub fn pitstop(base: &mut Tikibase, config: &config::Data) -> (Vec<Issue>, Vec<Fix>) {
     let (issues, mut fixes) = commands::check(base, config);

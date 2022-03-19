@@ -1,7 +1,4 @@
-use crate::database::Tikibase;
-use crate::issues::Issue;
-use crate::probes;
-use crate::{config, Fix};
+use crate::{config, probes, Fix, Issue, Tikibase};
 
 pub fn check(base: &mut Tikibase, config: &config::Data) -> (Vec<Issue>, Vec<Fix>) {
     let mut issues = Vec::new();

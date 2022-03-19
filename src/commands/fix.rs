@@ -1,7 +1,4 @@
-use crate::commands;
-use crate::database::Tikibase;
-use crate::fixers;
-use crate::{config, Fix, Issue};
+use crate::{commands, config, fixers, Fix, Issue, Tikibase};
 
 pub fn fix(base: &mut Tikibase, config: &config::Data) -> (Vec<Issue>, Vec<Fix>) {
     let (issues, mut fixes) = commands::check(base, config);
