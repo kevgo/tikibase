@@ -9,7 +9,7 @@ pub fn remove_empty_section(
     line: u32,
 ) -> Fix {
     let base_dir = base.dir.clone();
-    let doc = base.get_doc_mut(filename).unwrap();
+    let doc = base.get_doc_mut(&filename).unwrap();
     doc.content_sections
         .retain(|section| section.section_type() != section_type);
     doc.save(&base_dir);

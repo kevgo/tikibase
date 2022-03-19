@@ -1,3 +1,5 @@
+use crate::issues::Issue;
+
 use super::{section, Section};
 use ahash::AHashSet;
 use once_cell::sync::Lazy;
@@ -20,7 +22,7 @@ static SOURCE_RE: Lazy<Regex> = Lazy::new(|| Regex::new("^(\\d+)\\.").unwrap());
 
 impl Document {
     /// provides a Document instance containing the given text
-    pub fn from_lines<T, P: Into<PathBuf>>(lines: T, path: P) -> Result<Document, String>
+    pub fn from_lines<T, P: Into<PathBuf>>(lines: T, path: P) -> Result<Document, Issue>
     where
         T: Iterator<Item = String>,
     {
@@ -49,7 +51,7 @@ impl Document {
             }
             match &mut section_builder {
                 Some(section_builder) => section_builder.add_line(line),
-                None => return Err(format!("{}  no title section", path.to_string_lossy())),
+                None => return Err(Issue::NoTitleSection { file: path }),
             }
         }
         if let Some(section_builder) = section_builder {
@@ -61,11 +63,10 @@ impl Document {
             }
         }
         if inside_fence {
-            return Err(format!(
-                "{}:{}  unclosed fence",
-                path.to_string_lossy(),
-                fence_line + 1,
-            ));
+            return Err(Issue::UnclosedFence {
+                file: path,
+                line: (fence_line as u32) + 1,
+            });
         }
         let content_sections = sections.split_off(1);
         Ok(Document {
@@ -78,7 +79,7 @@ impl Document {
 
     #[cfg(test)]
     /// provides Document instances in tests
-    pub fn from_str<P: Into<PathBuf>>(path: P, text: &str) -> Result<Document, String> {
+    pub fn from_str<P: Into<PathBuf>>(path: P, text: &str) -> Result<Document, Issue> {
         Document::from_lines(text.lines().map(|line| line.to_string()), path)
     }
 
@@ -223,6 +224,8 @@ mod tests {
 
     mod from_str {
         use super::super::Document;
+        use crate::issues::Issue;
+        use std::path::PathBuf;
 
         #[test]
         fn valid() {
@@ -242,7 +245,14 @@ content";
         #[test]
         fn invalid() {
             match Document::from_str("one.md", "content") {
-                Err(e) => assert_eq!(e, "one.md  no title section"),
+                Err(e) => {
+                    assert_eq!(
+                        e,
+                        Issue::NoTitleSection {
+                            file: PathBuf::from("one.md"),
+                        }
+                    )
+                }
                 Ok(_) => panic!(),
             }
         }
@@ -272,7 +282,15 @@ text
 text
 ";
             match Document::from_str("test.md", content) {
-                Err(msg) => assert_eq!(msg, "test.md:3  unclosed fence"),
+                Err(msg) => {
+                    assert_eq!(
+                        msg,
+                        Issue::UnclosedFence {
+                            file: PathBuf::from("test.md"),
+                            line: 3,
+                        }
+                    )
+                }
                 Ok(_) => panic!(),
             }
         }

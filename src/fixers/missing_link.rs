@@ -8,7 +8,7 @@ use std::path::PathBuf;
 
 pub fn add_missing_links(base: &mut Tikibase, file: PathBuf, links: Vec<MissingLink>) -> Fix {
     let base_dir = base.dir.clone();
-    let doc = base.get_doc_mut(file).unwrap();
+    let doc = base.get_doc_mut(&file).unwrap();
 
     // append a newline to the section before
     doc.last_section_mut().push_line("");

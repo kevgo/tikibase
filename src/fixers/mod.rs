@@ -6,7 +6,7 @@ mod unordered_sections;
 use std::fmt::{self, Display, Formatter};
 use std::path::PathBuf;
 
-use crate::config;
+use super::config;
 use crate::issues::Issue;
 use crate::Tikibase;
 use empty_section::remove_empty_section;
@@ -26,6 +26,7 @@ pub fn fix(issue: Issue, base: &mut Tikibase, config: &config::Data) -> Option<F
             line: _,
             target: _,
         } => None,
+        Issue::CannotReadConfigurationFile { message: _ } => None,
         Issue::DuplicateSection {
             filename: _,
             section_type: _,
@@ -35,6 +36,7 @@ pub fn fix(issue: Issue, base: &mut Tikibase, config: &config::Data) -> Option<F
             line,
             section_type,
         } => Some(remove_empty_section(base, section_type, filename, line)),
+        Issue::InvalidConfigurationFile { message: _ } => None,
         Issue::LinkToSameDocument {
             filename: _,
             line: _,
@@ -50,9 +52,11 @@ pub fn fix(issue: Issue, base: &mut Tikibase, config: &config::Data) -> Option<F
             index: _,
         } => None,
         Issue::MixCapSection { variants: _ } => None,
+        Issue::NoTitleSection { file: _ } => None,
         Issue::ObsoleteLink { file, line } => Some(remove_obsolete_links(base, file, line)),
         Issue::OrphanedResource { path: _ } => None,
         Issue::SectionWithoutHeader { file: _, line: _ } => None,
+        Issue::UnclosedFence { file: _, line: _ } => None,
         Issue::UnknownSection {
             file: _,
             line: _,

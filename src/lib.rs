@@ -1,72 +1,59 @@
-pub mod cli;
-mod commands;
-mod config;
+pub mod commands;
+pub mod config;
 mod database;
-mod fixers;
+pub mod fixers;
 mod issues;
 mod probes;
 pub mod testhelpers;
 
-pub use cli::Command;
+use clap::StructOpt;
+pub use database::open;
 use database::Tikibase;
-use fixers::fix;
+pub use fixers::Fix;
+pub use issues::Issue;
 use std::path::PathBuf;
 
-pub fn process<P: Into<PathBuf>>(command: &Command, path: P) -> (Vec<String>, i32) {
-    let mut outcomes = Vec::new();
-    let mut exit_code = 0;
-    let path = path.into();
-
-    // load the configuration
-    let config = match config::load(&path) {
-        Ok(config) => config,
-        Err(err) => return (vec![err], 1),
+pub fn run(command: Command, dir: PathBuf) -> (Vec<Issue>, Vec<Fix>) {
+    let (mut base, config) = match crate::open(dir) {
+        Ok(data) => data,
+        Err(issues) => return (issues, vec![]),
     };
-
-    // load the Tikibase
-    let (mut base, mut errors) = Tikibase::load(path, &config);
-    exit_code += errors.len() as i32;
-    outcomes.append(&mut errors);
-
-    // handle stats command
-    if command == &Command::Stats {
-        commands::stats(&base);
-        return (outcomes, exit_code);
-    }
-
-    // find all issues in the Tikibase
-    let issues = commands::check(&base, &config);
-
-    // take care of the issues
     match command {
-        Command::Check => {
-            // TODO: remove loop
-            for issue in issues {
-                outcomes.push(issue.to_string());
-                exit_code += 1;
-            }
-        }
-        Command::Fix => {
-            for issue in issues {
-                if let Some(fixed) = fix(&issue, &mut base, &config) {
-                    outcomes.push(fixed);
-                }
-            }
-        }
-        Command::Pitstop => {
-            for issue in issues {
-                match fix(&issue, &mut base, &config) {
-                    Some(fix_outcome) => outcomes.push(fix_outcome),
-                    None => {
-                        outcomes.push(issue.to_string());
-                        exit_code += 1;
-                    }
-                }
-            }
-        }
-        _ => {
-            panic!("unexpected complex command: {:?}", command);
-        }
-    };
-    (outcomes, exit_code)
+        Command::Check => commands::check(&mut base, &config),
+        Command::Stats => commands::stats(&base),
+        Command::Fix => commands::fix(&mut base, &config),
+        Command::Pitstop => commands::pitstop(&mut base, &config),
+    }
+}
+
+pub fn render_text(issues: Vec<Issue>, fixes: Vec<Fix>) -> (Vec<String>, i32) {
+    let mut result: Vec<String> = vec![];
+    for issue in &issues {
+        result.push(issue.to_string())
+    }
+    for fix in fixes {
+        result.push(fix.to_string())
+    }
+    result.sort();
+    (result, issues.len() as i32)
+}
+
+#[derive(Debug, StructOpt)]
+#[clap(author, version, about, long_about = None)]
+pub struct Args {
+    /// the command to run
+    #[clap(subcommand)]
+    pub command: Command,
+}
+
+#[derive(Debug, PartialEq, clap::Subcommand)]
+pub enum Command {
+    /// The command to run on CI. Finds and prints issues, does not make changes.
+    Check,
+    /// corrects all auto-fixable issues
+    Fix,
+    /// Corrects all auto-fixable issues, prints all remaining issues.
+    Pitstop,
+    /// displays statistics about this Tikibase
+    Stats,
 }
