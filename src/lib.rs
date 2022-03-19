@@ -7,7 +7,6 @@ mod probes;
 pub mod testhelpers;
 
 use clap::StructOpt;
-use database::open;
 use database::Tikibase;
 pub use fixers::Fix;
 pub use issues::Issue;
@@ -15,8 +14,12 @@ use std::path::PathBuf;
 
 /// runs the given Command in the given directory, returns structured data
 pub fn run(command: Command, dir: PathBuf) -> (Vec<Issue>, Vec<Fix>) {
-    let (mut base, config) = match crate::open(dir) {
-        Ok(data) => data,
+    let config = match config::load(&dir) {
+        Ok(config) => config,
+        Err(issue) => return (vec![issue], vec![]),
+    };
+    let mut base = match Tikibase::load(dir, &config) {
+        Ok(base) => base,
         Err(issues) => return (issues, vec![]),
     };
     match command {
