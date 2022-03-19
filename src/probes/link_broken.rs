@@ -114,8 +114,7 @@ mod tests {
         fn link_to_non_existing_file() {
             let dir = tmp_dir();
             create_file("one.md", "# One\n\n[invalid](non-existing.md)\n", &dir);
-            let (base, errs) = Tikibase::load(dir, &empty_config());
-            assert_eq!(errs.len(), 0);
+            let base = Tikibase::load(dir, &empty_config()).unwrap();
             let have = super::super::scan(&base);
             let outcomes: Vec<String> = have.issues.iter().map(|issue| issue.to_string()).collect();
             assert_eq!(
@@ -142,8 +141,7 @@ Here is a link to [Three](3.md) that also works.
             create_file("1.md", content, &dir);
             create_file("2.md", "# Two", &dir);
             create_file("3.md", "# Three", &dir);
-            let (base, errs) = Tikibase::load(dir, &empty_config());
-            assert_eq!(errs.len(), 0);
+            let base = Tikibase::load(dir, &empty_config()).unwrap();
             let have = super::super::scan(&base);
             assert!(have.issues.is_empty());
             assert_eq!(have.outgoing_doc_links.data.len(), 1);
@@ -165,8 +163,7 @@ Here is a link to [Three](3.md) that also works.
         fn link_without_destination() {
             let dir = tmp_dir();
             create_file("one.md", "# One\n\n[invalid]()\n", &dir);
-            let (base, errs) = Tikibase::load(dir, &empty_config());
-            assert_eq!(errs.len(), 0);
+            let base = Tikibase::load(dir, &empty_config()).unwrap();
             let have = super::super::scan(&base);
             let outcomes: Vec<String> = have.issues.iter().map(|issue| issue.to_string()).collect();
             assert_eq!(outcomes, vec!["one.md:3  link without destination"]);
@@ -186,8 +183,7 @@ Here is a link to [Three](3.md) that also works.
 ";
             create_file("one.md", content, &dir);
             create_file("two.md", "# Two", &dir);
-            let (base, errs) = Tikibase::load(dir, &empty_config());
-            assert_eq!(errs.len(), 0);
+            let base = Tikibase::load(dir, &empty_config()).unwrap();
             let have = super::super::scan(&base);
             assert!(have.issues.is_empty());
             assert_eq!(have.incoming_doc_links.data.len(), 0);
@@ -200,8 +196,7 @@ Here is a link to [Three](3.md) that also works.
             let dir = tmp_dir();
             create_file("1.md", "# One\n\n![image](foo.png)\n", &dir);
             create_file("foo.png", "image content", &dir);
-            let (base, errs) = Tikibase::load(dir, &empty_config());
-            assert_eq!(errs.len(), 0);
+            let base = Tikibase::load(dir, &empty_config()).unwrap();
             let have = super::super::scan(&base);
             assert!(have.issues.is_empty());
             assert_eq!(have.outgoing_resource_links.len(), 1);
@@ -214,8 +209,7 @@ Here is a link to [Three](3.md) that also works.
         fn link_to_non_existing_image() {
             let dir = tmp_dir();
             create_file("1.md", "# One\n\n![image](zonk.png)\n", &dir);
-            let (base, errs) = Tikibase::load(dir, &empty_config());
-            assert_eq!(errs.len(), 0);
+            let base = Tikibase::load(dir, &empty_config()).unwrap();
             let have = super::super::scan(&base);
             let outcomes: Vec<String> = have.issues.iter().map(|issue| issue.to_string()).collect();
             assert_eq!(outcomes.len(), 1);

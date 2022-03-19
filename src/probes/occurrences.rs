@@ -64,8 +64,7 @@ mod tests {
         create_file("1.md", "# One\n", &dir);
         create_file("2.md", "# Two\n\n[one](1.md)\n", &dir);
         create_file("3.md", "# Three\n\n[one](1.md)\n", &dir);
-        let (base, errs) = Tikibase::load(dir, &empty_config());
-        assert_eq!(errs.len(), 0);
+        let base = Tikibase::load(dir, &empty_config()).unwrap();
         let mut outgoing_links = DocLinks::default();
         outgoing_links.add("3.md", "1.md");
         outgoing_links.add("2.md", "1.md");

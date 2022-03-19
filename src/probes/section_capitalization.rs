@@ -63,8 +63,7 @@ content";
 ### one
 content";
         create_file("2.md", content2, &dir);
-        let (base, errs) = Tikibase::load(dir, &empty_config());
-        assert_eq!(errs.len(), 0);
+        let base = Tikibase::load(dir, &empty_config()).unwrap();
         let have: Vec<String> = super::scan(&base)
             .iter()
             .map(|issue| issue.to_string())

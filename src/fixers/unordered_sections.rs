@@ -1,12 +1,13 @@
+use super::Fix;
 use crate::database::{Section, Tikibase};
-use std::path::Path;
+use std::path::PathBuf;
 
-pub fn sort_unordered_sections(base: &mut Tikibase, file: &Path, sections: &[String]) -> String {
+pub fn sort_unordered_sections(base: &mut Tikibase, file: PathBuf, sections: &[String]) -> Fix {
     let base_dir = base.dir.clone();
-    let mut doc = base.get_doc_mut(file).unwrap();
+    let mut doc = base.get_doc_mut(&file).unwrap();
     doc.content_sections = reorder(&mut doc.content_sections, sections);
     doc.save(&base_dir);
-    format!("{}  fixed section order", &doc.path.to_string_lossy())
+    Fix::SortedSections { file }
 }
 
 /// drains the given sections vector and provides a new Vector that contains the elements ordered according to schema

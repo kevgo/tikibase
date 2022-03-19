@@ -5,7 +5,6 @@ use cucumber::{gherkin::Step, given, then, when, World, WorldInit};
 use std::convert::Infallible;
 use std::path::PathBuf;
 use tikibase;
-use tikibase::Command;
 
 #[derive(Debug, WorldInit)]
 pub struct MyWorld {
@@ -52,17 +51,20 @@ fn file(world: &mut MyWorld, filename: String) {
 
 #[when("checking")]
 fn checking(world: &mut MyWorld) {
-    (world.findings, world.exitcode) = tikibase::process(&Command::Check, world.dir.clone());
+    let (issues, fixes) = tikibase::run(tikibase::Command::Check, world.dir.clone());
+    (world.findings, world.exitcode) = tikibase::render_text(issues, fixes);
 }
 
 #[when("doing a pitstop")]
 fn doing_a_pitstop(world: &mut MyWorld) {
-    (world.findings, world.exitcode) = tikibase::process(&Command::Pitstop, world.dir.clone());
+    let (issues, fixes) = tikibase::run(tikibase::Command::Pitstop, world.dir.clone());
+    (world.findings, world.exitcode) = tikibase::render_text(issues, fixes);
 }
 
 #[when("fixing")]
 fn fixing(world: &mut MyWorld) {
-    (world.findings, world.exitcode) = tikibase::process(&Command::Fix, world.dir.clone());
+    let (issues, fixes) = tikibase::run(tikibase::Command::Fix, world.dir.clone());
+    (world.findings, world.exitcode) = tikibase::render_text(issues, fixes);
 }
 
 #[then("all files are unchanged")]

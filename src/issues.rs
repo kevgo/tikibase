@@ -2,7 +2,8 @@ use std::borrow::Cow;
 use std::fmt::{self, Display, Formatter};
 use std::path::PathBuf;
 
-/// possible issues that this linter can find
+/// the issues that this linter can find
+#[derive(Clone, Debug, PartialEq)]
 pub enum Issue {
     BrokenImage {
         filename: PathBuf,
@@ -14,6 +15,9 @@ pub enum Issue {
         line: u32,
         target: String,
     },
+    CannotReadConfigurationFile {
+        message: String,
+    },
     DuplicateSection {
         filename: PathBuf,
         section_type: String,
@@ -22,6 +26,9 @@ pub enum Issue {
         filename: PathBuf,
         line: u32,
         section_type: String,
+    },
+    InvalidConfigurationFile {
+        message: String,
     },
     LinkToSameDocument {
         filename: PathBuf,
@@ -43,6 +50,9 @@ pub enum Issue {
     MixCapSection {
         variants: Vec<String>,
     },
+    NoTitleSection {
+        file: PathBuf,
+    },
     ObsoleteLink {
         file: PathBuf,
         line: u32,
@@ -57,6 +67,10 @@ pub enum Issue {
         file: PathBuf,
         line: u32,
     },
+    UnclosedFence {
+        file: PathBuf,
+        line: u32,
+    },
     UnknownSection {
         file: PathBuf,
         line: u32,
@@ -68,6 +82,7 @@ pub enum Issue {
     },
 }
 
+#[derive(Clone, Debug, PartialEq)]
 pub struct MissingLink {
     pub path: PathBuf,
     pub title: String,
@@ -98,6 +113,9 @@ impl Display for Issue {
                 line,
                 target
             ),
+            Issue::CannotReadConfigurationFile { message: _ } => {
+                write!(f, "cannot read configuration file \"tikibase.json\"")
+            }
             Issue::DuplicateSection {
                 filename,
                 section_type,
@@ -118,6 +136,13 @@ impl Display for Issue {
                 line + 1,
                 section_type
             ),
+            Issue::InvalidConfigurationFile { message } => {
+                write!(
+                    f,
+                    "tikibase.json  invalid configuration file structure: {}",
+                    message
+                )
+            }
             Issue::LinkToSameDocument { filename, line } => write!(
                 f,
                 "{}:{}  document contains link to itself",
@@ -148,6 +173,9 @@ impl Display for Issue {
                 "section title occurs with inconsistent capitalization: {}",
                 variants.join("|")
             ),
+            Issue::NoTitleSection { file } => {
+                write!(f, "{}  no title section", file.to_string_lossy())
+            }
             Issue::ObsoleteLink { file, line } => write!(
                 f,
                 "{}:{}  obsolete \"occurrences\" section",
@@ -161,6 +189,9 @@ impl Display for Issue {
                 file.to_string_lossy(),
                 line + 1
             ),
+            Issue::UnclosedFence { file, line } => {
+                write!(f, "{}:{}  unclosed fence", file.to_string_lossy(), line + 1,)
+            }
             Issue::UnknownSection {
                 file,
                 line,
