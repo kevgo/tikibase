@@ -23,7 +23,7 @@ Feature: recognize missing sources
     When checking
     Then it prints:
       """
-      1.md:4  missing source [2]
+      1.md:4  source [2] doesn't exist
       """
     And all files are unchanged
     And the exit code is 1
@@ -37,7 +37,7 @@ Feature: recognize missing sources
     When doing a pitstop
     Then it prints:
       """
-      1.md:4  missing source [2]
+      1.md:4  source [2] doesn't exist
       """
     And all files are unchanged
     And the exit code is 1

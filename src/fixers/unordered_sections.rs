@@ -1,24 +1,14 @@
-use crate::{
-    config,
-    database::{Section, Tikibase},
-    issues::UnorderedSections,
-};
-
 use super::Fix;
+use crate::database::Section;
+use crate::Tikibase;
+use std::path::PathBuf;
 
-pub struct UnorderedSectionFixer<'a> {
-    pub issue: &'a UnorderedSections,
-}
-
-impl Fix for UnorderedSectionFixer<'_> {
-    fn fix(&self, base: &mut Tikibase, config: &config::Data) -> String {
-        let base_dir = base.dir.clone();
-        let mut doc = base.get_doc_mut(&self.issue.file).unwrap();
-        doc.content_sections =
-            reorder(&mut doc.content_sections, config.sections.as_ref().unwrap());
-        doc.save(&base_dir);
-        format!("{}  fixed section order", &doc.path.to_string_lossy())
-    }
+pub fn sort_sections(base: &mut Tikibase, file: PathBuf, sections: &[String]) -> Fix {
+    let base_dir = base.dir.clone();
+    let mut doc = base.get_doc_mut(&file).unwrap();
+    doc.content_sections = reorder(&mut doc.content_sections, sections);
+    doc.save(&base_dir);
+    Fix::SortedSections { file }
 }
 
 /// drains the given sections vector and provides a new Vector that contains the elements ordered according to schema

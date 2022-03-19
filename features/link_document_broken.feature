@@ -13,8 +13,8 @@ Feature: recognize/fix links to non-existing documents
     When checking
     Then it prints:
       """
-      1.md:3  broken link to "non-existing.md"
-      1.md:4  broken link to "non-existing.md"
+      1.md:3  link to non-existing file "non-existing.md"
+      1.md:4  link to non-existing file "non-existing.md"
       """
     And all files are unchanged
     And the exit code is 2
@@ -28,8 +28,8 @@ Feature: recognize/fix links to non-existing documents
     When doing a pitstop
     Then it prints:
       """
-      1.md:3  broken link to "non-existing.md"
-      1.md:4  broken link to "non-existing.md"
+      1.md:3  link to non-existing file "non-existing.md"
+      1.md:4  link to non-existing file "non-existing.md"
       """
     And all files are unchanged
     And the exit code is 2

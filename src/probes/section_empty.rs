@@ -1,21 +1,19 @@
-use crate::database::Tikibase;
-use crate::issues;
-use crate::Issue;
+use crate::{Issue, Tikibase};
 
 /// finds all empty sections in the given Tikibase,
 /// fixes them if fix is enabled,
 /// returns the unfixed issues
-pub(crate) fn scan(base: &Tikibase) -> Vec<Box<dyn Issue>> {
-    let mut issues = Vec::<Box<dyn Issue>>::new();
+pub(crate) fn scan(base: &Tikibase) -> Vec<Issue> {
+    let mut issues = Vec::<Issue>::new();
     for doc in &base.docs {
         for section in &doc.content_sections {
             let has_content = section.body.iter().any(|line| !line.text().is_empty());
             if !has_content {
-                issues.push(Box::new(issues::EmptySection {
+                issues.push(Issue::EmptySection {
                     filename: doc.path.clone(),
                     line: section.line_number,
                     section_type: section.section_type().into(),
-                }));
+                });
             }
         }
     }
@@ -26,8 +24,8 @@ pub(crate) fn scan(base: &Tikibase) -> Vec<Box<dyn Issue>> {
 mod tests {
 
     use super::scan;
-    use crate::database::Tikibase;
     use crate::testhelpers::{create_file, empty_config, tmp_dir};
+    use crate::Tikibase;
 
     #[test]
     fn empty_section() {
@@ -40,8 +38,7 @@ mod tests {
 
 content";
         create_file("test.md", content, &dir);
-        let (base, errs) = Tikibase::load(dir, &empty_config());
-        assert_eq!(errs.len(), 0);
+        let base = Tikibase::load(dir, &empty_config()).unwrap();
         let have: Vec<String> = scan(&base).iter().map(|issue| issue.to_string()).collect();
         assert_eq!(have.len(), 1);
         assert_eq!(
@@ -62,8 +59,7 @@ content";
 
 content";
         create_file("test.md", content, &dir);
-        let (base, errs) = Tikibase::load(dir, &empty_config());
-        assert_eq!(errs.len(), 0);
+        let base = Tikibase::load(dir, &empty_config()).unwrap();
         let have: Vec<String> = scan(&base).iter().map(|issue| issue.to_string()).collect();
         assert_eq!(have.len(), 1);
         assert_eq!(
@@ -82,8 +78,7 @@ content";
 
 content";
         create_file("test.md", content, &dir);
-        let (base, errs) = Tikibase::load(dir, &empty_config());
-        assert_eq!(errs.len(), 0);
+        let base = Tikibase::load(dir, &empty_config()).unwrap();
         let have = scan(&base);
         assert!(have.is_empty());
     }

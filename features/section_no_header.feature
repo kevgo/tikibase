@@ -13,7 +13,7 @@ Feature: recognize sections with an empty header
     When checking
     Then it prints:
       """
-      1.md:3  section has no title
+      1.md:3  section with empty title
       """
     And the exit code is 1
 
@@ -26,7 +26,7 @@ Feature: recognize sections with an empty header
     When doing a pitstop
     Then it prints:
       """
-      1.md:3  section has no title
+      1.md:3  section with empty title
       """
     And all files are unchanged
     And the exit code is 1

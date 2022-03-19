@@ -1,3 +1,4 @@
+use crate::issues::Issue;
 use serde::Deserialize;
 use std::fs::File;
 use std::io::ErrorKind;
@@ -14,22 +15,22 @@ pub struct Data {
 }
 
 /// reads the config file
-pub fn load<P: AsRef<Path>>(dir: P) -> Result<Data, String> {
+pub fn load<P: AsRef<Path>>(dir: P) -> Result<Data, Issue> {
     let config_path = dir.as_ref().join("tikibase.json");
     let file = match File::open(config_path) {
         Ok(reader) => reader,
         Err(e) => match e.kind() {
             ErrorKind::NotFound => return Ok(Data::default()),
             _ => {
-                return Err(format!(
-                    "Cannot access configuration file (tikibase.json): {}",
-                    e
-                ))
+                return Err(Issue::CannotReadConfigurationFile {
+                    message: e.to_string(),
+                })
             }
         },
     };
-    serde_json::from_reader(file)
-        .map_err(|e| format!("Configuration file has invalid structure: {}", e))
+    serde_json::from_reader(file).map_err(|e: serde_json::Error| Issue::InvalidConfigurationFile {
+        message: e.to_string(),
+    })
 }
 
 #[cfg(test)]
@@ -44,6 +45,7 @@ mod tests {
 
     mod load {
         use crate::testhelpers::{create_file, tmp_dir};
+        use crate::Issue;
 
         #[test]
         fn no_config_file() {
@@ -93,13 +95,11 @@ mod tests {
 }
 "#;
             create_file("tikibase.json", content, &dir);
-            match super::super::load(&dir) {
-                Err(e) => assert_eq!(
-                    e,
-                    "Configuration file has invalid structure: expected value at line 3 column 1"
-                ),
-                Ok(_) => panic!(),
-            }
+            let have = super::super::load(&dir);
+            let want = Err(Issue::InvalidConfigurationFile {
+                message: "expected value at line 3 column 1".into(),
+            });
+            assert_eq!(have, want)
         }
     }
 }

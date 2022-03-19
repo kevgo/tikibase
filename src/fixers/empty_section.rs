@@ -1,23 +1,21 @@
 use super::Fix;
-use crate::{config, database::Tikibase, issues::EmptySection};
+use crate::Tikibase;
+use std::path::PathBuf;
 
-/// repairs the EmptySection issue
-pub struct EmptySectionFixer<'a> {
-    pub issue: &'a EmptySection,
-}
-
-impl Fix for EmptySectionFixer<'_> {
-    fn fix(&self, base: &mut Tikibase, _config: &config::Data) -> String {
-        let base_dir = &base.dir.clone();
-        let doc = base.get_doc_mut(&self.issue.filename).unwrap();
-        doc.content_sections
-            .retain(|section| section.section_type() != self.issue.section_type);
-        doc.save(base_dir.as_ref());
-        format!(
-            "{}:{}  removed empty section \"{}\"",
-            self.issue.filename.to_string_lossy(),
-            self.issue.line + 1,
-            self.issue.section_type
-        )
+pub fn remove_empty_section(
+    base: &mut Tikibase,
+    section_type: String,
+    filename: PathBuf,
+    line: u32,
+) -> Fix {
+    let base_dir = base.dir.clone();
+    let doc = base.get_doc_mut(&filename).unwrap();
+    doc.content_sections
+        .retain(|section| section.section_type() != section_type);
+    doc.save(&base_dir);
+    Fix::RemovedEmptySection {
+        section_type,
+        filename,
+        line,
     }
 }
