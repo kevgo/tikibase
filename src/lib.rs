@@ -50,12 +50,12 @@ pub struct Args {
 
 #[derive(Debug, PartialEq, clap::Subcommand)]
 pub enum Command {
-    /// finds and prints issues, does not make changes
+    /// Finds and prints issues, does not make changes
     Check,
-    /// corrects all auto-fixable issues
+    /// Corrects all auto-fixable issues
     Fix,
-    /// corrects all auto-fixable issues, prints all remaining issues
+    /// Corrects all auto-fixable issues, prints all remaining issues
     Pitstop,
-    /// displays statistics about this Tikibase
+    /// Displays statistics about this Tikibase
     Stats,
 }
