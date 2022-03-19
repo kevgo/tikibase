@@ -1,5 +1,5 @@
 use crate::database::{DocLinks, Reference, Tikibase};
-use crate::issues::Issue;
+use crate::Issue;
 
 pub(crate) struct LinksResult {
     pub issues: Vec<Issue>,
