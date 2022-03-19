@@ -10,6 +10,7 @@ use super::config;
 use crate::issues::Issue;
 use crate::Tikibase;
 
+/// fixes the given Issue
 pub fn fix(issue: Issue, base: &mut Tikibase, config: &config::Data) -> Option<Fix> {
     match issue {
         Issue::BrokenImage {
