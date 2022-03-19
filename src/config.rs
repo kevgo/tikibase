@@ -1,9 +1,8 @@
+use crate::issues::Issue;
 use serde::Deserialize;
 use std::fs::File;
 use std::io::ErrorKind;
 use std::path::Path;
-
-use crate::issues::Issue;
 
 /// Tikibase configuration data
 #[derive(Deserialize, Default, PartialEq, Debug)]
