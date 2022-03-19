@@ -7,7 +7,7 @@ mod probes;
 pub mod testhelpers;
 
 use clap::StructOpt;
-pub use database::open;
+use database::open;
 use database::Tikibase;
 pub use fixers::Fix;
 pub use issues::Issue;
