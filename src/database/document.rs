@@ -11,9 +11,10 @@ pub struct Document {
     pub path: PathBuf,
     pub title_section: Section,
     pub content_sections: Vec<Section>,
-    /// Loading filters out "occurrences" sections.
-    /// Some => this document had an "occurrences" section at the given line when loading it.
-    /// None => this document had no occurrences section when loading it.
+    /// The line where the "occurrences" section in this document starts.
+    /// Loading a document filters out its "occurrences" section to we have to store this value separately.
+    /// `Some` means this document had an "occurrences" section at the given line when loading it.
+    /// `None` means this document had no occurrences section when loading it.
     pub occurrences_section_line: Option<u32>,
 }
 

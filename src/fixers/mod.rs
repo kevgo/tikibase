@@ -56,7 +56,7 @@ pub fn fix(issue: Issue, base: &mut Tikibase, config: &config::Data) -> Option<F
         } => None,
         Issue::MixCapSection { variants: _ } => None,
         Issue::NoTitleSection { file: _ } => None,
-        Issue::ObsoleteLink { file, line } => {
+        Issue::ObsoleteOccurrencesSection { file, line } => {
             Some(obsolete_link::remove_occurrences_section(base, file, line))
         }
         Issue::OrphanedResource { path: _ } => None,
