@@ -14,8 +14,8 @@ pub struct MyWorld {
     /// the exit code of the Tikibase run
     pub exitcode: i32,
 
-    /// results of the Tikibase run
-    pub findings: Vec<String>,
+    /// what Tikibase prints
+    pub output: Vec<String>,
 
     /// content of the files before the Tikibase command ran
     pub original_contents: AHashMap<PathBuf, String>,
@@ -29,7 +29,7 @@ impl World for MyWorld {
         Ok(MyWorld {
             dir: tmp_dir(),
             exitcode: 0,
-            findings: Vec::new(),
+            output: Vec::new(),
             original_contents: AHashMap::new(),
         })
     }
@@ -52,19 +52,19 @@ fn file(world: &mut MyWorld, filename: String) {
 #[when("checking")]
 fn checking(world: &mut MyWorld) {
     let outcome = tikibase::run(tikibase::Command::Check, world.dir.clone());
-    (world.findings, world.exitcode) = tikibase::render_text(&outcome);
+    (world.output, world.exitcode) = tikibase::render_text(&outcome);
 }
 
 #[when("doing a pitstop")]
 fn doing_a_pitstop(world: &mut MyWorld) {
     let outcome = tikibase::run(tikibase::Command::Pitstop, world.dir.clone());
-    (world.findings, world.exitcode) = tikibase::render_text(&outcome);
+    (world.output, world.exitcode) = tikibase::render_text(&outcome);
 }
 
 #[when("fixing")]
 fn fixing(world: &mut MyWorld) {
     let outcome = tikibase::run(tikibase::Command::Fix, world.dir.clone());
-    (world.findings, world.exitcode) = tikibase::render_text(&outcome);
+    (world.output, world.exitcode) = tikibase::render_text(&outcome);
 }
 
 #[then("all files are unchanged")]
@@ -95,7 +95,7 @@ fn file_should_contain(world: &mut MyWorld, step: &Step, filename: String) {
 #[then("it prints:")]
 fn it_prints(world: &mut MyWorld, step: &Step) {
     let have: Vec<&str> = world
-        .findings
+        .output
         .iter()
         .map(|line| line.split('\n'))
         .flatten()
@@ -113,13 +113,13 @@ fn it_prints(world: &mut MyWorld, step: &Step) {
 
 #[then("it prints nothing")]
 fn it_prints_nothing(world: &mut MyWorld) {
-    assert_eq!(world.findings, Vec::<String>::new());
+    assert_eq!(world.output, Vec::<String>::new());
 }
 
 #[then("it finds no issues")]
 fn it_finds_no_issues(world: &mut MyWorld) {
     let expected: Vec<&str> = Vec::new();
-    assert_eq!(world.findings, expected);
+    assert_eq!(world.output, expected);
     assert_eq!(world.exitcode, 0);
 }
 
