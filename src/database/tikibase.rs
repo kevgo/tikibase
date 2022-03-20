@@ -197,7 +197,7 @@ content";
             "two.md#beta",
             "two.md#one",
         ];
-        assert_eq!(have, want);
+        pretty::assert_eq!(have, want);
     }
 
     #[test]
@@ -214,14 +214,7 @@ foo
 ";
         create_file("file.md", content, &dir);
         let base = Tikibase::load(dir, &empty_config()).unwrap();
-        let doc_paths: Vec<String> = base
-            .docs
-            .iter()
-            .map(|d| d.path.to_string_lossy().to_string())
-            .collect();
-        assert_eq!(doc_paths, vec!["file.md"]);
-        let doc = &base.docs[0];
-        // verify title of doc 0
+        let doc = &base.get_doc("file.md").unwrap();
         assert_eq!(doc.title_section.title_line.text(), "# Title");
         assert_eq!(doc.title_section.line_number, 0);
         let body: Vec<&str> = doc.title_section.body.iter().map(|l| l.text()).collect();
