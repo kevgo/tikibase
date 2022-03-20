@@ -4,10 +4,10 @@ use serde::Serialize;
 /// a result struct of an activity, could be an issue of a fix
 #[derive(Serialize)]
 pub struct Message {
-    file: Option<String>,
-    line: Option<u32>,
+    pub file: Option<String>,
+    pub line: Option<u32>,
     /// human-readable message
-    text: String,
+    pub text: String,
 }
 
 impl Message {
@@ -18,15 +18,15 @@ impl Message {
             }
             (Some(file), None) => format!("{}  {}", file, self.text),
             (None, None) => format!("{}", self.text),
-            (None, Some(line)) => panic!("should never get just a line without a file"),
+            (None, Some(_line)) => panic!("should never get just a line without a file"),
         }
     }
 }
 
 /// all activities
 pub struct Messages {
-    messages: Vec<Message>,
-    exit_code: i32,
+    pub messages: Vec<Message>,
+    pub exit_code: i32,
 }
 
 impl Messages {

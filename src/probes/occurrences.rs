@@ -27,7 +27,7 @@ pub(crate) fn scan(
             // no missing links --> done with this document
             if let Some(occurrences_section_line) = doc.occurrences_section_line {
                 issues.push(Issue::ObsoleteOccurrencesSection {
-                    file: doc.path,
+                    file: doc.path.clone(),
                     line: occurrences_section_line,
                 });
             }
@@ -37,12 +37,13 @@ pub(crate) fn scan(
         // register missing occurrences
         missing_outgoing.sort();
         issues.push(Issue::MissingLinks {
-            file: doc.path,
+            file: doc.path.clone(),
             links: missing_outgoing
                 .into_iter()
                 .map(|path| base.get_doc(&path).unwrap())
                 .map(|doc| MissingLink {
                     path: doc.path.clone(),
+                    title: doc.title().into(),
                 })
                 .collect(),
         });
@@ -78,10 +79,12 @@ mod tests {
                 file: "1.md".into(),
                 links: vec![
                     MissingLink {
-                        path: "2.md".into()
+                        path: "2.md".into(),
+                        title: "Two".into()
                     },
                     MissingLink {
-                        path: "3.md".into()
+                        path: "3.md".into(),
+                        title: "Three".into()
                     }
                 ]
             }]

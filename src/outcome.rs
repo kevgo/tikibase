@@ -13,7 +13,7 @@ pub struct Outcome {
 impl Outcome {
     pub fn to_messages(self) -> Messages {
         let mut messages = vec![];
-        let mut exit_code = self.issues.len() as i32;
+        let exit_code = self.issues.len() as i32;
         messages.extend(self.fixes.into_iter().map(|fix| fix.to_message()));
         messages.extend(self.issues.into_iter().map(|issue| issue.to_message()));
         Messages {

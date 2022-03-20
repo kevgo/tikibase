@@ -13,7 +13,7 @@ pub mod testhelpers;
 use database::Tikibase;
 pub use fix::Fix;
 pub use issue::Issue;
-use message::{Message, Messages};
+pub use message::{Message, Messages};
 pub use outcome::Outcome;
 use std::path::PathBuf;
 
@@ -36,11 +36,12 @@ pub fn run(command: cli::Command, dir: PathBuf) -> Messages {
     outcome.to_messages()
 }
 /// renders the given outcome into human-readable output
-pub fn render_text(messages: &Vec<Message>) -> (Vec<String>, i32) {
+pub fn render_text(messages: Vec<Message>) -> (Vec<String>, i32) {
     let mut result: Vec<String> = vec![];
+    let exit_code = messages.len() as i32;
     for message in messages {
         result.push(message.to_text());
     }
     result.sort();
-    (result, messages.len() as i32)
+    (result, exit_code)
 }
