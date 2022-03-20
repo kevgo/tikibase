@@ -231,7 +231,8 @@ foo
 
     #[test]
     fn empty() {
-        let base = Tikibase::load(testhelpers::tmp_dir(), &testhelpers::empty_config()).unwrap();
+        let dir = testhelpers::tmp_dir();
+        let base = Tikibase::load(dir, &testhelpers::empty_config()).unwrap();
         assert_eq!(base.docs.len(), 0);
         assert_eq!(base.resources.len(), 0);
     }
