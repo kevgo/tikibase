@@ -108,7 +108,6 @@ impl Document {
     }
 
     /// provides the number of lines in this document
-    // TODO: is this really needed?
     pub fn lines_count(&self) -> u32 {
         self.content_sections
             .last()
