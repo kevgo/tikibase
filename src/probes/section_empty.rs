@@ -22,14 +22,14 @@ pub(crate) fn scan(base: &Tikibase) -> Vec<Issue> {
 
 #[cfg(test)]
 mod tests {
-
     use super::scan;
-    use crate::testhelpers::{create_file, empty_config, tmp_dir};
+    // TODO: use these with their testhelpers namespace
+    use crate::testhelpers;
     use crate::Tikibase;
 
     #[test]
     fn empty_section() {
-        let dir = tmp_dir();
+        let dir = testhelpers::tmp_dir();
         let content = "\
 # test document
 
@@ -37,19 +37,18 @@ mod tests {
 ### next section
 
 content";
-        create_file("test.md", content, &dir);
-        let base = Tikibase::load(dir, &empty_config()).unwrap();
+        testhelpers::create_file("test.md", content, &dir);
+        let base = Tikibase::load(dir, &testhelpers::empty_config()).unwrap();
         let have: Vec<String> = scan(&base).iter().map(|issue| issue.to_string()).collect();
-        assert_eq!(have.len(), 1);
         assert_eq!(
-            have[0],
-            "test.md:3  section \"empty section\" has no content"
+            have,
+            vec!["test.md:3  section \"empty section\" has no content"]
         );
     }
 
     #[test]
     fn blank_line() {
-        let dir = tmp_dir();
+        let dir = testhelpers::tmp_dir();
         let content = "\
 # test document
 
@@ -58,27 +57,26 @@ content";
 ### next section
 
 content";
-        create_file("test.md", content, &dir);
-        let base = Tikibase::load(dir, &empty_config()).unwrap();
+        testhelpers::create_file("test.md", content, &dir);
+        let base = Tikibase::load(dir, &testhelpers::empty_config()).unwrap();
         let have: Vec<String> = scan(&base).iter().map(|issue| issue.to_string()).collect();
-        assert_eq!(have.len(), 1);
-        assert_eq!(
-            have[0],
-            "test.md:3  section \"empty section\" has no content"
+        pretty::assert_eq!(
+            have,
+            vec!["test.md:3  section \"empty section\" has no content"]
         );
     }
 
     #[test]
     fn content() {
-        let dir = tmp_dir();
+        let dir = testhelpers::tmp_dir();
         let content = "\
 # test document
 
 ### section with content
 
 content";
-        create_file("test.md", content, &dir);
-        let base = Tikibase::load(dir, &empty_config()).unwrap();
+        testhelpers::create_file("test.md", content, &dir);
+        let base = Tikibase::load(dir, &testhelpers::empty_config()).unwrap();
         let have = scan(&base);
         assert!(have.is_empty());
     }

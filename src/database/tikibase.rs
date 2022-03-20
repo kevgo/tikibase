@@ -112,70 +112,73 @@ impl FileType {
 #[cfg(test)]
 mod tests {
     use super::*;
-    use crate::testhelpers::{create_file, empty_config, tmp_dir};
+    use crate::testhelpers;
 
     mod get_doc {
         use super::super::Tikibase;
-        use crate::testhelpers::{create_file, empty_config, tmp_dir};
+        use crate::testhelpers;
 
         #[test]
         fn exists() {
-            let dir = tmp_dir();
-            create_file("one.md", "# test doc", &dir);
-            let base = Tikibase::load(dir, &empty_config()).unwrap();
+            let dir = testhelpers::tmp_dir();
+            testhelpers::create_file("one.md", "# test doc", &dir);
+            let base = Tikibase::load(dir, &testhelpers::empty_config()).unwrap();
             let doc = base.get_doc("one.md").expect("document not found");
             assert_eq!(doc.title_section.title_line.text(), "# test doc");
         }
 
         #[test]
         fn missing() {
-            let base = Tikibase::load(tmp_dir(), &empty_config()).unwrap();
+            let dir = testhelpers::tmp_dir();
+            let base = Tikibase::load(dir, &testhelpers::empty_config()).unwrap();
             assert!(base.get_doc("zonk.md").is_none());
         }
     }
 
     mod get_doc_mut {
         use super::super::Tikibase;
-        use crate::testhelpers::{create_file, empty_config, tmp_dir};
+        use crate::testhelpers;
 
         #[test]
         fn exists() {
-            let dir = tmp_dir();
-            create_file("one.md", "# test doc", &dir);
-            let mut base = Tikibase::load(dir, &empty_config()).unwrap();
+            let dir = testhelpers::tmp_dir();
+            testhelpers::create_file("one.md", "# test doc", &dir);
+            let mut base = Tikibase::load(dir, &testhelpers::empty_config()).unwrap();
             let doc = base.get_doc_mut("one.md").expect("document not found");
             assert_eq!(doc.title_section.title_line.text(), "# test doc");
         }
 
         #[test]
         fn missing() {
-            let mut base = Tikibase::load(tmp_dir(), &empty_config()).unwrap();
+            let dir = testhelpers::tmp_dir();
+            let mut base = Tikibase::load(dir, &testhelpers::empty_config()).unwrap();
             assert!(base.get_doc_mut("zonk.md").is_none());
         }
     }
 
     mod has_resource {
         use super::super::Tikibase;
-        use crate::testhelpers::{create_file, empty_config, tmp_dir};
+        use crate::testhelpers;
 
         #[test]
         fn empty() {
-            let base = Tikibase::load(tmp_dir(), &empty_config()).unwrap();
+            let dir = testhelpers::tmp_dir();
+            let base = Tikibase::load(dir, &testhelpers::empty_config()).unwrap();
             assert!(!base.has_resource("foo.png"));
         }
 
         #[test]
         fn matching_resource() {
-            let dir = tmp_dir();
-            create_file("foo.png", "content", &dir);
-            let base = Tikibase::load(dir, &empty_config()).unwrap();
+            let dir = testhelpers::tmp_dir();
+            testhelpers::create_file("foo.png", "content", &dir);
+            let base = Tikibase::load(dir, &testhelpers::empty_config()).unwrap();
             assert!(base.has_resource("foo.png"));
         }
     }
 
     #[test]
     fn link_targets() {
-        let dir = tmp_dir();
+        let dir = testhelpers::tmp_dir();
         let content = "\
 # One
 
@@ -183,9 +186,9 @@ mod tests {
 ### Beta
 
 content";
-        create_file("one.md", content, &dir);
-        create_file("two.md", content, &dir);
-        let base = Tikibase::load(dir, &empty_config()).unwrap();
+        testhelpers::create_file("one.md", content, &dir);
+        testhelpers::create_file("two.md", content, &dir);
+        let base = Tikibase::load(dir, &testhelpers::empty_config()).unwrap();
         let have = base.link_targets();
         let want = vec![
             "one.md",
@@ -197,12 +200,12 @@ content";
             "two.md#beta",
             "two.md#one",
         ];
-        assert_eq!(have, want);
+        pretty::assert_eq!(have, want);
     }
 
     #[test]
     fn load() {
-        let dir = tmp_dir();
+        let dir = testhelpers::tmp_dir();
         let content = "\
 # Title
 title text
@@ -212,54 +215,24 @@ two
 ### Section 2
 foo
 ";
-        create_file("file.md", content, &dir);
-        let base = Tikibase::load(dir, &empty_config()).unwrap();
-        let doc_paths: Vec<String> = base
-            .docs
-            .iter()
-            .map(|d| d.path.to_string_lossy().to_string())
-            .collect();
-        assert_eq!(doc_paths, vec!["file.md"]);
-        let doc = &base.docs[0];
-        // verify title of doc 0
-        assert_eq!(doc.title_section.title_line.text(), "# Title");
-        assert_eq!(doc.title_section.line_number, 0);
-        let body: Vec<&str> = doc.title_section.body.iter().map(|l| l.text()).collect();
-        assert_eq!(body, vec!["title text"]);
-        // verify body of doc 0
-        let content_sections: Vec<&str> = doc
-            .content_sections
-            .iter()
-            .map(|s| s.title_line.text())
-            .collect();
-        assert_eq!(content_sections, vec!["### Section 1", "### Section 2"]);
-        assert_eq!(doc.content_sections[0].line_number, 2);
-        let sec0_lines: Vec<&str> = doc.content_sections[0]
-            .body
-            .iter()
-            .map(|l| l.text())
-            .collect();
-        assert_eq!(sec0_lines, vec!["one", "two"]);
-        assert_eq!(doc.content_sections[1].line_number, 5);
-        let sec1_lines: Vec<&str> = doc.content_sections[1]
-            .body
-            .iter()
-            .map(|l| l.text())
-            .collect();
-        assert_eq!(sec1_lines, vec!["foo"]);
+        testhelpers::create_file("file.md", content, &dir);
+        let base = Tikibase::load(dir, &testhelpers::empty_config()).unwrap();
+        // make sure we can load existing documents
+        let _doc = &base.get_doc("file.md").unwrap();
     }
 
     #[test]
     fn load_hidden_file() {
-        let dir = tmp_dir();
-        create_file(".hidden", "content", &dir);
-        let base = Tikibase::load(dir, &empty_config()).unwrap();
+        let dir = testhelpers::tmp_dir();
+        testhelpers::create_file(".hidden", "content", &dir);
+        let base = Tikibase::load(dir, &testhelpers::empty_config()).unwrap();
         assert_eq!(base.resources.len(), 0);
     }
 
     #[test]
     fn empty() {
-        let base = Tikibase::load(tmp_dir(), &empty_config()).unwrap();
+        let dir = testhelpers::tmp_dir();
+        let base = Tikibase::load(dir, &testhelpers::empty_config()).unwrap();
         assert_eq!(base.docs.len(), 0);
         assert_eq!(base.resources.len(), 0);
     }

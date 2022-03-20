@@ -53,18 +53,17 @@ pub(crate) fn scan(
 
 #[cfg(test)]
 mod tests {
-
     use crate::database::DocLinks;
-    use crate::testhelpers::{create_file, empty_config, tmp_dir};
+    use crate::testhelpers;
     use crate::Tikibase;
 
     #[test]
     fn process() {
-        let dir = tmp_dir();
-        create_file("1.md", "# One\n", &dir);
-        create_file("2.md", "# Two\n\n[one](1.md)\n", &dir);
-        create_file("3.md", "# Three\n\n[one](1.md)\n", &dir);
-        let base = Tikibase::load(dir, &empty_config()).unwrap();
+        let dir = testhelpers::tmp_dir();
+        testhelpers::create_file("1.md", "# One\n", &dir);
+        testhelpers::create_file("2.md", "# Two\n\n[one](1.md)\n", &dir);
+        testhelpers::create_file("3.md", "# Three\n\n[one](1.md)\n", &dir);
+        let base = Tikibase::load(dir, &testhelpers::empty_config()).unwrap();
         let mut outgoing_links = DocLinks::default();
         outgoing_links.add("3.md", "1.md");
         outgoing_links.add("2.md", "1.md");
@@ -73,6 +72,6 @@ mod tests {
         incoming_links.add("1.md", "2.md");
         let have = super::scan(&base, &incoming_links, &outgoing_links);
         let issues: Vec<String> = have.iter().map(|issue| issue.to_string()).collect();
-        assert_eq!(issues, vec!["1.md  missing link to 2.md, 3.md"]);
+        pretty::assert_eq!(issues, vec!["1.md  missing link to 2.md, 3.md"]);
     }
 }
