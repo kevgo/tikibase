@@ -24,7 +24,7 @@ pub fn add_occurrences(base: &mut Tikibase, file: PathBuf, links: Vec<MissingLin
         ));
     }
     let occurrences_section = section_builder.result();
-    let line = occurrences_section.line_number + 1;
+    let line = occurrences_section.line_number;
     doc.content_sections.push(occurrences_section);
     doc.save(&base_dir);
     Fix::AddedOccurrencesSection { file, line }
