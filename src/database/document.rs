@@ -108,6 +108,7 @@ impl Document {
     }
 
     /// provides the number of lines in this document
+    // TODO: is this really needed?
     pub fn lines_count(&self) -> u32 {
         self.content_sections
             .last()
@@ -256,55 +257,95 @@ content";
         }
 
         #[test]
-        fn invalid() {
-            let have = match Document::from_str("one.md", "content") {
-                Err(issue) => issue,
-                Ok(_) => panic!(),
-            };
-            let want = Issue::NoTitleSection {
+        fn missing_title() {
+            let have = Document::from_str("one.md", "no title");
+            let want = Err(Issue::NoTitleSection {
                 file: PathBuf::from("one.md"),
-            };
+            });
             assert_eq!(have, want)
         }
 
         #[test]
         fn with_fenced_code_block() {
-            let content = "\
+            let give = "\
 # test
-
 ```md
 ### not a document section
 text
 ```
 ";
-            let doc = Document::from_str("test.md", content).unwrap();
-            assert_eq!(doc.content_sections.len(), 0);
-            assert_eq!(doc.title_section.lines().count(), 6);
+            let have = Document::from_str("test.md", give);
+            let want = Ok(Document {
+                path: PathBuf::from("test.md"),
+                title_section: Section {
+                    line_number: 0,
+                    title_line: Line::new("# test"),
+                    body: vec![
+                        Line::new("```md"),
+                        Line::new("### not a document section"),
+                        Line::new("text"),
+                        Line::new("```"),
+                    ],
+                },
+                content_sections: vec![],
+                occurrences_section_line: None,
+            });
+            assert_eq!(have, want);
         }
 
         #[test]
-        fn with_open_fenced_code_block() {
-            let content = "\
+        fn open_fenced_code_block() {
+            let give = "\
 # test
-
 ```md
 ### not a document section
 text
 ";
-            let have = match Document::from_str("test.md", content) {
-                Err(issue) => issue,
-                Ok(_) => panic!(),
-            };
-            let want = Issue::UnclosedFence {
+            let have = Document::from_str("test.md", give);
+            let want = Err(Issue::UnclosedFence {
                 file: PathBuf::from("test.md"),
-                line: 3,
-            };
+                line: 2,
+            });
             assert_eq!(have, want)
+        }
+
+        #[test]
+        fn with_occurrences_section() {
+            let give = "\
+# test
+### section 1
+content
+### occurrences
+- occurrence 1
+### links
+- link 1";
+            let have = Document::from_str("one.md", give);
+            let want = Ok(Document {
+                path: PathBuf::from("one.md"),
+                title_section: Section {
+                    line_number: 0,
+                    title_line: Line::new("# test"),
+                    body: vec![],
+                },
+                content_sections: vec![
+                    Section {
+                        line_number: 1,
+                        title_line: Line::new("### section 1"),
+                        body: vec![Line::new("content")],
+                    },
+                    Section {
+                        line_number: 5,
+                        title_line: Line::new("### links"),
+                        body: vec![Line::new("- link 1")],
+                    },
+                ],
+                occurrences_section_line: Some(3),
+            });
+            assert_eq!(have, want);
         }
     }
 
     mod lines_count {
-
         use super::super::Document;
 
         #[test]
@@ -334,6 +375,7 @@ title text
     }
 
     mod last_section_mut {
+        use crate::database::{Line, Section};
 
         use super::super::Document;
 
@@ -349,7 +391,12 @@ text
 ";
             let mut doc = Document::from_str("test.md", give).unwrap();
             let have = doc.last_section_mut();
-            assert_eq!(have.title_line.text(), "### s1");
+            let mut want = Section {
+                line_number: 3,
+                title_line: Line::new("### s1"),
+                body: vec![Line::new(""), Line::new("text")],
+            };
+            assert_eq!(have, &mut want)
         }
 
         #[test]
