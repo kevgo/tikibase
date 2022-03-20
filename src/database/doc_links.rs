@@ -25,7 +25,6 @@ impl DocLinks {
 
 #[cfg(test)]
 mod tests {
-
     use super::DocLinks;
     use std::path::PathBuf;
 
