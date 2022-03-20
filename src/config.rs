@@ -37,13 +37,14 @@ pub fn load<P: AsRef<Path>>(dir: P) -> Result<Data, Issue> {
 mod tests {
 
     mod load {
+        use super::super::{load, Data};
         use crate::testhelpers::{create_file, tmp_dir};
         use crate::Issue;
 
         #[test]
         fn no_config_file() {
-            let have = super::super::load(tmp_dir()).unwrap();
-            let want = super::super::Data {
+            let have = load(tmp_dir()).unwrap();
+            let want = Data {
                 sections: None,
                 ignore: None,
             };
@@ -54,8 +55,8 @@ mod tests {
         fn empty_config_file() {
             let dir = tmp_dir();
             create_file("tikibase.json", "{}", &dir);
-            let have = super::super::load(&dir).unwrap();
-            let want = super::super::Data {
+            let have = load(&dir).unwrap();
+            let want = Data {
                 sections: None,
                 ignore: None,
             };
@@ -71,8 +72,8 @@ mod tests {
             }
             "#;
             create_file("tikibase.json", give, &dir);
-            let have = super::super::load(&dir).unwrap();
-            let want = super::super::Data {
+            let have = load(&dir).unwrap();
+            let want = Data {
                 sections: Some(vec!["one".into(), "two".into()]),
                 ignore: None,
             };
@@ -87,7 +88,7 @@ mod tests {
 }
 "#;
             create_file("tikibase.json", give, &dir);
-            let have = super::super::load(&dir);
+            let have = load(&dir);
             let want = Err(Issue::InvalidConfigurationFile {
                 message: "expected value at line 3 column 1".into(),
             });

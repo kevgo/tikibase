@@ -166,7 +166,7 @@ Here is a link to [Three](3.md) that also works.
             let dir = tmp_dir();
             create_file("one.md", "# One\n\n[invalid]()\n", &dir);
             let base = Tikibase::load(dir, &empty_config()).unwrap();
-            let have = super::super::scan(&base);
+            let have = scan(&base);
             let outcomes: Vec<String> = have.issues.iter().map(|issue| issue.to_string()).collect();
             assert_eq!(outcomes, vec!["one.md:3  link without destination"]);
             assert_eq!(have.incoming_doc_links.data.len(), 0);
@@ -186,7 +186,7 @@ Here is a link to [Three](3.md) that also works.
             create_file("one.md", content, &dir);
             create_file("two.md", "# Two", &dir);
             let base = Tikibase::load(dir, &empty_config()).unwrap();
-            let have = super::super::scan(&base);
+            let have = scan(&base);
             assert!(have.issues.is_empty());
             assert_eq!(have.incoming_doc_links.data.len(), 0);
             assert_eq!(have.outgoing_doc_links.data.len(), 0);
@@ -199,7 +199,7 @@ Here is a link to [Three](3.md) that also works.
             create_file("1.md", "# One\n\n![image](foo.png)\n", &dir);
             create_file("foo.png", "image content", &dir);
             let base = Tikibase::load(dir, &empty_config()).unwrap();
-            let have = super::super::scan(&base);
+            let have = scan(&base);
             assert!(have.issues.is_empty());
             assert_eq!(have.outgoing_resource_links.len(), 1);
             assert_eq!(have.outgoing_resource_links[0], "foo.png");
@@ -212,7 +212,7 @@ Here is a link to [Three](3.md) that also works.
             let dir = tmp_dir();
             create_file("1.md", "# One\n\n![image](zonk.png)\n", &dir);
             let base = Tikibase::load(dir, &empty_config()).unwrap();
-            let have = super::super::scan(&base);
+            let have = scan(&base);
             let outcomes: Vec<String> = have.issues.iter().map(|issue| issue.to_string()).collect();
             assert_eq!(outcomes.len(), 1);
             assert_eq!(
