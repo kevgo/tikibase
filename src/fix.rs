@@ -36,17 +36,17 @@ impl Fix {
                 line: Some(line),
             },
             Fix::AddedOccurrencesSection { file, line } => Message {
-                text: format!("added occurrences section"),
+                text: "added occurrences section".into(),
                 file: Some(file.to_string_lossy().to_string()),
                 line: Some(line),
             },
             Fix::RemovedObsoleteOccurrencesSection { file, line } => Message {
-                text: format!("removed obsolete occurrences section"),
+                text: "removed obsolete occurrences section".into(),
                 file: Some(file.to_string_lossy().to_string()),
                 line: Some(line + 1),
             },
             Fix::SortedSections { file } => Message {
-                text: format!("fixed section order"),
+                text: "fixed section order".into(),
                 file: Some(file.to_string_lossy().to_string()),
                 line: None,
             },

@@ -135,12 +135,12 @@ impl Issue {
                 line: None,
             },
             Issue::LinkToSameDocument { file, line } => Message {
-                text: format!("document contains link to itself"),
+                text: "document contains link to itself".into(),
                 file: Some(file.to_string_lossy().to_string()),
                 line: Some(line),
             },
             Issue::LinkWithoutDestination { file, line } => Message {
-                text: format!("link without destination"),
+                text: "link without destination".into(),
                 file: Some(file.to_string_lossy().to_string()),
                 line: Some(line),
             },
@@ -148,7 +148,7 @@ impl Issue {
                 let links: Vec<Cow<str>> =
                     links.iter().map(|ml| ml.path.to_string_lossy()).collect();
                 Message {
-                    text: format!("missing link to {}", links.join(", "),),
+                    text: format!("missing link to {}", links.join(", ")),
                     file: Some(file.to_string_lossy().to_string()),
                     line: None,
                 }
@@ -167,12 +167,12 @@ impl Issue {
                 line: None,
             },
             Issue::NoTitleSection { file } => Message {
-                text: format!("no title section"),
+                text: "no title section".into(),
                 file: Some(file.to_string_lossy().to_string()),
                 line: None,
             },
             Issue::ObsoleteOccurrencesSection { file, line } => Message {
-                text: format!("obsolete \"occurrences\" section"),
+                text: "obsolete \"occurrences\" section".into(),
                 file: Some(file.to_string_lossy().to_string()),
                 line: Some(line),
             },
@@ -182,12 +182,12 @@ impl Issue {
                 line: None,
             },
             Issue::SectionWithoutHeader { file, line } => Message {
-                text: format!("section with empty title"),
+                text: "section with empty title".into(),
                 file: Some(file.to_string_lossy().to_string()),
                 line: Some(line),
             },
             Issue::UnclosedFence { file, line } => Message {
-                text: format!("unclosed fence"),
+                text: "unclosed fence".into(),
                 file: Some(file.to_string_lossy().to_string()),
                 line: Some(line),
             },
@@ -212,7 +212,7 @@ impl Issue {
                 }
             }
             Issue::UnorderedSections { file } => Message {
-                text: format!("sections occur in different order than specified by tikibase.json",),
+                text: "sections occur in different order than specified by tikibase.json".into(),
                 file: Some(file.to_string_lossy().to_string()),
                 line: None,
             },

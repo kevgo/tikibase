@@ -17,7 +17,7 @@ impl Message {
                 format!("{}:{}  {}", file, line, self.text)
             }
             (Some(file), None) => format!("{}  {}", file, self.text),
-            (None, None) => format!("{}", self.text),
+            (None, None) => self.text,
             (None, Some(_line)) => panic!("should never get just a line without a file"),
         }
     }
