@@ -43,7 +43,7 @@ impl Fix {
             Fix::RemovedObsoleteOccurrencesSection { file, line } => Message {
                 text: "removed obsolete occurrences section".into(),
                 file: Some(file.to_string_lossy().to_string()),
-                line: Some(line + 1),
+                line: Some(line),
             },
             Fix::SortedSections { file } => Message {
                 text: "fixed section order".into(),
