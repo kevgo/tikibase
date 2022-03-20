@@ -1,14 +1,14 @@
 use clap::StructOpt;
 
-/// the CLI args that this application accepts
+/// Linter for Markdown-based knowledge databases
 #[derive(Debug, StructOpt)]
-#[clap(author, version, about, long_about = None)]
+#[clap(version, about, long_about = None)]
 pub struct Args {
     /// the command to run
     #[clap(subcommand)]
     pub command: Command,
 
-    /// output format
+    /// Output format
     #[clap(arg_enum, long, short, default_value_t)]
     pub format: Format,
 }
