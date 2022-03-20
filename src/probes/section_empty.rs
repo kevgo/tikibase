@@ -22,7 +22,6 @@ pub(crate) fn scan(base: &Tikibase) -> Vec<Issue> {
 
 #[cfg(test)]
 mod tests {
-
     use super::scan;
     // TODO: use these with their testhelpers namespace
     use crate::testhelpers::{create_file, empty_config, tmp_dir};

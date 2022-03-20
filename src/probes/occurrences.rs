@@ -53,7 +53,6 @@ pub(crate) fn scan(
 
 #[cfg(test)]
 mod tests {
-
     use crate::database::DocLinks;
     use crate::testhelpers::{create_file, empty_config, tmp_dir};
     use crate::Tikibase;
