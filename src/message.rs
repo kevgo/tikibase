@@ -14,7 +14,7 @@ impl Message {
     pub fn to_text(&self) -> String {
         match (&self.file, self.line) {
             (Some(file), Some(line)) => {
-                format!("{}:{}  {}", file, line, self.text)
+                format!("{}:{}  {}", file, line + 1, self.text)
             }
             (Some(file), None) => format!("{}  {}", file, self.text),
             (None, None) => self.text.clone(),
