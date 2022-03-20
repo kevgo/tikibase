@@ -150,8 +150,8 @@ mod tests {
 
         #[test]
         fn missing() {
-            let mut base =
-                Tikibase::load(testhelpers::tmp_dir(), &testhelpers::empty_config()).unwrap();
+            let dir = testhelpers::tmp_dir();
+            let mut base = Tikibase::load(dir, &testhelpers::empty_config()).unwrap();
             assert!(base.get_doc_mut("zonk.md").is_none());
         }
     }
