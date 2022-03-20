@@ -24,7 +24,7 @@ impl Message {
 }
 
 /// all activities
-#[derive(Debug, PartialEq)]
+#[derive(Debug, Default, PartialEq)]
 pub struct Messages {
     pub messages: Vec<Message>,
     pub exit_code: i32,
@@ -41,15 +41,6 @@ impl Messages {
         Messages {
             exit_code: issues.len() as i32,
             messages: issues.into_iter().map(|issue| issue.to_message()).collect(),
-        }
-    }
-}
-
-impl Default for Messages {
-    fn default() -> Self {
-        Self {
-            messages: vec![],
-            exit_code: 0,
         }
     }
 }

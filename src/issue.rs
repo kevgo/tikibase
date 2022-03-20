@@ -4,7 +4,6 @@ use std::borrow::Cow;
 use std::path::PathBuf;
 
 /// the issues that this linter can find
-/// NOTE: Since we are targeting human-readable knowledge bases here, all file paths are required to be valid unicode.
 #[derive(Clone, Debug, PartialEq, Serialize)]
 pub enum Issue {
     BrokenImage {
@@ -177,7 +176,7 @@ impl Issue {
                 line: Some(line),
             },
             Issue::OrphanedResource { path } => Message {
-                text: format!("file \"{}\" isn't linked to", path),
+                text: "file isn't linked to".into(),
                 file: Some(path),
                 line: None,
             },

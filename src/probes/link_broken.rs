@@ -31,7 +31,7 @@ pub(crate) fn scan(base: &Tikibase) -> LinksResult {
                             if destination.is_empty() {
                                 result.issues.push(Issue::LinkWithoutDestination {
                                     file: doc.path.clone(),
-                                    line: section.line_number + (i as u32) + 1,
+                                    line: section.line_number + (i as u32),
                                 });
                                 continue;
                             }
@@ -43,7 +43,7 @@ pub(crate) fn scan(base: &Tikibase) -> LinksResult {
                             if !existing_targets.contains(&destination) {
                                 result.issues.push(Issue::BrokenLink {
                                     file: doc.path.clone(),
-                                    line: section.line_number + (i as u32) + 1,
+                                    line: section.line_number + (i as u32),
                                     target: destination,
                                 });
                                 continue;
@@ -51,7 +51,7 @@ pub(crate) fn scan(base: &Tikibase) -> LinksResult {
                             if destination == doc.path.to_string_lossy() {
                                 result.issues.push(Issue::LinkToSameDocument {
                                     file: doc.path.clone(),
-                                    line: section.line_number + (i as u32) + 1,
+                                    line: section.line_number + (i as u32),
                                 });
                                 continue;
                             }
@@ -67,7 +67,7 @@ pub(crate) fn scan(base: &Tikibase) -> LinksResult {
                             if !base.has_resource(&src) {
                                 result.issues.push(Issue::BrokenImage {
                                     file: doc.path.clone(),
-                                    line: section.line_number + (i as u32) + 1,
+                                    line: section.line_number + (i as u32),
                                     target: src.clone(),
                                 });
                             }
@@ -120,7 +120,7 @@ mod tests {
                 have.issues,
                 vec![Issue::BrokenLink {
                     file: "one.md".into(),
-                    line: 3,
+                    line: 2,
                     target: "non-existing.md".into()
                 }]
             );
@@ -172,7 +172,7 @@ Here is a link to [Three](3.md) that also works.
                 have.issues,
                 vec![Issue::LinkWithoutDestination {
                     file: "one.md".into(),
-                    line: 3
+                    line: 2
                 }]
             );
             assert_eq!(have.incoming_doc_links.data.len(), 0);
@@ -223,7 +223,7 @@ Here is a link to [Three](3.md) that also works.
                 have.issues,
                 vec![Issue::BrokenImage {
                     file: "1.md".into(),
-                    line: 3,
+                    line: 2,
                     target: "zonk.png".into()
                 }]
             );

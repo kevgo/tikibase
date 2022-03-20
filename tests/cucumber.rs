@@ -92,7 +92,9 @@ fn it_prints(world: &mut MyWorld, step: &Step) {
     let mut have = String::new();
     for message in &world.output.messages {
         have.push_str(message.to_text().trim());
+        have.push_str("\n");
     }
+    have = have.trim().to_string();
     let want = step.docstring.as_ref().unwrap().trim();
     assert_eq!(have, want);
 }
