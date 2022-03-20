@@ -1,10 +1,9 @@
-use crate::tikibase::testhelpers;
 use ahash::AHashMap;
 use async_trait::async_trait;
 use cucumber::{gherkin::Step, given, then, when, World, WorldInit};
 use std::convert::Infallible;
 use std::path::PathBuf;
-use tikibase;
+use tikibase::{self, testhelpers};
 
 #[derive(Debug, WorldInit)]
 pub struct MyWorld {
