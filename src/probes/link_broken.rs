@@ -95,27 +95,30 @@ fn make_link_anchor(url: &mut String) {
 mod tests {
 
     mod link_anchor {
+        use super::super::make_link_anchor;
+
         #[test]
         fn with_anchor() {
             let mut give = "1.md#foo".to_string();
             let want = "#foo".to_string();
-            super::super::make_link_anchor(&mut give);
+            make_link_anchor(&mut give);
             assert_eq!(give, want);
         }
     }
 
     mod process {
+        use super::super::scan;
+        use crate::testhelpers;
+        use crate::Issue;
+        use crate::Tikibase;
         use std::path::PathBuf;
-
-        use crate::testhelpers::{create_file, empty_config, tmp_dir};
-        use crate::{Issue, Tikibase};
 
         #[test]
         fn link_to_non_existing_file() {
-            let dir = tmp_dir();
-            create_file("one.md", "# One\n\n[invalid](non-existing.md)\n", &dir);
-            let base = Tikibase::load(dir, &empty_config()).unwrap();
-            let have = super::super::scan(&base);
+            let dir = testhelpers::tmp_dir();
+            testhelpers::create_file("one.md", "# One\n\n[invalid](non-existing.md)\n", &dir);
+            let base = Tikibase::load(dir, &testhelpers::empty_config()).unwrap();
+            let have = scan(&base);
             assert_eq!(
                 have.issues,
                 vec![Issue::BrokenLink {
@@ -131,7 +134,7 @@ mod tests {
 
         #[test]
         fn link_to_existing_file() {
-            let dir = tmp_dir();
+            let dir = testhelpers::tmp_dir();
             let content = "\
 # One
 
@@ -141,12 +144,12 @@ Here is a link to [Two](2.md) that works.
 
 Here is a link to [Three](3.md) that also works.
 ";
-            create_file("1.md", content, &dir);
-            create_file("2.md", "# Two", &dir);
-            create_file("3.md", "# Three", &dir);
-            let base = Tikibase::load(dir, &empty_config()).unwrap();
-            let have = super::super::scan(&base);
-            assert!(have.issues.is_empty());
+            testhelpers::create_file("1.md", content, &dir);
+            testhelpers::create_file("2.md", "# Two", &dir);
+            testhelpers::create_file("3.md", "# Three", &dir);
+            let base = Tikibase::load(dir, &testhelpers::empty_config()).unwrap();
+            let have = scan(&base);
+            assert_eq!(have.issues.len(), 0);
             assert_eq!(have.outgoing_doc_links.data.len(), 1);
             let out_one = have.outgoing_doc_links.get("1.md").unwrap();
             assert_eq!(out_one.len(), 2);
@@ -164,10 +167,10 @@ Here is a link to [Three](3.md) that also works.
 
         #[test]
         fn link_without_destination() {
-            let dir = tmp_dir();
-            create_file("one.md", "# One\n\n[invalid]()\n", &dir);
-            let base = Tikibase::load(dir, &empty_config()).unwrap();
-            let have = super::super::scan(&base);
+            let dir = testhelpers::tmp_dir();
+            testhelpers::create_file("one.md", "# One\n\n[invalid]()\n", &dir);
+            let base = Tikibase::load(dir, &testhelpers::empty_config()).unwrap();
+            let have = scan(&base);
             assert_eq!(
                 have.issues,
                 vec![Issue::LinkWithoutDestination {
@@ -182,17 +185,17 @@ Here is a link to [Three](3.md) that also works.
 
         #[test]
         fn external_urls() {
-            let dir = tmp_dir();
+            let dir = testhelpers::tmp_dir();
             let content = "\
 # One
 
 [external site](https://google.com)
 ![external image](https://google.com/foo.png)
 ";
-            create_file("one.md", content, &dir);
-            create_file("two.md", "# Two", &dir);
-            let base = Tikibase::load(dir, &empty_config()).unwrap();
-            let have = super::super::scan(&base);
+            testhelpers::create_file("one.md", content, &dir);
+            testhelpers::create_file("two.md", "# Two", &dir);
+            let base = Tikibase::load(dir, &testhelpers::empty_config()).unwrap();
+            let have = scan(&base);
             assert!(have.issues.is_empty());
             assert_eq!(have.incoming_doc_links.data.len(), 0);
             assert_eq!(have.outgoing_doc_links.data.len(), 0);
@@ -201,11 +204,11 @@ Here is a link to [Three](3.md) that also works.
 
         #[test]
         fn link_to_existing_image() {
-            let dir = tmp_dir();
-            create_file("1.md", "# One\n\n![image](foo.png)\n", &dir);
-            create_file("foo.png", "image content", &dir);
-            let base = Tikibase::load(dir, &empty_config()).unwrap();
-            let have = super::super::scan(&base);
+            let dir = testhelpers::tmp_dir();
+            testhelpers::create_file("1.md", "# One\n\n![image](foo.png)\n", &dir);
+            testhelpers::create_file("foo.png", "image content", &dir);
+            let base = Tikibase::load(dir, &testhelpers::empty_config()).unwrap();
+            let have = scan(&base);
             assert!(have.issues.is_empty());
             assert_eq!(have.outgoing_resource_links.len(), 1);
             assert_eq!(have.outgoing_resource_links[0], "foo.png");
@@ -215,10 +218,10 @@ Here is a link to [Three](3.md) that also works.
 
         #[test]
         fn link_to_non_existing_image() {
-            let dir = tmp_dir();
-            create_file("1.md", "# One\n\n![image](zonk.png)\n", &dir);
-            let base = Tikibase::load(dir, &empty_config()).unwrap();
-            let have = super::super::scan(&base);
+            let dir = testhelpers::tmp_dir();
+            testhelpers::create_file("1.md", "# One\n\n![image](zonk.png)\n", &dir);
+            let base = Tikibase::load(dir, &testhelpers::empty_config()).unwrap();
+            let have = scan(&base);
             assert_eq!(
                 have.issues,
                 vec![Issue::BrokenImage {

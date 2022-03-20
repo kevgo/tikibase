@@ -34,6 +34,9 @@ fn normalize(section_type: &str) -> String {
 
 #[cfg(test)]
 mod tests {
+    use crate::testhelpers;
+    use crate::Issue;
+    use crate::Tikibase;
 
     #[test]
     fn normalize() {
@@ -42,12 +45,9 @@ mod tests {
         assert_eq!(super::normalize("FOO"), "foo");
     }
 
-    use crate::testhelpers::{create_file, empty_config, tmp_dir};
-    use crate::{Issue, Tikibase};
-
     #[test]
     fn progress() {
-        let dir = tmp_dir();
+        let dir = testhelpers::tmp_dir();
         let content1 = "\
 # test document
 
@@ -56,20 +56,18 @@ content
 
 ### One
 content";
-        create_file("1.md", content1, &dir);
+        testhelpers::create_file("1.md", content1, &dir);
         let content2 = "\
 # another document
 
 ### one
 content";
-        create_file("2.md", content2, &dir);
-        let base = Tikibase::load(dir, &empty_config()).unwrap();
+        testhelpers::create_file("2.md", content2, &dir);
+        let base = Tikibase::load(dir, &testhelpers::empty_config()).unwrap();
         let have = super::scan(&base);
-        assert_eq!(
-            have,
-            vec![Issue::MixCapSection {
-                variants: vec!["ONE".into(), "One".into(), "one".into()]
-            }]
-        );
+        let want = vec![Issue::MixCapSection {
+            variants: vec!["ONE".into(), "One".into(), "one".into()],
+        }];
+        assert_eq!(have, want);
     }
 }

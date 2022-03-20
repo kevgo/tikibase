@@ -22,15 +22,14 @@ pub(crate) fn scan(base: &Tikibase) -> Vec<Issue> {
 
 #[cfg(test)]
 mod tests {
-
     use super::scan;
-    use crate::testhelpers::{create_file, empty_config, tmp_dir};
+    use crate::testhelpers;
     use crate::{Issue, Tikibase};
     use std::path::PathBuf;
 
     #[test]
     fn empty_section() {
-        let dir = tmp_dir();
+        let dir = testhelpers::tmp_dir();
         let content = "\
 # test document
 
@@ -38,22 +37,20 @@ mod tests {
 ### next section
 
 content";
-        create_file("test.md", content, &dir);
-        let base = Tikibase::load(dir, &empty_config()).unwrap();
+        testhelpers::create_file("test.md", content, &dir);
+        let base = Tikibase::load(dir, &testhelpers::empty_config()).unwrap();
         let have = scan(&base);
-        assert_eq!(
-            have,
-            vec![Issue::EmptySection {
-                file: PathBuf::from("test.md"),
-                line: 2,
-                section_type: "empty section".into()
-            }]
-        );
+        let want = vec![Issue::EmptySection {
+            file: PathBuf::from("test.md"),
+            line: 2,
+            section_type: "empty section".into(),
+        }];
+        pretty::assert_eq!(have, want);
     }
 
     #[test]
     fn blank_line() {
-        let dir = tmp_dir();
+        let dir = testhelpers::tmp_dir();
         let content = "\
 # test document
 
@@ -62,31 +59,28 @@ content";
 ### next section
 
 content";
-        create_file("test.md", content, &dir);
-        let base = Tikibase::load(dir, &empty_config()).unwrap();
+        testhelpers::create_file("test.md", content, &dir);
+        let base = Tikibase::load(dir, &testhelpers::empty_config()).unwrap();
         let have = scan(&base);
-        assert_eq!(have.len(), 1);
-        assert_eq!(
-            have,
-            vec![Issue::EmptySection {
-                file: PathBuf::from("test.md"),
-                line: 2,
-                section_type: "empty section".into()
-            }]
-        )
+        let want = vec![Issue::EmptySection {
+            file: PathBuf::from("test.md"),
+            line: 2,
+            section_type: "empty section".into(),
+        }];
+        pretty::assert_eq!(have, want)
     }
 
     #[test]
     fn content() {
-        let dir = tmp_dir();
+        let dir = testhelpers::tmp_dir();
         let content = "\
 # test document
 
 ### section with content
 
 content";
-        create_file("test.md", content, &dir);
-        let base = Tikibase::load(dir, &empty_config()).unwrap();
+        testhelpers::create_file("test.md", content, &dir);
+        let base = Tikibase::load(dir, &testhelpers::empty_config()).unwrap();
         let have = scan(&base);
         assert!(have.is_empty());
     }

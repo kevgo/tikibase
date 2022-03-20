@@ -76,97 +76,75 @@ mod tests {
                 r#"an MD link: [one](one.md) and one to a section: [two pieces](two.md#pieces)!"#,
             );
             let have = line.references();
-            assert_eq!(have.len(), 2);
-            match &have[0] {
-                Reference::Link { destination } => {
-                    assert_eq!(destination, "one.md");
-                }
-                Reference::Image { src: _ } => panic!("unexpected image"),
-            };
-            match &have[1] {
-                Reference::Link { destination } => {
-                    assert_eq!(destination, "two.md");
-                }
-                Reference::Image { src: _ } => panic!("unexpected image"),
-            };
+            let want = vec![
+                Reference::Link {
+                    destination: "one.md".into(),
+                },
+                Reference::Link {
+                    destination: "two.md".into(),
+                },
+            ];
+            pretty::assert_eq!(have, want)
         }
 
         #[test]
         fn link_html() {
             let line = Line::new(r#"an HTML link: <a href="two.md">two</a>"#);
             let have = line.references();
-            assert_eq!(have.len(), 1);
-            match &have[0] {
-                Reference::Link { destination } => {
-                    assert_eq!(destination, "two.md");
-                }
-                Reference::Image { src: _ } => panic!("unexpected image"),
-            };
+            let want = vec![Reference::Link {
+                destination: "two.md".into(),
+            }];
+            pretty::assert_eq!(have, want)
         }
 
         #[test]
         fn img_md() {
             let line = Line::new(r#"an MD image: ![zonk](zonk.md)"#);
             let have = line.references();
-            assert_eq!(have.len(), 1);
-            match &have[0] {
-                Reference::Link { destination: _ } => panic!("unexpected link"),
-                Reference::Image { src } => {
-                    assert_eq!(src, "zonk.md");
-                }
-            };
+            let want = vec![Reference::Image {
+                src: "zonk.md".into(),
+            }];
+            pretty::assert_eq!(have, want)
         }
 
         #[test]
         fn img_html() {
             let line = Line::new(r#"<img src="zonk.md">"#);
             let have = line.references();
-            assert_eq!(have.len(), 1);
-            match &have[0] {
-                Reference::Image { src } => {
-                    assert_eq!(src, "zonk.md");
-                }
-                _ => panic!("expected image"),
-            };
+            let want = vec![Reference::Image {
+                src: "zonk.md".into(),
+            }];
+            pretty::assert_eq!(have, want)
         }
 
         #[test]
         fn img_html_extra_attributes() {
             let line = Line::new(r#"<img src="zonk.md" width="10" height="10">"#);
             let have = line.references();
-            assert_eq!(have.len(), 1);
-            match &have[0] {
-                Reference::Image { src } => {
-                    assert_eq!(src, "zonk.md");
-                }
-                _ => panic!("expected image"),
-            };
+            let want = vec![Reference::Image {
+                src: "zonk.md".into(),
+            }];
+            pretty::assert_eq!(have, want)
         }
 
         #[test]
         fn img_xml_nospace() {
             let line = Line::new(r#"<img src="zonk.md"/>"#);
             let have = line.references();
-            assert_eq!(have.len(), 1);
-            match &have[0] {
-                Reference::Image { src } => {
-                    assert_eq!(src, "zonk.md");
-                }
-                _ => panic!("expected image"),
-            };
+            let want = vec![Reference::Image {
+                src: "zonk.md".into(),
+            }];
+            pretty::assert_eq!(have, want)
         }
 
         #[test]
         fn img_xml_space() {
             let line = Line::new(r#"<img src="zonk.md" />"#);
             let have = line.references();
-            assert_eq!(have.len(), 1);
-            match &have[0] {
-                Reference::Image { src } => {
-                    assert_eq!(src, "zonk.md");
-                }
-                _ => panic!("expected image"),
-            };
+            let want = vec![Reference::Image {
+                src: "zonk.md".into(),
+            }];
+            pretty::assert_eq!(have, want)
         }
     }
 
@@ -184,21 +162,23 @@ mod tests {
         fn single_source() {
             let line = Line::new("- text [1]");
             let have = line.used_sources();
-            assert_eq!(have, vec!["1".to_string()]);
+            let want = vec!["1".to_string()];
+            assert_eq!(have, want);
         }
 
         #[test]
         fn multiple_sources() {
             let line = Line::new("- text [1] [2]");
             let have = line.used_sources();
-            assert_eq!(have, vec!["1".to_string(), "2".to_string()]);
+            let want = vec!["1".to_string(), "2".to_string()];
+            assert_eq!(have, want);
         }
 
         #[test]
         fn code_segment() {
             let line = Line::new("code: `map[0]`");
             let have = line.used_sources();
-            let want: Vec<String> = Vec::new();
+            let want: Vec<String> = vec![];
             assert_eq!(have, want);
         }
     }

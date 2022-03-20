@@ -229,7 +229,6 @@ mod tests {
         use super::super::Document;
         use crate::database::{Line, Section};
         use crate::Issue;
-        use pretty_assertions::assert_eq;
         use std::path::PathBuf;
 
         #[test]
@@ -253,7 +252,7 @@ content";
                 }],
                 occurrences_section_line: None,
             });
-            assert_eq!(have, want);
+            pretty::assert_eq!(have, want);
         }
 
         #[test]
@@ -262,14 +261,13 @@ content";
             let want = Err(Issue::NoTitleSection {
                 file: PathBuf::from("one.md"),
             });
-            assert_eq!(have, want)
+            pretty::assert_eq!(have, want)
         }
 
         #[test]
         fn with_fenced_code_block() {
             let give = "\
 # test
-
 ```md
 ### not a document section
 text
@@ -282,7 +280,6 @@ text
                     line_number: 0,
                     title_line: Line::new("# test"),
                     body: vec![
-                        Line::new(""),
                         Line::new("```md"),
                         Line::new("### not a document section"),
                         Line::new("text"),
@@ -292,14 +289,13 @@ text
                 content_sections: vec![],
                 occurrences_section_line: None,
             });
-            assert_eq!(have, want);
+            pretty::assert_eq!(have, want);
         }
 
         #[test]
         fn open_fenced_code_block() {
             let give = "\
 # test
-
 ```md
 ### not a document section
 text
@@ -307,9 +303,9 @@ text
             let have = Document::from_str("test.md", give);
             let want = Err(Issue::UnclosedFence {
                 file: PathBuf::from("test.md"),
-                line: 3,
+                line: 2,
             });
-            assert_eq!(have, want)
+            pretty::assert_eq!(have, want)
         }
 
         #[test]
@@ -344,7 +340,7 @@ content
                 ],
                 occurrences_section_line: Some(3),
             });
-            assert_eq!(have, want);
+            pretty::assert_eq!(have, want);
         }
     }
 
@@ -379,6 +375,7 @@ title text
 
     mod last_section_mut {
         use super::super::Document;
+        use crate::database::{Line, Section};
 
         #[test]
         fn has_content_section() {
@@ -392,7 +389,12 @@ text
 ";
             let mut doc = Document::from_str("test.md", give).unwrap();
             let have = doc.last_section_mut();
-            assert_eq!(have.title_line.text(), "### s1");
+            let mut want = Section {
+                line_number: 3,
+                title_line: Line::new("### s1"),
+                body: vec![Line::new(""), Line::new("text")],
+            };
+            pretty::assert_eq!(have, &mut want)
         }
 
         #[test]
@@ -403,7 +405,12 @@ title text
 ";
             let mut doc = Document::from_str("test.md", give).unwrap();
             let have = doc.last_section_mut();
-            assert_eq!(have.title_line.text(), "# Title");
+            let mut want = Section {
+                line_number: 0,
+                title_line: Line::new("# Title"),
+                body: vec![Line::new("title text")],
+            };
+            pretty::assert_eq!(have, &mut want)
         }
     }
 
