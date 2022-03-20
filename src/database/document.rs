@@ -225,6 +225,7 @@ mod tests {
     mod from_str {
         use super::super::Document;
         use crate::Issue;
+        use pretty_assertions::assert_eq;
         use std::path::PathBuf;
 
         #[test]

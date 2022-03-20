@@ -35,22 +35,15 @@ pub fn load<P: AsRef<Path>>(dir: P) -> Result<Data, Issue> {
 
 #[cfg(test)]
 mod tests {
-    use super::Data;
-
-    #[test]
-    fn defaults() {
-        let default_config = Data::default();
-        assert_eq!(default_config.sections, None);
-    }
 
     mod load {
         use crate::testhelpers::{create_file, tmp_dir};
         use crate::Issue;
+        use pretty_assertions::assert_eq;
 
         #[test]
         fn no_config_file() {
-            let dir = tmp_dir();
-            let have = super::super::load(dir).unwrap();
+            let have = super::super::load(tmp_dir()).unwrap();
             let want = super::super::Data {
                 sections: None,
                 ignore: None,
@@ -73,12 +66,12 @@ mod tests {
         #[test]
         fn valid_config_file() {
             let dir = tmp_dir();
-            let content = r#"
+            let give = r#"
             {
               "sections": [ "one", "two" ]
             }
             "#;
-            create_file("tikibase.json", content, &dir);
+            create_file("tikibase.json", give, &dir);
             let have = super::super::load(&dir).unwrap();
             let want = super::super::Data {
                 sections: Some(vec!["one".into(), "two".into()]),
@@ -90,11 +83,11 @@ mod tests {
         #[test]
         fn invalid_config_file() {
             let dir = tmp_dir();
-            let content = r#"{
+            let give = r#"{
     "sections": [
 }
 "#;
-            create_file("tikibase.json", content, &dir);
+            create_file("tikibase.json", give, &dir);
             let have = super::super::load(&dir);
             let want = Err(Issue::InvalidConfigurationFile {
                 message: "expected value at line 3 column 1".into(),
