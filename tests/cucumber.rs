@@ -1,4 +1,4 @@
-use crate::tikibase::testhelpers::{create_file, load_file, tmp_dir};
+use crate::tikibase::testhelpers;
 use ahash::AHashMap;
 use async_trait::async_trait;
 use cucumber::{gherkin::Step, given, then, when, World, WorldInit};
@@ -27,7 +27,7 @@ impl World for MyWorld {
 
     async fn new() -> Result<Self, Infallible> {
         Ok(MyWorld {
-            dir: tmp_dir(),
+            dir: testhelpers::tmp_dir(),
             exitcode: 0,
             findings: Vec::new(),
             original_contents: AHashMap::new(),
@@ -38,7 +38,7 @@ impl World for MyWorld {
 #[given(regex = r#"^file "(.*)" with content:$"#)]
 fn file_with_content(world: &mut MyWorld, step: &Step, filename: String) {
     let content = step.docstring.as_ref().unwrap().trim();
-    create_file(&filename, &content, &world.dir);
+    testhelpers::create_file(&filename, &content, &world.dir);
     world
         .original_contents
         .insert(PathBuf::from(filename), content.into());
@@ -46,7 +46,7 @@ fn file_with_content(world: &mut MyWorld, step: &Step, filename: String) {
 
 #[given(regex = r#"^file "(.*)"$"#)]
 fn file(world: &mut MyWorld, filename: String) {
-    create_file(&filename, "content", &world.dir);
+    testhelpers::create_file(&filename, "content", &world.dir);
 }
 
 #[when("checking")]
@@ -70,14 +70,14 @@ fn fixing(world: &mut MyWorld) {
 #[then("all files are unchanged")]
 fn all_files_unchanged(world: &mut MyWorld) {
     for (filename, original_content) in &world.original_contents {
-        let current_content = load_file(filename, &world.dir);
+        let current_content = testhelpers::load_file(filename, &world.dir);
         assert_eq!(&current_content.trim(), original_content);
     }
 }
 
 #[then(regex = r#"^file "(.*)" is unchanged$"#)]
 fn file_is_unchanged(world: &mut MyWorld, filename: String) {
-    let have = load_file(&filename, &world.dir);
+    let have = testhelpers::load_file(&filename, &world.dir);
     let want = world
         .original_contents
         .get(&PathBuf::from(filename))
@@ -88,7 +88,7 @@ fn file_is_unchanged(world: &mut MyWorld, filename: String) {
 #[then(regex = r#"^file "(.*)" should contain:$"#)]
 fn file_should_contain(world: &mut MyWorld, step: &Step, filename: String) {
     let want = step.docstring.as_ref().unwrap();
-    let have = load_file(&filename, &world.dir);
+    let have = testhelpers::load_file(&filename, &world.dir);
     assert_eq!(have.trim(), want.trim());
 }
 
