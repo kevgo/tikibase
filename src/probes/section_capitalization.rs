@@ -1,5 +1,4 @@
-use crate::issue::Issue;
-use crate::Tikibase;
+use crate::{Issue, Tikibase};
 use ahash::{AHashMap, AHashSet};
 use std::iter::FromIterator;
 

@@ -5,7 +5,7 @@ use std::convert::Infallible;
 use std::path::PathBuf;
 use tikibase::cli::Command;
 use tikibase::testhelpers;
-use tikibase::{self, Message, Messages};
+use tikibase::{self, testhelpers, Message, Messages};
 
 #[derive(Debug, WorldInit)]
 pub struct MyWorld {
