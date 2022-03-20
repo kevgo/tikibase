@@ -1,4 +1,4 @@
-use crate::issues::Issue;
+use crate::Issue;
 use serde::Deserialize;
 use std::fs::File;
 use std::io::ErrorKind;

@@ -4,8 +4,7 @@ mod obsolete_occurrences_section;
 mod unordered_sections;
 
 use super::config;
-use crate::issues::Issue;
-use crate::Tikibase;
+use crate::{Issue, Tikibase};
 use std::fmt::{self, Display, Formatter};
 use std::path::PathBuf;
 

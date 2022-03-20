@@ -1,6 +1,4 @@
-use crate::config;
-use crate::issues::Issue;
-use crate::Tikibase;
+use crate::{config, Issue, Tikibase};
 
 pub(crate) fn scan(base: &Tikibase, config: &config::Data) -> Vec<Issue> {
     let mut issues = Vec::<Issue>::new();
