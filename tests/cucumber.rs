@@ -4,7 +4,6 @@ use cucumber::{gherkin::Step, given, then, when, World, WorldInit};
 use std::convert::Infallible;
 use std::path::PathBuf;
 use tikibase::cli::Command;
-use tikibase::testhelpers;
 use tikibase::{self, testhelpers, Message, Messages};
 
 #[derive(Debug, WorldInit)]
