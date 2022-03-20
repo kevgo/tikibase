@@ -39,7 +39,6 @@ mod tests {
     mod load {
         use crate::testhelpers::{create_file, tmp_dir};
         use crate::Issue;
-        use pretty_assertions::assert_eq;
 
         #[test]
         fn no_config_file() {
@@ -48,7 +47,7 @@ mod tests {
                 sections: None,
                 ignore: None,
             };
-            assert_eq!(have, want);
+            pretty::assert_eq!(have, want);
         }
 
         #[test]
@@ -60,7 +59,7 @@ mod tests {
                 sections: None,
                 ignore: None,
             };
-            assert_eq!(have, want);
+            pretty::assert_eq!(have, want);
         }
 
         #[test]
@@ -77,7 +76,7 @@ mod tests {
                 sections: Some(vec!["one".into(), "two".into()]),
                 ignore: None,
             };
-            assert_eq!(have, want);
+            pretty::assert_eq!(have, want);
         }
 
         #[test]
@@ -92,7 +91,7 @@ mod tests {
             let want = Err(Issue::InvalidConfigurationFile {
                 message: "expected value at line 3 column 1".into(),
             });
-            assert_eq!(have, want)
+            pretty::assert_eq!(have, want)
         }
     }
 }
