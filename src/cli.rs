@@ -28,7 +28,7 @@ impl Default for Format {
 }
 
 /// the subcommands of the CLI app
-#[derive(Debug, PartialEq, clap::Subcommand)]
+#[derive(clap::Subcommand, Debug, PartialEq)]
 pub enum Command {
     /// Finds and prints issues, does not make changes
     Check,
