@@ -2,6 +2,7 @@ use super::Line;
 use heck::ToKebabCase;
 
 /// a section in a document, from one heading to above the next heading
+#[derive(Debug, PartialEq)]
 pub struct Section {
     /// the line number at which this section starts, 0-based
     pub line_number: u32,

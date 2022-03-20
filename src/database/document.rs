@@ -6,6 +6,7 @@ use regex::Regex;
 use std::io::prelude::*;
 use std::path::{Path, PathBuf};
 
+#[derive(Debug, PartialEq)]
 pub struct Document {
     /// the path relative to the Tikibase root directory
     pub path: PathBuf,
@@ -68,6 +69,7 @@ impl Document {
                 line: (fence_line as u32) + 1,
             });
         }
+        // TODO: split this array without reallocations using iterator
         let content_sections = sections.split_off(1);
         Ok(Document {
             path,
@@ -224,33 +226,40 @@ mod tests {
 
     mod from_str {
         use super::super::Document;
+        use crate::database::{Line, Section};
         use crate::Issue;
         use std::path::PathBuf;
 
         #[test]
         fn valid() {
-            let content = "\
+            let give = "\
 # test
 ### section 1
 content";
-            let doc = Document::from_str("one.md", content).unwrap();
-            let mut sections = doc.sections();
-            let section = sections.next().expect("expected title section");
-            assert_eq!(section.title_line.text(), "# test");
-            let section = sections.next().expect("expected s1");
-            assert_eq!(section.title_line.text(), "### section 1");
-            assert!(sections.next().is_none(), "unexpected section");
+            let have = Document::from_str("one.md", give);
+            let want = Ok(Document {
+                path: PathBuf::from("one.md"),
+                title_section: Section {
+                    line_number: 0,
+                    title_line: Line::new("# test"),
+                    body: vec![],
+                },
+                content_sections: vec![Section {
+                    line_number: 1,
+                    title_line: Line::new("### section 1"),
+                    body: vec![Line::new("content")],
+                }],
+                occurrences_section_line: None,
+            });
+            assert_eq!(have, want);
         }
 
         #[test]
-        fn invalid() {
-            let have = match Document::from_str("one.md", "content") {
-                Err(issue) => issue,
-                Ok(_) => panic!(),
-            };
-            let want = Issue::NoTitleSection {
+        fn missing_title() {
+            let have = Document::from_str("one.md", "no title");
+            let want = Err(Issue::NoTitleSection {
                 file: PathBuf::from("one.md"),
-            };
+            });
             assert_eq!(have, want)
         }
 

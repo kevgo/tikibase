@@ -12,6 +12,7 @@ static SOURCE_RE: Lazy<Regex> = Lazy::new(|| Regex::new(r#"\[(\d+)\]"#).unwrap()
 static CODE_RE: Lazy<Regex> = Lazy::new(|| Regex::new("`[^`]+`").unwrap());
 
 impl Line {
+    // TODO: rename to from
     pub fn new<S: Into<String>>(text: S) -> Line {
         Line(text.into())
     }
