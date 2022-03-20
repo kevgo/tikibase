@@ -1,10 +1,9 @@
-use crate::database::Tikibase;
-use crate::issues;
-use crate::Issue;
+use crate::issues::Issue;
+use crate::Tikibase;
 use ahash::{AHashMap, AHashSet};
 use std::iter::FromIterator;
 
-pub(crate) fn scan(base: &Tikibase) -> Vec<Box<dyn Issue>> {
+pub(crate) fn scan(base: &Tikibase) -> Vec<Issue> {
     // registers variants of section titles: normalized title --> Vec<existing titles>
     let mut title_variants: AHashMap<String, AHashSet<String>> = AHashMap::new();
     for doc in &base.docs {
@@ -16,14 +15,14 @@ pub(crate) fn scan(base: &Tikibase) -> Vec<Box<dyn Issue>> {
                 .insert(section_type.into());
         }
     }
-    let mut issues = Vec::<Box<dyn Issue>>::new();
+    let mut issues = Vec::new();
     for (_, variants) in title_variants.drain() {
         if variants.len() < 2 {
             continue;
         }
         let mut sorted = Vec::from_iter(variants);
         sorted.sort();
-        issues.push(Box::new(issues::MixCapSection { variants: sorted }));
+        issues.push(Issue::MixCapSection { variants: sorted });
     }
     issues
 }
@@ -43,8 +42,8 @@ mod tests {
         assert_eq!(super::normalize("FOO"), "foo");
     }
 
-    use crate::database::Tikibase;
     use crate::testhelpers::{create_file, empty_config, tmp_dir};
+    use crate::Tikibase;
 
     #[test]
     fn progress() {
@@ -64,13 +63,15 @@ content";
 ### one
 content";
         create_file("2.md", content2, &dir);
-        let (base, errs) = Tikibase::load(dir, &empty_config());
-        assert_eq!(errs.len(), 0);
+        let base = Tikibase::load(dir, &empty_config()).unwrap();
         let have: Vec<String> = super::scan(&base)
             .iter()
             .map(|issue| issue.to_string())
             .collect();
         assert_eq!(have.len(), 1);
-        assert_eq!(have[0], "mixed capitalization of sections: ONE|One|one");
+        assert_eq!(
+            have[0],
+            "section title occurs with inconsistent capitalization: ONE|One|one"
+        );
     }
 }

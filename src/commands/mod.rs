@@ -1,5 +1,9 @@
 mod check;
+mod fix;
+mod pitstop;
 mod stats;
 
-pub(crate) use check::check;
-pub(crate) use stats::stats;
+pub use check::check;
+pub use fix::fix;
+pub use pitstop::pitstop;
+pub use stats::stats;

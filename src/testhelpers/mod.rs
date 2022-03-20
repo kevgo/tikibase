@@ -2,7 +2,7 @@
 
 use crate::config;
 use rand::Rng;
-use std::fs::File;
+use std::fs::{self, File};
 use std::io::prelude::*;
 use std::path::{Path, PathBuf};
 use std::time::{SystemTime, UNIX_EPOCH};
@@ -19,7 +19,7 @@ pub fn tmp_dir() -> PathBuf {
         .map(char::from)
         .collect();
     let dir = PathBuf::from(format!("./tmp/{}-{}", timestamp, rand));
-    std::fs::create_dir_all(&dir).unwrap();
+    fs::create_dir_all(&dir).unwrap();
     dir
 }
 
@@ -37,7 +37,7 @@ pub fn empty_config() -> config::Data {
 }
 
 pub fn load_file<P: AsRef<Path>>(filename: P, dir: &Path) -> String {
-    let mut result = std::fs::read_to_string(dir.join(filename)).unwrap();
+    let mut result = fs::read_to_string(dir.join(filename)).unwrap();
     trim_end(&mut result);
     result.push('\n');
     result

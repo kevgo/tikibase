@@ -18,7 +18,7 @@ Feature: recognize/fix duplicate sections
     When checking
     Then it prints:
       """
-      1.md  duplicate section: One
+      1.md  document contains multiple "One" sections
       """
     And all files are unchanged
 
@@ -31,6 +31,6 @@ Feature: recognize/fix duplicate sections
     When doing a pitstop
     Then it prints:
       """
-      1.md  duplicate section: One
+      1.md  document contains multiple "One" sections
       """
     And all files are unchanged

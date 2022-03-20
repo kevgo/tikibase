@@ -1,7 +1,9 @@
 use super::{section, Section};
+use crate::Issue;
 use ahash::AHashSet;
 use once_cell::sync::Lazy;
 use regex::Regex;
+use std::fs;
 use std::io::prelude::*;
 use std::path::{Path, PathBuf};
 
@@ -10,9 +12,10 @@ pub struct Document {
     pub path: PathBuf,
     pub title_section: Section,
     pub content_sections: Vec<Section>,
-    /// Loading filters out "occurrences" sections.
-    /// Some => this document had an "occurrences" section at the given line when loading it.
-    /// None => this document had no occurrences section when loading it.
+    /// The line where the "occurrences" section in this document starts.
+    /// Loading a document filters out its "occurrences" section to we have to store this value separately.
+    /// `Some` means this document had an "occurrences" section at the given line when loading it.
+    /// `None` means this document had no occurrences section when loading it.
     pub occurrences_section_line: Option<u32>,
 }
 
@@ -20,7 +23,7 @@ static SOURCE_RE: Lazy<Regex> = Lazy::new(|| Regex::new("^(\\d+)\\.").unwrap());
 
 impl Document {
     /// provides a Document instance containing the given text
-    pub fn from_lines<T, P: Into<PathBuf>>(lines: T, path: P) -> Result<Document, String>
+    pub fn from_lines<T, P: Into<PathBuf>>(lines: T, path: P) -> Result<Document, Issue>
     where
         T: Iterator<Item = String>,
     {
@@ -49,7 +52,7 @@ impl Document {
             }
             match &mut section_builder {
                 Some(section_builder) => section_builder.add_line(line),
-                None => return Err(format!("{}  no title section", path.to_string_lossy())),
+                None => return Err(Issue::NoTitleSection { file: path }),
             }
         }
         if let Some(section_builder) = section_builder {
@@ -61,11 +64,10 @@ impl Document {
             }
         }
         if inside_fence {
-            return Err(format!(
-                "{}:{}  unclosed fence",
-                path.to_string_lossy(),
-                fence_line + 1,
-            ));
+            return Err(Issue::UnclosedFence {
+                file: path,
+                line: (fence_line as u32) + 1,
+            });
         }
         let content_sections = sections.split_off(1);
         Ok(Document {
@@ -78,13 +80,14 @@ impl Document {
 
     #[cfg(test)]
     /// provides Document instances in tests
-    pub fn from_str<P: Into<PathBuf>>(path: P, text: &str) -> Result<Document, String> {
+    pub fn from_str<P: Into<PathBuf>>(path: P, text: &str) -> Result<Document, Issue> {
         Document::from_lines(text.lines().map(|line| line.to_string()), path)
     }
 
     /// persists the changes made to this document to disk
+    /// TODO: move into base for more clear data ownership (needs "dir" attribute of containing base anyways)
     pub fn save(&self, root: &Path) {
-        let mut file = std::fs::File::create(root.join(&self.path)).unwrap();
+        let mut file = fs::File::create(root.join(&self.path)).unwrap();
         file.write_all(self.text().as_bytes()).unwrap();
     }
 
@@ -222,6 +225,8 @@ mod tests {
 
     mod from_str {
         use super::super::Document;
+        use crate::Issue;
+        use std::path::PathBuf;
 
         #[test]
         fn valid() {
@@ -240,10 +245,14 @@ content";
 
         #[test]
         fn invalid() {
-            match Document::from_str("one.md", "content") {
-                Err(e) => assert_eq!(e, "one.md  no title section"),
+            let have = match Document::from_str("one.md", "content") {
+                Err(issue) => issue,
                 Ok(_) => panic!(),
-            }
+            };
+            let want = Issue::NoTitleSection {
+                file: PathBuf::from("one.md"),
+            };
+            assert_eq!(have, want)
         }
 
         #[test]
@@ -270,10 +279,15 @@ text
 ### not a document section
 text
 ";
-            match Document::from_str("test.md", content) {
-                Err(msg) => assert_eq!(msg, "test.md:3  unclosed fence"),
+            let have = match Document::from_str("test.md", content) {
+                Err(issue) => issue,
                 Ok(_) => panic!(),
-            }
+            };
+            let want = Issue::UnclosedFence {
+                file: PathBuf::from("test.md"),
+                line: 3,
+            };
+            assert_eq!(have, want)
         }
     }
 

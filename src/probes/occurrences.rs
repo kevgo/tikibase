@@ -1,7 +1,6 @@
 use crate::database::DocLinks;
-use crate::database::Tikibase;
-use crate::issues;
-use crate::Issue;
+use crate::issues::{Issue, MissingLink};
+use crate::Tikibase;
 use ahash::AHashSet;
 use std::path::PathBuf;
 
@@ -9,8 +8,8 @@ pub(crate) fn scan(
     base: &Tikibase,
     incoming_doc_links: &DocLinks,
     outgoing_doc_links: &DocLinks,
-) -> Vec<Box<dyn Issue>> {
-    let mut issues = Vec::<Box<dyn Issue>>::new();
+) -> Vec<Issue> {
+    let mut issues = Vec::new();
     for doc in &base.docs {
         let mut missing_outgoing: Vec<PathBuf> = incoming_doc_links
             .get(&doc.path)
@@ -24,30 +23,30 @@ pub(crate) fn scan(
             .cloned()
             .collect();
 
-        // no missing links --> done here
         if missing_outgoing.is_empty() {
+            // no missing links --> done with this document
             if let Some(occurrences_section_line) = doc.occurrences_section_line {
-                issues.push(Box::new(issues::ObsoleteLink {
+                issues.push(Issue::ObsoleteOccurrencesSection {
                     file: doc.path.clone(),
                     line: occurrences_section_line,
-                }));
+                });
             }
             continue;
         }
 
         // register missing occurrences
         missing_outgoing.sort();
-        issues.push(Box::new(issues::MissingLinks {
+        issues.push(Issue::MissingLinks {
             file: doc.path.clone(),
             links: missing_outgoing
                 .into_iter()
                 .map(|path| base.get_doc(&path).unwrap())
-                .map(|doc| issues::MissingLink {
+                .map(|doc| MissingLink {
                     path: doc.path.clone(),
                     title: doc.title().into(),
                 })
                 .collect(),
-        }));
+        });
     }
     issues
 }
@@ -56,8 +55,8 @@ pub(crate) fn scan(
 mod tests {
 
     use crate::database::DocLinks;
-    use crate::database::Tikibase;
     use crate::testhelpers::{create_file, empty_config, tmp_dir};
+    use crate::Tikibase;
 
     #[test]
     fn process() {
@@ -65,8 +64,7 @@ mod tests {
         create_file("1.md", "# One\n", &dir);
         create_file("2.md", "# Two\n\n[one](1.md)\n", &dir);
         create_file("3.md", "# Three\n\n[one](1.md)\n", &dir);
-        let (base, errs) = Tikibase::load(dir, &empty_config());
-        assert_eq!(errs.len(), 0);
+        let base = Tikibase::load(dir, &empty_config()).unwrap();
         let mut outgoing_links = DocLinks::default();
         outgoing_links.add("3.md", "1.md");
         outgoing_links.add("2.md", "1.md");
