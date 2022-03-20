@@ -1,5 +1,5 @@
 use crate::database::DocLinks;
-use crate::issues::{Issue, MissingLink};
+use crate::issue::{Issue, MissingLink};
 use crate::Tikibase;
 use ahash::AHashSet;
 use std::path::PathBuf;
@@ -27,7 +27,7 @@ pub(crate) fn scan(
             // no missing links --> done with this document
             if let Some(occurrences_section_line) = doc.occurrences_section_line {
                 issues.push(Issue::ObsoleteOccurrencesSection {
-                    file: doc.path.clone(),
+                    file: doc.path,
                     line: occurrences_section_line,
                 });
             }
@@ -37,13 +37,12 @@ pub(crate) fn scan(
         // register missing occurrences
         missing_outgoing.sort();
         issues.push(Issue::MissingLinks {
-            file: doc.path.clone(),
+            file: doc.path,
             links: missing_outgoing
                 .into_iter()
                 .map(|path| base.get_doc(&path).unwrap())
                 .map(|doc| MissingLink {
                     path: doc.path.clone(),
-                    title: doc.title().into(),
                 })
                 .collect(),
         });
@@ -55,8 +54,9 @@ pub(crate) fn scan(
 mod tests {
 
     use crate::database::DocLinks;
+    use crate::issue::MissingLink;
     use crate::testhelpers::{create_file, empty_config, tmp_dir};
-    use crate::Tikibase;
+    use crate::{Issue, Tikibase};
 
     #[test]
     fn process() {
@@ -72,7 +72,19 @@ mod tests {
         incoming_links.add("1.md", "3.md");
         incoming_links.add("1.md", "2.md");
         let have = super::scan(&base, &incoming_links, &outgoing_links);
-        let issues: Vec<String> = have.iter().map(|issue| issue.to_string()).collect();
-        assert_eq!(issues, vec!["1.md  missing link to 2.md, 3.md"]);
+        assert_eq!(
+            have,
+            vec![Issue::MissingLinks {
+                file: "1.md".into(),
+                links: vec![
+                    MissingLink {
+                        path: "2.md".into()
+                    },
+                    MissingLink {
+                        path: "3.md".into()
+                    }
+                ]
+            }]
+        );
     }
 }

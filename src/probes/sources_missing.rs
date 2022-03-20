@@ -1,4 +1,4 @@
-use crate::issues::Issue;
+use crate::issue::Issue;
 use crate::Tikibase;
 
 pub(crate) fn scan(base: &Tikibase) -> Vec<Issue> {
@@ -9,7 +9,7 @@ pub(crate) fn scan(base: &Tikibase) -> Vec<Issue> {
         for used_source in used_sources {
             if !defined_source_ids.contains(&used_source.index) {
                 issues.push(Issue::MissingSource {
-                    file: doc.path.to_string_lossy().to_string(),
+                    file: doc.path,
                     line: used_source.line,
                     index: used_source.index,
                 });

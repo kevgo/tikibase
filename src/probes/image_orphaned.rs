@@ -1,4 +1,4 @@
-use crate::issues::Issue;
+use crate::issue::Issue;
 use crate::Tikibase;
 
 pub(crate) fn scan(base: &Tikibase, resource_links: &[String]) -> Vec<Issue> {

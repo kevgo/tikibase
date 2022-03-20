@@ -3,24 +3,23 @@
 use clap::StructOpt;
 use std::io;
 use std::path::PathBuf;
-use tikibase::{render_text, run, Args, Format, Outcome};
+use tikibase::{render_text, run, Message};
 
 fn main() {
     let args = Args::parse();
-    let outcome = run(args.command, PathBuf::from("."));
+    let messages = run(args.command, PathBuf::from("."));
     let exit_code = match args.format {
-        Format::Text => print_text(outcome),
-        Format::Json => print_json(outcome),
+        Format::Text => print_text(messages),
+        Format::Json => print_json(messages),
     };
     std::process::exit(exit_code);
 }
 
-fn print_text(outcome: Outcome) -> i32 {
-    let (output, exit_code) = render_text(&outcome);
-    for line in output {
-        println!("{line}");
+fn print_text(messages: Vec<Message>) -> i32 {
+    for message in messages {
+        println!("{message.to_text()}");
     }
-    exit_code
+    messages.len() as i32
 }
 
 fn print_json(outcome: Outcome) -> i32 {

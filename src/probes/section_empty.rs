@@ -10,7 +10,7 @@ pub(crate) fn scan(base: &Tikibase) -> Vec<Issue> {
             let has_content = section.body.iter().any(|line| !line.text().is_empty());
             if !has_content {
                 issues.push(Issue::EmptySection {
-                    filename: doc.path.clone(),
+                    file: doc.path.clone(),
                     line: section.line_number,
                     section_type: section.section_type().into(),
                 });
@@ -23,9 +23,11 @@ pub(crate) fn scan(base: &Tikibase) -> Vec<Issue> {
 #[cfg(test)]
 mod tests {
 
+    use std::path::PathBuf;
+
     use super::scan;
     use crate::testhelpers::{create_file, empty_config, tmp_dir};
-    use crate::Tikibase;
+    use crate::{Issue, Tikibase};
 
     #[test]
     fn empty_section() {
@@ -39,11 +41,14 @@ mod tests {
 content";
         create_file("test.md", content, &dir);
         let base = Tikibase::load(dir, &empty_config()).unwrap();
-        let have: Vec<String> = scan(&base).iter().map(|issue| issue.to_string()).collect();
-        assert_eq!(have.len(), 1);
+        let have = scan(&base);
         assert_eq!(
-            have[0],
-            "test.md:3  section \"empty section\" has no content"
+            have,
+            vec![Issue::EmptySection {
+                file: PathBuf::from("test.md"),
+                line: 3,
+                section_type: "empty section".into()
+            }]
         );
     }
 
@@ -60,12 +65,16 @@ content";
 content";
         create_file("test.md", content, &dir);
         let base = Tikibase::load(dir, &empty_config()).unwrap();
-        let have: Vec<String> = scan(&base).iter().map(|issue| issue.to_string()).collect();
+        let have = scan(&base);
         assert_eq!(have.len(), 1);
         assert_eq!(
-            have[0],
-            "test.md:3  section \"empty section\" has no content"
-        );
+            have,
+            vec![Issue::EmptySection {
+                file: PathBuf::from("test.md"),
+                line: 3,
+                section_type: "empty section".into()
+            }]
+        )
     }
 
     #[test]

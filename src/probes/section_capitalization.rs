@@ -1,4 +1,4 @@
-use crate::issues::Issue;
+use crate::issue::Issue;
 use crate::Tikibase;
 use ahash::{AHashMap, AHashSet};
 use std::iter::FromIterator;
@@ -43,7 +43,7 @@ mod tests {
     }
 
     use crate::testhelpers::{create_file, empty_config, tmp_dir};
-    use crate::Tikibase;
+    use crate::{Issue, Tikibase};
 
     #[test]
     fn progress() {
@@ -64,14 +64,12 @@ content";
 content";
         create_file("2.md", content2, &dir);
         let base = Tikibase::load(dir, &empty_config()).unwrap();
-        let have: Vec<String> = super::scan(&base)
-            .iter()
-            .map(|issue| issue.to_string())
-            .collect();
-        assert_eq!(have.len(), 1);
+        let have = super::scan(&base);
         assert_eq!(
-            have[0],
-            "section title occurs with inconsistent capitalization: ONE|One|one"
+            have,
+            vec![Issue::MixCapSection {
+                variants: vec!["ONE".into(), "One".into(), "one".into()]
+            }]
         );
     }
 }
