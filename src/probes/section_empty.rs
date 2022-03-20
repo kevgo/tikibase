@@ -24,12 +24,12 @@ pub(crate) fn scan(base: &Tikibase) -> Vec<Issue> {
 mod tests {
     use super::scan;
     // TODO: use these with their testhelpers namespace
-    use crate::testhelpers::{create_file, empty_config, tmp_dir};
+    use crate::testhelpers;
     use crate::Tikibase;
 
     #[test]
     fn empty_section() {
-        let dir = tmp_dir();
+        let dir = testhelpers::tmp_dir();
         let content = "\
 # test document
 
@@ -37,8 +37,8 @@ mod tests {
 ### next section
 
 content";
-        create_file("test.md", content, &dir);
-        let base = Tikibase::load(dir, &empty_config()).unwrap();
+        testhelpers::create_file("test.md", content, &dir);
+        let base = Tikibase::load(dir, &testhelpers::empty_config()).unwrap();
         let have: Vec<String> = scan(&base).iter().map(|issue| issue.to_string()).collect();
         assert_eq!(
             have,
@@ -48,7 +48,7 @@ content";
 
     #[test]
     fn blank_line() {
-        let dir = tmp_dir();
+        let dir = testhelpers::tmp_dir();
         let content = "\
 # test document
 
@@ -57,8 +57,8 @@ content";
 ### next section
 
 content";
-        create_file("test.md", content, &dir);
-        let base = Tikibase::load(dir, &empty_config()).unwrap();
+        testhelpers::create_file("test.md", content, &dir);
+        let base = Tikibase::load(dir, &testhelpers::empty_config()).unwrap();
         let have: Vec<String> = scan(&base).iter().map(|issue| issue.to_string()).collect();
         pretty::assert_eq!(
             have,
@@ -68,15 +68,15 @@ content";
 
     #[test]
     fn content() {
-        let dir = tmp_dir();
+        let dir = testhelpers::tmp_dir();
         let content = "\
 # test document
 
 ### section with content
 
 content";
-        create_file("test.md", content, &dir);
-        let base = Tikibase::load(dir, &empty_config()).unwrap();
+        testhelpers::create_file("test.md", content, &dir);
+        let base = Tikibase::load(dir, &testhelpers::empty_config()).unwrap();
         let have = scan(&base);
         assert!(have.is_empty());
     }
