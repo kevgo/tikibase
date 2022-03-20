@@ -48,16 +48,17 @@ static SOURCE_RE: Lazy<Regex> = Lazy::new(|| Regex::new(r#"\[([^]]*)\]\([^)]*\)"
 mod tests {
 
     mod strip_links {
+        use super::super::strip_links;
 
         #[test]
         fn with_links() {
-            let have = super::super::strip_links("[one](1.md) [two](2.md)");
+            let have = strip_links("[one](1.md) [two](2.md)");
             assert_eq!(have, "one two");
         }
 
         #[test]
         fn without_links() {
-            let have = super::super::strip_links("one two");
+            let have = strip_links("one two");
             assert_eq!(have, "one two");
         }
     }

@@ -28,7 +28,6 @@ fn reorder(sections: &mut Vec<Section>, schema: &[String]) -> Vec<Section> {
 
 #[cfg(test)]
 mod tests {
-
     use super::reorder;
     use crate::database::Section;
 

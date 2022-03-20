@@ -214,32 +214,8 @@ foo
 ";
         create_file("file.md", content, &dir);
         let base = Tikibase::load(dir, &empty_config()).unwrap();
-        let doc = &base.get_doc("file.md").unwrap();
-        assert_eq!(doc.title_section.title_line.text(), "# Title");
-        assert_eq!(doc.title_section.line_number, 0);
-        let body: Vec<&str> = doc.title_section.body.iter().map(|l| l.text()).collect();
-        assert_eq!(body, vec!["title text"]);
-        // verify body of doc 0
-        let content_sections: Vec<&str> = doc
-            .content_sections
-            .iter()
-            .map(|s| s.title_line.text())
-            .collect();
-        assert_eq!(content_sections, vec!["### Section 1", "### Section 2"]);
-        assert_eq!(doc.content_sections[0].line_number, 2);
-        let sec0_lines: Vec<&str> = doc.content_sections[0]
-            .body
-            .iter()
-            .map(|l| l.text())
-            .collect();
-        assert_eq!(sec0_lines, vec!["one", "two"]);
-        assert_eq!(doc.content_sections[1].line_number, 5);
-        let sec1_lines: Vec<&str> = doc.content_sections[1]
-            .body
-            .iter()
-            .map(|l| l.text())
-            .collect();
-        assert_eq!(sec1_lines, vec!["foo"]);
+        // make sure we can load existing documents
+        let _doc = &base.get_doc("file.md").unwrap();
     }
 
     #[test]
