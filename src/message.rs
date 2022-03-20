@@ -2,7 +2,7 @@ use crate::Issue;
 use serde::Serialize;
 
 /// a result struct of an activity, could be an issue of a fix
-#[derive(Serialize)]
+#[derive(Debug, PartialEq, Serialize)]
 pub struct Message {
     pub file: Option<String>,
     pub line: Option<u32>,
@@ -11,19 +11,20 @@ pub struct Message {
 }
 
 impl Message {
-    pub fn to_text(self) -> String {
-        match (self.file, self.line) {
+    pub fn to_text(&self) -> String {
+        match (&self.file, self.line) {
             (Some(file), Some(line)) => {
                 format!("{}:{}  {}", file, line, self.text)
             }
             (Some(file), None) => format!("{}  {}", file, self.text),
-            (None, None) => self.text,
+            (None, None) => self.text.clone(),
             (None, Some(_line)) => panic!("should never get just a line without a file"),
         }
     }
 }
 
 /// all activities
+#[derive(Debug, PartialEq)]
 pub struct Messages {
     pub messages: Vec<Message>,
     pub exit_code: i32,
@@ -40,6 +41,15 @@ impl Messages {
         Messages {
             exit_code: issues.len() as i32,
             messages: issues.into_iter().map(|issue| issue.to_message()).collect(),
+        }
+    }
+}
+
+impl Default for Messages {
+    fn default() -> Self {
+        Self {
+            messages: vec![],
+            exit_code: 0,
         }
     }
 }

@@ -23,11 +23,10 @@ pub(crate) fn scan(base: &Tikibase) -> Vec<Issue> {
 #[cfg(test)]
 mod tests {
 
-    use std::path::PathBuf;
-
     use super::scan;
     use crate::testhelpers::{create_file, empty_config, tmp_dir};
     use crate::{Issue, Tikibase};
+    use std::path::PathBuf;
 
     #[test]
     fn empty_section() {
@@ -46,7 +45,7 @@ content";
             have,
             vec![Issue::EmptySection {
                 file: PathBuf::from("test.md"),
-                line: 3,
+                line: 2,
                 section_type: "empty section".into()
             }]
         );
@@ -71,7 +70,7 @@ content";
             have,
             vec![Issue::EmptySection {
                 file: PathBuf::from("test.md"),
-                line: 3,
+                line: 2,
                 section_type: "empty section".into()
             }]
         )
