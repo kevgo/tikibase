@@ -2,6 +2,7 @@ use super::Line;
 use heck::ToKebabCase;
 
 /// a section in a document, from one heading to above the next heading
+#[derive(Debug, PartialEq)]
 pub struct Section {
     /// the line number at which this section starts, 0-based
     pub line_number: u32,
@@ -68,6 +69,7 @@ impl Section {
 
     /// provides a section with the given title
     #[cfg(test)]
+    /// TODO: remove test builders like this and replace with scaffold / default
     pub fn with_title(title: &str) -> Section {
         Section {
             line_number: 0,
@@ -150,7 +152,7 @@ mod tests {
         }
     }
 
-    mod last_line {
+    mod last_line_abs {
         use crate::database::{Line, Section};
 
         #[test]
@@ -175,16 +177,16 @@ mod tests {
 
     #[test]
     fn lines() {
-        let content = "\
+        let give = "\
 # test
 title content";
-        let doc = Document::from_str("foo", content).unwrap();
-        let mut lines = doc.title_section.lines();
-        let line = lines.next().expect("expected title line");
+        let doc = Document::from_str("foo", give).unwrap();
+        let mut have = doc.title_section.lines();
+        let line = have.next().expect("expected title line");
         assert_eq!(line.text(), "# test");
-        let line = lines.next().expect("expected body line 1");
+        let line = have.next().expect("expected body line 1");
         assert_eq!(line.text(), "title content");
-        assert!(lines.next().is_none(), "unexpected line");
+        assert!(have.next().is_none(), "unexpected line");
     }
 
     mod push_line {
@@ -192,25 +194,28 @@ title content";
 
         #[test]
         fn no_body() {
-            let mut section = Section {
-                body: Vec::new(),
+            let mut have = Section {
+                body: vec![],
                 ..Section::scaffold()
             };
-            section.push_line("new line");
-            assert_eq!(section.body.len(), 1);
-            assert_eq!(section.body[0].text(), "new line");
+            have.push_line("new line");
+            let want = Section {
+                body: vec![Line::new("new line")],
+                ..Section::scaffold()
+            };
+            pretty::assert_eq!(have, want)
         }
 
         #[test]
-        fn with_body() {
+        fn with_existing_body() {
             let mut section = Section {
                 body: vec![Line::new("l1")],
                 ..Section::scaffold()
             };
             section.push_line("new line");
-            assert_eq!(section.body.len(), 2);
-            assert_eq!(section.body[0].text(), "l1");
-            assert_eq!(section.body[1].text(), "new line");
+            let have = section.body;
+            let want = vec![Line::new("l1"), Line::new("new line")];
+            pretty::assert_eq!(have, want)
         }
     }
 
@@ -220,29 +225,25 @@ title content";
         #[test]
         fn h1() {
             let section = Section::with_title("# Title");
-            let have = section.section_type();
-            assert_eq!(have, "Title");
+            assert_eq!(section.section_type(), "Title");
         }
 
         #[test]
         fn h3() {
             let section = Section::with_title("### Title");
-            let have = section.section_type();
-            assert_eq!(have, "Title");
+            assert_eq!(section.section_type(), "Title");
         }
 
         #[test]
         fn no_header() {
             let section = Section::with_title("Title");
-            let have = section.section_type();
-            assert_eq!(have, "Title");
+            assert_eq!(section.section_type(), "Title");
         }
 
         #[test]
         fn no_text() {
             let section = Section::with_title("###");
-            let have = section.section_type();
-            assert_eq!(have, "");
+            assert_eq!(section.section_type(), "");
         }
     }
 

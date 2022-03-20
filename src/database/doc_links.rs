@@ -25,30 +25,22 @@ impl DocLinks {
 
 #[cfg(test)]
 mod tests {
-
     use super::DocLinks;
     use std::path::PathBuf;
 
     #[test]
-    fn new() {
-        let doc_links = DocLinks::default();
-        assert_eq!(doc_links.data.len(), 0);
-    }
-
-    #[test]
     fn add() {
-        let mut doc_links = DocLinks::default();
-        doc_links.add("1.md", "2.md");
-        doc_links.add("1.md", "3.md");
-        assert_eq!(doc_links.data.len(), 1);
-        let have = doc_links.get("1.md").unwrap();
+        let mut have = DocLinks::default();
+        have.add("1.md", "2.md");
+        have.add("1.md", "3.md");
+        assert_eq!(have.data.len(), 1);
+        let have = have.get("1.md").unwrap();
         assert_eq!(have.len(), 2);
         assert!(have.contains(&PathBuf::from("2.md")));
         assert!(have.contains(&PathBuf::from("3.md")));
     }
 
     mod get {
-
         use super::super::DocLinks;
         use std::path::PathBuf;
 

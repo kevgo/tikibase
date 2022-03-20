@@ -68,10 +68,9 @@ content";
             .iter()
             .map(|issue| issue.to_string())
             .collect();
-        assert_eq!(have.len(), 1);
-        assert_eq!(
-            have[0],
-            "section title occurs with inconsistent capitalization: ONE|One|one"
+        pretty::assert_eq!(
+            have,
+            vec!["section title occurs with inconsistent capitalization: ONE|One|one"]
         );
     }
 }

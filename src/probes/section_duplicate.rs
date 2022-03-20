@@ -22,7 +22,6 @@ pub(crate) fn scan(base: &Tikibase) -> Vec<Issue> {
 
 #[cfg(test)]
 mod tests {
-
     use super::scan;
     use crate::testhelpers::{create_file, empty_config, tmp_dir};
     use crate::Tikibase;
@@ -40,10 +39,9 @@ content";
         create_file("test.md", content, &dir);
         let base = Tikibase::load(dir, &empty_config()).unwrap();
         let have: Vec<String> = scan(&base).iter().map(|issue| issue.to_string()).collect();
-        assert_eq!(have.len(), 1);
-        assert_eq!(
-            have[0],
-            "test.md  document contains multiple \"One\" sections"
+        pretty::assert_eq!(
+            have,
+            vec!["test.md  document contains multiple \"One\" sections"]
         );
     }
 }

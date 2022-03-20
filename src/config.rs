@@ -35,71 +35,64 @@ pub fn load<P: AsRef<Path>>(dir: P) -> Result<Data, Issue> {
 
 #[cfg(test)]
 mod tests {
-    use super::Data;
-
-    #[test]
-    fn defaults() {
-        let default_config = Data::default();
-        assert_eq!(default_config.sections, None);
-    }
 
     mod load {
+        use super::super::{load, Data};
         use crate::testhelpers::{create_file, tmp_dir};
         use crate::Issue;
 
         #[test]
         fn no_config_file() {
-            let dir = tmp_dir();
-            let have = super::super::load(dir).unwrap();
-            let want = super::super::Data {
+            let have = load(tmp_dir()).unwrap();
+            let want = Data {
                 sections: None,
                 ignore: None,
             };
-            assert_eq!(have, want);
+            pretty::assert_eq!(have, want);
         }
 
         #[test]
         fn empty_config_file() {
             let dir = tmp_dir();
             create_file("tikibase.json", "{}", &dir);
-            let have = super::super::load(&dir).unwrap();
-            let want = super::super::Data {
+            let have = load(&dir).unwrap();
+            let want = Data {
                 sections: None,
                 ignore: None,
             };
-            assert_eq!(have, want);
+            pretty::assert_eq!(have, want);
         }
 
         #[test]
         fn valid_config_file() {
             let dir = tmp_dir();
-            let content = r#"
+            let give = r#"
             {
               "sections": [ "one", "two" ]
             }
             "#;
-            create_file("tikibase.json", content, &dir);
-            let have = super::super::load(&dir).unwrap();
-            let want = super::super::Data {
+            create_file("tikibase.json", give, &dir);
+            let have = load(&dir).unwrap();
+            let want = Data {
                 sections: Some(vec!["one".into(), "two".into()]),
                 ignore: None,
             };
-            assert_eq!(have, want);
+            pretty::assert_eq!(have, want);
         }
 
         #[test]
         fn invalid_config_file() {
             let dir = tmp_dir();
-            let content = r#"{
+            let give = r#"{
     "sections": [
 }
 "#;
-            create_file("tikibase.json", content, &dir);
-            let have = super::super::load(&dir);
+            create_file("tikibase.json", give, &dir);
+            let have = load(&dir);
             let want = Err(Issue::InvalidConfigurationFile {
                 message: "expected value at line 3 column 1".into(),
             });
-            assert_eq!(have, want)
+            pretty::assert_eq!(have, want)
         }
     }
 }

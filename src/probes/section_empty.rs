@@ -22,8 +22,8 @@ pub(crate) fn scan(base: &Tikibase) -> Vec<Issue> {
 
 #[cfg(test)]
 mod tests {
-
     use super::scan;
+    // TODO: use these with their testhelpers namespace
     use crate::testhelpers::{create_file, empty_config, tmp_dir};
     use crate::Tikibase;
 
@@ -40,10 +40,9 @@ content";
         create_file("test.md", content, &dir);
         let base = Tikibase::load(dir, &empty_config()).unwrap();
         let have: Vec<String> = scan(&base).iter().map(|issue| issue.to_string()).collect();
-        assert_eq!(have.len(), 1);
         assert_eq!(
-            have[0],
-            "test.md:3  section \"empty section\" has no content"
+            have,
+            vec!["test.md:3  section \"empty section\" has no content"]
         );
     }
 
@@ -61,10 +60,9 @@ content";
         create_file("test.md", content, &dir);
         let base = Tikibase::load(dir, &empty_config()).unwrap();
         let have: Vec<String> = scan(&base).iter().map(|issue| issue.to_string()).collect();
-        assert_eq!(have.len(), 1);
-        assert_eq!(
-            have[0],
-            "test.md:3  section \"empty section\" has no content"
+        pretty::assert_eq!(
+            have,
+            vec!["test.md:3  section \"empty section\" has no content"]
         );
     }
 
