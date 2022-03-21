@@ -65,6 +65,6 @@ content";
         let want = vec![Issue::MixCapSection {
             variants: vec!["ONE".into(), "One".into(), "one".into()],
         }];
-        assert_eq!(have, want);
+        pretty::assert_eq!(have, want);
     }
 }
