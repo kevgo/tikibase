@@ -23,9 +23,9 @@ pub(crate) fn scan(base: &Tikibase) -> Vec<Issue> {
 #[cfg(test)]
 mod tests {
     use super::scan;
-    // TODO: use these with their testhelpers namespace
     use crate::testhelpers;
-    use crate::Tikibase;
+    use crate::{Issue, Tikibase};
+    use std::path::PathBuf;
 
     #[test]
     fn empty_section() {
@@ -39,11 +39,13 @@ mod tests {
 content";
         testhelpers::create_file("test.md", content, &dir);
         let base = Tikibase::load(dir, &testhelpers::empty_config()).unwrap();
-        let have: Vec<String> = scan(&base).iter().map(|issue| issue.to_string()).collect();
-        assert_eq!(
-            have,
-            vec!["test.md:3  section \"empty section\" has no content"]
-        );
+        let have = scan(&base);
+        let want = vec![Issue::EmptySection {
+            file: PathBuf::from("test.md"),
+            line: 2,
+            section_type: "empty section".into(),
+        }];
+        pretty::assert_eq!(have, want);
     }
 
     #[test]
@@ -59,11 +61,13 @@ content";
 content";
         testhelpers::create_file("test.md", content, &dir);
         let base = Tikibase::load(dir, &testhelpers::empty_config()).unwrap();
-        let have: Vec<String> = scan(&base).iter().map(|issue| issue.to_string()).collect();
-        pretty::assert_eq!(
-            have,
-            vec!["test.md:3  section \"empty section\" has no content"]
-        );
+        let have = scan(&base);
+        let want = vec![Issue::EmptySection {
+            file: PathBuf::from("test.md"),
+            line: 2,
+            section_type: "empty section".into(),
+        }];
+        pretty::assert_eq!(have, want)
     }
 
     #[test]

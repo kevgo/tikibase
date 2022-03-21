@@ -24,7 +24,8 @@ pub(crate) fn scan(base: &Tikibase) -> Vec<Issue> {
 mod tests {
     use super::scan;
     use crate::testhelpers;
-    use crate::Tikibase;
+    use crate::{Issue, Tikibase};
+    use std::path::PathBuf;
 
     #[test]
     fn duplicate_sections() {
@@ -38,10 +39,13 @@ content
 content";
         testhelpers::create_file("test.md", content, &dir);
         let base = Tikibase::load(dir, &testhelpers::empty_config()).unwrap();
-        let have: Vec<String> = scan(&base).iter().map(|issue| issue.to_string()).collect();
+        let have = scan(&base);
         pretty::assert_eq!(
             have,
-            vec!["test.md  document contains multiple \"One\" sections"]
-        );
+            vec![Issue::DuplicateSection {
+                file: PathBuf::from("test.md"),
+                section_type: "One".into(),
+            }]
+        )
     }
 }

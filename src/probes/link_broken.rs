@@ -31,7 +31,7 @@ pub(crate) fn scan(base: &Tikibase) -> LinksResult {
                             if destination.is_empty() {
                                 result.issues.push(Issue::LinkWithoutDestination {
                                     file: doc.path.clone(),
-                                    line: section.line_number + (i as u32) + 1,
+                                    line: section.line_number + (i as u32),
                                 });
                                 continue;
                             }
@@ -43,7 +43,7 @@ pub(crate) fn scan(base: &Tikibase) -> LinksResult {
                             if !existing_targets.contains(&destination) {
                                 result.issues.push(Issue::BrokenLink {
                                     file: doc.path.clone(),
-                                    line: section.line_number + (i as u32) + 1,
+                                    line: section.line_number + (i as u32),
                                     target: destination,
                                 });
                                 continue;
@@ -51,7 +51,7 @@ pub(crate) fn scan(base: &Tikibase) -> LinksResult {
                             if destination == doc.path.to_string_lossy() {
                                 result.issues.push(Issue::LinkToSameDocument {
                                     file: doc.path.clone(),
-                                    line: section.line_number + (i as u32) + 1,
+                                    line: section.line_number + (i as u32),
                                 });
                                 continue;
                             }
@@ -67,7 +67,7 @@ pub(crate) fn scan(base: &Tikibase) -> LinksResult {
                             if !base.has_resource(&src) {
                                 result.issues.push(Issue::BrokenImage {
                                     file: doc.path.clone(),
-                                    line: section.line_number + (i as u32) + 1,
+                                    line: section.line_number + (i as u32),
                                     target: src.clone(),
                                 });
                             }
@@ -109,6 +109,7 @@ mod tests {
     mod process {
         use super::super::scan;
         use crate::testhelpers;
+        use crate::Issue;
         use crate::Tikibase;
         use std::path::PathBuf;
 
@@ -118,10 +119,13 @@ mod tests {
             testhelpers::create_file("one.md", "# One\n\n[invalid](non-existing.md)\n", &dir);
             let base = Tikibase::load(dir, &testhelpers::empty_config()).unwrap();
             let have = scan(&base);
-            let outcomes: Vec<String> = have.issues.iter().map(|issue| issue.to_string()).collect();
             pretty::assert_eq!(
-                outcomes,
-                vec!["one.md:3  link to non-existing file \"non-existing.md\""]
+                have.issues,
+                vec![Issue::BrokenLink {
+                    file: "one.md".into(),
+                    line: 2,
+                    target: "non-existing.md".into()
+                }]
             );
             assert_eq!(have.incoming_doc_links.data.len(), 0);
             assert_eq!(have.outgoing_doc_links.data.len(), 0);
@@ -167,8 +171,13 @@ Here is a link to [Three](3.md) that also works.
             testhelpers::create_file("one.md", "# One\n\n[invalid]()\n", &dir);
             let base = Tikibase::load(dir, &testhelpers::empty_config()).unwrap();
             let have = scan(&base);
-            let outcomes: Vec<String> = have.issues.iter().map(|issue| issue.to_string()).collect();
-            assert_eq!(outcomes, vec!["one.md:3  link without destination"]);
+            pretty::assert_eq!(
+                have.issues,
+                vec![Issue::LinkWithoutDestination {
+                    file: "one.md".into(),
+                    line: 2
+                }]
+            );
             assert_eq!(have.incoming_doc_links.data.len(), 0);
             assert_eq!(have.outgoing_doc_links.data.len(), 0);
             assert_eq!(have.outgoing_resource_links.len(), 0);
@@ -213,11 +222,13 @@ Here is a link to [Three](3.md) that also works.
             testhelpers::create_file("1.md", "# One\n\n![image](zonk.png)\n", &dir);
             let base = Tikibase::load(dir, &testhelpers::empty_config()).unwrap();
             let have = scan(&base);
-            let outcomes: Vec<String> = have.issues.iter().map(|issue| issue.to_string()).collect();
-            assert_eq!(outcomes.len(), 1);
-            assert_eq!(
-                outcomes[0],
-                "1.md:3  image link to non-existing file \"zonk.png\""
+            pretty::assert_eq!(
+                have.issues,
+                vec![Issue::BrokenImage {
+                    file: "1.md".into(),
+                    line: 2,
+                    target: "zonk.png".into()
+                }]
             );
             assert_eq!(have.outgoing_resource_links.len(), 1);
             assert_eq!(have.outgoing_resource_links[0], "zonk.png");

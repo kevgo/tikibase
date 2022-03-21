@@ -1,6 +1,6 @@
+use crate::commands::MissingLink;
 use crate::database::DocLinks;
-use crate::issues::{Issue, MissingLink};
-use crate::Tikibase;
+use crate::{Issue, Tikibase};
 use ahash::AHashSet;
 use std::path::PathBuf;
 
@@ -53,9 +53,10 @@ pub(crate) fn scan(
 
 #[cfg(test)]
 mod tests {
+    use crate::commands::MissingLink;
     use crate::database::DocLinks;
     use crate::testhelpers;
-    use crate::Tikibase;
+    use crate::{Issue, Tikibase};
 
     #[test]
     fn process() {
@@ -71,7 +72,21 @@ mod tests {
         incoming_links.add("1.md", "3.md");
         incoming_links.add("1.md", "2.md");
         let have = super::scan(&base, &incoming_links, &outgoing_links);
-        let issues: Vec<String> = have.iter().map(|issue| issue.to_string()).collect();
-        pretty::assert_eq!(issues, vec!["1.md  missing link to 2.md, 3.md"]);
+        pretty::assert_eq!(
+            have,
+            vec![Issue::MissingLinks {
+                file: "1.md".into(),
+                links: vec![
+                    MissingLink {
+                        path: "2.md".into(),
+                        title: "Two".into()
+                    },
+                    MissingLink {
+                        path: "3.md".into(),
+                        title: "Three".into()
+                    }
+                ]
+            }]
+        );
     }
 }

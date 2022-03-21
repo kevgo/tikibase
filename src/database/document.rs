@@ -70,6 +70,7 @@ impl Document {
                 line: (fence_line as u32) + 1,
             });
         }
+        // TODO: split this array without reallocations using iterator
         let content_sections = sections.split_off(1);
         Ok(Document {
             path,

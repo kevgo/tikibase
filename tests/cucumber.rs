@@ -3,18 +3,16 @@ use async_trait::async_trait;
 use cucumber::{gherkin::Step, given, then, when, World, WorldInit};
 use std::convert::Infallible;
 use std::path::PathBuf;
-use tikibase::{self, testhelpers};
+use tikibase::input::Command;
+use tikibase::{self, testhelpers, Messages};
 
 #[derive(Debug, WorldInit)]
 pub struct MyWorld {
     /// the directory in which the Tikibase under test is located
     pub dir: PathBuf,
 
-    /// the exit code of the Tikibase run
-    pub exitcode: i32,
-
-    /// results of the Tikibase run
-    pub findings: Vec<String>,
+    /// the result of the Tikibase run
+    pub output: Messages,
 
     /// content of the files before the Tikibase command ran
     pub original_contents: AHashMap<PathBuf, String>,
@@ -27,8 +25,7 @@ impl World for MyWorld {
     async fn new() -> Result<Self, Infallible> {
         Ok(MyWorld {
             dir: testhelpers::tmp_dir(),
-            exitcode: 0,
-            findings: Vec::new(),
+            output: Messages::default(),
             original_contents: AHashMap::new(),
         })
     }
@@ -50,20 +47,17 @@ fn file(world: &mut MyWorld, filename: String) {
 
 #[when("checking")]
 fn checking(world: &mut MyWorld) {
-    let (issues, fixes) = tikibase::run(tikibase::Command::Check, world.dir.clone());
-    (world.findings, world.exitcode) = tikibase::render_text(issues, fixes);
+    world.output = tikibase::run(Command::Check, world.dir.clone());
 }
 
 #[when("doing a pitstop")]
 fn doing_a_pitstop(world: &mut MyWorld) {
-    let (issues, fixes) = tikibase::run(tikibase::Command::Pitstop, world.dir.clone());
-    (world.findings, world.exitcode) = tikibase::render_text(issues, fixes);
+    world.output = tikibase::run(Command::Pitstop, world.dir.clone());
 }
 
 #[when("fixing")]
 fn fixing(world: &mut MyWorld) {
-    let (issues, fixes) = tikibase::run(tikibase::Command::Fix, world.dir.clone());
-    (world.findings, world.exitcode) = tikibase::render_text(issues, fixes);
+    world.output = tikibase::run(Command::Fix, world.dir.clone());
 }
 
 #[then("all files are unchanged")]
@@ -93,38 +87,29 @@ fn file_should_contain(world: &mut MyWorld, step: &Step, filename: String) {
 
 #[then("it prints:")]
 fn it_prints(world: &mut MyWorld, step: &Step) {
-    let have: Vec<&str> = world
-        .findings
-        .iter()
-        .map(|line| line.split('\n'))
-        .flatten()
-        .filter(|line| !line.is_empty())
-        .collect();
-    let want: Vec<&str> = step
-        .docstring
-        .as_ref()
-        .unwrap()
-        .split("\n")
-        .filter(|line| !line.is_empty())
-        .collect();
-    assert_eq!(have, want);
+    let mut have = String::new();
+    for message in &world.output.messages {
+        have.push_str(message.to_text().trim());
+        have.push_str("\n");
+    }
+    let want = step.docstring.as_ref().unwrap();
+    assert_eq!(have.trim(), want.trim());
 }
 
 #[then("it prints nothing")]
 fn it_prints_nothing(world: &mut MyWorld) {
-    assert_eq!(world.findings, Vec::<String>::new());
+    assert_eq!(world.output.messages, vec![]);
 }
 
 #[then("it finds no issues")]
 fn it_finds_no_issues(world: &mut MyWorld) {
-    let expected: Vec<&str> = Vec::new();
-    assert_eq!(world.findings, expected);
-    assert_eq!(world.exitcode, 0);
+    assert_eq!(world.output.messages, vec![]);
+    assert_eq!(world.output.exit_code, 0);
 }
 
 #[then(regex = "^the exit code is (\\d+)$")]
 fn the_exit_code_is(world: &mut MyWorld, exit_code: i32) {
-    assert_eq!(world.exitcode, exit_code);
+    assert_eq!(world.output.exit_code, exit_code);
 }
 
 fn main() {

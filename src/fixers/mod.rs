@@ -5,7 +5,6 @@ mod unordered_sections;
 
 use super::config;
 use crate::{Issue, Tikibase};
-use std::fmt::{self, Display, Formatter};
 use std::path::PathBuf;
 
 /// fixes the given Issue
@@ -87,37 +86,4 @@ pub enum Fix {
     SortedSections {
         file: PathBuf,
     },
-}
-
-impl Display for Fix {
-    fn fmt(&self, f: &mut Formatter<'_>) -> fmt::Result {
-        match self {
-            Fix::RemovedEmptySection {
-                section_type,
-                file,
-                line,
-            } => write!(
-                f,
-                "{}:{}  removed empty section \"{}\"",
-                file.to_string_lossy(),
-                line + 1,
-                section_type
-            ),
-            Fix::AddedOccurrencesSection { file, line } => write!(
-                f,
-                "{}:{}  added occurrences section",
-                file.to_string_lossy(),
-                line
-            ),
-            Fix::RemovedObsoleteOccurrencesSection { file, line } => write!(
-                f,
-                "{}:{}  removed obsolete occurrences section",
-                file.to_string_lossy(),
-                line + 1,
-            ),
-            Fix::SortedSections { file } => {
-                write!(f, "{}  fixed section order", file.to_string_lossy())
-            }
-        }
-    }
 }

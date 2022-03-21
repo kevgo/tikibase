@@ -1,15 +1,30 @@
 //! the CLI wrapper around lib.rs
 
 use clap::StructOpt;
+use input::Format::{Json, Text};
+use std::io;
 use std::path::PathBuf;
-use tikibase::{render_text, run, Args};
+use tikibase::{input, run, Message};
 
 fn main() {
-    let args = Args::parse();
-    let (issues, fixes) = run(args.command, PathBuf::from("."));
-    let (output, exit_code) = render_text(issues, fixes);
-    for line in output {
-        println!("{line}");
+    let args = input::Args::parse();
+    let result = run(args.command, PathBuf::from("."));
+    match args.format {
+        Text => print_text(result.messages),
+        Json => print_json(result.messages),
+    };
+    std::process::exit(result.exit_code);
+}
+
+fn print_text(messages: Vec<Message>) {
+    for message in messages {
+        println!("{}", message.to_text());
     }
-    std::process::exit(exit_code);
+}
+
+fn print_json(messages: Vec<Message>) {
+    // NOTE: using a buffered writer doesn't seem to improve performance here
+    if let Err(err) = serde_json::to_writer_pretty(io::stdout(), &messages) {
+        println!("Error serializing JSON: {}", err);
+    }
 }

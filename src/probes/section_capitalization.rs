@@ -33,8 +33,7 @@ fn normalize(section_type: &str) -> String {
 
 #[cfg(test)]
 mod tests {
-    use crate::testhelpers;
-    use crate::Tikibase;
+    use crate::{testhelpers, Issue, Tikibase};
 
     #[test]
     fn normalize() {
@@ -62,13 +61,10 @@ content";
 content";
         testhelpers::create_file("2.md", content2, &dir);
         let base = Tikibase::load(dir, &testhelpers::empty_config()).unwrap();
-        let have: Vec<String> = super::scan(&base)
-            .iter()
-            .map(|issue| issue.to_string())
-            .collect();
-        pretty::assert_eq!(
-            have,
-            vec!["section title occurs with inconsistent capitalization: ONE|One|one"]
-        );
+        let have = super::scan(&base);
+        let want = vec![Issue::MixCapSection {
+            variants: vec!["ONE".into(), "One".into(), "one".into()],
+        }];
+        pretty::assert_eq!(have, want);
     }
 }
