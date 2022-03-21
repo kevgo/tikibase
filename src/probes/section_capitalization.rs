@@ -33,9 +33,7 @@ fn normalize(section_type: &str) -> String {
 
 #[cfg(test)]
 mod tests {
-    use crate::testhelpers;
-    use crate::Issue;
-    use crate::Tikibase;
+    use crate::{testhelpers, Issue, Tikibase};
 
     #[test]
     fn normalize() {
