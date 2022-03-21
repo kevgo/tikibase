@@ -4,7 +4,7 @@ mod database;
 mod fix;
 pub mod input;
 mod output;
-mod probes;
+mod scan;
 pub mod testhelpers;
 
 pub use commands::{Issue, Outcome};
