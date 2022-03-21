@@ -8,6 +8,7 @@ mod scan;
 pub mod test;
 
 pub use commands::{Issue, Outcome};
+pub use config::Config;
 use database::Tikibase;
 pub use fix::Fix;
 use input::Command;

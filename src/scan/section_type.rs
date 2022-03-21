@@ -1,6 +1,6 @@
-use crate::{config, Issue, Tikibase};
+use crate::{Config, Issue, Tikibase};
 
-pub(crate) fn scan(base: &Tikibase, config: &config::Data) -> Vec<Issue> {
+pub(crate) fn scan(base: &Tikibase, config: &Config) -> Vec<Issue> {
     let mut issues = Vec::<Issue>::new();
     let sections = match &config.sections {
         None => return issues,
