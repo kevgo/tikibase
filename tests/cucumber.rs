@@ -87,15 +87,13 @@ fn file_should_contain(world: &mut MyWorld, step: &Step, filename: String) {
 
 #[then("it prints:")]
 fn it_prints(world: &mut MyWorld, step: &Step) {
-    // TODO: make both of these strings
     let mut have = String::new();
     for message in &world.output.messages {
         have.push_str(message.to_text().trim());
         have.push_str("\n");
     }
-    have = have.trim().to_string();
-    let want = step.docstring.as_ref().unwrap().trim();
-    assert_eq!(have, want);
+    let want = step.docstring.as_ref().unwrap();
+    assert_eq!(have.trim(), want.trim());
 }
 
 #[then("it prints nothing")]
