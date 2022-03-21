@@ -2,6 +2,7 @@ pub mod commands;
 pub mod config;
 mod database;
 mod fixers;
+mod helpers;
 pub mod input;
 mod output;
 mod probes;
