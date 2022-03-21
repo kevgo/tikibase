@@ -115,14 +115,13 @@ mod tests {
     use crate::test;
 
     mod get_doc {
-        use super::super::Tikibase;
-        use crate::test;
+        use crate::{config, test, Tikibase};
 
         #[test]
         fn exists() {
             let dir = test::tmp_dir();
             test::create_file("one.md", "# test doc", &dir);
-            let base = Tikibase::load(dir, &test::empty_config()).unwrap();
+            let base = Tikibase::load(dir, &config::Data::default()).unwrap();
             let doc = base.get_doc("one.md").expect("document not found");
             assert_eq!(doc.title_section.title_line.text(), "# test doc");
         }
@@ -130,20 +129,19 @@ mod tests {
         #[test]
         fn missing() {
             let dir = test::tmp_dir();
-            let base = Tikibase::load(dir, &test::empty_config()).unwrap();
+            let base = Tikibase::load(dir, &config::Data::default()).unwrap();
             assert!(base.get_doc("zonk.md").is_none());
         }
     }
 
     mod get_doc_mut {
-        use super::super::Tikibase;
-        use crate::test;
+        use crate::{config, test, Tikibase};
 
         #[test]
         fn exists() {
             let dir = test::tmp_dir();
             test::create_file("one.md", "# test doc", &dir);
-            let mut base = Tikibase::load(dir, &test::empty_config()).unwrap();
+            let mut base = Tikibase::load(dir, &config::Data::default()).unwrap();
             let doc = base.get_doc_mut("one.md").expect("document not found");
             assert_eq!(doc.title_section.title_line.text(), "# test doc");
         }
@@ -151,19 +149,18 @@ mod tests {
         #[test]
         fn missing() {
             let dir = test::tmp_dir();
-            let mut base = Tikibase::load(dir, &test::empty_config()).unwrap();
+            let mut base = Tikibase::load(dir, &config::Data::default()).unwrap();
             assert!(base.get_doc_mut("zonk.md").is_none());
         }
     }
 
     mod has_resource {
-        use super::super::Tikibase;
-        use crate::test;
+        use crate::{config, test, Tikibase};
 
         #[test]
         fn empty() {
             let dir = test::tmp_dir();
-            let base = Tikibase::load(dir, &test::empty_config()).unwrap();
+            let base = Tikibase::load(dir, &config::Data::default()).unwrap();
             assert!(!base.has_resource("foo.png"));
         }
 
@@ -171,7 +168,7 @@ mod tests {
         fn matching_resource() {
             let dir = test::tmp_dir();
             test::create_file("foo.png", "content", &dir);
-            let base = Tikibase::load(dir, &test::empty_config()).unwrap();
+            let base = Tikibase::load(dir, &config::Data::default()).unwrap();
             assert!(base.has_resource("foo.png"));
         }
     }
@@ -188,7 +185,7 @@ mod tests {
 content";
         test::create_file("one.md", content, &dir);
         test::create_file("two.md", content, &dir);
-        let base = Tikibase::load(dir, &test::empty_config()).unwrap();
+        let base = Tikibase::load(dir, &config::Data::default()).unwrap();
         let have = base.link_targets();
         let want = vec![
             "one.md",
@@ -216,7 +213,7 @@ two
 foo
 ";
         test::create_file("file.md", content, &dir);
-        let base = Tikibase::load(dir, &test::empty_config()).unwrap();
+        let base = Tikibase::load(dir, &config::Data::default()).unwrap();
         // make sure we can load existing documents
         let _doc = &base.get_doc("file.md").unwrap();
     }
@@ -225,14 +222,14 @@ foo
     fn load_hidden_file() {
         let dir = test::tmp_dir();
         test::create_file(".hidden", "content", &dir);
-        let base = Tikibase::load(dir, &test::empty_config()).unwrap();
+        let base = Tikibase::load(dir, &config::Data::default()).unwrap();
         assert_eq!(base.resources.len(), 0);
     }
 
     #[test]
     fn empty() {
         let dir = test::tmp_dir();
-        let base = Tikibase::load(dir, &test::empty_config()).unwrap();
+        let base = Tikibase::load(dir, &config::Data::default()).unwrap();
         assert_eq!(base.docs.len(), 0);
         assert_eq!(base.resources.len(), 0);
     }
