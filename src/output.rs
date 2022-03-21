@@ -1,6 +1,7 @@
 //! The outer API of Tikibase. It provides the results of a full Tikibase run
 //! including human-readable summaries of what Tikibase has done.
 
+use crate::helpers;
 use crate::{Fix, Issue, Outcome};
 use serde::Serialize;
 use std::borrow::Cow;
@@ -162,15 +163,15 @@ impl Message {
                 section_type,
                 allowed_types,
             } => {
-                let alloweds: Vec<String> = allowed_types
-                    .iter()
-                    .map(|allowed| format!("\n  - {}", allowed))
-                    .collect();
+                let alloweds = helpers::string::from_iterator(
+                    allowed_types
+                        .iter()
+                        .map(|allowed| format!("\n  - {}", allowed)),
+                );
                 Message {
                     text: format!(
                         "section \"{}\" isn't listed in tikibase.json, allowed sections:{}",
-                        section_type,
-                        alloweds.join("")
+                        section_type, alloweds
                     ),
                     file: Some(file.to_string_lossy().to_string()),
                     line: Some(line),
