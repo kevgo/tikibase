@@ -16,7 +16,6 @@ pub use output::{Message, Messages};
 use std::path::PathBuf;
 
 /// runs the given Command in the given directory, returns structured data
-// TODO: convert to INTO value so that we can give it &str
 pub fn run(command: input::Command, dir: PathBuf) -> Messages {
     let config = match config::load(&dir) {
         Ok(config) => config,
