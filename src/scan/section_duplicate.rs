@@ -23,8 +23,7 @@ pub(crate) fn scan(base: &Tikibase) -> Vec<Issue> {
 #[cfg(test)]
 mod tests {
     use super::scan;
-    use crate::test;
-    use crate::{Issue, Tikibase};
+    use crate::{config, test, Issue, Tikibase};
     use std::path::PathBuf;
 
     #[test]
@@ -38,7 +37,7 @@ content
 ### One
 content";
         test::create_file("test.md", content, &dir);
-        let base = Tikibase::load(dir, &test::empty_config()).unwrap();
+        let base = Tikibase::load(dir, &config::Data::default()).unwrap();
         let have = scan(&base);
         pretty::assert_eq!(
             have,
