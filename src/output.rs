@@ -201,8 +201,8 @@ impl Messages {
     }
 
     pub fn from_outcome(outcome: Outcome) -> Messages {
-        let mut messages = vec![];
         let exit_code = outcome.issues.len() as i32;
+        let mut messages = vec![];
         messages.extend(outcome.fixes.into_iter().map(Message::from_fix));
         messages.extend(outcome.issues.into_iter().map(Message::from_issue));
         Messages {
