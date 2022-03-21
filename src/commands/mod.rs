@@ -7,12 +7,11 @@ use crate::fixers::Fix;
 pub use check::check;
 pub use fix::fix;
 pub use pitstop::pitstop;
-use serde::Serialize;
 pub use stats::stats;
 use std::path::PathBuf;
 
 /// result of running a Tikibase command
-#[derive(Default, Serialize)]
+#[derive(Default)]
 pub struct Outcome {
     /// the issues identified but not fixed
     pub issues: Vec<Issue>,
@@ -21,7 +20,7 @@ pub struct Outcome {
 }
 
 /// the issues that this linter can find
-#[derive(Clone, Debug, PartialEq, Serialize)]
+#[derive(Clone, Debug, PartialEq)]
 pub enum Issue {
     BrokenImage {
         file: PathBuf,
@@ -101,7 +100,7 @@ pub enum Issue {
 }
 
 /// a missing link to a document
-#[derive(Clone, Debug, PartialEq, Serialize)]
+#[derive(Clone, Debug, PartialEq)]
 pub struct MissingLink {
     pub path: PathBuf,
     pub title: String,
