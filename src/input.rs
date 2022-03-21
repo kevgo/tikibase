@@ -1,3 +1,5 @@
+//! The arguments that can be provided to Tikibase via CLI.
+
 use clap;
 
 /// Linter for Markdown-based knowledge databases

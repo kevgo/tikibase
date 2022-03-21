@@ -1,17 +1,20 @@
+//! The outer API of Tikibase. It provides the results of a full Tikibase run
+//! including human-readable summaries of what Tikibase has done.
+
 use crate::{Fix, Issue, Outcome};
 use serde::Serialize;
 use std::borrow::Cow;
 
-/// a result struct of an activity, could be an issue of a fix
+/// human-readable summary of running a single command
 #[derive(Debug, PartialEq, Serialize)]
 pub struct Message {
     pub file: Option<String>,
     pub line: Option<u32>,
-    /// human-readable message
     pub text: String,
 }
 
 impl Message {
+    /// provides the CLI text format for this Message
     pub fn to_text(&self) -> String {
         match (&self.file, self.line) {
             (Some(file), Some(line)) => {
@@ -23,6 +26,7 @@ impl Message {
         }
     }
 
+    /// provides a Message instance summarizing the given Fix
     fn from_fix(fix: Fix) -> Message {
         match fix {
             Fix::RemovedEmptySection {
@@ -51,6 +55,8 @@ impl Message {
             },
         }
     }
+
+    /// provides a Message instance summarizing the given Issue
     pub fn from_issue(issue: Issue) -> Message {
         match issue {
             Issue::BrokenImage { file, line, target } => Message {
@@ -179,9 +185,6 @@ impl Message {
     }
 }
 
-/// The outer API of Tikibase.
-/// This data structure contains the results of a full Tikibase run
-/// including human-readable summaries of what Tikibase has done.
 #[derive(Debug, Default, PartialEq)]
 pub struct Messages {
     pub messages: Vec<Message>,
