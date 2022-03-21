@@ -4,7 +4,7 @@ use cucumber::{gherkin::Step, given, then, when, World, WorldInit};
 use std::convert::Infallible;
 use std::path::PathBuf;
 use tikibase::input::Command;
-use tikibase::{self, testhelpers, Message, Messages};
+use tikibase::{self, testhelpers, Messages};
 
 #[derive(Debug, WorldInit)]
 pub struct MyWorld {
@@ -98,12 +98,12 @@ fn it_prints(world: &mut MyWorld, step: &Step) {
 
 #[then("it prints nothing")]
 fn it_prints_nothing(world: &mut MyWorld) {
-    assert_eq!(world.output.messages, Vec::<Message>::new());
+    assert_eq!(world.output.messages, vec![]);
 }
 
 #[then("it finds no issues")]
 fn it_finds_no_issues(world: &mut MyWorld) {
-    assert_eq!(world.output.messages, Vec::<Message>::new());
+    assert_eq!(world.output.messages, vec![]);
     assert_eq!(world.output.exit_code, 0);
 }
 
