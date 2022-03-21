@@ -10,6 +10,7 @@ pub mod testhelpers;
 pub use commands::{Issue, Outcome};
 use database::Tikibase;
 pub use fixers::Fix;
+use input::Command;
 pub use output::{Message, Messages};
 use std::path::PathBuf;
 
@@ -25,10 +26,10 @@ pub fn run(command: input::Command, dir: PathBuf) -> Messages {
         Err(issues) => return Messages::from_issues(issues),
     };
     let outcome = match command {
-        input::Command::Check => commands::check(&mut base, &config),
-        input::Command::Stats => commands::stats(&base),
-        input::Command::Fix => commands::fix(&mut base, &config),
-        input::Command::Pitstop => commands::pitstop(&mut base, &config),
+        Command::Check => commands::check(&mut base, &config),
+        Command::Stats => commands::stats(&base),
+        Command::Fix => commands::fix(&mut base, &config),
+        Command::Pitstop => commands::pitstop(&mut base, &config),
     };
     Messages::from_outcome(outcome)
 }
