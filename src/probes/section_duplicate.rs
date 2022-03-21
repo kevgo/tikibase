@@ -9,7 +9,7 @@ pub(crate) fn scan(base: &Tikibase) -> Vec<Issue> {
             let section_type = section.section_type();
             if known_sections.contains(&section_type) {
                 issues.push(Issue::DuplicateSection {
-                    filename: doc.path.clone(),
+                    file: doc.path.clone(),
                     section_type: section_type.into(),
                 });
             } else {

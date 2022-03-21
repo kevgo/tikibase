@@ -10,7 +10,7 @@ pub(crate) fn scan(base: &Tikibase) -> Vec<Issue> {
             let has_content = section.body.iter().any(|line| !line.text().is_empty());
             if !has_content {
                 issues.push(Issue::EmptySection {
-                    filename: doc.path.clone(),
+                    file: doc.path.clone(),
                     line: section.line_number,
                     section_type: section.section_type().into(),
                 });

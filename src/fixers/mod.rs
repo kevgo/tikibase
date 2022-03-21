@@ -12,22 +12,22 @@ use std::path::PathBuf;
 pub fn fix(issue: Issue, base: &mut Tikibase, config: &config::Data) -> Option<Fix> {
     match issue {
         Issue::BrokenImage {
-            filename: _,
+            file: _,
             line: _,
             target: _,
         } => None,
         Issue::BrokenLink {
-            filename: _,
+            file: _,
             line: _,
             target: _,
         } => None,
         Issue::CannotReadConfigurationFile { message: _ } => None,
         Issue::DuplicateSection {
-            filename: _,
+            file: _,
             section_type: _,
         } => None,
         Issue::EmptySection {
-            filename,
+            file: filename,
             line,
             section_type,
         } => Some(empty_section::remove_empty_section(
@@ -37,14 +37,8 @@ pub fn fix(issue: Issue, base: &mut Tikibase, config: &config::Data) -> Option<F
             line,
         )),
         Issue::InvalidConfigurationFile { message: _ } => None,
-        Issue::LinkToSameDocument {
-            filename: _,
-            line: _,
-        } => None,
-        Issue::LinkWithoutDestination {
-            filename: _,
-            line: _,
-        } => None,
+        Issue::LinkToSameDocument { file: _, line: _ } => None,
+        Issue::LinkWithoutDestination { file: _, line: _ } => None,
         Issue::MissingLinks { file, links } => {
             Some(missing_links::add_occurrences(base, file, links))
         }
