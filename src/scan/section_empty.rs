@@ -23,13 +23,13 @@ pub(crate) fn scan(base: &Tikibase) -> Vec<Issue> {
 #[cfg(test)]
 mod tests {
     use super::scan;
-    use crate::testhelpers;
+    use crate::test;
     use crate::{Issue, Tikibase};
     use std::path::PathBuf;
 
     #[test]
     fn empty_section() {
-        let dir = testhelpers::tmp_dir();
+        let dir = test::tmp_dir();
         let content = "\
 # test document
 
@@ -37,8 +37,8 @@ mod tests {
 ### next section
 
 content";
-        testhelpers::create_file("test.md", content, &dir);
-        let base = Tikibase::load(dir, &testhelpers::empty_config()).unwrap();
+        test::create_file("test.md", content, &dir);
+        let base = Tikibase::load(dir, &test::empty_config()).unwrap();
         let have = scan(&base);
         let want = vec![Issue::EmptySection {
             file: PathBuf::from("test.md"),
@@ -50,7 +50,7 @@ content";
 
     #[test]
     fn blank_line() {
-        let dir = testhelpers::tmp_dir();
+        let dir = test::tmp_dir();
         let content = "\
 # test document
 
@@ -59,8 +59,8 @@ content";
 ### next section
 
 content";
-        testhelpers::create_file("test.md", content, &dir);
-        let base = Tikibase::load(dir, &testhelpers::empty_config()).unwrap();
+        test::create_file("test.md", content, &dir);
+        let base = Tikibase::load(dir, &test::empty_config()).unwrap();
         let have = scan(&base);
         let want = vec![Issue::EmptySection {
             file: PathBuf::from("test.md"),
@@ -72,15 +72,15 @@ content";
 
     #[test]
     fn content() {
-        let dir = testhelpers::tmp_dir();
+        let dir = test::tmp_dir();
         let content = "\
 # test document
 
 ### section with content
 
 content";
-        testhelpers::create_file("test.md", content, &dir);
-        let base = Tikibase::load(dir, &testhelpers::empty_config()).unwrap();
+        test::create_file("test.md", content, &dir);
+        let base = Tikibase::load(dir, &test::empty_config()).unwrap();
         let have = scan(&base);
         assert!(have.is_empty());
     }

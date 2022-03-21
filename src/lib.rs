@@ -5,7 +5,7 @@ mod fix;
 pub mod input;
 mod output;
 mod scan;
-pub mod testhelpers;
+pub mod test;
 
 pub use commands::{Issue, Outcome};
 use database::Tikibase;

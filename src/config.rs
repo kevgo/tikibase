@@ -38,12 +38,12 @@ mod tests {
 
     mod load {
         use super::super::{load, Data};
-        use crate::testhelpers;
+        use crate::test;
         use crate::Issue;
 
         #[test]
         fn no_config_file() {
-            let have = load(testhelpers::tmp_dir()).unwrap();
+            let have = load(test::tmp_dir()).unwrap();
             let want = Data {
                 sections: None,
                 ignore: None,
@@ -53,8 +53,8 @@ mod tests {
 
         #[test]
         fn empty_config_file() {
-            let dir = testhelpers::tmp_dir();
-            testhelpers::create_file("tikibase.json", "{}", &dir);
+            let dir = test::tmp_dir();
+            test::create_file("tikibase.json", "{}", &dir);
             let have = load(&dir).unwrap();
             let want = Data {
                 sections: None,
@@ -65,13 +65,13 @@ mod tests {
 
         #[test]
         fn valid_config_file() {
-            let dir = testhelpers::tmp_dir();
+            let dir = test::tmp_dir();
             let give = r#"
             {
               "sections": [ "one", "two" ]
             }
             "#;
-            testhelpers::create_file("tikibase.json", give, &dir);
+            test::create_file("tikibase.json", give, &dir);
             let have = load(&dir).unwrap();
             let want = Data {
                 sections: Some(vec!["one".into(), "two".into()]),
@@ -82,12 +82,12 @@ mod tests {
 
         #[test]
         fn invalid_config_file() {
-            let dir = testhelpers::tmp_dir();
+            let dir = test::tmp_dir();
             let give = r#"{
     "sections": [
 }
 "#;
-            testhelpers::create_file("tikibase.json", give, &dir);
+            test::create_file("tikibase.json", give, &dir);
             let have = load(&dir);
             let want = Err(Issue::InvalidConfigurationFile {
                 message: "expected value at line 3 column 1".into(),
