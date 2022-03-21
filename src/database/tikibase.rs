@@ -59,7 +59,6 @@ impl Tikibase {
                 continue;
             }
             if let Some(ignore) = &config.ignore {
-                // TODO: merge this line with the previous one once https://github.com/rust-lang/rust/issues/53667 ships
                 if ignore.iter().any(|i| i == &filename) {
                     continue;
                 }
