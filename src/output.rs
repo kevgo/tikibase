@@ -1,9 +1,6 @@
-use std::borrow::Cow;
-
+use crate::{Fix, Issue, Outcome};
 use serde::Serialize;
-
-use crate::fixers::Fix;
-use crate::{Issue, Outcome};
+use std::borrow::Cow;
 
 /// a result struct of an activity, could be an issue of a fix
 #[derive(Debug, PartialEq, Serialize)]
