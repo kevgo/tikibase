@@ -27,13 +27,13 @@ pub fn fix(issue: Issue, base: &mut Tikibase, config: &config::Data) -> Option<F
             section_type: _,
         } => None,
         Issue::EmptySection {
-            file: filename,
+            file,
             line,
             section_type,
         } => Some(empty_section::remove_empty_section(
             base,
             section_type,
-            filename,
+            file,
             line,
         )),
         Issue::InvalidConfigurationFile { message: _ } => None,
