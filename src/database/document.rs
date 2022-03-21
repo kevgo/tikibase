@@ -70,12 +70,11 @@ impl Document {
                 line: (fence_line as u32) + 1,
             });
         }
-        // TODO: split this array without reallocations using iterator
-        let content_sections = sections.split_off(1);
+        let mut sections = sections.into_iter();
         Ok(Document {
             path,
-            title_section: sections.pop().unwrap(),
-            content_sections,
+            title_section: sections.next().unwrap(),
+            content_sections: sections.collect(),
             occurrences_section_line,
         })
     }
