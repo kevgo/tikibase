@@ -1,10 +1,10 @@
-use crate::{commands, config, fixers, Outcome, Tikibase};
+use crate::{commands, config, fix, Outcome, Tikibase};
 
 pub fn fix(base: &mut Tikibase, config: &config::Data) -> Outcome {
     let check_result = commands::check(base, config);
     let mut fix_result = Outcome::default();
     for issue in check_result.issues {
-        if let Some(fixed) = fixers::fix(issue, base, config) {
+        if let Some(fixed) = fix::fix(issue, base, config) {
             fix_result.fixes.push(fixed);
         }
     }

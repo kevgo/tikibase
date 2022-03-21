@@ -1,5 +1,5 @@
 use crate::Outcome;
-use crate::{commands, config, fixers::fix, Tikibase};
+use crate::{commands, config, fix::fix, Tikibase};
 
 pub fn pitstop(base: &mut Tikibase, config: &config::Data) -> Outcome {
     let check_result = commands::check(base, config);

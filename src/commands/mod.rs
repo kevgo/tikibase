@@ -1,9 +1,11 @@
+//! High-level commands that the Tikibase linter can execute.
+
 mod check;
 mod fix;
 mod pitstop;
 mod stats;
 
-use crate::fixers::Fix;
+use crate::fix::Fix;
 pub use check::check;
 pub use fix::fix;
 pub use pitstop::pitstop;

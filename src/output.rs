@@ -1,5 +1,4 @@
-//! The outer API of Tikibase. It provides the results of a full Tikibase run
-//! including human-readable summaries of what Tikibase has done.
+//! Tooling for outputting the results of lint operations in text/JSON format.
 
 use crate::{Fix, Issue, Outcome};
 use serde::Serialize;
@@ -27,7 +26,7 @@ impl Message {
     }
 
     /// provides a Message instance summarizing the given Fix
-    fn from_fix(fix: Fix) -> Message {
+    pub fn from_fix(fix: Fix) -> Message {
         match fix {
             Fix::RemovedEmptySection {
                 section_type,

@@ -23,13 +23,13 @@ pub(crate) fn scan(base: &Tikibase) -> Vec<Issue> {
 #[cfg(test)]
 mod tests {
     use super::scan;
-    use crate::testhelpers;
+    use crate::test;
     use crate::{Issue, Tikibase};
     use std::path::PathBuf;
 
     #[test]
     fn duplicate_sections() {
-        let dir = testhelpers::tmp_dir();
+        let dir = test::tmp_dir();
         let content = "\
 # test document
 
@@ -37,8 +37,8 @@ mod tests {
 content
 ### One
 content";
-        testhelpers::create_file("test.md", content, &dir);
-        let base = Tikibase::load(dir, &testhelpers::empty_config()).unwrap();
+        test::create_file("test.md", content, &dir);
+        let base = Tikibase::load(dir, &test::empty_config()).unwrap();
         let have = scan(&base);
         pretty::assert_eq!(
             have,

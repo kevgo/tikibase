@@ -33,7 +33,7 @@ fn normalize(section_type: &str) -> String {
 
 #[cfg(test)]
 mod tests {
-    use crate::{testhelpers, Issue, Tikibase};
+    use crate::{test, Issue, Tikibase};
 
     #[test]
     fn normalize() {
@@ -44,7 +44,7 @@ mod tests {
 
     #[test]
     fn progress() {
-        let dir = testhelpers::tmp_dir();
+        let dir = test::tmp_dir();
         let content1 = "\
 # test document
 
@@ -53,14 +53,14 @@ content
 
 ### One
 content";
-        testhelpers::create_file("1.md", content1, &dir);
+        test::create_file("1.md", content1, &dir);
         let content2 = "\
 # another document
 
 ### one
 content";
-        testhelpers::create_file("2.md", content2, &dir);
-        let base = Tikibase::load(dir, &testhelpers::empty_config()).unwrap();
+        test::create_file("2.md", content2, &dir);
+        let base = Tikibase::load(dir, &test::empty_config()).unwrap();
         let have = super::scan(&base);
         let want = vec![Issue::MixCapSection {
             variants: vec!["ONE".into(), "One".into(), "one".into()],

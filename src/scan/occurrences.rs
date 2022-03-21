@@ -55,16 +55,16 @@ pub(crate) fn scan(
 mod tests {
     use crate::commands::MissingLink;
     use crate::database::DocLinks;
-    use crate::testhelpers;
+    use crate::test;
     use crate::{Issue, Tikibase};
 
     #[test]
     fn process() {
-        let dir = testhelpers::tmp_dir();
-        testhelpers::create_file("1.md", "# One\n", &dir);
-        testhelpers::create_file("2.md", "# Two\n\n[one](1.md)\n", &dir);
-        testhelpers::create_file("3.md", "# Three\n\n[one](1.md)\n", &dir);
-        let base = Tikibase::load(dir, &testhelpers::empty_config()).unwrap();
+        let dir = test::tmp_dir();
+        test::create_file("1.md", "# One\n", &dir);
+        test::create_file("2.md", "# Two\n\n[one](1.md)\n", &dir);
+        test::create_file("3.md", "# Three\n\n[one](1.md)\n", &dir);
+        let base = Tikibase::load(dir, &test::empty_config()).unwrap();
         let mut outgoing_links = DocLinks::default();
         outgoing_links.add("3.md", "1.md");
         outgoing_links.add("2.md", "1.md");
