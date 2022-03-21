@@ -1,7 +1,7 @@
-use clap::StructOpt;
+use clap;
 
 /// Linter for Markdown-based knowledge databases
-#[derive(Debug, StructOpt)]
+#[derive(Debug, clap::StructOpt)]
 #[clap(version, about, long_about = None)]
 pub struct Args {
     /// the command to run
