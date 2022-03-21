@@ -46,16 +46,14 @@ additional properties:
 Download the [binary](https://github.com/kevgo/tikibase/releases/latest) for
 your platform or install from source:
 
-- [install Rust](https://rustup.rs) nightly
+- [install Rust](https://rustup.rs) stable
 - `cargo install --git https://github.com/kevgo/tikibase.git`
 - add `~/.cargo/bin` to your shell's `$PATH`
 
 ### usage
 
-- on your developer machine: run `tikibase ps` ("pitstop") in the folder with
-  the Markdown files. The pitstop command does everything it can after changes
-  have been made: it finds all issues, fixes as many as it can, and lists the
-  remaining ones.
+- while working on Markdown files, run `tikibase ps` ("pitstop"). The pitstop
+  command fixes all auto-fixable issues and lists the remaining ones.
 - in your tests/CI: run `tikibase check` (lists all issues)
 - to see all available commands: `tikibase help`
 
@@ -76,8 +74,8 @@ Create a file `tikibase.json` in your Tikibase directory. Here is an example:
 
 ### related
 
-- [VSCode Markdown IDE](https://github.com/kevgo/vscode-markdown-ide) allows
-  convenient editing of Tikibase content using VSCode.
+- [VSCode Markdown IDE](https://github.com/kevgo/vscode-markdown-ide) provides
+  IDE-grade refactoring for Tikibases and runs this `tikibase` linter for you.
 - [Obsidian](https://obsidian.md): a more fully featured Markdown-based
   knowledge base including its own editor/viewer and many plugins. Easier and to
   get started but - like all application-based solutions - will be outdated at
