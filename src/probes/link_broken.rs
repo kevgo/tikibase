@@ -119,7 +119,7 @@ mod tests {
             testhelpers::create_file("one.md", "# One\n\n[invalid](non-existing.md)\n", &dir);
             let base = Tikibase::load(dir, &testhelpers::empty_config()).unwrap();
             let have = scan(&base);
-            assert_eq!(
+            pretty::assert_eq!(
                 have.issues,
                 vec![Issue::BrokenLink {
                     file: "one.md".into(),
@@ -171,7 +171,7 @@ Here is a link to [Three](3.md) that also works.
             testhelpers::create_file("one.md", "# One\n\n[invalid]()\n", &dir);
             let base = Tikibase::load(dir, &testhelpers::empty_config()).unwrap();
             let have = scan(&base);
-            assert_eq!(
+            pretty::assert_eq!(
                 have.issues,
                 vec![Issue::LinkWithoutDestination {
                     file: "one.md".into(),
@@ -222,7 +222,7 @@ Here is a link to [Three](3.md) that also works.
             testhelpers::create_file("1.md", "# One\n\n![image](zonk.png)\n", &dir);
             let base = Tikibase::load(dir, &testhelpers::empty_config()).unwrap();
             let have = scan(&base);
-            assert_eq!(
+            pretty::assert_eq!(
                 have.issues,
                 vec![Issue::BrokenImage {
                     file: "1.md".into(),
