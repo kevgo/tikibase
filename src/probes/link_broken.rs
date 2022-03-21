@@ -30,7 +30,7 @@ pub(crate) fn scan(base: &Tikibase) -> LinksResult {
                         Reference::Link { mut destination } => {
                             if destination.is_empty() {
                                 result.issues.push(Issue::LinkWithoutDestination {
-                                    filename: doc.path.clone(),
+                                    file: doc.path.clone(),
                                     line: section.line_number + (i as u32) + 1,
                                 });
                                 continue;
@@ -42,7 +42,7 @@ pub(crate) fn scan(base: &Tikibase) -> LinksResult {
                             make_link_anchor(&mut destination);
                             if !existing_targets.contains(&destination) {
                                 result.issues.push(Issue::BrokenLink {
-                                    filename: doc.path.clone(),
+                                    file: doc.path.clone(),
                                     line: section.line_number + (i as u32) + 1,
                                     target: destination,
                                 });
@@ -50,7 +50,7 @@ pub(crate) fn scan(base: &Tikibase) -> LinksResult {
                             }
                             if destination == doc.path.to_string_lossy() {
                                 result.issues.push(Issue::LinkToSameDocument {
-                                    filename: doc.path.clone(),
+                                    file: doc.path.clone(),
                                     line: section.line_number + (i as u32) + 1,
                                 });
                                 continue;
@@ -66,7 +66,7 @@ pub(crate) fn scan(base: &Tikibase) -> LinksResult {
                             }
                             if !base.has_resource(&src) {
                                 result.issues.push(Issue::BrokenImage {
-                                    filename: doc.path.clone(),
+                                    file: doc.path.clone(),
                                     line: section.line_number + (i as u32) + 1,
                                     target: src.clone(),
                                 });

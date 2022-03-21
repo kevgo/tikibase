@@ -6,12 +6,12 @@ use std::path::PathBuf;
 #[derive(Clone, Debug, PartialEq)]
 pub enum Issue {
     BrokenImage {
-        filename: PathBuf,
+        file: PathBuf,
         line: u32,
         target: String,
     },
     BrokenLink {
-        filename: PathBuf,
+        file: PathBuf,
         line: u32,
         target: String,
     },
@@ -19,11 +19,11 @@ pub enum Issue {
         message: String,
     },
     DuplicateSection {
-        filename: PathBuf,
+        file: PathBuf,
         section_type: String,
     },
     EmptySection {
-        filename: PathBuf,
+        file: PathBuf,
         line: u32,
         section_type: String,
     },
@@ -31,11 +31,11 @@ pub enum Issue {
         message: String,
     },
     LinkToSameDocument {
-        filename: PathBuf,
+        file: PathBuf,
         line: u32,
     },
     LinkWithoutDestination {
-        filename: PathBuf,
+        file: PathBuf,
         line: u32,
     },
     MissingLinks {
@@ -91,48 +91,37 @@ pub struct MissingLink {
 impl Display for Issue {
     fn fmt(&self, f: &mut Formatter<'_>) -> fmt::Result {
         match self {
-            Issue::BrokenImage {
-                filename,
-                line,
-                target,
-            } => write!(
+            Issue::BrokenImage { file, line, target } => write!(
                 f,
                 "{}:{}  image link to non-existing file \"{}\"",
-                filename.to_string_lossy(),
+                file.to_string_lossy(),
                 line,
                 target
             ),
-            Issue::BrokenLink {
-                filename,
-                line,
-                target,
-            } => write!(
+            Issue::BrokenLink { file, line, target } => write!(
                 f,
                 "{}:{}  link to non-existing file \"{}\"",
-                filename.to_string_lossy(),
+                file.to_string_lossy(),
                 line,
                 target
             ),
             Issue::CannotReadConfigurationFile { message: _ } => {
                 write!(f, "cannot read configuration file \"tikibase.json\"")
             }
-            Issue::DuplicateSection {
-                filename,
-                section_type,
-            } => write!(
+            Issue::DuplicateSection { file, section_type } => write!(
                 f,
                 "{}  document contains multiple \"{}\" sections",
-                filename.to_string_lossy(),
+                file.to_string_lossy(),
                 section_type
             ),
             Issue::EmptySection {
-                filename,
+                file,
                 line,
                 section_type,
             } => write!(
                 f,
                 "{}:{}  section \"{}\" has no content",
-                filename.to_string_lossy(),
+                file.to_string_lossy(),
                 line + 1,
                 section_type
             ),
@@ -143,16 +132,16 @@ impl Display for Issue {
                     message
                 )
             }
-            Issue::LinkToSameDocument { filename, line } => write!(
+            Issue::LinkToSameDocument { file, line } => write!(
                 f,
                 "{}:{}  document contains link to itself",
-                filename.to_string_lossy(),
+                file.to_string_lossy(),
                 line
             ),
-            Issue::LinkWithoutDestination { filename, line } => write!(
+            Issue::LinkWithoutDestination { file, line } => write!(
                 f,
                 "{}:{}  link without destination",
-                filename.to_string_lossy(),
+                file.to_string_lossy(),
                 line
             ),
             Issue::MissingLinks { file, links } => {

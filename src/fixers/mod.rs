@@ -12,39 +12,33 @@ use std::path::PathBuf;
 pub fn fix(issue: Issue, base: &mut Tikibase, config: &config::Data) -> Option<Fix> {
     match issue {
         Issue::BrokenImage {
-            filename: _,
+            file: _,
             line: _,
             target: _,
         } => None,
         Issue::BrokenLink {
-            filename: _,
+            file: _,
             line: _,
             target: _,
         } => None,
         Issue::CannotReadConfigurationFile { message: _ } => None,
         Issue::DuplicateSection {
-            filename: _,
+            file: _,
             section_type: _,
         } => None,
         Issue::EmptySection {
-            filename,
+            file,
             line,
             section_type,
         } => Some(empty_section::remove_empty_section(
             base,
             section_type,
-            filename,
+            file,
             line,
         )),
         Issue::InvalidConfigurationFile { message: _ } => None,
-        Issue::LinkToSameDocument {
-            filename: _,
-            line: _,
-        } => None,
-        Issue::LinkWithoutDestination {
-            filename: _,
-            line: _,
-        } => None,
+        Issue::LinkToSameDocument { file: _, line: _ } => None,
+        Issue::LinkWithoutDestination { file: _, line: _ } => None,
         Issue::MissingLinks { file, links } => {
             Some(missing_links::add_occurrences(base, file, links))
         }
@@ -83,7 +77,7 @@ pub enum Fix {
     },
     RemovedEmptySection {
         section_type: String,
-        filename: PathBuf,
+        file: PathBuf,
         line: u32,
     },
     RemovedObsoleteOccurrencesSection {
@@ -100,12 +94,12 @@ impl Display for Fix {
         match self {
             Fix::RemovedEmptySection {
                 section_type,
-                filename,
+                file,
                 line,
             } => write!(
                 f,
                 "{}:{}  removed empty section \"{}\"",
-                filename.to_string_lossy(),
+                file.to_string_lossy(),
                 line + 1,
                 section_type
             ),
