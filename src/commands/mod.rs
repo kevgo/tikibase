@@ -10,7 +10,10 @@ pub use pitstop::pitstop;
 pub use stats::stats;
 use std::path::PathBuf;
 
-/// result of running a Tikibase command
+/// The inner API of Tikibase.
+/// This data structure is returned by the probes.
+/// It contains highly structured, semantically meaningful data
+/// intended to be used programmatically.
 #[derive(Default)]
 pub struct Outcome {
     /// the issues identified but not fixed

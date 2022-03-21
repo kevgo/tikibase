@@ -179,7 +179,9 @@ impl Message {
     }
 }
 
-/// all activities
+/// The outer API of Tikibase.
+/// This data structure contains the results of a full Tikibase run
+/// including human-readable summaries of what Tikibase has done.
 #[derive(Debug, Default, PartialEq)]
 pub struct Messages {
     pub messages: Vec<Message>,
