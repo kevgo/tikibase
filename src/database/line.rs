@@ -13,7 +13,7 @@ static CODE_RE: Lazy<Regex> = Lazy::new(|| Regex::new("`[^`]+`").unwrap());
 
 impl Line {
     // TODO: rename to from
-    pub fn new<S: Into<String>>(text: S) -> Line {
+    pub fn from<S: Into<String>>(text: S) -> Line {
         Line(text.into())
     }
 
@@ -72,7 +72,7 @@ mod tests {
 
         #[test]
         fn link_md() {
-            let line = Line::new(
+            let line = Line::from(
                 r#"an MD link: [one](one.md) and one to a section: [two pieces](two.md#pieces)!"#,
             );
             let have = line.references();
@@ -89,7 +89,7 @@ mod tests {
 
         #[test]
         fn link_html() {
-            let line = Line::new(r#"an HTML link: <a href="two.md">two</a>"#);
+            let line = Line::from(r#"an HTML link: <a href="two.md">two</a>"#);
             let have = line.references();
             let want = vec![Reference::Link {
                 destination: "two.md".into(),
@@ -99,7 +99,7 @@ mod tests {
 
         #[test]
         fn img_md() {
-            let line = Line::new(r#"an MD image: ![zonk](zonk.md)"#);
+            let line = Line::from(r#"an MD image: ![zonk](zonk.md)"#);
             let have = line.references();
             let want = vec![Reference::Image {
                 src: "zonk.md".into(),
@@ -109,7 +109,7 @@ mod tests {
 
         #[test]
         fn img_html() {
-            let line = Line::new(r#"<img src="zonk.md">"#);
+            let line = Line::from(r#"<img src="zonk.md">"#);
             let have = line.references();
             let want = vec![Reference::Image {
                 src: "zonk.md".into(),
@@ -119,7 +119,7 @@ mod tests {
 
         #[test]
         fn img_html_extra_attributes() {
-            let line = Line::new(r#"<img src="zonk.md" width="10" height="10">"#);
+            let line = Line::from(r#"<img src="zonk.md" width="10" height="10">"#);
             let have = line.references();
             let want = vec![Reference::Image {
                 src: "zonk.md".into(),
@@ -129,7 +129,7 @@ mod tests {
 
         #[test]
         fn img_xml_nospace() {
-            let line = Line::new(r#"<img src="zonk.md"/>"#);
+            let line = Line::from(r#"<img src="zonk.md"/>"#);
             let have = line.references();
             let want = vec![Reference::Image {
                 src: "zonk.md".into(),
@@ -139,7 +139,7 @@ mod tests {
 
         #[test]
         fn img_xml_space() {
-            let line = Line::new(r#"<img src="zonk.md" />"#);
+            let line = Line::from(r#"<img src="zonk.md" />"#);
             let have = line.references();
             let want = vec![Reference::Image {
                 src: "zonk.md".into(),
@@ -153,14 +153,14 @@ mod tests {
 
         #[test]
         fn no_source() {
-            let line = Line::new("text");
+            let line = Line::from("text");
             let have = line.used_sources();
             assert_eq!(have.len(), 0);
         }
 
         #[test]
         fn single_source() {
-            let line = Line::new("- text [1]");
+            let line = Line::from("- text [1]");
             let have = line.used_sources();
             let want = vec!["1".to_string()];
             assert_eq!(have, want);
@@ -168,7 +168,7 @@ mod tests {
 
         #[test]
         fn multiple_sources() {
-            let line = Line::new("- text [1] [2]");
+            let line = Line::from("- text [1] [2]");
             let have = line.used_sources();
             let want = vec!["1".to_string(), "2".to_string()];
             assert_eq!(have, want);
@@ -176,7 +176,7 @@ mod tests {
 
         #[test]
         fn code_segment() {
-            let line = Line::new("code: `map[0]`");
+            let line = Line::from("code: `map[0]`");
             let have = line.used_sources();
             let want: Vec<String> = vec![];
             assert_eq!(have, want);
