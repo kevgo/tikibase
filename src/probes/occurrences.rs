@@ -72,7 +72,7 @@ mod tests {
         incoming_links.add("1.md", "3.md");
         incoming_links.add("1.md", "2.md");
         let have = super::scan(&base, &incoming_links, &outgoing_links);
-        assert_eq!(
+        pretty::assert_eq!(
             have,
             vec![Issue::MissingLinks {
                 file: "1.md".into(),
