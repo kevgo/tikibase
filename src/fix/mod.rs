@@ -5,12 +5,11 @@ mod missing_links;
 mod obsolete_occurrences_section;
 mod unordered_sections;
 
-use super::config;
-use crate::{Issue, Tikibase};
+use crate::{Config, Issue, Tikibase};
 use std::path::PathBuf;
 
 /// fixes the given Issue
-pub fn fix(issue: Issue, base: &mut Tikibase, config: &config::Data) -> Option<Fix> {
+pub fn fix(issue: Issue, base: &mut Tikibase, config: &Config) -> Option<Fix> {
     match issue {
         Issue::BrokenImage {
             file: _,

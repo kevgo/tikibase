@@ -1,5 +1,5 @@
 use super::{Document, Resource};
-use crate::{config, Issue};
+use crate::{Config, Issue};
 use std::fs::File;
 use std::io::{BufRead, BufReader};
 use std::path::{Path, PathBuf};
@@ -45,7 +45,7 @@ impl Tikibase {
     }
 
     /// provides a Tikibase instance for the given directory
-    pub fn load(dir: PathBuf, config: &config::Data) -> Result<Tikibase, Vec<Issue>> {
+    pub fn load(dir: PathBuf, config: &Config) -> Result<Tikibase, Vec<Issue>> {
         let mut docs = Vec::new();
         let mut resources = Vec::new();
         let mut errors = Vec::new();

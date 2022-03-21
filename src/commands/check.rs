@@ -2,9 +2,9 @@ use crate::scan::{
     image_orphaned, link_broken, occurrences, section_capitalization, section_duplicate,
     section_empty, section_order, section_type, section_without_header, sources_missing,
 };
-use crate::{config, Outcome, Tikibase};
+use crate::{Config, Outcome, Tikibase};
 
-pub fn check(base: &mut Tikibase, config: &config::Data) -> Outcome {
+pub fn check(base: &mut Tikibase, config: &Config) -> Outcome {
     let mut issues = Vec::new();
     issues.extend(section_duplicate::scan(base));
     issues.extend(section_empty::scan(base));

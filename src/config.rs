@@ -6,7 +6,7 @@ use std::path::Path;
 
 /// Tikibase configuration data
 #[derive(Deserialize, Default, PartialEq, Debug)]
-pub struct Data {
+pub struct Config {
     /// the allowed section types
     pub sections: Option<Vec<String>>,
 
@@ -15,12 +15,12 @@ pub struct Data {
 }
 
 /// reads the config file
-pub fn load<P: AsRef<Path>>(dir: P) -> Result<Data, Issue> {
+pub fn load<P: AsRef<Path>>(dir: P) -> Result<Config, Issue> {
     let config_path = dir.as_ref().join("tikibase.json");
     let file = match File::open(config_path) {
         Ok(reader) => reader,
         Err(e) => match e.kind() {
-            ErrorKind::NotFound => return Ok(Data::default()),
+            ErrorKind::NotFound => return Ok(Config::default()),
             _ => {
                 return Err(Issue::CannotReadConfigurationFile {
                     message: e.to_string(),
@@ -37,14 +37,14 @@ pub fn load<P: AsRef<Path>>(dir: P) -> Result<Data, Issue> {
 mod tests {
 
     mod load {
-        use super::super::{load, Data};
+        use super::super::{load, Config};
         use crate::test;
         use crate::Issue;
 
         #[test]
         fn no_config_file() {
             let have = load(test::tmp_dir()).unwrap();
-            let want = Data {
+            let want = Config {
                 sections: None,
                 ignore: None,
             };
@@ -56,7 +56,7 @@ mod tests {
             let dir = test::tmp_dir();
             test::create_file("tikibase.json", "{}", &dir);
             let have = load(&dir).unwrap();
-            let want = Data {
+            let want = Config {
                 sections: None,
                 ignore: None,
             };
@@ -73,7 +73,7 @@ mod tests {
             "#;
             test::create_file("tikibase.json", give, &dir);
             let have = load(&dir).unwrap();
-            let want = Data {
+            let want = Config {
                 sections: Some(vec!["one".into(), "two".into()]),
                 ignore: None,
             };
