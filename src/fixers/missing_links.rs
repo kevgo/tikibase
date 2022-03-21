@@ -1,6 +1,6 @@
 use super::Fix;
+use crate::commands::MissingLink;
 use crate::database::{section, Tikibase};
-use crate::issue::MissingLink;
 use once_cell::sync::Lazy;
 use regex::{Captures, Regex};
 use std::borrow::Cow;

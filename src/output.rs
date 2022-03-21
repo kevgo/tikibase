@@ -1,98 +1,61 @@
-use crate::Message;
-use serde::Serialize;
 use std::borrow::Cow;
-use std::path::PathBuf;
 
-/// the issues that this linter can find
-#[derive(Clone, Debug, PartialEq, Serialize)]
-pub enum Issue {
-    BrokenImage {
-        file: PathBuf,
-        line: u32,
-        target: String,
-    },
-    BrokenLink {
-        file: PathBuf,
-        line: u32,
-        target: String,
-    },
-    CannotReadConfigurationFile {
-        message: String,
-    },
-    DuplicateSection {
-        file: PathBuf,
-        section_type: String,
-    },
-    EmptySection {
-        file: PathBuf,
-        line: u32,
-        section_type: String,
-    },
-    InvalidConfigurationFile {
-        message: String,
-    },
-    LinkToSameDocument {
-        file: PathBuf,
-        line: u32,
-    },
-    LinkWithoutDestination {
-        file: PathBuf,
-        line: u32,
-    },
-    MissingLinks {
-        file: PathBuf,
-        links: Vec<MissingLink>,
-    },
-    MissingSource {
-        file: PathBuf,
-        line: u32,
-        index: String,
-    },
-    MixCapSection {
-        variants: Vec<String>,
-    },
-    NoTitleSection {
-        file: PathBuf,
-    },
-    ObsoleteOccurrencesSection {
-        file: PathBuf,
-        line: u32,
-    },
-    OrphanedResource {
-        // This is a String and not a Path because we need a String (to print it),
-        // and we already converted the Path of this orphaned resource into a String
-        // during processing it.
-        path: String,
-    },
-    SectionWithoutHeader {
-        file: PathBuf,
-        line: u32,
-    },
-    UnclosedFence {
-        file: PathBuf,
-        line: u32,
-    },
-    UnknownSection {
-        file: PathBuf,
-        line: u32,
-        section_type: String,
-        allowed_types: Vec<String>,
-    },
-    UnorderedSections {
-        file: PathBuf,
-    },
+use serde::Serialize;
+
+use crate::fixers::Fix;
+use crate::{Issue, Outcome};
+
+/// a result struct of an activity, could be an issue of a fix
+#[derive(Debug, PartialEq, Serialize)]
+pub struct Message {
+    pub file: Option<String>,
+    pub line: Option<u32>,
+    /// human-readable message
+    pub text: String,
 }
 
-/// a missing link to a document
-#[derive(Clone, Debug, PartialEq, Serialize)]
-pub struct MissingLink {
-    pub path: PathBuf,
-    pub title: String,
-}
+impl Message {
+    pub fn to_text(&self) -> String {
+        match (&self.file, self.line) {
+            (Some(file), Some(line)) => {
+                format!("{}:{}  {}", file, line + 1, self.text)
+            }
+            (Some(file), None) => format!("{}  {}", file, self.text),
+            (None, None) => self.text.clone(),
+            (None, Some(_line)) => panic!("should never get just a line without a file"),
+        }
+    }
 
-impl Issue {
-    pub fn to_message(self) -> Message {
-        match self {
+    fn from_fix(fix: Fix) -> Message {
+        match fix {
+            Fix::RemovedEmptySection {
+                section_type,
+                file,
+                line,
+            } => Message {
+                text: format!("removed empty section \"{}\"", section_type),
+                file: Some(file.to_string_lossy().to_string()),
+                line: Some(line),
+            },
+            Fix::AddedOccurrencesSection { file, line } => Message {
+                text: "added occurrences section".into(),
+                file: Some(file.to_string_lossy().to_string()),
+                line: Some(line),
+            },
+            Fix::RemovedObsoleteOccurrencesSection { file, line } => Message {
+                text: "removed obsolete occurrences section".into(),
+                file: Some(file.to_string_lossy().to_string()),
+                line: Some(line),
+            },
+            Fix::SortedSections { file } => Message {
+                text: "fixed section order".into(),
+                file: Some(file.to_string_lossy().to_string()),
+                line: None,
+            },
+        }
+    }
+    pub fn from_issue(issue: Issue) -> Message {
+        match issue {
             Issue::BrokenImage { file, line, target } => Message {
                 text: format!("image link to non-existing file \"{}\"", target),
                 file: Some(file.to_string_lossy().to_string()),
@@ -215,6 +178,39 @@ impl Issue {
                 file: Some(file.to_string_lossy().to_string()),
                 line: None,
             },
+        }
+    }
+}
+
+/// all activities
+#[derive(Debug, Default, PartialEq)]
+pub struct Messages {
+    pub messages: Vec<Message>,
+    pub exit_code: i32,
+}
+
+impl Messages {
+    pub fn from_issue(issue: Issue) -> Messages {
+        Messages {
+            messages: vec![Message::from_issue(issue)],
+            exit_code: 1,
+        }
+    }
+    pub fn from_issues(issues: Vec<Issue>) -> Messages {
+        Messages {
+            exit_code: issues.len() as i32,
+            messages: issues.into_iter().map(Message::from_issue).collect(),
+        }
+    }
+
+    pub fn from_outcome(outcome: Outcome) -> Messages {
+        let mut messages = vec![];
+        let exit_code = outcome.issues.len() as i32;
+        messages.extend(outcome.fixes.into_iter().map(Message::from_fix));
+        messages.extend(outcome.issues.into_iter().map(Message::from_issue));
+        Messages {
+            messages,
+            exit_code,
         }
     }
 }

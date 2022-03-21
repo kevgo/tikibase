@@ -3,17 +3,17 @@
 use clap::StructOpt;
 use std::io;
 use std::path::PathBuf;
-use tikibase::{cli, run, Message, Messages};
+use tikibase::{input, run, Message, Messages};
 
 fn main() {
-    let args = cli::Args::parse();
+    let args = input::Args::parse();
     let Messages {
         messages,
         exit_code,
     } = run(args.command, PathBuf::from("."));
     match args.format {
-        cli::Format::Text => print_text(messages),
-        cli::Format::Json => print_json(messages),
+        input::Format::Text => print_text(messages),
+        input::Format::Json => print_json(messages),
     };
     std::process::exit(exit_code);
 }

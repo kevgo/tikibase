@@ -1,6 +1,6 @@
+use crate::commands::MissingLink;
 use crate::database::DocLinks;
-use crate::issue::{Issue, MissingLink};
-use crate::Tikibase;
+use crate::{Issue, Tikibase};
 use ahash::AHashSet;
 use std::path::PathBuf;
 
@@ -53,8 +53,8 @@ pub(crate) fn scan(
 
 #[cfg(test)]
 mod tests {
+    use crate::commands::MissingLink;
     use crate::database::DocLinks;
-    use crate::issue::MissingLink;
     use crate::testhelpers;
     use crate::{Issue, Tikibase};
 

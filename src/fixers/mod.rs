@@ -4,7 +4,9 @@ mod obsolete_occurrences_section;
 mod unordered_sections;
 
 use super::config;
-use crate::{Fix, Issue, Tikibase};
+use crate::{Issue, Tikibase};
+use serde::Serialize;
+use std::path::PathBuf;
 
 /// fixes the given Issue
 pub fn fix(issue: Issue, base: &mut Tikibase, config: &config::Data) -> Option<Fix> {
@@ -65,4 +67,25 @@ pub fn fix(issue: Issue, base: &mut Tikibase, config: &config::Data) -> Option<F
             config.sections.as_ref().unwrap(),
         )),
     }
+}
+
+/// documents the fixes that this linter performs
+#[derive(Serialize)]
+pub enum Fix {
+    AddedOccurrencesSection {
+        file: PathBuf,
+        line: u32,
+    },
+    RemovedEmptySection {
+        section_type: String,
+        file: PathBuf,
+        line: u32,
+    },
+    RemovedObsoleteOccurrencesSection {
+        file: PathBuf,
+        line: u32,
+    },
+    SortedSections {
+        file: PathBuf,
+    },
 }
