@@ -1,6 +1,7 @@
 //! the CLI wrapper around lib.rs
 
 use clap::StructOpt;
+use input::Format::{Json, Text};
 use std::io;
 use std::path::PathBuf;
 use tikibase::{input, run, Message};
@@ -9,8 +10,8 @@ fn main() {
     let args = input::Args::parse();
     let result = run(args.command, PathBuf::from("."));
     match args.format {
-        input::Format::Text => print_text(result.messages),
-        input::Format::Json => print_json(result.messages),
+        Text => print_text(result.messages),
+        Json => print_json(result.messages),
     };
     std::process::exit(result.exit_code);
 }
