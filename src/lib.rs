@@ -1,7 +1,7 @@
 pub mod commands;
 pub mod config;
 mod database;
-mod fixers;
+mod fix;
 pub mod input;
 mod output;
 mod probes;
@@ -9,7 +9,7 @@ pub mod testhelpers;
 
 pub use commands::{Issue, Outcome};
 use database::Tikibase;
-pub use fixers::Fix;
+pub use fix::Fix;
 use input::Command;
 pub use output::{Message, Messages};
 use std::path::PathBuf;
