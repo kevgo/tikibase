@@ -23,7 +23,7 @@ pub(crate) fn scan(base: &Tikibase) -> Vec<Issue> {
 #[cfg(test)]
 mod tests {
     use super::scan;
-    use crate::{config, test};
+    use crate::{test, Config};
     use crate::{Issue, Tikibase};
     use std::path::PathBuf;
 
@@ -38,7 +38,7 @@ mod tests {
 
 content";
         test::create_file("test.md", content, &dir);
-        let base = Tikibase::load(dir, &config::Data::default()).unwrap();
+        let base = Tikibase::load(dir, &Config::default()).unwrap();
         let have = scan(&base);
         let want = vec![Issue::EmptySection {
             file: PathBuf::from("test.md"),
@@ -60,7 +60,7 @@ content";
 
 content";
         test::create_file("test.md", content, &dir);
-        let base = Tikibase::load(dir, &config::Data::default()).unwrap();
+        let base = Tikibase::load(dir, &Config::default()).unwrap();
         let have = scan(&base);
         let want = vec![Issue::EmptySection {
             file: PathBuf::from("test.md"),
@@ -80,7 +80,7 @@ content";
 
 content";
         test::create_file("test.md", content, &dir);
-        let base = Tikibase::load(dir, &config::Data::default()).unwrap();
+        let base = Tikibase::load(dir, &Config::default()).unwrap();
         let have = scan(&base);
         assert!(have.is_empty());
     }
