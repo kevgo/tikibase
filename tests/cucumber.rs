@@ -3,7 +3,7 @@ use async_trait::async_trait;
 use cucumber::{gherkin::Step, given, then, when, World, WorldInit};
 use std::convert::Infallible;
 use std::path::PathBuf;
-use tikibase::input::Command;
+use tikibase::cli::Command;
 use tikibase::{self, test, Messages};
 
 #[derive(Debug, WorldInit)]

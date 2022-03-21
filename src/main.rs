@@ -1,13 +1,13 @@
 //! the CLI wrapper around lib.rs
 
 use clap::StructOpt;
-use input::Format::{Json, Text};
+use cli::Format::{Json, Text};
 use std::io;
 use std::path::PathBuf;
-use tikibase::{input, run, Message};
+use tikibase::{cli, run, Message};
 
 fn main() {
-    let args = input::Args::parse();
+    let args = cli::Args::parse();
     let result = run(args.command, PathBuf::from("."));
     match args.format {
         Text => print_text(result.messages),
