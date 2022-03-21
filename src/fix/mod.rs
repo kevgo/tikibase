@@ -1,3 +1,5 @@
+//! Auto-fixing functionality
+
 mod empty_section;
 mod missing_links;
 mod obsolete_occurrences_section;

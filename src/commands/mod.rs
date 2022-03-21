@@ -1,3 +1,5 @@
+//! High-level commands that the Tikibase linter can execute.
+
 mod check;
 mod fix;
 mod pitstop;
