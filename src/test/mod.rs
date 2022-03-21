@@ -1,4 +1,4 @@
-//! The testhelpers module provides functions used in both unit and end-to-end tests.
+//! functions used in both unit and end-to-end tests
 
 mod create_file;
 mod empty_config;
