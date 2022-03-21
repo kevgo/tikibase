@@ -241,13 +241,13 @@ content";
                 path: PathBuf::from("one.md"),
                 title_section: Section {
                     line_number: 0,
-                    title_line: Line::new("# test"),
+                    title_line: Line::from("# test"),
                     body: vec![],
                 },
                 content_sections: vec![Section {
                     line_number: 1,
-                    title_line: Line::new("### section 1"),
-                    body: vec![Line::new("content")],
+                    title_line: Line::from("### section 1"),
+                    body: vec![Line::from("content")],
                 }],
                 occurrences_section_line: None,
             });
@@ -277,12 +277,12 @@ text
                 path: PathBuf::from("test.md"),
                 title_section: Section {
                     line_number: 0,
-                    title_line: Line::new("# test"),
+                    title_line: Line::from("# test"),
                     body: vec![
-                        Line::new("```md"),
-                        Line::new("### not a document section"),
-                        Line::new("text"),
-                        Line::new("```"),
+                        Line::from("```md"),
+                        Line::from("### not a document section"),
+                        Line::from("text"),
+                        Line::from("```"),
                     ],
                 },
                 content_sections: vec![],
@@ -322,19 +322,19 @@ content
                 path: PathBuf::from("one.md"),
                 title_section: Section {
                     line_number: 0,
-                    title_line: Line::new("# test"),
+                    title_line: Line::from("# test"),
                     body: vec![],
                 },
                 content_sections: vec![
                     Section {
                         line_number: 1,
-                        title_line: Line::new("### section 1"),
-                        body: vec![Line::new("content")],
+                        title_line: Line::from("### section 1"),
+                        body: vec![Line::from("content")],
                     },
                     Section {
                         line_number: 5,
-                        title_line: Line::new("### links"),
-                        body: vec![Line::new("- link 1")],
+                        title_line: Line::from("### links"),
+                        body: vec![Line::from("- link 1")],
                     },
                 ],
                 occurrences_section_line: Some(3),
@@ -390,8 +390,8 @@ text
             let have = doc.last_section_mut();
             let mut want = Section {
                 line_number: 3,
-                title_line: Line::new("### s1"),
-                body: vec![Line::new(""), Line::new("text")],
+                title_line: Line::from("### s1"),
+                body: vec![Line::from(""), Line::from("text")],
             };
             pretty::assert_eq!(have, &mut want)
         }
@@ -406,8 +406,8 @@ title text
             let have = doc.last_section_mut();
             let mut want = Section {
                 line_number: 0,
-                title_line: Line::new("# Title"),
-                body: vec![Line::new("title text")],
+                title_line: Line::from("# Title"),
+                body: vec![Line::from("title text")],
             };
             pretty::assert_eq!(have, &mut want)
         }
