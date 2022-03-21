@@ -27,13 +27,13 @@ pub fn fix(issue: Issue, base: &mut Tikibase, config: &config::Data) -> Option<F
             section_type: _,
         } => None,
         Issue::EmptySection {
-            file: filename,
+            file,
             line,
             section_type,
         } => Some(empty_section::remove_empty_section(
             base,
             section_type,
-            filename,
+            file,
             line,
         )),
         Issue::InvalidConfigurationFile { message: _ } => None,
@@ -77,7 +77,7 @@ pub enum Fix {
     },
     RemovedEmptySection {
         section_type: String,
-        filename: PathBuf,
+        file: PathBuf,
         line: u32,
     },
     RemovedObsoleteOccurrencesSection {
@@ -94,12 +94,12 @@ impl Display for Fix {
         match self {
             Fix::RemovedEmptySection {
                 section_type,
-                filename,
+                file,
                 line,
             } => write!(
                 f,
                 "{}:{}  removed empty section \"{}\"",
-                filename.to_string_lossy(),
+                file.to_string_lossy(),
                 line + 1,
                 section_type
             ),

@@ -15,7 +15,7 @@ pub fn remove_empty_section(
     doc.save(&base_dir);
     Fix::RemovedEmptySection {
         section_type,
-        filename: file,
+        file,
         line,
     }
 }
