@@ -49,24 +49,22 @@ content";
         test::create_file("test.md", content, &dir);
         let base = Tikibase::load(dir, &Config::default()).unwrap();
         let have = scan(&base);
-        pretty::assert_eq!(
-            have,
-            vec![
-                Issue::DuplicateSection {
-                    location: Location {
-                        file: PathBuf::from("test.md"),
-                        line: 2
-                    },
-                    title: "One".into(),
+        let want = vec![
+            Issue::DuplicateSection {
+                location: Location {
+                    file: PathBuf::from("test.md"),
+                    line: 2,
                 },
-                Issue::DuplicateSection {
-                    location: Location {
-                        file: PathBuf::from("test.md"),
-                        line: 4
-                    },
-                    title: "One".into(),
+                title: "One".into(),
+            },
+            Issue::DuplicateSection {
+                location: Location {
+                    file: PathBuf::from("test.md"),
+                    line: 4,
                 },
-            ]
-        )
+                title: "One".into(),
+            },
+        ];
+        pretty::assert_eq!(have, want)
     }
 }
