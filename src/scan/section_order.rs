@@ -12,6 +12,8 @@ pub(crate) fn scan(base: &Tikibase, config: &Config) -> Vec<Issue> {
                 location: crate::Location {
                     file: doc.path.clone(),
                     line: 0,
+                    start: 0,
+                    end: doc.title_section.title_line.text().len() as u32,
                 },
             });
         }

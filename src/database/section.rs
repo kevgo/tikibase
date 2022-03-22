@@ -15,7 +15,7 @@ pub struct Section {
 impl Section {
     /// provides the link anchor for this section, in GitHub format
     pub fn anchor(&self) -> String {
-        format!("#{}", self.title().to_kebab_case())
+        format!("#{}", self.title().0.to_kebab_case())
     }
 
     /// provides a non-consuming iterator for all lines in this section

@@ -66,12 +66,18 @@ impl Line {
     }
 
     /// provides the indexes of all sources used in this line
-    pub fn used_sources(&self) -> Vec<String> {
+    pub fn used_sources(&self) -> Vec<(String, u32, u32)> {
         let sanitized = CODE_RE.replace_all(&self.0, "");
-        SOURCE_RE
-            .captures_iter(&sanitized)
-            .map(|cap| cap[1].to_string())
-            .collect()
+        let mut result = vec![];
+        for captures in SOURCE_RE.captures_iter(&sanitized) {
+            let total_match = captures.get(0).unwrap();
+            result.push((
+                captures.get(1).unwrap().as_str().to_string(),
+                total_match.start() as u32,
+                total_match.end() as u32,
+            ));
+        }
+        result
     }
 }
 
@@ -190,7 +196,7 @@ mod tests {
         fn single_source() {
             let line = Line::from("- text [1]");
             let have = line.used_sources();
-            let want = vec!["1".to_string()];
+            let want = vec![("1".to_string(), 7, 9)];
             assert_eq!(have, want);
         }
 
@@ -198,7 +204,7 @@ mod tests {
         fn multiple_sources() {
             let line = Line::from("- text [1] [2]");
             let have = line.used_sources();
-            let want = vec!["1".to_string(), "2".to_string()];
+            let want = vec![("1".to_string(), 7, 9), ("2".to_string(), 11, 13)];
             assert_eq!(have, want);
         }
 
@@ -206,8 +212,7 @@ mod tests {
         fn code_segment() {
             let line = Line::from("code: `map[0]`");
             let have = line.used_sources();
-            let want: Vec<String> = vec![];
-            assert_eq!(have, want);
+            assert_eq!(have, vec![]);
         }
     }
 }

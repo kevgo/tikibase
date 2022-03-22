@@ -9,7 +9,6 @@ pub(crate) fn scan(base: &Tikibase) -> Vec<Issue> {
         for section in &doc.content_sections {
             let has_content = section.body.iter().any(|line| !line.text().is_empty());
             if !has_content {
-                let (title, start) = section.title();
                 issues.push(Issue::EmptySection {
                     location: Location {
                         file: doc.path.clone(),
@@ -17,7 +16,7 @@ pub(crate) fn scan(base: &Tikibase) -> Vec<Issue> {
                         start: 0,
                         end: section.title_line.text().len() as u32,
                     },
-                    title: title.into(),
+                    title: section.title().0.into(),
                 });
             }
         }

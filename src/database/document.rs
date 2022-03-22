@@ -38,7 +38,7 @@ impl Document {
             if line.starts_with('#') && !inside_fence {
                 if let Some(section_builder) = section_builder {
                     let section = section_builder.result();
-                    if section.title() == "occurrences" {
+                    if section.title().0 == "occurrences" {
                         occurrences_section_line = Some(section.line_number);
                     } else {
                         sections.push(section);
@@ -67,7 +67,7 @@ impl Document {
         }
         if let Some(section_builder) = section_builder {
             let section = section_builder.result();
-            if section.title() == "occurrences" {
+            if section.title().0 == "occurrences" {
                 occurrences_section_line = Some(section.line_number);
             } else {
                 sections.push(section);
@@ -79,7 +79,7 @@ impl Document {
                     file: path,
                     line: (fence_line as u32),
                     start: 0,
-                    end: lines.last().unwrap().len() as u32,
+                    end: 0,
                 },
             });
         }
@@ -108,7 +108,7 @@ impl Document {
     pub fn section_with_title(&self, title: &str) -> Option<&Section> {
         self.content_sections
             .iter()
-            .find(|section| section.title() == title)
+            .find(|section| section.title().0 == title)
     }
 
     pub fn last_line(&self) -> Option<&Line> {
@@ -150,7 +150,10 @@ impl Document {
 
     /// provides the section titles in this document
     pub fn section_titles(&self) -> Vec<&str> {
-        self.content_sections.iter().map(Section::title).collect()
+        self.content_sections
+            .iter()
+            .map(|section| section.title().0)
+            .collect()
     }
 
     /// provides all the sources that this document defines
@@ -173,7 +176,7 @@ impl Document {
         let mut result = AHashSet::new();
         let mut in_code_block = false;
         for section in self.sections() {
-            if section.title() == "occurrences" {
+            if section.title().0 == "occurrences" {
                 continue;
             }
             for (line_idx, line) in section.lines().enumerate() {
@@ -182,10 +185,12 @@ impl Document {
                     continue;
                 }
                 if !in_code_block {
-                    for index in line.used_sources() {
+                    for (index, start, end) in line.used_sources() {
                         result.insert(UsedSource {
                             line: section.line_number + (line_idx as u32),
                             index,
+                            start,
+                            end,
                         });
                     }
                 }
@@ -205,7 +210,7 @@ impl Document {
 
     /// provides the human-readable title of this document
     pub fn title(&self) -> &str {
-        self.title_section.title()
+        self.title_section.title().0
     }
 }
 
@@ -231,9 +236,11 @@ impl<'a> Iterator for SectionIterator<'a> {
 
 #[derive(Debug, PartialEq, Eq, Hash)]
 pub struct UsedSource {
-    pub line: u32,
     /// the index used for the source, e.g. "[1]"
     pub index: String,
+    pub line: u32,
+    pub start: u32,
+    pub end: u32,
 }
 
 // -------------------------------------------------------------------------------------
@@ -562,14 +569,20 @@ text [1] [3]
             want.insert(UsedSource {
                 line: 1,
                 index: "2".into(),
+                start: 11,
+                end: 13,
             });
             want.insert(UsedSource {
                 line: 3,
                 index: "1".into(),
+                start: 5,
+                end: 7,
             });
             want.insert(UsedSource {
                 line: 3,
                 index: "3".into(),
+                start: 9,
+                end: 11,
             });
             assert_eq!(have, want);
         }

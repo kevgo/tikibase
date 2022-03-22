@@ -11,6 +11,8 @@ pub(crate) fn scan(base: &Tikibase) -> Vec<Issue> {
                     location: Location {
                         file: doc.path.clone(),
                         line: used_source.line,
+                        start: used_source.start,
+                        end: used_source.end,
                     },
                     index: used_source.index,
                 });
