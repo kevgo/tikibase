@@ -115,7 +115,7 @@ mod tests {
             location: Location {
                 file: "1.md".into(),
                 line: 3,
-                start: 0,
+                start: 4,
                 end: 15,
             },
         }];
