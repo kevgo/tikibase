@@ -24,10 +24,9 @@ pub(crate) fn scan(base: &Tikibase) -> Vec<Issue> {
         if variants_count(&file_sections) < 2 {
             continue;
         }
-        let mut variants: Vec<String> = file_sections
-            .iter()
-            .map(|variant| variant.title.into())
-            .collect();
+        let variants: AHashSet<String> =
+            AHashSet::from_iter(file_sections.iter().map(|variant| variant.title.into()));
+        let mut variants: Vec<String> = Vec::from_iter(variants);
         variants.sort();
         for file_section in file_sections {
             issues.push(Issue::MixCapSection {
@@ -101,6 +100,9 @@ content";
 # another document
 
 ### one
+content
+
+### ONE
 content";
         test::create_file("2.md", content2, &dir);
         let base = Tikibase::load(dir, &Config::default()).unwrap();
@@ -128,6 +130,15 @@ content";
                 location: Location {
                     file: PathBuf::from("2.md"),
                     line: 2,
+                    start: 4,
+                    end: 7,
+                },
+                variants: vec!["ONE".into(), "One".into(), "one".into()],
+            },
+            Issue::MixCapSection {
+                location: Location {
+                    file: PathBuf::from("2.md"),
+                    line: 5,
                     start: 4,
                     end: 7,
                 },
