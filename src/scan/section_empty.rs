@@ -49,7 +49,7 @@ content";
                 file: PathBuf::from("test.md"),
                 line: 2,
                 start: 0,
-                end: 16,
+                end: 17,
             },
             title: "empty section".into(),
         }];
@@ -75,7 +75,7 @@ content";
                 file: PathBuf::from("test.md"),
                 line: 2,
                 start: 0,
-                end: 16,
+                end: 17,
             },
             title: "empty section".into(),
         }];

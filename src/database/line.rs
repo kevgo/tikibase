@@ -98,12 +98,12 @@ mod tests {
                 Reference::Link {
                     destination: "one.md".into(),
                     start: 12,
-                    end: 24,
+                    end: 25,
                 },
                 Reference::Link {
                     destination: "two.md".into(),
                     start: 48,
-                    end: 74,
+                    end: 75,
                 },
             ];
             pretty::assert_eq!(have, want)
@@ -116,7 +116,7 @@ mod tests {
             let want = vec![Reference::Link {
                 destination: "two.md".into(),
                 start: 14,
-                end: 37,
+                end: 38,
             }];
             pretty::assert_eq!(have, want)
         }
@@ -128,7 +128,7 @@ mod tests {
             let want = vec![Reference::Image {
                 src: "zonk.md".into(),
                 start: 13,
-                end: 28,
+                end: 29,
             }];
             pretty::assert_eq!(have, want)
         }
@@ -140,7 +140,7 @@ mod tests {
             let want = vec![Reference::Image {
                 src: "zonk.md".into(),
                 start: 0,
-                end: 18,
+                end: 19,
             }];
             pretty::assert_eq!(have, want)
         }
@@ -152,7 +152,7 @@ mod tests {
             let want = vec![Reference::Image {
                 src: "zonk.md".into(),
                 start: 0,
-                end: 41,
+                end: 42,
             }];
             pretty::assert_eq!(have, want)
         }
@@ -164,7 +164,7 @@ mod tests {
             let want = vec![Reference::Image {
                 src: "zonk.md".into(),
                 start: 0,
-                end: 19,
+                end: 20,
             }];
             pretty::assert_eq!(have, want)
         }
@@ -176,7 +176,7 @@ mod tests {
             let want = vec![Reference::Image {
                 src: "zonk.md".into(),
                 start: 0,
-                end: 20,
+                end: 21,
             }];
             pretty::assert_eq!(have, want)
         }
@@ -196,7 +196,7 @@ mod tests {
         fn single_source() {
             let line = Line::from("- text [1]");
             let have = line.used_sources();
-            let want = vec![("1".to_string(), 7, 9)];
+            let want = vec![("1".to_string(), 7, 10)];
             assert_eq!(have, want);
         }
 
@@ -204,7 +204,7 @@ mod tests {
         fn multiple_sources() {
             let line = Line::from("- text [1] [2]");
             let have = line.used_sources();
-            let want = vec![("1".to_string(), 7, 9), ("2".to_string(), 11, 13)];
+            let want = vec![("1".to_string(), 7, 10), ("2".to_string(), 11, 14)];
             assert_eq!(have, want);
         }
 

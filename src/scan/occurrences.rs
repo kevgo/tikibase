@@ -116,16 +116,14 @@ mod tests {
         let outgoing_links = DocLinks::default();
         let incoming_links = DocLinks::default();
         let have = super::scan(&base, &incoming_links, &outgoing_links);
-        pretty::assert_eq!(
-            have,
-            vec![Issue::ObsoleteOccurrencesSection {
-                location: Location {
-                    file: "1.md".into(),
-                    line: 3,
-                    start: 0,
-                    end: 14
-                },
-            }]
-        );
+        let want = vec![Issue::ObsoleteOccurrencesSection {
+            location: Location {
+                file: "1.md".into(),
+                line: 3,
+                start: 0,
+                end: 14,
+            },
+        }];
+        pretty::assert_eq!(have, want);
     }
 }

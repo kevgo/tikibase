@@ -137,18 +137,16 @@ mod tests {
             test::create_file("one.md", "# One\n\n[invalid](non-existing.md)\n", &dir);
             let base = Tikibase::load(dir, &Config::default()).unwrap();
             let have = scan(&base);
-            pretty::assert_eq!(
-                have.issues,
-                vec![Issue::BrokenLink {
-                    location: Location {
-                        file: "one.md".into(),
-                        line: 2,
-                        start: 0,
-                        end: 25
-                    },
-                    target: "non-existing.md".into()
-                }]
-            );
+            let want = vec![Issue::BrokenLink {
+                location: Location {
+                    file: "one.md".into(),
+                    line: 2,
+                    start: 0,
+                    end: 26,
+                },
+                target: "non-existing.md".into(),
+            }];
+            pretty::assert_eq!(have.issues, want);
             assert_eq!(have.incoming_doc_links.data.len(), 0);
             assert_eq!(have.outgoing_doc_links.data.len(), 0);
             assert_eq!(have.outgoing_resource_links.len(), 0);
@@ -200,7 +198,7 @@ Here is a link to [Three](3.md) that also works.
                         file: "one.md".into(),
                         line: 2,
                         start: 0,
-                        end: 10,
+                        end: 11,
                     }
                 }]
             );
@@ -248,18 +246,16 @@ Here is a link to [Three](3.md) that also works.
             test::create_file("1.md", "# One\n\n![image](zonk.png)\n", &dir);
             let base = Tikibase::load(dir, &Config::default()).unwrap();
             let have = scan(&base);
-            pretty::assert_eq!(
-                have.issues,
-                vec![Issue::BrokenImage {
-                    location: Location {
-                        file: "1.md".into(),
-                        line: 2,
-                        start: 0,
-                        end: 17
-                    },
-                    target: "zonk.png".into()
-                }]
-            );
+            let want = vec![Issue::BrokenImage {
+                location: Location {
+                    file: "1.md".into(),
+                    line: 2,
+                    start: 0,
+                    end: 18,
+                },
+                target: "zonk.png".into(),
+            }];
+            pretty::assert_eq!(have.issues, want);
             assert_eq!(have.outgoing_resource_links.len(), 1);
             assert_eq!(have.outgoing_resource_links[0], "zonk.png");
             assert_eq!(have.incoming_doc_links.data.len(), 0);

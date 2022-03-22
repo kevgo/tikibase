@@ -289,7 +289,7 @@ content";
                     file: PathBuf::from("one.md"),
                     line: 0,
                     start: 0,
-                    end: 1,
+                    end: 8,
                 },
             });
             pretty::assert_eq!(have, want)
@@ -337,7 +337,7 @@ text
                     file: PathBuf::from("test.md"),
                     line: 1,
                     start: 0,
-                    end: 1,
+                    end: 0,
                 },
             });
             pretty::assert_eq!(have, want)
@@ -570,21 +570,21 @@ text [1] [3]
                 line: 1,
                 index: "2".into(),
                 start: 11,
-                end: 13,
+                end: 14,
             });
             want.insert(UsedSource {
                 line: 3,
                 index: "1".into(),
                 start: 5,
-                end: 7,
+                end: 8,
             });
             want.insert(UsedSource {
                 line: 3,
                 index: "3".into(),
                 start: 9,
-                end: 11,
+                end: 12,
             });
-            assert_eq!(have, want);
+            pretty::assert_eq!(have, want);
         }
 
         #[test]
