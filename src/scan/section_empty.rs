@@ -9,12 +9,15 @@ pub(crate) fn scan(base: &Tikibase) -> Vec<Issue> {
         for section in &doc.content_sections {
             let has_content = section.body.iter().any(|line| !line.text().is_empty());
             if !has_content {
+                let (title, start) = section.title();
                 issues.push(Issue::EmptySection {
                     location: Location {
                         file: doc.path.clone(),
                         line: section.line_number,
+                        start: 0,
+                        end: section.title_line.text().len() as u32,
                     },
-                    title: section.title().into(),
+                    title: title.into(),
                 });
             }
         }
@@ -46,6 +49,8 @@ content";
             location: Location {
                 file: PathBuf::from("test.md"),
                 line: 2,
+                start: 0,
+                end: 16,
             },
             title: "empty section".into(),
         }];
@@ -70,6 +75,8 @@ content";
             location: Location {
                 file: PathBuf::from("test.md"),
                 line: 2,
+                start: 0,
+                end: 16,
             },
             title: "empty section".into(),
         }];
