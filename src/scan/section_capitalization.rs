@@ -29,6 +29,8 @@ pub(crate) fn scan(base: &Tikibase) -> Vec<Issue> {
             .map(|variant| variant.title.clone())
             .collect();
         sorted.sort();
+        let mut variants = Vec::from_iter(variants);
+        variants.sort();
         for variant in variants {
             issues.push(Issue::MixCapSection {
                 variants: sorted.clone(),
@@ -39,7 +41,7 @@ pub(crate) fn scan(base: &Tikibase) -> Vec<Issue> {
     issues
 }
 
-#[derive(PartialEq, Eq, Hash)]
+#[derive(PartialEq, Eq, Hash, Ord, PartialOrd)]
 struct FileTitle {
     pos: Position,
     title: String,
@@ -83,13 +85,29 @@ content";
         test::create_file("2.md", content2, &dir);
         let base = Tikibase::load(dir, &Config::default()).unwrap();
         let have = super::scan(&base);
-        let want = vec![Issue::MixCapSection {
-            variants: vec!["ONE".into(), "One".into(), "one".into()],
-            pos: Position {
-                file: PathBuf::from("2.md"),
-                line: 1,
+        let want = vec![
+            Issue::MixCapSection {
+                variants: vec!["ONE".into(), "One".into(), "one".into()],
+                pos: Position {
+                    file: PathBuf::from("1.md"),
+                    line: 2,
+                },
             },
-        }];
+            Issue::MixCapSection {
+                pos: Position {
+                    file: PathBuf::from("1.md"),
+                    line: 5,
+                },
+                variants: vec!["ONE".into(), "One".into(), "one".into()],
+            },
+            Issue::MixCapSection {
+                pos: Position {
+                    file: PathBuf::from("2.md"),
+                    line: 2,
+                },
+                variants: vec!["ONE".into(), "One".into(), "one".into()],
+            },
+        ];
         pretty::assert_eq!(have, want);
     }
 }

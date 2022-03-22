@@ -47,7 +47,7 @@ content";
             vec![Issue::DuplicateSection {
                 pos: Position {
                     file: PathBuf::from("test.md"),
-                    line: 6
+                    line: 4
                 },
                 section_type: "One".into(),
             }]
