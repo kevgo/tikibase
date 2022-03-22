@@ -63,9 +63,9 @@ mod tests {
     use crate::{test, Config, Issue, Location, Tikibase};
 
     #[test]
-    fn process() {
+    fn missing_links() {
         let dir = test::tmp_dir();
-        test::create_file("1.md", "# One\n", &dir);
+        test::create_file("1.md", "# One\n\ntext\n", &dir);
         test::create_file("2.md", "# Two\n\n[one](1.md)\n", &dir);
         test::create_file("3.md", "# Three\n\n[one](1.md)\n", &dir);
         let base = Tikibase::load(dir, &Config::default()).unwrap();
@@ -81,7 +81,7 @@ mod tests {
             vec![Issue::MissingLinks {
                 location: Location {
                     file: "1.md".into(),
-                    line: 0
+                    line: 2
                 },
                 links: vec![
                     MissingLink {
