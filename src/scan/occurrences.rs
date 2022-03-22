@@ -1,6 +1,6 @@
 use crate::commands::MissingLink;
 use crate::database::DocLinks;
-use crate::{Issue, Tikibase};
+use crate::{Issue, Location, Tikibase};
 use ahash::AHashSet;
 use std::path::PathBuf;
 
@@ -27,8 +27,10 @@ pub(crate) fn scan(
             // no missing links --> done with this document
             if let Some(occurrences_section_line) = doc.occurrences_section_line {
                 issues.push(Issue::ObsoleteOccurrencesSection {
-                    file: doc.path.clone(),
-                    line: occurrences_section_line,
+                    location: Location {
+                        file: doc.path.clone(),
+                        line: occurrences_section_line,
+                    },
                 });
             }
             continue;
@@ -37,7 +39,10 @@ pub(crate) fn scan(
         // register missing occurrences
         missing_outgoing.sort();
         issues.push(Issue::MissingLinks {
-            file: doc.path.clone(),
+            location: Location {
+                file: doc.path.clone(),
+                line: doc.lines_count(),
+            },
             links: missing_outgoing
                 .into_iter()
                 .map(|path| base.get_doc(&path).unwrap())
@@ -55,12 +60,12 @@ pub(crate) fn scan(
 mod tests {
     use crate::commands::MissingLink;
     use crate::database::DocLinks;
-    use crate::{test, Config, Issue, Tikibase};
+    use crate::{test, Config, Issue, Location, Tikibase};
 
     #[test]
-    fn process() {
+    fn missing_links() {
         let dir = test::tmp_dir();
-        test::create_file("1.md", "# One\n", &dir);
+        test::create_file("1.md", "# One\n\ntext\n", &dir);
         test::create_file("2.md", "# Two\n\n[one](1.md)\n", &dir);
         test::create_file("3.md", "# Three\n\n[one](1.md)\n", &dir);
         let base = Tikibase::load(dir, &Config::default()).unwrap();
@@ -74,7 +79,10 @@ mod tests {
         pretty::assert_eq!(
             have,
             vec![Issue::MissingLinks {
-                file: "1.md".into(),
+                location: Location {
+                    file: "1.md".into(),
+                    line: 2
+                },
                 links: vec![
                     MissingLink {
                         path: "2.md".into(),
@@ -85,6 +93,25 @@ mod tests {
                         title: "Three".into()
                     }
                 ]
+            }]
+        );
+    }
+
+    #[test]
+    fn obsolete_occurrences() {
+        let dir = test::tmp_dir();
+        test::create_file("1.md", "# One\n\ntext\n### occurrences\n\n- foo", &dir);
+        let base = Tikibase::load(dir, &Config::default()).unwrap();
+        let outgoing_links = DocLinks::default();
+        let incoming_links = DocLinks::default();
+        let have = super::scan(&base, &incoming_links, &outgoing_links);
+        pretty::assert_eq!(
+            have,
+            vec![Issue::ObsoleteOccurrencesSection {
+                location: Location {
+                    file: "1.md".into(),
+                    line: 3
+                },
             }]
         );
     }

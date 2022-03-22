@@ -1,5 +1,5 @@
 use super::{section, Section};
-use crate::Issue;
+use crate::{Issue, Location};
 use ahash::AHashSet;
 use once_cell::sync::Lazy;
 use regex::Regex;
@@ -38,7 +38,7 @@ impl Document {
             if line.starts_with('#') && !inside_fence {
                 if let Some(section_builder) = section_builder {
                     let section = section_builder.result();
-                    if section.section_type() == "occurrences" {
+                    if section.title() == "occurrences" {
                         occurrences_section_line = Some(section.line_number);
                     } else {
                         sections.push(section);
@@ -53,12 +53,19 @@ impl Document {
             }
             match &mut section_builder {
                 Some(section_builder) => section_builder.add_line(line),
-                None => return Err(Issue::NoTitleSection { file: path }),
+                None => {
+                    return Err(Issue::NoTitleSection {
+                        location: Location {
+                            file: path,
+                            line: line_number as u32,
+                        },
+                    })
+                }
             }
         }
         if let Some(section_builder) = section_builder {
             let section = section_builder.result();
-            if section.section_type() == "occurrences" {
+            if section.title() == "occurrences" {
                 occurrences_section_line = Some(section.line_number);
             } else {
                 sections.push(section);
@@ -66,8 +73,10 @@ impl Document {
         }
         if inside_fence {
             return Err(Issue::UnclosedFence {
-                file: path,
-                line: (fence_line as u32) + 1,
+                location: Location {
+                    file: path,
+                    line: (fence_line as u32),
+                },
             });
         }
         let mut sections = sections.into_iter();
@@ -92,10 +101,10 @@ impl Document {
     }
 
     /// provides the section with the given title
-    pub fn section_with_title(&self, section_type: &str) -> Option<&Section> {
+    pub fn section_with_title(&self, title: &str) -> Option<&Section> {
         self.content_sections
             .iter()
-            .find(|section| section.section_type() == section_type)
+            .find(|section| section.title() == title)
     }
 
     /// provides the last section in this document
@@ -124,12 +133,9 @@ impl Document {
         }
     }
 
-    /// provides the section types in this document
-    pub fn section_types(&self) -> Vec<&str> {
-        self.content_sections
-            .iter()
-            .map(Section::section_type)
-            .collect()
+    /// provides the section titles in this document
+    pub fn section_titles(&self) -> Vec<&str> {
+        self.content_sections.iter().map(Section::title).collect()
     }
 
     /// provides all the sources that this document defines
@@ -152,7 +158,7 @@ impl Document {
         let mut result = AHashSet::new();
         let mut in_code_block = false;
         for section in self.sections() {
-            if section.section_type() == "occurrences" {
+            if section.title() == "occurrences" {
                 continue;
             }
             for (line_idx, line) in section.lines().enumerate() {
@@ -184,7 +190,7 @@ impl Document {
 
     /// provides the human-readable title of this document
     pub fn title(&self) -> &str {
-        self.title_section.section_type()
+        self.title_section.title()
     }
 }
 
@@ -226,7 +232,7 @@ mod tests {
     mod from_str {
         use super::super::Document;
         use crate::database::{Line, Section};
-        use crate::Issue;
+        use crate::{Issue, Location};
         use std::path::PathBuf;
 
         #[test]
@@ -257,7 +263,10 @@ content";
         fn missing_title() {
             let have = Document::from_str("one.md", "no title");
             let want = Err(Issue::NoTitleSection {
-                file: PathBuf::from("one.md"),
+                location: Location {
+                    file: PathBuf::from("one.md"),
+                    line: 0,
+                },
             });
             pretty::assert_eq!(have, want)
         }
@@ -300,8 +309,10 @@ text
 ";
             let have = Document::from_str("test.md", give);
             let want = Err(Issue::UnclosedFence {
-                file: PathBuf::from("test.md"),
-                line: 2,
+                location: Location {
+                    file: PathBuf::from("test.md"),
+                    line: 1,
+                },
             });
             pretty::assert_eq!(have, want)
         }
@@ -413,7 +424,7 @@ title text
     }
 
     #[test]
-    fn section_types() {
+    fn section_titles() {
         let content = "\
 # Title
 title text
@@ -423,7 +434,7 @@ two
 foo
 ";
         let doc = Document::from_str("test.md", content).unwrap();
-        let have = doc.section_types();
+        let have = doc.section_titles();
         let want = vec!["Section 1".to_string(), "Section 2".to_string()];
         assert_eq!(have, want);
     }

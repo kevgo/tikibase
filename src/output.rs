@@ -1,56 +1,45 @@
 //! Tooling for outputting the results of lint operations in text/JSON format.
 
-use crate::{Fix, Issue, Outcome};
+use crate::{Fix, Issue, Location, Outcome};
 use serde::Serialize;
 use std::borrow::Cow;
 
 /// human-readable summary of running a single command
 #[derive(Debug, PartialEq, Serialize)]
 pub struct Message {
-    pub file: Option<String>,
-    pub line: Option<u32>,
+    pub location: Location,
     pub text: String,
 }
 
 impl Message {
     /// provides the CLI text format for this Message
     pub fn to_text(&self) -> String {
-        match (&self.file, self.line) {
-            (Some(file), Some(line)) => {
-                format!("{}:{}  {}", file, line + 1, self.text)
-            }
-            (Some(file), None) => format!("{}  {}", file, self.text),
-            (None, None) => self.text.clone(),
-            (None, Some(_line)) => panic!("should never get just a line without a file"),
-        }
+        format!(
+            "{}:{}  {}",
+            self.location.file.to_string_lossy(),
+            self.location.line + 1,
+            self.text
+        )
     }
 
     /// provides a Message instance summarizing the given Fix
     pub fn from_fix(fix: Fix) -> Message {
         match fix {
-            Fix::RemovedEmptySection {
-                section_type,
-                file,
-                line,
-            } => Message {
-                text: format!("removed empty section \"{}\"", section_type),
-                file: Some(file.to_string_lossy().to_string()),
-                line: Some(line),
+            Fix::RemovedEmptySection { title, location } => Message {
+                text: format!("removed empty section \"{}\"", title),
+                location,
             },
-            Fix::AddedOccurrencesSection { file, line } => Message {
+            Fix::AddedOccurrencesSection { location } => Message {
                 text: "added occurrences section".into(),
-                file: Some(file.to_string_lossy().to_string()),
-                line: Some(line),
+                location,
             },
-            Fix::RemovedObsoleteOccurrencesSection { file, line } => Message {
+            Fix::RemovedObsoleteOccurrencesSection { location } => Message {
                 text: "removed obsolete occurrences section".into(),
-                file: Some(file.to_string_lossy().to_string()),
-                line: Some(line),
+                location,
             },
-            Fix::SortedSections { file } => Message {
+            Fix::SortedSections { location } => Message {
                 text: "fixed section order".into(),
-                file: Some(file.to_string_lossy().to_string()),
-                line: None,
+                location,
             },
         }
     }
@@ -58,108 +47,88 @@ impl Message {
     /// provides a Message instance summarizing the given Issue
     pub fn from_issue(issue: Issue) -> Message {
         match issue {
-            Issue::BrokenImage { file, line, target } => Message {
+            Issue::BrokenImage { location, target } => Message {
                 text: format!("image link to non-existing file \"{}\"", target),
-                file: Some(file.to_string_lossy().to_string()),
-                line: Some(line),
+                location,
             },
-            Issue::BrokenLink { file, line, target } => Message {
+            Issue::BrokenLink { location, target } => Message {
                 text: format!("link to non-existing file \"{}\"", target),
-                file: Some(file.to_string_lossy().to_string()),
-                line: Some(line),
+                location,
             },
-            Issue::CannotReadConfigurationFile { message } => Message {
+            Issue::CannotReadConfigurationFile { location, message } => Message {
                 text: format!(
-                    "cannot read configuration file \"tikibase.json\": {}",
+                    "cannot read configuration file \"{}\": {}",
+                    location.file.to_string_lossy(),
                     message
                 ),
-                file: None,
-                line: None,
+                location,
             },
-            Issue::DuplicateSection { file, section_type } => Message {
-                text: format!("document contains multiple \"{}\" sections", section_type),
-                file: Some(file.to_string_lossy().to_string()),
-                line: None,
+            Issue::DuplicateSection { location, title } => Message {
+                text: format!("document contains multiple \"{}\" sections", title),
+                location,
             },
-            Issue::EmptySection {
-                file,
-                line,
-                section_type,
-            } => Message {
-                text: format!("section \"{}\" has no content", section_type),
-                file: Some(file.to_string_lossy().to_string()),
-                line: Some(line),
+            Issue::EmptySection { location, title } => Message {
+                text: format!("section \"{}\" has no content", title),
+                location,
             },
-            Issue::InvalidConfigurationFile { message } => Message {
+            Issue::InvalidConfigurationFile { location, message } => Message {
                 text: format!(
                     "tikibase.json  invalid configuration file structure: {}",
                     message
                 ),
-                file: None,
-                line: None,
+                location,
             },
-            Issue::LinkToSameDocument { file, line } => Message {
+            Issue::LinkToSameDocument { location } => Message {
                 text: "document contains link to itself".into(),
-                file: Some(file.to_string_lossy().to_string()),
-                line: Some(line),
+                location,
             },
-            Issue::LinkWithoutDestination { file, line } => Message {
+            Issue::LinkWithoutDestination { location } => Message {
                 text: "link without destination".into(),
-                file: Some(file.to_string_lossy().to_string()),
-                line: Some(line),
+                location,
             },
-            Issue::MissingLinks { file, links } => {
+            Issue::MissingLinks { location, links } => {
                 let links: Vec<Cow<str>> =
                     links.iter().map(|ml| ml.path.to_string_lossy()).collect();
                 Message {
                     text: format!("missing link to {}", links.join(", ")),
-                    file: Some(file.to_string_lossy().to_string()),
-                    line: None,
+                    location,
                 }
             }
-            Issue::MissingSource { file, line, index } => Message {
+            Issue::MissingSource { location, index } => Message {
                 text: format!("source [{}] doesn't exist", index),
-                file: Some(file.to_string_lossy().to_string()),
-                line: Some(line),
+                location,
             },
-            Issue::MixCapSection { variants } => Message {
+            Issue::MixCapSection { location, variants } => Message {
                 text: format!(
                     "section title occurs with inconsistent capitalization: {}",
                     variants.join("|")
                 ),
-                file: None,
-                line: None,
+                location,
             },
-            Issue::NoTitleSection { file } => Message {
+            Issue::NoTitleSection { location } => Message {
                 text: "no title section".into(),
-                file: Some(file.to_string_lossy().to_string()),
-                line: None,
+                location,
             },
-            Issue::ObsoleteOccurrencesSection { file, line } => Message {
+            Issue::ObsoleteOccurrencesSection { location } => Message {
                 text: "obsolete \"occurrences\" section".into(),
-                file: Some(file.to_string_lossy().to_string()),
-                line: Some(line),
+                location,
             },
-            Issue::OrphanedResource { path } => Message {
+            Issue::OrphanedResource { location } => Message {
                 text: "file isn't linked to".into(),
-                file: Some(path),
-                line: None,
+                location,
             },
-            Issue::SectionWithoutHeader { file, line } => Message {
+            Issue::SectionWithoutHeader { location } => Message {
                 text: "section with empty title".into(),
-                file: Some(file.to_string_lossy().to_string()),
-                line: Some(line),
+                location,
             },
-            Issue::UnclosedFence { file, line } => Message {
+            Issue::UnclosedFence { location } => Message {
                 text: "unclosed fence".into(),
-                file: Some(file.to_string_lossy().to_string()),
-                line: Some(line),
+                location,
             },
             Issue::UnknownSection {
-                file,
-                line,
-                section_type,
-                allowed_types,
+                location,
+                title,
+                allowed_titles: allowed_types,
             } => {
                 let alloweds: Vec<String> = allowed_types
                     .iter()
@@ -168,17 +137,15 @@ impl Message {
                 Message {
                     text: format!(
                         "section \"{}\" isn't listed in tikibase.json, allowed sections:{}",
-                        section_type,
+                        title,
                         alloweds.join("")
                     ),
-                    file: Some(file.to_string_lossy().to_string()),
-                    line: Some(line),
+                    location,
                 }
             }
-            Issue::UnorderedSections { file } => Message {
+            Issue::UnorderedSections { location } => Message {
                 text: "sections occur in different order than specified by tikibase.json".into(),
-                file: Some(file.to_string_lossy().to_string()),
-                line: None,
+                location,
             },
         }
     }

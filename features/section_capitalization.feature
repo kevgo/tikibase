@@ -26,7 +26,9 @@ Feature: recognize sections with different capitalization
     When checking
     Then it prints:
       """
-      section title occurs with inconsistent capitalization: ONE|One|one
+      1.md:3  section title occurs with inconsistent capitalization: ONE|One|one
+      1.md:7  section title occurs with inconsistent capitalization: ONE|One|one
+      2.md:3  section title occurs with inconsistent capitalization: ONE|One|one
       """
     And all files are unchanged
 
@@ -39,6 +41,8 @@ Feature: recognize sections with different capitalization
     When doing a pitstop
     Then it prints:
       """
-      section title occurs with inconsistent capitalization: ONE|One|one
+      1.md:3  section title occurs with inconsistent capitalization: ONE|One|one
+      1.md:7  section title occurs with inconsistent capitalization: ONE|One|one
+      2.md:3  section title occurs with inconsistent capitalization: ONE|One|one
       """
     And all files are unchanged

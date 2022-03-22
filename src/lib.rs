@@ -7,7 +7,7 @@ mod output;
 mod scan;
 pub mod test;
 
-pub use commands::{Issue, Outcome};
+pub use commands::{Issue, Location, Outcome};
 pub use config::Config;
 use database::Tikibase;
 pub use fix::Fix;

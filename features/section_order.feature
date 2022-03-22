@@ -29,7 +29,7 @@ Feature: verify the ordering of content sections
     When checking
     Then it prints:
       """
-      test.md  sections occur in different order than specified by tikibase.json
+      test.md:1  sections occur in different order than specified by tikibase.json
       """
     And the exit code is 1
 
@@ -37,7 +37,7 @@ Feature: verify the ordering of content sections
     When fixing
     Then it prints:
       """
-      test.md  fixed section order
+      test.md:1  fixed section order
       """
     And file "test.md" should contain:
       """
@@ -58,7 +58,7 @@ Feature: verify the ordering of content sections
     When doing a pitstop
     Then it prints:
       """
-      test.md  fixed section order
+      test.md:1  fixed section order
       """
     And file "test.md" should contain:
       """
