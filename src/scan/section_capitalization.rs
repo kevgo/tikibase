@@ -1,5 +1,6 @@
 use crate::{Issue, Location, Tikibase};
 use ahash::{AHashMap, AHashSet};
+use std::path::Path;
 
 pub(crate) fn scan(base: &Tikibase) -> Vec<Issue> {
     // registers variants of section titles: normalized title --> Vec<sections with a variation of this title>
@@ -12,10 +13,8 @@ pub(crate) fn scan(base: &Tikibase) -> Vec<Issue> {
                 .or_insert_with(Vec::new)
                 .push(FileSection {
                     title: section_type,
-                    location: Location {
-                        file: doc.path.clone(),
-                        line: section.line_number,
-                    },
+                    file: &doc.path,
+                    line: section.line_number,
                 });
         }
     }
@@ -32,17 +31,31 @@ pub(crate) fn scan(base: &Tikibase) -> Vec<Issue> {
         for file_section in file_sections {
             issues.push(Issue::MixCapSection {
                 variants: variants.clone(),
-                location: file_section.location,
+                location: Location {
+                    file: file_section.file.into(),
+                    line: file_section.line,
+                },
             });
         }
     }
     issues
 }
 
-#[derive(Default, Eq, Hash, Ord, PartialEq, PartialOrd)]
+#[derive(Eq, Hash, Ord, PartialEq, PartialOrd)]
 pub struct FileSection<'a> {
-    pub location: Location,
+    pub file: &'a Path,
+    pub line: u32,
     pub title: &'a str,
+}
+
+impl Default for FileSection<'_> {
+    fn default() -> Self {
+        Self {
+            file: Path::new(""),
+            line: 0,
+            title: "",
+        }
+    }
 }
 
 fn variants_count(file_sections: &[FileSection]) -> usize {
