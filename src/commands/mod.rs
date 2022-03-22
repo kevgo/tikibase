@@ -29,72 +29,72 @@ pub struct Outcome {
 #[derive(Clone, Debug, PartialEq)]
 pub enum Issue {
     BrokenImage {
-        pos: Position,
+        location: Location,
         target: String,
     },
     BrokenLink {
-        pos: Position,
+        location: Location,
         target: String,
     },
     CannotReadConfigurationFile {
+        location: Location,
         message: String,
-        pos: Position,
     },
     DuplicateSection {
-        pos: Position,
+        location: Location,
         section_type: String,
     },
     EmptySection {
-        pos: Position,
+        location: Location,
         section_type: String,
     },
     InvalidConfigurationFile {
+        location: Location,
         message: String,
-        pos: Position,
     },
     LinkToSameDocument {
-        pos: Position,
+        location: Location,
     },
     LinkWithoutDestination {
-        pos: Position,
+        location: Location,
     },
     MissingLinks {
-        pos: Position,
+        location: Location,
         links: Vec<MissingLink>,
     },
     MissingSource {
-        pos: Position,
+        location: Location,
         index: String,
     },
     MixCapSection {
-        pos: Position,
+        location: Location,
         variants: Vec<String>,
     },
     NoTitleSection {
-        pos: Position,
+        location: Location,
     },
     ObsoleteOccurrencesSection {
-        pos: Position,
+        location: Location,
     },
     OrphanedResource {
         // This is a String and not a Path because we need a String (to print it),
         // and we already converted the Path of this orphaned resource into a String
         // during processing it.
-        pos: Position,
+        location: Location,
     },
     SectionWithoutHeader {
-        pos: Position,
+        location: Location,
     },
     UnclosedFence {
-        pos: Position,
+        location: Location,
     },
     UnknownSection {
-        pos: Position,
+        location: Location,
         section_type: String,
         allowed_types: Vec<String>,
     },
     UnorderedSections {
-        pos: Position,
+        location: Location,
     },
 }
 
@@ -107,7 +107,7 @@ pub struct MissingLink {
 
 /// the position of an issue or fix
 #[derive(Clone, Debug, Default, Eq, Hash, Ord, PartialOrd, PartialEq, Serialize)]
-pub struct Position {
+pub struct Location {
     pub file: PathBuf,
     pub line: u32,
 }

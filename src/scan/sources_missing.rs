@@ -1,4 +1,4 @@
-use crate::{Issue, Position, Tikibase};
+use crate::{Issue, Location, Tikibase};
 
 pub(crate) fn scan(base: &Tikibase) -> Vec<Issue> {
     let mut issues = Vec::<Issue>::new();
@@ -8,7 +8,7 @@ pub(crate) fn scan(base: &Tikibase) -> Vec<Issue> {
         for used_source in used_sources {
             if !defined_source_ids.contains(&used_source.index) {
                 issues.push(Issue::MissingSource {
-                    pos: Position {
+                    location: Location {
                         file: doc.path.clone(),
                         line: used_source.line,
                     },

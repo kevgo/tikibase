@@ -1,4 +1,4 @@
-use crate::{Issue, Position, Tikibase};
+use crate::{Issue, Location, Tikibase};
 use ahash::{AHashMap, AHashSet};
 
 pub(crate) fn scan(base: &Tikibase) -> Vec<Issue> {
@@ -12,7 +12,7 @@ pub(crate) fn scan(base: &Tikibase) -> Vec<Issue> {
                 .or_insert_with(Vec::new)
                 .push(FileSection {
                     title: section_type.into(),
-                    pos: Position {
+                    location: Location {
                         file: doc.path.clone(),
                         line: section.line_number,
                     },
@@ -32,7 +32,7 @@ pub(crate) fn scan(base: &Tikibase) -> Vec<Issue> {
         for file_section in file_sections {
             issues.push(Issue::MixCapSection {
                 variants: variants.clone(),
-                pos: file_section.pos,
+                location: file_section.location,
             });
         }
     }
@@ -41,7 +41,7 @@ pub(crate) fn scan(base: &Tikibase) -> Vec<Issue> {
 
 #[derive(Default, Eq, Hash, Ord, PartialEq, PartialOrd)]
 pub struct FileSection {
-    pub pos: Position,
+    pub location: Location,
     pub title: String,
 }
 
@@ -56,7 +56,7 @@ fn normalize(section_type: &str) -> String {
 }
 #[cfg(test)]
 mod tests {
-    use crate::{test, Config, Issue, Position, Tikibase};
+    use crate::{test, Config, Issue, Location, Tikibase};
     use std::path::PathBuf;
 
     use super::FileSection;
@@ -91,20 +91,20 @@ content";
         let want = vec![
             Issue::MixCapSection {
                 variants: vec!["ONE".into(), "One".into(), "one".into()],
-                pos: Position {
+                location: Location {
                     file: PathBuf::from("1.md"),
                     line: 2,
                 },
             },
             Issue::MixCapSection {
-                pos: Position {
+                location: Location {
                     file: PathBuf::from("1.md"),
                     line: 5,
                 },
                 variants: vec!["ONE".into(), "One".into(), "one".into()],
             },
             Issue::MixCapSection {
-                pos: Position {
+                location: Location {
                     file: PathBuf::from("2.md"),
                     line: 2,
                 },

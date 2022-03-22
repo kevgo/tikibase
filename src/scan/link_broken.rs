@@ -1,5 +1,5 @@
 use crate::database::{DocLinks, Reference, Tikibase};
-use crate::{Issue, Position};
+use crate::{Issue, Location};
 
 pub(crate) struct LinksResult {
     pub issues: Vec<Issue>,
@@ -30,7 +30,7 @@ pub(crate) fn scan(base: &Tikibase) -> LinksResult {
                         Reference::Link { mut destination } => {
                             if destination.is_empty() {
                                 result.issues.push(Issue::LinkWithoutDestination {
-                                    pos: Position {
+                                    location: Location {
                                         file: doc.path.clone(),
                                         line: section.line_number + (i as u32),
                                     },
@@ -44,7 +44,7 @@ pub(crate) fn scan(base: &Tikibase) -> LinksResult {
                             make_link_anchor(&mut destination);
                             if !existing_targets.contains(&destination) {
                                 result.issues.push(Issue::BrokenLink {
-                                    pos: Position {
+                                    location: Location {
                                         file: doc.path.clone(),
                                         line: section.line_number + (i as u32),
                                     },
@@ -54,7 +54,7 @@ pub(crate) fn scan(base: &Tikibase) -> LinksResult {
                             }
                             if destination == doc.path.to_string_lossy() {
                                 result.issues.push(Issue::LinkToSameDocument {
-                                    pos: Position {
+                                    location: Location {
                                         file: doc.path.clone(),
                                         line: section.line_number + (i as u32),
                                     },
@@ -72,7 +72,7 @@ pub(crate) fn scan(base: &Tikibase) -> LinksResult {
                             }
                             if !base.has_resource(&src) {
                                 result.issues.push(Issue::BrokenImage {
-                                    pos: Position {
+                                    location: Location {
                                         file: doc.path.clone(),
                                         line: section.line_number + (i as u32),
                                     },
@@ -116,7 +116,7 @@ mod tests {
 
     mod process {
         use super::super::scan;
-        use crate::{test, Config, Issue, Position, Tikibase};
+        use crate::{test, Config, Issue, Location, Tikibase};
         use std::path::PathBuf;
 
         #[test]
@@ -128,7 +128,7 @@ mod tests {
             pretty::assert_eq!(
                 have.issues,
                 vec![Issue::BrokenLink {
-                    pos: Position {
+                    location: Location {
                         file: "one.md".into(),
                         line: 2,
                     },
@@ -182,7 +182,7 @@ Here is a link to [Three](3.md) that also works.
             pretty::assert_eq!(
                 have.issues,
                 vec![Issue::LinkWithoutDestination {
-                    pos: Position {
+                    location: Location {
                         file: "one.md".into(),
                         line: 2
                     }
@@ -235,7 +235,7 @@ Here is a link to [Three](3.md) that also works.
             pretty::assert_eq!(
                 have.issues,
                 vec![Issue::BrokenImage {
-                    pos: Position {
+                    location: Location {
                         file: "1.md".into(),
                         line: 2,
                     },

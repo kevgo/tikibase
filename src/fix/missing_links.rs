@@ -1,14 +1,14 @@
 use super::Fix;
 use crate::commands::MissingLink;
 use crate::database::{section, Tikibase};
-use crate::Position;
+use crate::Location;
 use once_cell::sync::Lazy;
 use regex::{Captures, Regex};
 use std::borrow::Cow;
 
-pub fn add_occurrences(base: &mut Tikibase, pos: Position, links: Vec<MissingLink>) -> Fix {
+pub fn add_occurrences(base: &mut Tikibase, location: Location, links: Vec<MissingLink>) -> Fix {
     let base_dir = base.dir.clone();
-    let doc = base.get_doc_mut(&pos.file).unwrap();
+    let doc = base.get_doc_mut(&location.file).unwrap();
 
     // append a newline to the section before
     doc.last_section_mut().push_line("");
@@ -28,8 +28,8 @@ pub fn add_occurrences(base: &mut Tikibase, pos: Position, links: Vec<MissingLin
     doc.content_sections.push(occurrences_section);
     doc.save(&base_dir);
     Fix::AddedOccurrencesSection {
-        pos: Position {
-            file: pos.file,
+        location: Location {
+            file: location.file,
             line,
         },
     }

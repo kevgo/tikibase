@@ -1,4 +1,4 @@
-use crate::{Issue, Position, Tikibase};
+use crate::{Issue, Location, Tikibase};
 use ahash::AHashMap;
 
 /// finds all duplicate sections in the given Tikibase
@@ -17,7 +17,7 @@ pub(crate) fn scan(base: &Tikibase) -> Vec<Issue> {
             if section_lines.len() > 1 {
                 for line in section_lines {
                     issues.push(Issue::DuplicateSection {
-                        pos: Position {
+                        location: Location {
                             file: doc.path.clone(),
                             line,
                         },
@@ -33,7 +33,7 @@ pub(crate) fn scan(base: &Tikibase) -> Vec<Issue> {
 #[cfg(test)]
 mod tests {
     use super::scan;
-    use crate::{test, Config, Issue, Position, Tikibase};
+    use crate::{test, Config, Issue, Location, Tikibase};
     use std::path::PathBuf;
 
     #[test]
@@ -53,14 +53,14 @@ content";
             have,
             vec![
                 Issue::DuplicateSection {
-                    pos: Position {
+                    location: Location {
                         file: PathBuf::from("test.md"),
                         line: 2
                     },
                     section_type: "One".into(),
                 },
                 Issue::DuplicateSection {
-                    pos: Position {
+                    location: Location {
                         file: PathBuf::from("test.md"),
                         line: 4
                     },

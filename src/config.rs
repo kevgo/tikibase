@@ -1,4 +1,4 @@
-use crate::{Issue, Position};
+use crate::{Issue, Location};
 use serde::Deserialize;
 use std::fs::File;
 use std::io::ErrorKind;
@@ -24,7 +24,7 @@ pub fn load<P: AsRef<Path>>(dir: P) -> Result<Config, Issue> {
             _ => {
                 return Err(Issue::CannotReadConfigurationFile {
                     message: e.to_string(),
-                    pos: Position {
+                    location: Location {
                         file: PathBuf::from("tikibase.json"),
                         line: 0,
                     },
@@ -34,7 +34,7 @@ pub fn load<P: AsRef<Path>>(dir: P) -> Result<Config, Issue> {
     };
     serde_json::from_reader(file).map_err(|e: serde_json::Error| Issue::InvalidConfigurationFile {
         message: e.to_string(),
-        pos: Position {
+        location: Location {
             file: PathBuf::from("tikibase.json"),
             line: e.line() as u32,
         },
@@ -46,7 +46,7 @@ mod tests {
 
     mod load {
         use super::super::{load, Config};
-        use crate::{test, Issue, Position};
+        use crate::{test, Issue, Location};
         use std::path::PathBuf;
 
         #[test]
@@ -99,7 +99,7 @@ mod tests {
             let have = load(&dir);
             let want = Err(Issue::InvalidConfigurationFile {
                 message: "expected value at line 3 column 1".into(),
-                pos: Position {
+                location: Location {
                     file: PathBuf::from("tikibase.json"),
                     line: 3,
                 },

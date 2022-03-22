@@ -1,6 +1,6 @@
 use crate::commands::MissingLink;
 use crate::database::DocLinks;
-use crate::{Issue, Position, Tikibase};
+use crate::{Issue, Location, Tikibase};
 use ahash::AHashSet;
 use std::path::PathBuf;
 
@@ -27,7 +27,7 @@ pub(crate) fn scan(
             // no missing links --> done with this document
             if let Some(occurrences_section_line) = doc.occurrences_section_line {
                 issues.push(Issue::ObsoleteOccurrencesSection {
-                    pos: Position {
+                    location: Location {
                         file: doc.path.clone(),
                         line: occurrences_section_line,
                     },
@@ -39,7 +39,7 @@ pub(crate) fn scan(
         // register missing occurrences
         missing_outgoing.sort();
         issues.push(Issue::MissingLinks {
-            pos: Position {
+            location: Location {
                 file: doc.path.clone(),
                 line: doc.lines_count(),
             },
@@ -60,7 +60,7 @@ pub(crate) fn scan(
 mod tests {
     use crate::commands::MissingLink;
     use crate::database::DocLinks;
-    use crate::{test, Config, Issue, Position, Tikibase};
+    use crate::{test, Config, Issue, Location, Tikibase};
 
     #[test]
     fn process() {
@@ -79,7 +79,7 @@ mod tests {
         pretty::assert_eq!(
             have,
             vec![Issue::MissingLinks {
-                pos: Position {
+                location: Location {
                     file: "1.md".into(),
                     line: 0
                 },

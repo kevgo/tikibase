@@ -5,47 +5,67 @@ mod missing_links;
 mod obsolete_occurrences_section;
 mod unordered_sections;
 
-use crate::{Config, Issue, Position, Tikibase};
+use crate::{Config, Issue, Location, Tikibase};
 
 /// fixes the given Issue
 pub fn fix(issue: Issue, base: &mut Tikibase, config: &Config) -> Option<Fix> {
     match issue {
-        Issue::BrokenImage { pos: _, target: _ } => None,
-        Issue::BrokenLink { pos: _, target: _ } => None,
-        Issue::CannotReadConfigurationFile { message: _, pos: _ } => None,
+        Issue::BrokenImage {
+            location: _,
+            target: _,
+        } => None,
+        Issue::BrokenLink {
+            location: _,
+            target: _,
+        } => None,
+        Issue::CannotReadConfigurationFile {
+            message: _,
+            location: _,
+        } => None,
         Issue::DuplicateSection {
-            pos: _,
+            location: _,
             section_type: _,
         } => None,
-        Issue::EmptySection { pos, section_type } => {
-            Some(empty_section::remove_empty_section(base, section_type, pos))
+        Issue::EmptySection {
+            location,
+            section_type,
+        } => Some(empty_section::remove_empty_section(
+            base,
+            section_type,
+            location,
+        )),
+        Issue::InvalidConfigurationFile {
+            message: _,
+            location: _,
+        } => None,
+        Issue::LinkToSameDocument { location: _ } => None,
+        Issue::LinkWithoutDestination { location: _ } => None,
+        Issue::MissingLinks { location, links } => {
+            Some(missing_links::add_occurrences(base, location, links))
         }
-        Issue::InvalidConfigurationFile { message: _, pos: _ } => None,
-        Issue::LinkToSameDocument { pos: _ } => None,
-        Issue::LinkWithoutDestination { pos: _ } => None,
-        Issue::MissingLinks { pos, links } => {
-            Some(missing_links::add_occurrences(base, pos, links))
-        }
-        Issue::MissingSource { pos: _, index: _ } => None,
+        Issue::MissingSource {
+            location: _,
+            index: _,
+        } => None,
         Issue::MixCapSection {
             variants: _,
-            pos: _,
+            location: _,
         } => None,
-        Issue::NoTitleSection { pos: _ } => None,
-        Issue::ObsoleteOccurrencesSection { pos } => Some(
-            obsolete_occurrences_section::remove_occurrences_section(base, pos),
+        Issue::NoTitleSection { location: _ } => None,
+        Issue::ObsoleteOccurrencesSection { location } => Some(
+            obsolete_occurrences_section::remove_occurrences_section(base, location),
         ),
-        Issue::OrphanedResource { pos: _ } => None,
-        Issue::SectionWithoutHeader { pos: _ } => None,
-        Issue::UnclosedFence { pos: _ } => None,
+        Issue::OrphanedResource { location: _ } => None,
+        Issue::SectionWithoutHeader { location: _ } => None,
+        Issue::UnclosedFence { location: _ } => None,
         Issue::UnknownSection {
-            pos: _,
+            location: _,
             section_type: _,
             allowed_types: _,
         } => None,
-        Issue::UnorderedSections { pos } => Some(unordered_sections::sort_sections(
+        Issue::UnorderedSections { location } => Some(unordered_sections::sort_sections(
             base,
-            pos,
+            location,
             config.sections.as_ref().unwrap(),
         )),
     }
@@ -53,8 +73,17 @@ pub fn fix(issue: Issue, base: &mut Tikibase, config: &Config) -> Option<Fix> {
 
 /// documents the fixes that this linter performs
 pub enum Fix {
-    AddedOccurrencesSection { pos: Position },
-    RemovedEmptySection { section_type: String, pos: Position },
-    RemovedObsoleteOccurrencesSection { pos: Position },
-    SortedSections { pos: Position },
+    AddedOccurrencesSection {
+        location: Location,
+    },
+    RemovedEmptySection {
+        section_type: String,
+        location: Location,
+    },
+    RemovedObsoleteOccurrencesSection {
+        location: Location,
+    },
+    SortedSections {
+        location: Location,
+    },
 }

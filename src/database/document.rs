@@ -1,5 +1,5 @@
 use super::{section, Section};
-use crate::{Issue, Position};
+use crate::{Issue, Location};
 use ahash::AHashSet;
 use once_cell::sync::Lazy;
 use regex::Regex;
@@ -55,7 +55,7 @@ impl Document {
                 Some(section_builder) => section_builder.add_line(line),
                 None => {
                     return Err(Issue::NoTitleSection {
-                        pos: Position {
+                        location: Location {
                             file: path,
                             line: line_number as u32,
                         },
@@ -73,7 +73,7 @@ impl Document {
         }
         if inside_fence {
             return Err(Issue::UnclosedFence {
-                pos: Position {
+                location: Location {
                     file: path,
                     line: (fence_line as u32),
                 },
@@ -235,7 +235,7 @@ mod tests {
     mod from_str {
         use super::super::Document;
         use crate::database::{Line, Section};
-        use crate::{Issue, Position};
+        use crate::{Issue, Location};
         use std::path::PathBuf;
 
         #[test]
@@ -266,7 +266,7 @@ content";
         fn missing_title() {
             let have = Document::from_str("one.md", "no title");
             let want = Err(Issue::NoTitleSection {
-                pos: Position {
+                location: Location {
                     file: PathBuf::from("one.md"),
                     line: 0,
                 },
@@ -312,7 +312,7 @@ text
 ";
             let have = Document::from_str("test.md", give);
             let want = Err(Issue::UnclosedFence {
-                pos: Position {
+                location: Location {
                     file: PathBuf::from("test.md"),
                     line: 1,
                 },
