@@ -46,9 +46,7 @@ mod tests {
 
     mod load {
         use super::super::{load, Config};
-        use crate::test;
-        use crate::Issue;
-        use crate::Position;
+        use crate::{test, Issue, Position};
         use std::path::PathBuf;
 
         #[test]
