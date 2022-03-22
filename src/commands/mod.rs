@@ -105,7 +105,7 @@ pub struct MissingLink {
     pub title: String,
 }
 
-/// a position within a file
+/// the position of an issue or fix
 #[derive(Clone, Debug, Default, Eq, Hash, Ord, PartialOrd, PartialEq, Serialize)]
 pub struct Position {
     pub file: PathBuf,
