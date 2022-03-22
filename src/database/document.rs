@@ -75,7 +75,7 @@ impl Document {
             return Err(Issue::UnclosedFence {
                 pos: Position {
                     file: path,
-                    line: (fence_line as u32) + 1,
+                    line: (fence_line as u32),
                 },
             });
         }
@@ -314,7 +314,7 @@ text
             let want = Err(Issue::UnclosedFence {
                 pos: Position {
                     file: PathBuf::from("test.md"),
-                    line: 2,
+                    line: 1,
                 },
             });
             pretty::assert_eq!(have, want)
