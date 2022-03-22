@@ -6,10 +6,10 @@ pub(crate) fn scan(base: &Tikibase) -> Vec<Issue> {
     let mut issues = Vec::new();
     for doc in &base.docs {
         // section title -> [lines with this section]
-        let mut sections_lines: AHashMap<String, Vec<u32>> = AHashMap::new();
+        let mut sections_lines: AHashMap<&str, Vec<u32>> = AHashMap::new();
         for section in doc.sections() {
             sections_lines
-                .entry(section.section_type().into())
+                .entry(section.section_type())
                 .or_insert_with(Vec::new)
                 .push(section.line_number)
         }
@@ -21,7 +21,7 @@ pub(crate) fn scan(base: &Tikibase) -> Vec<Issue> {
                             file: doc.path.clone(),
                             line,
                         },
-                        section_type: section_type.to_string(),
+                        section_type: section_type.into(),
                     });
                 }
             }
