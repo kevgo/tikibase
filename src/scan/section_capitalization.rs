@@ -69,10 +69,9 @@ fn normalize(section_type: &str) -> String {
 }
 #[cfg(test)]
 mod tests {
+    use super::FileSection;
     use crate::{test, Config, Issue, Location, Tikibase};
     use std::path::PathBuf;
-
-    use super::FileSection;
 
     #[test]
     fn normalize() {
