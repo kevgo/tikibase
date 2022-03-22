@@ -25,7 +25,7 @@ pub(crate) fn scan(base: &Tikibase) -> Vec<Issue> {
         }
         let mut variants: Vec<String> = file_sections
             .iter()
-            .map(|variant| variant.title.to_string())
+            .map(|variant| variant.title.into())
             .collect();
         variants.sort();
         for file_section in file_sections {
