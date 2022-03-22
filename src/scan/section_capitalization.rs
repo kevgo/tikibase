@@ -5,7 +5,7 @@ pub(crate) fn scan(base: &Tikibase) -> Vec<Issue> {
     // registers variants of section titles: normalized title --> Vec<existing titles>
     let mut title_variants: AHashMap<String, Vec<FileSection>> = AHashMap::new();
     for doc in &base.docs {
-        for section in &doc.content_sections {
+        for section in doc.sections() {
             let section_type = section.section_type();
             title_variants
                 .entry(normalize(section_type))
@@ -40,9 +40,9 @@ pub(crate) fn scan(base: &Tikibase) -> Vec<Issue> {
 }
 
 #[derive(Default, Eq, Hash, Ord, PartialEq, PartialOrd)]
-struct FileSection {
-    pos: Position,
-    title: String,
+pub struct FileSection {
+    pub pos: Position,
+    pub title: String,
 }
 
 fn variants_count(file_sections: &[FileSection]) -> usize {
