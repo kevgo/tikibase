@@ -1,4 +1,4 @@
-use super::{section, Section};
+use super::{section, Line, Section};
 use crate::{Issue, Location};
 use ahash::AHashSet;
 use once_cell::sync::Lazy;
@@ -58,6 +58,8 @@ impl Document {
                         location: Location {
                             file: path,
                             line: line_number as u32,
+                            start: 0,
+                            end: line.len() as u32,
                         },
                     })
                 }
@@ -76,6 +78,8 @@ impl Document {
                 location: Location {
                     file: path,
                     line: (fence_line as u32),
+                    start: 0,
+                    end: lines.last().unwrap().len() as u32,
                 },
             });
         }
@@ -105,6 +109,17 @@ impl Document {
         self.content_sections
             .iter()
             .find(|section| section.title() == title)
+    }
+
+    pub fn last_line(&self) -> Option<&Line> {
+        self.last_section().body.last()
+    }
+
+    pub fn last_section(&self) -> &Section {
+        self.content_sections
+            .last()
+            .or(Some(&self.title_section))
+            .unwrap()
     }
 
     /// provides the last section in this document
@@ -266,6 +281,8 @@ content";
                 location: Location {
                     file: PathBuf::from("one.md"),
                     line: 0,
+                    start: 0,
+                    end: 1,
                 },
             });
             pretty::assert_eq!(have, want)
@@ -312,6 +329,8 @@ text
                 location: Location {
                     file: PathBuf::from("test.md"),
                     line: 1,
+                    start: 0,
+                    end: 1,
                 },
             });
             pretty::assert_eq!(have, want)

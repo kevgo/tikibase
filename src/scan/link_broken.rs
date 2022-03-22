@@ -27,12 +27,18 @@ pub(crate) fn scan(base: &Tikibase) -> LinksResult {
             for (i, line) in section.lines().enumerate() {
                 for reference in line.references() {
                     match reference {
-                        Reference::Link { mut destination } => {
+                        Reference::Link {
+                            mut destination,
+                            start,
+                            end,
+                        } => {
                             if destination.is_empty() {
                                 result.issues.push(Issue::LinkWithoutDestination {
                                     location: Location {
                                         file: doc.path.clone(),
                                         line: section.line_number + (i as u32),
+                                        start,
+                                        end,
                                     },
                                 });
                                 continue;
@@ -47,6 +53,8 @@ pub(crate) fn scan(base: &Tikibase) -> LinksResult {
                                     location: Location {
                                         file: doc.path.clone(),
                                         line: section.line_number + (i as u32),
+                                        start,
+                                        end,
                                     },
                                     target: destination,
                                 });
@@ -57,6 +65,8 @@ pub(crate) fn scan(base: &Tikibase) -> LinksResult {
                                     location: Location {
                                         file: doc.path.clone(),
                                         line: section.line_number + (i as u32),
+                                        start,
+                                        end,
                                     },
                                 });
                                 continue;
@@ -66,7 +76,7 @@ pub(crate) fn scan(base: &Tikibase) -> LinksResult {
                                 .add(&destination, doc.path.clone());
                             result.outgoing_doc_links.add(doc.path.clone(), destination);
                         }
-                        Reference::Image { src } => {
+                        Reference::Image { src, start, end } => {
                             if src.starts_with("http") {
                                 continue;
                             }
@@ -75,6 +85,8 @@ pub(crate) fn scan(base: &Tikibase) -> LinksResult {
                                     location: Location {
                                         file: doc.path.clone(),
                                         line: section.line_number + (i as u32),
+                                        start,
+                                        end,
                                     },
                                     target: src.clone(),
                                 });
@@ -131,6 +143,8 @@ mod tests {
                     location: Location {
                         file: "one.md".into(),
                         line: 2,
+                        start: 0,
+                        end: 25
                     },
                     target: "non-existing.md".into()
                 }]
@@ -184,7 +198,9 @@ Here is a link to [Three](3.md) that also works.
                 vec![Issue::LinkWithoutDestination {
                     location: Location {
                         file: "one.md".into(),
-                        line: 2
+                        line: 2,
+                        start: 0,
+                        end: 10,
                     }
                 }]
             );
@@ -238,6 +254,8 @@ Here is a link to [Three](3.md) that also works.
                     location: Location {
                         file: "1.md".into(),
                         line: 2,
+                        start: 0,
+                        end: 17
                     },
                     target: "zonk.png".into()
                 }]

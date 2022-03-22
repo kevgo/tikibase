@@ -110,4 +110,6 @@ pub struct MissingLink {
 pub struct Location {
     pub file: PathBuf,
     pub line: u32,
+    pub start: u32,
+    pub end: u32,
 }

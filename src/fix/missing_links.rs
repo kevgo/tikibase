@@ -31,6 +31,8 @@ pub fn add_occurrences(base: &mut Tikibase, location: Location, links: Vec<Missi
         location: Location {
             file: location.file,
             line,
+            start: 0,
+            end: occurrences_section.title_line.text().len() as u32,
         },
     }
 }

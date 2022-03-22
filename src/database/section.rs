@@ -58,13 +58,14 @@ impl Section {
     }
 
     /// provides a human-readable description of this section, e.g. "Hello" for a section with the title "# Hello"
-    pub fn title(&self) -> &str {
+    /// as well as the column at which this description stars on the line
+    pub fn title(&self) -> (&str, u32) {
         for (i, c) in self.title_line.text().char_indices() {
             if c != '#' && c != ' ' {
-                return &self.title_line.text()[i..];
+                return (&self.title_line.text()[i..], i as u32);
             }
         }
-        ""
+        ("", 0)
     }
 
     /// provides a section with the given title
@@ -225,25 +226,25 @@ title content";
         #[test]
         fn h1() {
             let section = Section::with_title("# Title");
-            assert_eq!(section.title(), "Title");
+            assert_eq!(section.title(), ("Title", 2));
         }
 
         #[test]
         fn h3() {
             let section = Section::with_title("### Title");
-            assert_eq!(section.title(), "Title");
+            assert_eq!(section.title(), ("Title", 4));
         }
 
         #[test]
         fn no_header() {
             let section = Section::with_title("Title");
-            assert_eq!(section.title(), "Title");
+            assert_eq!(section.title(), ("Title", 0));
         }
 
         #[test]
         fn no_text() {
             let section = Section::with_title("###");
-            assert_eq!(section.title(), "");
+            assert_eq!(section.title(), ("", 0));
         }
     }
 

@@ -7,7 +7,7 @@ pub(crate) fn scan(base: &Tikibase) -> Vec<Issue> {
     let mut title_variants: AHashMap<String, Vec<FileSection>> = AHashMap::new();
     for doc in &base.docs {
         for section in doc.sections() {
-            let section_title = section.title();
+            let (section_title, start) = section.title();
             title_variants
                 .entry(normalize(section_title))
                 .or_insert_with(Vec::new)
@@ -15,6 +15,7 @@ pub(crate) fn scan(base: &Tikibase) -> Vec<Issue> {
                     title: section_title,
                     file: &doc.path,
                     line: section.line_number,
+                    start,
                 });
         }
     }
@@ -34,6 +35,8 @@ pub(crate) fn scan(base: &Tikibase) -> Vec<Issue> {
                 location: Location {
                     file: file_section.file.into(),
                     line: file_section.line,
+                    start: file_section.start,
+                    end: file_section.start + file_section.title.len() as u32,
                 },
             });
         }
@@ -44,16 +47,18 @@ pub(crate) fn scan(base: &Tikibase) -> Vec<Issue> {
 #[derive(Eq, Hash, Ord, PartialEq, PartialOrd)]
 pub struct FileSection<'a> {
     pub file: &'a Path,
-    pub line: u32,
     pub title: &'a str,
+    pub line: u32,
+    pub start: u32,
 }
 
 impl Default for FileSection<'_> {
     fn default() -> Self {
         Self {
             file: Path::new(""),
-            line: 0,
             title: "",
+            line: 0,
+            start: 0,
         }
     }
 }
@@ -105,6 +110,8 @@ content";
                 location: Location {
                     file: PathBuf::from("1.md"),
                     line: 2,
+                    start: 4,
+                    end: 6,
                 },
                 variants: vec!["ONE".into(), "One".into(), "one".into()],
             },
@@ -112,6 +119,8 @@ content";
                 location: Location {
                     file: PathBuf::from("1.md"),
                     line: 5,
+                    start: 4,
+                    end: 6,
                 },
                 variants: vec!["ONE".into(), "One".into(), "one".into()],
             },
@@ -119,6 +128,8 @@ content";
                 location: Location {
                     file: PathBuf::from("2.md"),
                     line: 2,
+                    start: 4,
+                    end: 6,
                 },
                 variants: vec!["ONE".into(), "One".into(), "one".into()],
             },

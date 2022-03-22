@@ -20,28 +20,41 @@ impl Line {
     pub fn references(&self) -> Vec<Reference> {
         let mut result = Vec::new();
         for cap in MD_RE.captures_iter(&self.0) {
+            let match_ = cap.get(0).unwrap();
             match &cap[1] {
                 "!" => result.push(Reference::Image {
                     src: cap[2].to_string(),
+                    start: match_.start() as u32,
+                    end: match_.end() as u32,
                 }),
                 "" => {
                     let mut destination = cap[2].to_string();
                     if let Some(idx) = destination.find('#') {
                         destination.truncate(idx);
                     }
-                    result.push(Reference::Link { destination });
+                    result.push(Reference::Link {
+                        destination,
+                        start: match_.start() as u32,
+                        end: match_.end() as u32,
+                    });
                 }
                 _ => panic!("unexpected capture: '{}'", &cap[1]),
             }
         }
         for cap in A_HTML_RE.captures_iter(&self.0) {
+            let match_ = cap.get(0).unwrap();
             result.push(Reference::Link {
                 destination: cap[1].to_string(),
+                start: match_.start() as u32,
+                end: match_.end() as u32,
             });
         }
         for cap in IMG_HTML_RE.captures_iter(&self.0) {
+            let match_ = cap.get(0).unwrap();
             result.push(Reference::Image {
                 src: cap[1].to_string(),
+                start: match_.start() as u32,
+                end: match_.end() as u32,
             });
         }
         result
@@ -78,9 +91,13 @@ mod tests {
             let want = vec![
                 Reference::Link {
                     destination: "one.md".into(),
+                    start: 12,
+                    end: 24,
                 },
                 Reference::Link {
                     destination: "two.md".into(),
+                    start: 48,
+                    end: 74,
                 },
             ];
             pretty::assert_eq!(have, want)
@@ -92,6 +109,8 @@ mod tests {
             let have = line.references();
             let want = vec![Reference::Link {
                 destination: "two.md".into(),
+                start: 14,
+                end: 37,
             }];
             pretty::assert_eq!(have, want)
         }
@@ -102,6 +121,8 @@ mod tests {
             let have = line.references();
             let want = vec![Reference::Image {
                 src: "zonk.md".into(),
+                start: 13,
+                end: 28,
             }];
             pretty::assert_eq!(have, want)
         }
@@ -112,6 +133,8 @@ mod tests {
             let have = line.references();
             let want = vec![Reference::Image {
                 src: "zonk.md".into(),
+                start: 0,
+                end: 18,
             }];
             pretty::assert_eq!(have, want)
         }
@@ -122,6 +145,8 @@ mod tests {
             let have = line.references();
             let want = vec![Reference::Image {
                 src: "zonk.md".into(),
+                start: 0,
+                end: 41,
             }];
             pretty::assert_eq!(have, want)
         }
@@ -132,6 +157,8 @@ mod tests {
             let have = line.references();
             let want = vec![Reference::Image {
                 src: "zonk.md".into(),
+                start: 0,
+                end: 19,
             }];
             pretty::assert_eq!(have, want)
         }
@@ -142,6 +169,8 @@ mod tests {
             let have = line.references();
             let want = vec![Reference::Image {
                 src: "zonk.md".into(),
+                start: 0,
+                end: 20,
             }];
             pretty::assert_eq!(have, want)
         }

@@ -9,6 +9,8 @@ pub(crate) fn scan(base: &Tikibase, resource_links: &[String]) -> Vec<Issue> {
                 location: Location {
                     file: resource.path.clone(),
                     line: 0,
+                    start: 0,
+                    end: 0,
                 },
             });
         }
