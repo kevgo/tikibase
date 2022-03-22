@@ -101,10 +101,10 @@ impl Document {
     }
 
     /// provides the section with the given title
-    pub fn section_with_title(&self, section_type: &str) -> Option<&Section> {
+    pub fn section_with_title(&self, title: &str) -> Option<&Section> {
         self.content_sections
             .iter()
-            .find(|section| section.title() == section_type)
+            .find(|section| section.title() == title)
     }
 
     /// provides the last section in this document
@@ -134,7 +134,7 @@ impl Document {
     }
 
     /// provides the section types in this document
-    pub fn section_types(&self) -> Vec<&str> {
+    pub fn section_titles(&self) -> Vec<&str> {
         self.content_sections.iter().map(Section::title).collect()
     }
 
@@ -424,7 +424,7 @@ title text
     }
 
     #[test]
-    fn section_types() {
+    fn section_titles() {
         let content = "\
 # Title
 title text
@@ -434,7 +434,7 @@ two
 foo
 ";
         let doc = Document::from_str("test.md", content).unwrap();
-        let have = doc.section_types();
+        let have = doc.section_titles();
         let want = vec!["Section 1".to_string(), "Section 2".to_string()];
         assert_eq!(have, want);
     }

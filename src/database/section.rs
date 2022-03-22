@@ -219,7 +219,7 @@ title content";
         }
     }
 
-    mod section_type {
+    mod section_title {
         use crate::database::Section;
 
         #[test]

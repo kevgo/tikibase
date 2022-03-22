@@ -7,7 +7,7 @@ pub(crate) fn scan(base: &Tikibase, config: &Config) -> Vec<Issue> {
         Some(expected_sections) => expected_sections,
     };
     for doc in &base.docs {
-        if !matches_schema(&doc.section_types(), expected_order) {
+        if !matches_schema(&doc.section_titles(), expected_order) {
             issues.push(Issue::UnorderedSections {
                 location: crate::Location {
                     file: doc.path.clone(),
