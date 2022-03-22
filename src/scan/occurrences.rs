@@ -29,14 +29,9 @@ pub(crate) fn scan(
                 issues.push(Issue::ObsoleteOccurrencesSection {
                     location: Location {
                         file: doc.path.clone(),
-                        line: occurrences_section_line,
-                        start: 0,
-                        end: doc
-                            .section_with_title("occurrences")
-                            .unwrap()
-                            .title_line
-                            .text()
-                            .len() as u32,
+                        line: occurrences_section_line.0,
+                        start: occurrences_section_line.1,
+                        end: occurrences_section_line.2,
                     },
                 });
             }
@@ -121,7 +116,7 @@ mod tests {
                 file: "1.md".into(),
                 line: 3,
                 start: 0,
-                end: 14,
+                end: 15,
             },
         }];
         pretty::assert_eq!(have, want);
