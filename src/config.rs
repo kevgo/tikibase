@@ -45,12 +45,11 @@ pub fn load<P: AsRef<Path>>(dir: P) -> Result<Config, Issue> {
 mod tests {
 
     mod load {
-        use std::path::PathBuf;
-
         use super::super::{load, Config};
         use crate::test;
         use crate::Issue;
         use crate::Position;
+        use std::path::PathBuf;
 
         #[test]
         fn no_config_file() {
