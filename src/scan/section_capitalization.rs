@@ -2,7 +2,7 @@ use crate::{Issue, Location, Tikibase};
 use ahash::{AHashMap, AHashSet};
 
 pub(crate) fn scan(base: &Tikibase) -> Vec<Issue> {
-    // registers variants of section titles: normalized title --> Vec<existing titles>
+    // registers variants of section titles: normalized title --> Vec<sections with a variation of this title>
     let mut title_variants: AHashMap<String, Vec<FileSection>> = AHashMap::new();
     for doc in &base.docs {
         for section in doc.sections() {
