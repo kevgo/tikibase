@@ -102,11 +102,11 @@ content";
         let have = super::scan(&base);
         let want = vec![
             Issue::MixCapSection {
-                variants: vec!["ONE".into(), "One".into(), "one".into()],
                 location: Location {
                     file: PathBuf::from("1.md"),
                     line: 2,
                 },
+                variants: vec!["ONE".into(), "One".into(), "one".into()],
             },
             Issue::MixCapSection {
                 location: Location {
