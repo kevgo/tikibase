@@ -96,4 +96,23 @@ mod tests {
             }]
         );
     }
+
+    #[test]
+    fn obsolete_occurrences() {
+        let dir = test::tmp_dir();
+        test::create_file("1.md", "# One\n\ntext\n### occurrences\n\n- foo", &dir);
+        let base = Tikibase::load(dir, &Config::default()).unwrap();
+        let outgoing_links = DocLinks::default();
+        let incoming_links = DocLinks::default();
+        let have = super::scan(&base, &incoming_links, &outgoing_links);
+        pretty::assert_eq!(
+            have,
+            vec![Issue::ObsoleteOccurrencesSection {
+                location: Location {
+                    file: "1.md".into(),
+                    line: 3
+                },
+            }]
+        );
+    }
 }
