@@ -7,7 +7,7 @@ use std::path::{Path, PathBuf};
 /// Tikibase configuration data
 #[derive(Deserialize, Default, PartialEq, Debug)]
 pub struct Config {
-    /// the allowed section types
+    /// the allowed section titles
     pub sections: Option<Vec<String>>,
 
     /// files to ignore

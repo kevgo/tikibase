@@ -133,7 +133,7 @@ impl Document {
         }
     }
 
-    /// provides the section types in this document
+    /// provides the section titles in this document
     pub fn section_titles(&self) -> Vec<&str> {
         self.content_sections.iter().map(Section::title).collect()
     }

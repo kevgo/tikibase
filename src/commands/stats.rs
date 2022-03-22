@@ -6,7 +6,7 @@ pub fn stats(base: &Tikibase) -> Outcome {
     println!("resources: {}", base.resources.len());
     println!();
     let section_titles = collect_section_titles(base);
-    println!("{} section types:", section_titles.len());
+    println!("{} section titles:", section_titles.len());
     let mut keys: Vec<&&str> = section_titles.keys().collect();
     keys.sort();
     for key in keys {

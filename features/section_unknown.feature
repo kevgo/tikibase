@@ -1,4 +1,4 @@
-Feature: verify section types
+Feature: verify section titles
 
   Background:
     Given file "tikibase.json" with content:
