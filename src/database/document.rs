@@ -57,7 +57,7 @@ impl Document {
                     return Err(Issue::NoTitleSection {
                         pos: Position {
                             file: path,
-                            line: 0,
+                            line: line_number as u32,
                         },
                     })
                 }
