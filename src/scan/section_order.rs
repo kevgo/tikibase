@@ -9,7 +9,10 @@ pub(crate) fn scan(base: &Tikibase, config: &Config) -> Vec<Issue> {
     for doc in &base.docs {
         if !matches_schema(&doc.section_types(), expected_order) {
             issues.push(Issue::UnorderedSections {
-                file: doc.path.clone(),
+                pos: crate::Position {
+                    file: doc.path.clone(),
+                    line: 0,
+                },
             });
         }
     }

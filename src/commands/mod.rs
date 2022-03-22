@@ -9,6 +9,7 @@ use crate::fix::Fix;
 pub use check::check;
 pub use fix::fix;
 pub use pitstop::pitstop;
+use serde::Serialize;
 pub use stats::stats;
 use std::path::PathBuf;
 
@@ -28,79 +29,72 @@ pub struct Outcome {
 #[derive(Clone, Debug, PartialEq)]
 pub enum Issue {
     BrokenImage {
-        file: PathBuf,
-        line: u32,
+        pos: Position,
         target: String,
     },
     BrokenLink {
-        file: PathBuf,
-        line: u32,
+        pos: Position,
         target: String,
     },
     CannotReadConfigurationFile {
         message: String,
+        pos: Position,
     },
     DuplicateSection {
-        file: PathBuf,
+        pos: Position,
         section_type: String,
     },
     EmptySection {
-        file: PathBuf,
-        line: u32,
+        pos: Position,
         section_type: String,
     },
     InvalidConfigurationFile {
         message: String,
+        pos: Position,
     },
     LinkToSameDocument {
-        file: PathBuf,
-        line: u32,
+        pos: Position,
     },
     LinkWithoutDestination {
-        file: PathBuf,
-        line: u32,
+        pos: Position,
     },
     MissingLinks {
-        file: PathBuf,
+        pos: Position,
         links: Vec<MissingLink>,
     },
     MissingSource {
-        file: PathBuf,
-        line: u32,
+        pos: Position,
         index: String,
     },
     MixCapSection {
+        pos: Position,
         variants: Vec<String>,
     },
     NoTitleSection {
-        file: PathBuf,
+        pos: Position,
     },
     ObsoleteOccurrencesSection {
-        file: PathBuf,
-        line: u32,
+        pos: Position,
     },
     OrphanedResource {
         // This is a String and not a Path because we need a String (to print it),
         // and we already converted the Path of this orphaned resource into a String
         // during processing it.
-        path: String,
+        pos: Position,
     },
     SectionWithoutHeader {
-        file: PathBuf,
-        line: u32,
+        pos: Position,
     },
     UnclosedFence {
-        file: PathBuf,
-        line: u32,
+        pos: Position,
     },
     UnknownSection {
-        file: PathBuf,
-        line: u32,
+        pos: Position,
         section_type: String,
         allowed_types: Vec<String>,
     },
     UnorderedSections {
-        file: PathBuf,
+        pos: Position,
     },
 }
 
@@ -109,4 +103,13 @@ pub enum Issue {
 pub struct MissingLink {
     pub path: PathBuf,
     pub title: String,
+}
+
+/// a position within a file
+#[derive(Clone, Debug, Eq, Hash, PartialEq, Serialize)]
+pub struct Position {
+    pub file: PathBuf,
+    pub line: u32,
+    // pub start: u32,
+    // pub end: u32,
 }

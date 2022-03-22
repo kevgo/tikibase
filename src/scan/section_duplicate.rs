@@ -1,4 +1,4 @@
-use crate::{Issue, Tikibase};
+use crate::{Issue, Position, Tikibase};
 
 /// finds all duplicate sections in the given Tikibase
 pub(crate) fn scan(base: &Tikibase) -> Vec<Issue> {
@@ -9,7 +9,10 @@ pub(crate) fn scan(base: &Tikibase) -> Vec<Issue> {
             let section_type = section.section_type();
             if known_sections.contains(&section_type) {
                 issues.push(Issue::DuplicateSection {
-                    file: doc.path.clone(),
+                    pos: Position {
+                        file: doc.path.clone(),
+                        line: section.line_number,
+                    },
                     section_type: section_type.into(),
                 });
             } else {
@@ -23,7 +26,7 @@ pub(crate) fn scan(base: &Tikibase) -> Vec<Issue> {
 #[cfg(test)]
 mod tests {
     use super::scan;
-    use crate::{test, Config, Issue, Tikibase};
+    use crate::{test, Config, Issue, Position, Tikibase};
     use std::path::PathBuf;
 
     #[test]
@@ -42,7 +45,10 @@ content";
         pretty::assert_eq!(
             have,
             vec![Issue::DuplicateSection {
-                file: PathBuf::from("test.md"),
+                pos: Position {
+                    file: PathBuf::from("test.md"),
+                    line: 6
+                },
                 section_type: "One".into(),
             }]
         )

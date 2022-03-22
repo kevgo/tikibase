@@ -1,4 +1,4 @@
-use crate::{Issue, Tikibase};
+use crate::{Issue, Position, Tikibase};
 
 /// finds all empty sections in the given Tikibase,
 /// fixes them if fix is enabled,
@@ -10,8 +10,10 @@ pub(crate) fn scan(base: &Tikibase) -> Vec<Issue> {
             let has_content = section.body.iter().any(|line| !line.text().is_empty());
             if !has_content {
                 issues.push(Issue::EmptySection {
-                    file: doc.path.clone(),
-                    line: section.line_number,
+                    pos: Position {
+                        file: doc.path.clone(),
+                        line: section.line_number,
+                    },
                     section_type: section.section_type().into(),
                 });
             }
@@ -23,7 +25,7 @@ pub(crate) fn scan(base: &Tikibase) -> Vec<Issue> {
 #[cfg(test)]
 mod tests {
     use super::scan;
-    use crate::{test, Config};
+    use crate::{test, Config, Position};
     use crate::{Issue, Tikibase};
     use std::path::PathBuf;
 
@@ -41,8 +43,10 @@ content";
         let base = Tikibase::load(dir, &Config::default()).unwrap();
         let have = scan(&base);
         let want = vec![Issue::EmptySection {
-            file: PathBuf::from("test.md"),
-            line: 2,
+            pos: Position {
+                file: PathBuf::from("test.md"),
+                line: 2,
+            },
             section_type: "empty section".into(),
         }];
         pretty::assert_eq!(have, want);
@@ -63,8 +67,10 @@ content";
         let base = Tikibase::load(dir, &Config::default()).unwrap();
         let have = scan(&base);
         let want = vec![Issue::EmptySection {
-            file: PathBuf::from("test.md"),
-            line: 2,
+            pos: Position {
+                file: PathBuf::from("test.md"),
+                line: 2,
+            },
             section_type: "empty section".into(),
         }];
         pretty::assert_eq!(have, want)

@@ -1,4 +1,4 @@
-use crate::{Config, Issue, Tikibase};
+use crate::{Config, Issue, Position, Tikibase};
 
 pub(crate) fn scan(base: &Tikibase, config: &Config) -> Vec<Issue> {
     let mut issues = Vec::<Issue>::new();
@@ -12,8 +12,10 @@ pub(crate) fn scan(base: &Tikibase, config: &Config) -> Vec<Issue> {
             // HACK: see https://github.com/rust-lang/rust/issues/42671
             if !sections.iter().any(|s| s == section_type) {
                 issues.push(Issue::UnknownSection {
-                    file: doc.path.clone(),
-                    line: section.line_number,
+                    pos: Position {
+                        file: doc.path.clone(),
+                        line: section.line_number,
+                    },
                     section_type: section_type.into(),
                     allowed_types: config.sections.clone().unwrap(),
                 });

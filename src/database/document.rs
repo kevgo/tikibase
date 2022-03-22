@@ -1,5 +1,5 @@
 use super::{section, Section};
-use crate::Issue;
+use crate::{Issue, Position};
 use ahash::AHashSet;
 use once_cell::sync::Lazy;
 use regex::Regex;
@@ -53,7 +53,14 @@ impl Document {
             }
             match &mut section_builder {
                 Some(section_builder) => section_builder.add_line(line),
-                None => return Err(Issue::NoTitleSection { file: path }),
+                None => {
+                    return Err(Issue::NoTitleSection {
+                        pos: Position {
+                            file: path,
+                            line: 0,
+                        },
+                    })
+                }
             }
         }
         if let Some(section_builder) = section_builder {
@@ -66,8 +73,10 @@ impl Document {
         }
         if inside_fence {
             return Err(Issue::UnclosedFence {
-                file: path,
-                line: (fence_line as u32) + 1,
+                pos: Position {
+                    file: path,
+                    line: (fence_line as u32) + 1,
+                },
             });
         }
         let mut sections = sections.into_iter();
@@ -226,7 +235,7 @@ mod tests {
     mod from_str {
         use super::super::Document;
         use crate::database::{Line, Section};
-        use crate::Issue;
+        use crate::{Issue, Position};
         use std::path::PathBuf;
 
         #[test]
@@ -257,7 +266,10 @@ content";
         fn missing_title() {
             let have = Document::from_str("one.md", "no title");
             let want = Err(Issue::NoTitleSection {
-                file: PathBuf::from("one.md"),
+                pos: Position {
+                    file: PathBuf::from("one.md"),
+                    line: 0,
+                },
             });
             pretty::assert_eq!(have, want)
         }
@@ -300,8 +312,10 @@ text
 ";
             let have = Document::from_str("test.md", give);
             let want = Err(Issue::UnclosedFence {
-                file: PathBuf::from("test.md"),
-                line: 2,
+                pos: Position {
+                    file: PathBuf::from("test.md"),
+                    line: 2,
+                },
             });
             pretty::assert_eq!(have, want)
         }

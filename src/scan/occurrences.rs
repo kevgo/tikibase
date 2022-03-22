@@ -1,6 +1,6 @@
 use crate::commands::MissingLink;
 use crate::database::DocLinks;
-use crate::{Issue, Tikibase};
+use crate::{Issue, Position, Tikibase};
 use ahash::AHashSet;
 use std::path::PathBuf;
 
@@ -27,8 +27,10 @@ pub(crate) fn scan(
             // no missing links --> done with this document
             if let Some(occurrences_section_line) = doc.occurrences_section_line {
                 issues.push(Issue::ObsoleteOccurrencesSection {
-                    file: doc.path.clone(),
-                    line: occurrences_section_line,
+                    pos: Position {
+                        file: doc.path.clone(),
+                        line: occurrences_section_line,
+                    },
                 });
             }
             continue;
@@ -37,7 +39,10 @@ pub(crate) fn scan(
         // register missing occurrences
         missing_outgoing.sort();
         issues.push(Issue::MissingLinks {
-            file: doc.path.clone(),
+            pos: Position {
+                file: doc.path.clone(),
+                line: doc.lines_count(),
+            },
             links: missing_outgoing
                 .into_iter()
                 .map(|path| base.get_doc(&path).unwrap())
@@ -55,7 +60,7 @@ pub(crate) fn scan(
 mod tests {
     use crate::commands::MissingLink;
     use crate::database::DocLinks;
-    use crate::{test, Config, Issue, Tikibase};
+    use crate::{test, Config, Issue, Position, Tikibase};
 
     #[test]
     fn process() {
@@ -74,7 +79,10 @@ mod tests {
         pretty::assert_eq!(
             have,
             vec![Issue::MissingLinks {
-                file: "1.md".into(),
+                pos: Position {
+                    file: "1.md".into(),
+                    line: 1
+                },
                 links: vec![
                     MissingLink {
                         path: "2.md".into(),

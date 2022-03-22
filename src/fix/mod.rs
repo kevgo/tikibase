@@ -5,65 +5,47 @@ mod missing_links;
 mod obsolete_occurrences_section;
 mod unordered_sections;
 
-use crate::{Config, Issue, Tikibase};
-use std::path::PathBuf;
+use crate::{Config, Issue, Position, Tikibase};
 
 /// fixes the given Issue
 pub fn fix(issue: Issue, base: &mut Tikibase, config: &Config) -> Option<Fix> {
     match issue {
-        Issue::BrokenImage {
-            file: _,
-            line: _,
-            target: _,
-        } => None,
-        Issue::BrokenLink {
-            file: _,
-            line: _,
-            target: _,
-        } => None,
-        Issue::CannotReadConfigurationFile { message: _ } => None,
+        Issue::BrokenImage { pos: _, target: _ } => None,
+        Issue::BrokenLink { pos: _, target: _ } => None,
+        Issue::CannotReadConfigurationFile { message: _, pos: _ } => None,
         Issue::DuplicateSection {
-            file: _,
+            pos: _,
             section_type: _,
         } => None,
-        Issue::EmptySection {
-            file,
-            line,
-            section_type,
-        } => Some(empty_section::remove_empty_section(
-            base,
-            section_type,
-            file,
-            line,
-        )),
-        Issue::InvalidConfigurationFile { message: _ } => None,
-        Issue::LinkToSameDocument { file: _, line: _ } => None,
-        Issue::LinkWithoutDestination { file: _, line: _ } => None,
-        Issue::MissingLinks { file, links } => {
-            Some(missing_links::add_occurrences(base, file, links))
+        Issue::EmptySection { pos, section_type } => {
+            Some(empty_section::remove_empty_section(base, section_type, pos))
         }
-        Issue::MissingSource {
-            file: _,
-            line: _,
-            index: _,
+        Issue::InvalidConfigurationFile { message: _, pos: _ } => None,
+        Issue::LinkToSameDocument { pos: _ } => None,
+        Issue::LinkWithoutDestination { pos: _ } => None,
+        Issue::MissingLinks { pos, links } => {
+            Some(missing_links::add_occurrences(base, pos, links))
+        }
+        Issue::MissingSource { pos: _, index: _ } => None,
+        Issue::MixCapSection {
+            variants: _,
+            pos: _,
         } => None,
-        Issue::MixCapSection { variants: _ } => None,
-        Issue::NoTitleSection { file: _ } => None,
-        Issue::ObsoleteOccurrencesSection { file, line } => Some(
-            obsolete_occurrences_section::remove_occurrences_section(base, file, line),
+        Issue::NoTitleSection { pos: _ } => None,
+        Issue::ObsoleteOccurrencesSection { pos } => Some(
+            obsolete_occurrences_section::remove_occurrences_section(base, pos),
         ),
-        Issue::OrphanedResource { path: _ } => None,
-        Issue::SectionWithoutHeader { file: _, line: _ } => None,
-        Issue::UnclosedFence { file: _, line: _ } => None,
+        Issue::OrphanedResource { pos: _ } => None,
+        Issue::SectionWithoutHeader { pos: _ } => None,
+        Issue::UnclosedFence { pos: _ } => None,
         Issue::UnknownSection {
-            file: _,
-            line: _,
+            pos: _,
             section_type: _,
             allowed_types: _,
         } => None,
-        Issue::UnorderedSections { file } => Some(unordered_sections::sort_sections(
+        Issue::UnorderedSections { pos } => Some(unordered_sections::sort_sections(
             base,
-            file,
+            pos,
             config.sections.as_ref().unwrap(),
         )),
     }
@@ -71,20 +53,8 @@ pub fn fix(issue: Issue, base: &mut Tikibase, config: &Config) -> Option<Fix> {
 
 /// documents the fixes that this linter performs
 pub enum Fix {
-    AddedOccurrencesSection {
-        file: PathBuf,
-        line: u32,
-    },
-    RemovedEmptySection {
-        section_type: String,
-        file: PathBuf,
-        line: u32,
-    },
-    RemovedObsoleteOccurrencesSection {
-        file: PathBuf,
-        line: u32,
-    },
-    SortedSections {
-        file: PathBuf,
-    },
+    AddedOccurrencesSection { pos: Position },
+    RemovedEmptySection { section_type: String, pos: Position },
+    RemovedObsoleteOccurrencesSection { pos: Position },
+    SortedSections { pos: Position },
 }

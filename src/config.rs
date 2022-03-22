@@ -1,4 +1,4 @@
-use crate::Issue;
+use crate::{Issue, Position};
 use serde::Deserialize;
 use std::fs::File;
 use std::io::ErrorKind;
@@ -17,19 +17,27 @@ pub struct Config {
 /// reads the config file
 pub fn load<P: AsRef<Path>>(dir: P) -> Result<Config, Issue> {
     let config_path = dir.as_ref().join("tikibase.json");
-    let file = match File::open(config_path) {
+    let file = match File::open(&config_path) {
         Ok(reader) => reader,
         Err(e) => match e.kind() {
             ErrorKind::NotFound => return Ok(Config::default()),
             _ => {
                 return Err(Issue::CannotReadConfigurationFile {
                     message: e.to_string(),
+                    pos: Position {
+                        file: config_path,
+                        line: 0,
+                    },
                 })
             }
         },
     };
     serde_json::from_reader(file).map_err(|e: serde_json::Error| Issue::InvalidConfigurationFile {
         message: e.to_string(),
+        pos: Position {
+            file: config_path,
+            line: e.line() as u32,
+        },
     })
 }
 
@@ -37,9 +45,12 @@ pub fn load<P: AsRef<Path>>(dir: P) -> Result<Config, Issue> {
 mod tests {
 
     mod load {
+        use std::path::PathBuf;
+
         use super::super::{load, Config};
         use crate::test;
         use crate::Issue;
+        use crate::Position;
 
         #[test]
         fn no_config_file() {
@@ -91,6 +102,10 @@ mod tests {
             let have = load(&dir);
             let want = Err(Issue::InvalidConfigurationFile {
                 message: "expected value at line 3 column 1".into(),
+                pos: Position {
+                    file: PathBuf::from("tikibase.json"),
+                    line: 1,
+                },
             });
             pretty::assert_eq!(have, want)
         }

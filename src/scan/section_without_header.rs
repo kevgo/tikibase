@@ -1,4 +1,4 @@
-use crate::{Issue, Tikibase};
+use crate::{Issue, Position, Tikibase};
 
 pub(crate) fn scan(base: &Tikibase) -> Vec<Issue> {
     let mut issues = Vec::<Issue>::new();
@@ -6,8 +6,10 @@ pub(crate) fn scan(base: &Tikibase) -> Vec<Issue> {
         for section in doc.sections() {
             if section.section_type().is_empty() {
                 issues.push(Issue::SectionWithoutHeader {
-                    file: doc.path.clone(),
-                    line: section.line_number,
+                    pos: Position {
+                        file: doc.path.clone(),
+                        line: section.line_number,
+                    },
                 });
             }
         }
