@@ -7,7 +7,7 @@ Feature: orphaned resource
         When checking
         Then it prints:
             """
-            orphan.png  file isn't linked to
+            orphan.png:1  file isn't linked to
             """
         And all files are unchanged
         And the exit code is 1
@@ -21,7 +21,7 @@ Feature: orphaned resource
         When doing a pitstop
         Then it prints:
             """
-            orphan.png  file isn't linked to
+            orphan.png:1  file isn't linked to
             """
         And all files are unchanged
         And the exit code is 1
