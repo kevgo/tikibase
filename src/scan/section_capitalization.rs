@@ -11,7 +11,7 @@ pub(crate) fn scan(base: &Tikibase) -> Vec<Issue> {
                 .entry(normalize(section_type))
                 .or_insert_with(Vec::new)
                 .push(FileSection {
-                    title: section_type.into(),
+                    title: section_type,
                     location: Location {
                         file: doc.path.clone(),
                         line: section.line_number,
@@ -26,7 +26,7 @@ pub(crate) fn scan(base: &Tikibase) -> Vec<Issue> {
         }
         let mut variants: Vec<String> = file_sections
             .iter()
-            .map(|variant| variant.title.clone())
+            .map(|variant| variant.title.to_string())
             .collect();
         variants.sort();
         for file_section in file_sections {
@@ -40,13 +40,13 @@ pub(crate) fn scan(base: &Tikibase) -> Vec<Issue> {
 }
 
 #[derive(Default, Eq, Hash, Ord, PartialEq, PartialOrd)]
-pub struct FileSection {
+pub struct FileSection<'a> {
     pub location: Location,
-    pub title: String,
+    pub title: &'a str,
 }
 
 fn variants_count(file_sections: &[FileSection]) -> usize {
-    let set: AHashSet<&str> = AHashSet::from_iter(file_sections.iter().map(|fs| fs.title.as_str()));
+    let set: AHashSet<&str> = AHashSet::from_iter(file_sections.iter().map(|fs| fs.title));
     set.len()
 }
 
@@ -136,15 +136,15 @@ content";
     fn variants_count() {
         let give: Vec<FileSection> = vec![
             FileSection {
-                title: "One".into(),
+                title: "One",
                 ..FileSection::default()
             },
             FileSection {
-                title: "One".into(),
+                title: "One",
                 ..FileSection::default()
             },
             FileSection {
-                title: "one".into(),
+                title: "one",
                 ..FileSection::default()
             },
         ];
