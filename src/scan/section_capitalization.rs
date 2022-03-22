@@ -20,21 +20,19 @@ pub(crate) fn scan(base: &Tikibase) -> Vec<Issue> {
         }
     }
     let mut issues = Vec::new();
-    for (_, sections) in title_variants.drain() {
-        if variants_count(&sections) < 2 {
+    for (_, file_sections) in title_variants.drain() {
+        if variants_count(&file_sections) < 2 {
             continue;
         }
-        let mut sorted: Vec<String> = sections
+        let mut variants: Vec<String> = file_sections
             .iter()
             .map(|variant| variant.title.clone())
             .collect();
-        sorted.sort();
-        let mut variants = Vec::from_iter(sections);
-        variants.sort(); // ensure deterministic result order in unit tests
-        for variant in variants {
+        variants.sort();
+        for file_section in file_sections {
             issues.push(Issue::MixCapSection {
-                variants: sorted.clone(),
-                pos: variant.pos,
+                variants: variants.clone(),
+                pos: file_section.pos,
             });
         }
     }
