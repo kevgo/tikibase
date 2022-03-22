@@ -81,7 +81,7 @@ mod tests {
             vec![Issue::MissingLinks {
                 pos: Position {
                     file: "1.md".into(),
-                    line: 1
+                    line: 0
                 },
                 links: vec![
                     MissingLink {

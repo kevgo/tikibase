@@ -2,7 +2,7 @@ use crate::{Issue, Position};
 use serde::Deserialize;
 use std::fs::File;
 use std::io::ErrorKind;
-use std::path::Path;
+use std::path::{Path, PathBuf};
 
 /// Tikibase configuration data
 #[derive(Deserialize, Default, PartialEq, Debug)]
@@ -25,7 +25,7 @@ pub fn load<P: AsRef<Path>>(dir: P) -> Result<Config, Issue> {
                 return Err(Issue::CannotReadConfigurationFile {
                     message: e.to_string(),
                     pos: Position {
-                        file: config_path,
+                        file: PathBuf::from("tikibase.json"),
                         line: 0,
                     },
                 })
@@ -35,7 +35,7 @@ pub fn load<P: AsRef<Path>>(dir: P) -> Result<Config, Issue> {
     serde_json::from_reader(file).map_err(|e: serde_json::Error| Issue::InvalidConfigurationFile {
         message: e.to_string(),
         pos: Position {
-            file: config_path,
+            file: PathBuf::from("tikibase.json"),
             line: e.line() as u32,
         },
     })
@@ -104,7 +104,7 @@ mod tests {
                 message: "expected value at line 3 column 1".into(),
                 pos: Position {
                     file: PathBuf::from("tikibase.json"),
-                    line: 1,
+                    line: 3,
                 },
             });
             pretty::assert_eq!(have, want)

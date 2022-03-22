@@ -30,7 +30,7 @@ pub(crate) fn scan(base: &Tikibase) -> Vec<Issue> {
             .collect();
         sorted.sort();
         let mut variants = Vec::from_iter(variants);
-        variants.sort();
+        variants.sort(); // ensure deterministic result order in unit tests
         for variant in variants {
             issues.push(Issue::MixCapSection {
                 variants: sorted.clone(),
