@@ -26,14 +26,9 @@ pub fn fix(issue: Issue, base: &mut Tikibase, config: &Config) -> Option<Fix> {
             location: _,
             title: _,
         } => None,
-        Issue::EmptySection {
-            location,
-            section_type,
-        } => Some(empty_section::remove_empty_section(
-            base,
-            section_type,
-            location,
-        )),
+        Issue::EmptySection { location, title } => {
+            Some(empty_section::remove_empty_section(base, title, location))
+        }
         Issue::InvalidConfigurationFile {
             message: _,
             location: _,
@@ -60,8 +55,8 @@ pub fn fix(issue: Issue, base: &mut Tikibase, config: &Config) -> Option<Fix> {
         Issue::UnclosedFence { location: _ } => None,
         Issue::UnknownSection {
             location: _,
-            section_type: _,
-            allowed_types: _,
+            title: _,
+            allowed_titles: _,
         } => None,
         Issue::UnorderedSections { location } => Some(unordered_sections::sort_sections(
             base,
@@ -73,17 +68,8 @@ pub fn fix(issue: Issue, base: &mut Tikibase, config: &Config) -> Option<Fix> {
 
 /// documents the fixes that this linter performs
 pub enum Fix {
-    AddedOccurrencesSection {
-        location: Location,
-    },
-    RemovedEmptySection {
-        section_type: String,
-        location: Location,
-    },
-    RemovedObsoleteOccurrencesSection {
-        location: Location,
-    },
-    SortedSections {
-        location: Location,
-    },
+    AddedOccurrencesSection { location: Location },
+    RemovedEmptySection { title: String, location: Location },
+    RemovedObsoleteOccurrencesSection { location: Location },
+    SortedSections { location: Location },
 }

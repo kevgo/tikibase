@@ -38,7 +38,7 @@ impl Document {
             if line.starts_with('#') && !inside_fence {
                 if let Some(section_builder) = section_builder {
                     let section = section_builder.result();
-                    if section.section_type() == "occurrences" {
+                    if section.title() == "occurrences" {
                         occurrences_section_line = Some(section.line_number);
                     } else {
                         sections.push(section);
@@ -65,7 +65,7 @@ impl Document {
         }
         if let Some(section_builder) = section_builder {
             let section = section_builder.result();
-            if section.section_type() == "occurrences" {
+            if section.title() == "occurrences" {
                 occurrences_section_line = Some(section.line_number);
             } else {
                 sections.push(section);
@@ -104,7 +104,7 @@ impl Document {
     pub fn section_with_title(&self, section_type: &str) -> Option<&Section> {
         self.content_sections
             .iter()
-            .find(|section| section.section_type() == section_type)
+            .find(|section| section.title() == section_type)
     }
 
     /// provides the last section in this document
@@ -135,10 +135,7 @@ impl Document {
 
     /// provides the section types in this document
     pub fn section_types(&self) -> Vec<&str> {
-        self.content_sections
-            .iter()
-            .map(Section::section_type)
-            .collect()
+        self.content_sections.iter().map(Section::title).collect()
     }
 
     /// provides all the sources that this document defines
@@ -161,7 +158,7 @@ impl Document {
         let mut result = AHashSet::new();
         let mut in_code_block = false;
         for section in self.sections() {
-            if section.section_type() == "occurrences" {
+            if section.title() == "occurrences" {
                 continue;
             }
             for (line_idx, line) in section.lines().enumerate() {
@@ -193,7 +190,7 @@ impl Document {
 
     /// provides the human-readable title of this document
     pub fn title(&self) -> &str {
-        self.title_section.section_type()
+        self.title_section.title()
     }
 }
 

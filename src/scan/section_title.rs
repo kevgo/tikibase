@@ -2,22 +2,25 @@ use crate::{Config, Issue, Location, Tikibase};
 
 pub(crate) fn scan(base: &Tikibase, config: &Config) -> Vec<Issue> {
     let mut issues = Vec::<Issue>::new();
-    let sections = match &config.sections {
+    let config_sections = match &config.sections {
         None => return issues,
         Some(sections) => sections,
     };
     for doc in &base.docs {
         for section in &doc.content_sections {
-            let section_type = section.section_type();
+            let section_title = section.title();
             // HACK: see https://github.com/rust-lang/rust/issues/42671
-            if !sections.iter().any(|s| s == section_type) {
+            if !config_sections
+                .iter()
+                .any(|config_section| config_section == section_title)
+            {
                 issues.push(Issue::UnknownSection {
                     location: Location {
                         file: doc.path.clone(),
                         line: section.line_number,
                     },
-                    section_type: section_type.into(),
-                    allowed_types: config.sections.clone().unwrap(),
+                    title: section_title.into(),
+                    allowed_titles: config.sections.clone().unwrap(),
                 });
             }
         }

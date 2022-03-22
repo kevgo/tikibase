@@ -25,11 +25,8 @@ impl Message {
     /// provides a Message instance summarizing the given Fix
     pub fn from_fix(fix: Fix) -> Message {
         match fix {
-            Fix::RemovedEmptySection {
-                section_type,
-                location,
-            } => Message {
-                text: format!("removed empty section \"{}\"", section_type),
+            Fix::RemovedEmptySection { title, location } => Message {
+                text: format!("removed empty section \"{}\"", title),
                 location,
             },
             Fix::AddedOccurrencesSection { location } => Message {
@@ -70,11 +67,8 @@ impl Message {
                 text: format!("document contains multiple \"{}\" sections", title),
                 location,
             },
-            Issue::EmptySection {
-                location,
-                section_type,
-            } => Message {
-                text: format!("section \"{}\" has no content", section_type),
+            Issue::EmptySection { location, title } => Message {
+                text: format!("section \"{}\" has no content", title),
                 location,
             },
             Issue::InvalidConfigurationFile { location, message } => Message {
@@ -133,8 +127,8 @@ impl Message {
             },
             Issue::UnknownSection {
                 location,
-                section_type,
-                allowed_types,
+                title,
+                allowed_titles: allowed_types,
             } => {
                 let alloweds: Vec<String> = allowed_types
                     .iter()
@@ -143,7 +137,7 @@ impl Message {
                 Message {
                     text: format!(
                         "section \"{}\" isn't listed in tikibase.json, allowed sections:{}",
-                        section_type,
+                        title,
                         alloweds.join("")
                     ),
                     location,

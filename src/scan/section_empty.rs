@@ -14,7 +14,7 @@ pub(crate) fn scan(base: &Tikibase) -> Vec<Issue> {
                         file: doc.path.clone(),
                         line: section.line_number,
                     },
-                    section_type: section.section_type().into(),
+                    title: section.title().into(),
                 });
             }
         }
@@ -47,7 +47,7 @@ content";
                 file: PathBuf::from("test.md"),
                 line: 2,
             },
-            section_type: "empty section".into(),
+            title: "empty section".into(),
         }];
         pretty::assert_eq!(have, want);
     }
@@ -71,7 +71,7 @@ content";
                 file: PathBuf::from("test.md"),
                 line: 2,
             },
-            section_type: "empty section".into(),
+            title: "empty section".into(),
         }];
         pretty::assert_eq!(have, want)
     }

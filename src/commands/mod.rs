@@ -46,7 +46,7 @@ pub enum Issue {
     },
     EmptySection {
         location: Location,
-        section_type: String,
+        title: String,
     },
     InvalidConfigurationFile {
         location: Location,
@@ -90,8 +90,8 @@ pub enum Issue {
     },
     UnknownSection {
         location: Location,
-        section_type: String,
-        allowed_types: Vec<String>,
+        title: String,
+        allowed_titles: Vec<String>,
     },
     UnorderedSections {
         location: Location,

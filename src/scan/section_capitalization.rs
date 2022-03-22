@@ -7,12 +7,12 @@ pub(crate) fn scan(base: &Tikibase) -> Vec<Issue> {
     let mut title_variants: AHashMap<String, Vec<FileSection>> = AHashMap::new();
     for doc in &base.docs {
         for section in doc.sections() {
-            let section_type = section.section_type();
+            let section_title = section.title();
             title_variants
-                .entry(normalize(section_type))
+                .entry(normalize(section_title))
                 .or_insert_with(Vec::new)
                 .push(FileSection {
-                    title: section_type,
+                    title: section_title,
                     file: &doc.path,
                     line: section.line_number,
                 });
@@ -63,9 +63,9 @@ fn variants_count(file_sections: &[FileSection]) -> usize {
     set.len()
 }
 
-/// normalizes the given section type
-fn normalize(section_type: &str) -> String {
-    section_type.to_ascii_lowercase()
+/// normalizes the given section title
+fn normalize(section_title: &str) -> String {
+    section_title.to_ascii_lowercase()
 }
 #[cfg(test)]
 mod tests {
