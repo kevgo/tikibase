@@ -106,7 +106,7 @@ pub struct MissingLink {
 }
 
 /// a position within a file
-#[derive(Clone, Debug, Eq, Hash, Ord, PartialOrd, PartialEq, Serialize)]
+#[derive(Clone, Debug, Default, Eq, Hash, Ord, PartialOrd, PartialEq, Serialize)]
 pub struct Position {
     pub file: PathBuf,
     pub line: u32,
