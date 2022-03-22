@@ -13,15 +13,15 @@ pub(crate) fn scan(base: &Tikibase) -> Vec<Issue> {
                 .or_insert_with(Vec::new)
                 .push(section.line_number)
         }
-        for (section_type, section_lines) in sections_lines.drain() {
-            if section_lines.len() > 1 {
-                for line in section_lines {
+        for (title, lines) in sections_lines.drain() {
+            if lines.len() > 1 {
+                for line in lines {
                     issues.push(Issue::DuplicateSection {
                         location: Location {
                             file: doc.path.clone(),
                             line,
                         },
-                        section_type: section_type.into(),
+                        title: title.into(),
                     });
                 }
             }
@@ -57,14 +57,14 @@ content";
                         file: PathBuf::from("test.md"),
                         line: 2
                     },
-                    section_type: "One".into(),
+                    title: "One".into(),
                 },
                 Issue::DuplicateSection {
                     location: Location {
                         file: PathBuf::from("test.md"),
                         line: 4
                     },
-                    section_type: "One".into(),
+                    title: "One".into(),
                 },
             ]
         )

@@ -42,7 +42,7 @@ pub enum Issue {
     },
     DuplicateSection {
         location: Location,
-        section_type: String,
+        title: String,
     },
     EmptySection {
         location: Location,

@@ -66,11 +66,8 @@ impl Message {
                 ),
                 location,
             },
-            Issue::DuplicateSection {
-                location,
-                section_type,
-            } => Message {
-                text: format!("document contains multiple \"{}\" sections", section_type),
+            Issue::DuplicateSection { location, title } => Message {
+                text: format!("document contains multiple \"{}\" sections", title),
                 location,
             },
             Issue::EmptySection {

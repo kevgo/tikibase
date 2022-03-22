@@ -24,7 +24,7 @@ pub fn fix(issue: Issue, base: &mut Tikibase, config: &Config) -> Option<Fix> {
         } => None,
         Issue::DuplicateSection {
             location: _,
-            section_type: _,
+            title: _,
         } => None,
         Issue::EmptySection {
             location,
