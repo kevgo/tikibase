@@ -30,7 +30,7 @@ Feature: add occurrence sections
     When checking
     Then it prints:
       """
-      1.md  missing link to 2.md, 3.md
+      1.md:5  missing link to 2.md, 3.md
       """
     And the exit code is 1
 
