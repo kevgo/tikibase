@@ -91,6 +91,7 @@ impl Section {
     }
 }
 
+/// describes the title of a section: its text and where on the line it is located
 #[derive(Debug, PartialEq)]
 pub struct SectionTitle<'a> {
     pub text: &'a str,
