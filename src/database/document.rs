@@ -600,8 +600,8 @@ title text
     }
 
     mod sources_used {
-        use crate::database::document::{Document, UsedSource};
-        use crate::database::SourceReference;
+        use crate::database::document::UsedSource;
+        use crate::database::{Document, SourceReference};
 
         #[test]
         fn no_sources() {
