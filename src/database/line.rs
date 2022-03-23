@@ -68,7 +68,7 @@ impl Line {
 
     /// provides the indexes of all sources referenced on this line
     pub fn source_references(&self, file: &Path, line: u32) -> Result<Vec<SourceReference>, Issue> {
-        let sanitized = blank_code_segments(&self.0, file, line)?;
+        let sanitized = sanitize_code_segments(&self.0, file, line)?;
         let mut result = vec![];
         for captures in SOURCE_RE.captures_iter(&sanitized) {
             let total_match = captures.get(0).unwrap();
@@ -83,7 +83,7 @@ impl Line {
 }
 
 /// non-destructively overwrites areas inside backticks in the given string with spaces
-fn blank_code_segments(text: &str, file: &Path, line: u32) -> Result<String, Issue> {
+fn sanitize_code_segments(text: &str, file: &Path, line: u32) -> Result<String, Issue> {
     let mut result = String::with_capacity(text.len());
     let mut code_block_start: Option<u32> = None;
     for (i, c) in text.char_indices() {
@@ -116,8 +116,8 @@ fn blank_code_segments(text: &str, file: &Path, line: u32) -> Result<String, Iss
 #[cfg(test)]
 mod tests {
 
-    mod blank_code_segments {
-        use super::super::blank_code_segments;
+    mod sanitize_code_segments {
+        use super::super::sanitize_code_segments;
         use crate::{Issue, Location};
         use std::path::{Path, PathBuf};
 
@@ -125,14 +125,14 @@ mod tests {
         fn with_code_blocks() {
             let give = "one `map[0]` two `more code` three";
             let want = "one `      ` two `         ` three".to_string();
-            assert_eq!(blank_code_segments(give, Path::new(""), 0), Ok(want))
+            assert_eq!(sanitize_code_segments(give, Path::new(""), 0), Ok(want))
         }
 
         #[test]
         fn empty_string() {
             let give = "";
             let want = "".to_string();
-            assert_eq!(blank_code_segments(give, Path::new(""), 0), Ok(want))
+            assert_eq!(sanitize_code_segments(give, Path::new(""), 0), Ok(want))
         }
 
         #[test]
@@ -146,7 +146,7 @@ mod tests {
                     end: 13,
                 },
             });
-            let have = blank_code_segments(give, Path::new(""), 12);
+            let have = sanitize_code_segments(give, Path::new(""), 12);
             assert_eq!(have, want)
         }
     }
