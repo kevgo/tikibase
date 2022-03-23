@@ -171,7 +171,7 @@ impl Document {
     }
 
     /// provides all the sources used in this document
-    pub fn sources_used(&self) -> Vec<UsedSource> {
+    pub fn sources_used(&self) -> Result<Vec<UsedSource>, Issue> {
         let mut used_sources = AHashSet::new();
         let mut in_code_block = false;
         for section in self.sections() {
@@ -184,7 +184,9 @@ impl Document {
                     continue;
                 }
                 if !in_code_block {
-                    for source_ref in line.source_references() {
+                    for source_ref in
+                        line.source_references(&self.path, section.line_number + line_idx as u32)?
+                    {
                         used_sources.insert(UsedSource {
                             line: section.line_number + (line_idx as u32),
                             source_ref,
@@ -195,7 +197,7 @@ impl Document {
         }
         let mut result = Vec::from_iter(used_sources);
         result.sort();
-        result
+        Ok(result)
     }
 
     /// provides the complete textual content of this document
@@ -611,7 +613,8 @@ title text
 ";
             let doc = Document::from_str("test.md", give).unwrap();
             let have = doc.sources_used();
-            assert_eq!(have.len(), 0);
+            let want = Ok(vec![]);
+            pretty::assert_eq!(have, want);
         }
 
         #[test]
@@ -624,7 +627,7 @@ text [1] [3]
 ";
             let doc = Document::from_str("test.md", give).unwrap();
             let have = doc.sources_used();
-            let want = vec![
+            let want = Ok(vec![
                 UsedSource {
                     line: 1,
                     source_ref: SourceReference {
@@ -649,7 +652,7 @@ text [1] [3]
                         end: 12,
                     },
                 },
-            ];
+            ]);
             pretty::assert_eq!(have, want);
         }
 
@@ -661,7 +664,8 @@ Example code: `map[0]`
 ";
             let doc = Document::from_str("test.md", give).unwrap();
             let have = doc.sources_used();
-            assert_eq!(have.len(), 0);
+            let want = Ok(vec![]);
+            assert_eq!(have, want);
         }
 
         #[test]
@@ -675,7 +679,8 @@ map[0]
 ";
             let doc = Document::from_str("test.md", give).unwrap();
             let have = doc.sources_used();
-            assert_eq!(have.len(), 0);
+            let want = Ok(vec![]);
+            assert_eq!(have, want);
         }
     }
 }

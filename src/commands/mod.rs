@@ -85,6 +85,9 @@ pub enum Issue {
     SectionWithoutHeader {
         location: Location,
     },
+    UnclosedBacktick {
+        location: Location,
+    },
     UnclosedFence {
         location: Location,
     },

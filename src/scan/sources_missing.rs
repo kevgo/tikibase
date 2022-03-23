@@ -3,7 +3,10 @@ use crate::{Issue, Location, Tikibase};
 pub(crate) fn scan(base: &Tikibase) -> Vec<Issue> {
     let mut issues = Vec::<Issue>::new();
     for doc in &base.docs {
-        let used_sources = doc.sources_used();
+        let used_sources = match doc.sources_used() {
+            Ok(used_sources) => used_sources,
+            Err(issue) => return vec![issue],
+        };
         let defined_source_ids = doc.sources_defined();
         for used_source in used_sources {
             if !defined_source_ids.contains(&used_source.source_ref.identifier) {

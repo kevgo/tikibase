@@ -185,6 +185,13 @@ impl Message {
                 start: location.start,
                 end: location.end,
             },
+            Issue::UnclosedBacktick { location } => Message {
+                text: "unclosed backtick".into(),
+                file: location.file,
+                line: location.line,
+                start: location.start,
+                end: location.end,
+            },
             Issue::UnclosedFence { location } => Message {
                 text: "unclosed fence".into(),
                 file: location.file,

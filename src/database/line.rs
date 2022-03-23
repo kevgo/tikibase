@@ -1,6 +1,8 @@
 use super::{Reference, SourceReference};
+use crate::{Issue, Location};
 use once_cell::sync::Lazy;
 use regex::Regex;
+use std::path::Path;
 
 #[derive(Debug, Default, PartialEq)]
 pub struct Line(String);
@@ -9,7 +11,6 @@ static MD_RE: Lazy<Regex> = Lazy::new(|| Regex::new("(!?)\\[[^\\]]*\\]\\(([^)]*)
 static A_HTML_RE: Lazy<Regex> = Lazy::new(|| Regex::new(r#"<a href="(.*)">(.*)</a>"#).unwrap());
 static IMG_HTML_RE: Lazy<Regex> = Lazy::new(|| Regex::new(r#"<img src="([^"]*)"[^>]*>"#).unwrap());
 static SOURCE_RE: Lazy<Regex> = Lazy::new(|| Regex::new(r#"\[(\d+)\]"#).unwrap());
-static CODE_RE: Lazy<Regex> = Lazy::new(|| Regex::new("`[^`]+`").unwrap());
 
 impl Line {
     pub fn from<S: Into<String>>(text: S) -> Line {
@@ -66,8 +67,8 @@ impl Line {
     }
 
     /// provides the indexes of all sources referenced on this line
-    pub fn source_references(&self) -> Vec<SourceReference> {
-        let sanitized = CODE_RE.replace_all(&self.0, "");
+    pub fn source_references(&self, file: &Path, line: u32) -> Result<Vec<SourceReference>, Issue> {
+        let sanitized = blank_code_segments(&self.0, file, line)?;
         let mut result = vec![];
         for captures in SOURCE_RE.captures_iter(&sanitized) {
             let total_match = captures.get(0).unwrap();
@@ -77,12 +78,78 @@ impl Line {
                 end: total_match.end() as u32,
             });
         }
-        result
+        Ok(result)
     }
+}
+
+/// non-destructively overwrites areas inside backticks in the given string with spaces
+fn blank_code_segments(text: &str, file: &Path, line: u32) -> Result<String, Issue> {
+    let mut result = String::with_capacity(text.len());
+    let mut code_block_start: Option<u32> = None;
+    for (i, c) in text.char_indices() {
+        if c == '`' {
+            code_block_start = match code_block_start {
+                Some(_) => None,
+                None => Some(i as u32),
+            };
+            result.push(c);
+            continue;
+        }
+        result.push(match code_block_start {
+            Some(_) => ' ',
+            None => c,
+        });
+    }
+    if let Some(code_block_start) = code_block_start {
+        return Err(Issue::UnclosedBacktick {
+            location: Location {
+                file: file.into(),
+                line,
+                start: code_block_start as u32,
+                end: text.len() as u32,
+            },
+        });
+    }
+    Ok(result)
 }
 
 #[cfg(test)]
 mod tests {
+
+    mod blank_code_segments {
+        use super::super::blank_code_segments;
+        use crate::{Issue, Location};
+        use std::path::{Path, PathBuf};
+
+        #[test]
+        fn with_code_blocks() {
+            let give = "one `map[0]` two `more code` three";
+            let want = "one `      ` two `         ` three".to_string();
+            assert_eq!(blank_code_segments(give, Path::new(""), 0), Ok(want))
+        }
+
+        #[test]
+        fn empty_string() {
+            let give = "";
+            let want = "".to_string();
+            assert_eq!(blank_code_segments(give, Path::new(""), 0), Ok(want))
+        }
+
+        #[test]
+        fn unclosed_backtick() {
+            let give = "one `unclosed";
+            let want = Err(Issue::UnclosedBacktick {
+                location: Location {
+                    file: PathBuf::from(""),
+                    line: 12,
+                    start: 4,
+                    end: 13,
+                },
+            });
+            let have = blank_code_segments(give, Path::new(""), 12);
+            assert_eq!(have, want)
+        }
+    }
 
     mod references {
         use super::super::Reference;
@@ -184,31 +251,33 @@ mod tests {
 
     mod used_sources {
         use crate::database::{Line, SourceReference};
+        use std::path::Path;
 
         #[test]
         fn no_source() {
             let line = Line::from("text");
-            let have = line.source_references();
-            assert_eq!(have.len(), 0);
+            let have = line.source_references(Path::new(""), 0);
+            let want = Ok(vec![]);
+            pretty::assert_eq!(have, want);
         }
 
         #[test]
         fn single_source() {
             let line = Line::from("- text [1]");
-            let have = line.source_references();
-            let want = vec![SourceReference {
+            let have = line.source_references(Path::new(""), 0);
+            let want = Ok(vec![SourceReference {
                 identifier: "1".into(),
                 start: 7,
                 end: 10,
-            }];
+            }]);
             pretty::assert_eq!(have, want);
         }
 
         #[test]
         fn multiple_sources() {
             let line = Line::from("- text [1] [2]");
-            let have = line.source_references();
-            let want = vec![
+            let have = line.source_references(Path::new(""), 0);
+            let want = Ok(vec![
                 SourceReference {
                     identifier: "1".into(),
                     start: 7,
@@ -219,15 +288,20 @@ mod tests {
                     start: 11,
                     end: 14,
                 },
-            ];
+            ]);
             pretty::assert_eq!(have, want);
         }
 
         #[test]
         fn ignore_code_looking_like_source_references() {
-            let line = Line::from("code: `map[0]`");
-            let have = line.source_references();
-            pretty::assert_eq!(have, vec![]);
+            let line = Line::from("the code `map[0]` is mentioned in [1]");
+            let have = line.source_references(Path::new(""), 0);
+            let want = Ok(vec![SourceReference {
+                identifier: "1".into(),
+                start: 34,
+                end: 37,
+            }]);
+            pretty::assert_eq!(have, want);
         }
     }
 }
