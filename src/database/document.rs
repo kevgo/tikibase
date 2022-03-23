@@ -703,10 +703,10 @@ foo
 
         #[test]
         fn code_segment() {
-            let give = "\
-# Title
-a `[^1]` code block
-";
+            let give = indoc! {"
+                # Title
+                a `[^1]` code block
+                "};
             let doc = Document::from_str("test.md", give).unwrap();
             let have = doc.footnote_definitions();
             let want = Ok(vec![]);
