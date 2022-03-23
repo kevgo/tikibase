@@ -125,6 +125,7 @@ impl Document {
             .unwrap()
     }
 
+    /// provides an iterator over all lines in this document
     pub fn lines(&self) -> LinesIterator {
         let mut section_iter = self.sections();
         let section = section_iter.next().unwrap();
@@ -274,12 +275,10 @@ impl<'a> Iterator for LinesIterator<'a> {
         if let Some(next_line) = self.lines_iter.next() {
             return Some(next_line);
         }
-        // no more lines in the current section --> get the next section
         let next_section = match self.section_iter.next() {
             Some(section) => section,
             None => return None,
         };
-        // here we have a new section
         self.lines_iter = next_section.lines();
         self.lines_iter.next()
     }
@@ -496,20 +495,21 @@ mod tests {
     mod lines {
         use super::super::Document;
         use crate::database::Line;
+        use indoc::indoc;
 
         #[test]
         fn multiple_sections() {
-            let give = "\
-# Title
-title text
+            let give = indoc! {"
+            # Title
+            title text
 
-### Section 1
-one
-two
+            ### Section 1
+            one
+            two
 
-### Section 2
-foo
-";
+            ### Section 2
+            foo
+            "};
             let doc = Document::from_str("test.md", give).unwrap();
             let mut lines = doc.lines();
             pretty::assert_eq!(lines.next(), Some(&Line::from("# Title")));
@@ -521,6 +521,21 @@ foo
             pretty::assert_eq!(lines.next(), Some(&Line::from("")));
             pretty::assert_eq!(lines.next(), Some(&Line::from("### Section 2")));
             pretty::assert_eq!(lines.next(), Some(&Line::from("foo")));
+            pretty::assert_eq!(lines.next(), None);
+        }
+
+        #[test]
+        fn section_without_body() {
+            let give = indoc! {"
+                # Title
+                ### Section 1
+                ### Section 2
+                "};
+            let doc = Document::from_str("test.md", give).unwrap();
+            let mut lines = doc.lines();
+            pretty::assert_eq!(lines.next(), Some(&Line::from("# Title")));
+            pretty::assert_eq!(lines.next(), Some(&Line::from("### Section 1")));
+            pretty::assert_eq!(lines.next(), Some(&Line::from("### Section 2")));
             pretty::assert_eq!(lines.next(), None);
         }
     }

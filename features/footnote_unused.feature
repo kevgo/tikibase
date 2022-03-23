@@ -1,4 +1,3 @@
-@this
 Feature: recognize unused footnotes
 
   Background:
