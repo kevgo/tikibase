@@ -64,8 +64,7 @@ impl Document {
         }
         if let Some(section_builder) = section_builder {
             let section = section_builder.result();
-            let section_title = section.title();
-            if section_title.title == "occurrences" {
+            if section.title().title == "occurrences" {
                 old_occurrences_section = Some(section);
             } else {
                 sections.push(section);
