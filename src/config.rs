@@ -27,6 +27,8 @@ pub fn load<P: AsRef<Path>>(dir: P) -> Result<Config, Issue> {
                     location: Location {
                         file: PathBuf::from("tikibase.json"),
                         line: 0,
+                        start: 0,
+                        end: 0,
                     },
                 })
             }
@@ -37,6 +39,8 @@ pub fn load<P: AsRef<Path>>(dir: P) -> Result<Config, Issue> {
         location: Location {
             file: PathBuf::from("tikibase.json"),
             line: e.line() as u32,
+            start: e.column() as u32,
+            end: e.column() as u32,
         },
     })
 }
@@ -102,6 +106,8 @@ mod tests {
                 location: Location {
                     file: PathBuf::from("tikibase.json"),
                     line: 3,
+                    start: 1,
+                    end: 1,
                 },
             });
             pretty::assert_eq!(have, want)

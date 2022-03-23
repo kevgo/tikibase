@@ -25,11 +25,14 @@ pub(crate) fn scan(
 
         if missing_outgoing.is_empty() {
             // no missing links --> done with this document
-            if let Some(occurrences_section_line) = doc.occurrences_section_line {
+            if let Some(old_occurrences_section) = doc.old_occurrences_section.as_ref() {
+                let occurrences_title = old_occurrences_section.title();
                 issues.push(Issue::ObsoleteOccurrencesSection {
                     location: Location {
                         file: doc.path.clone(),
-                        line: occurrences_section_line,
+                        line: old_occurrences_section.line_number,
+                        start: occurrences_title.start,
+                        end: occurrences_title.end(),
                     },
                 });
             }
@@ -42,6 +45,8 @@ pub(crate) fn scan(
             location: Location {
                 file: doc.path.clone(),
                 line: doc.lines_count(),
+                start: 0,
+                end: doc.last_line().text().len() as u32,
             },
             links: missing_outgoing
                 .into_iter()
@@ -81,12 +86,14 @@ mod tests {
             vec![Issue::MissingLinks {
                 location: Location {
                     file: "1.md".into(),
-                    line: 2
+                    line: 2,
+                    start: 0,
+                    end: 4
                 },
                 links: vec![
                     MissingLink {
                         path: "2.md".into(),
-                        title: "Two".into()
+                        title: "Two".into(),
                     },
                     MissingLink {
                         path: "3.md".into(),
@@ -105,14 +112,14 @@ mod tests {
         let outgoing_links = DocLinks::default();
         let incoming_links = DocLinks::default();
         let have = super::scan(&base, &incoming_links, &outgoing_links);
-        pretty::assert_eq!(
-            have,
-            vec![Issue::ObsoleteOccurrencesSection {
-                location: Location {
-                    file: "1.md".into(),
-                    line: 3
-                },
-            }]
-        );
+        let want = vec![Issue::ObsoleteOccurrencesSection {
+            location: Location {
+                file: "1.md".into(),
+                line: 3,
+                start: 4,
+                end: 15,
+            },
+        }];
+        pretty::assert_eq!(have, want);
     }
 }

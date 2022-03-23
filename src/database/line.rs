@@ -1,15 +1,16 @@
-use super::Reference;
+use super::{Reference, SourceReference};
+use crate::{Issue, Location};
 use once_cell::sync::Lazy;
 use regex::Regex;
+use std::path::Path;
 
-#[derive(Debug, PartialEq)]
+#[derive(Debug, Default, PartialEq)]
 pub struct Line(String);
 
 static MD_RE: Lazy<Regex> = Lazy::new(|| Regex::new("(!?)\\[[^\\]]*\\]\\(([^)]*)\\)").unwrap());
 static A_HTML_RE: Lazy<Regex> = Lazy::new(|| Regex::new(r#"<a href="(.*)">(.*)</a>"#).unwrap());
 static IMG_HTML_RE: Lazy<Regex> = Lazy::new(|| Regex::new(r#"<img src="([^"]*)"[^>]*>"#).unwrap());
 static SOURCE_RE: Lazy<Regex> = Lazy::new(|| Regex::new(r#"\[(\d+)\]"#).unwrap());
-static CODE_RE: Lazy<Regex> = Lazy::new(|| Regex::new("`[^`]+`").unwrap());
 
 impl Line {
     pub fn from<S: Into<String>>(text: S) -> Line {
@@ -20,28 +21,41 @@ impl Line {
     pub fn references(&self) -> Vec<Reference> {
         let mut result = Vec::new();
         for cap in MD_RE.captures_iter(&self.0) {
+            let full_match = cap.get(0).unwrap();
             match &cap[1] {
                 "!" => result.push(Reference::Image {
                     src: cap[2].to_string(),
+                    start: full_match.start() as u32,
+                    end: full_match.end() as u32,
                 }),
                 "" => {
                     let mut destination = cap[2].to_string();
                     if let Some(idx) = destination.find('#') {
                         destination.truncate(idx);
                     }
-                    result.push(Reference::Link { destination });
+                    result.push(Reference::Link {
+                        destination,
+                        start: full_match.start() as u32,
+                        end: full_match.end() as u32,
+                    });
                 }
                 _ => panic!("unexpected capture: '{}'", &cap[1]),
             }
         }
         for cap in A_HTML_RE.captures_iter(&self.0) {
+            let full_match = cap.get(0).unwrap();
             result.push(Reference::Link {
                 destination: cap[1].to_string(),
+                start: full_match.start() as u32,
+                end: full_match.end() as u32,
             });
         }
         for cap in IMG_HTML_RE.captures_iter(&self.0) {
+            let full_match = cap.get(0).unwrap();
             result.push(Reference::Image {
                 src: cap[1].to_string(),
+                start: full_match.start() as u32,
+                end: full_match.end() as u32,
             });
         }
         result
@@ -52,18 +66,90 @@ impl Line {
         &self.0
     }
 
-    /// provides the indexes of all sources used in this line
-    pub fn used_sources(&self) -> Vec<String> {
-        let sanitized = CODE_RE.replace_all(&self.0, "");
-        SOURCE_RE
-            .captures_iter(&sanitized)
-            .map(|cap| cap[1].to_string())
-            .collect()
+    /// provides the indexes of all sources referenced on this line
+    pub fn source_references(&self, file: &Path, line: u32) -> Result<Vec<SourceReference>, Issue> {
+        let sanitized = sanitize_code_segments(&self.0, file, line)?;
+        let mut result = vec![];
+        for captures in SOURCE_RE.captures_iter(&sanitized) {
+            let total_match = captures.get(0).unwrap();
+            result.push(SourceReference {
+                identifier: captures.get(1).unwrap().as_str().to_string(),
+                start: total_match.start() as u32,
+                end: total_match.end() as u32,
+            });
+        }
+        Ok(result)
     }
+}
+
+/// non-destructively overwrites areas inside backticks in the given string with spaces
+fn sanitize_code_segments(text: &str, file: &Path, line: u32) -> Result<String, Issue> {
+    let mut result = String::with_capacity(text.len());
+    let mut code_block_start: Option<u32> = None;
+    for (i, c) in text.char_indices() {
+        if c == '`' {
+            code_block_start = match code_block_start {
+                Some(_) => None,
+                None => Some(i as u32),
+            };
+            result.push(c);
+            continue;
+        }
+        result.push(match code_block_start {
+            Some(_) => ' ',
+            None => c,
+        });
+    }
+    if let Some(code_block_start) = code_block_start {
+        return Err(Issue::UnclosedBacktick {
+            location: Location {
+                file: file.into(),
+                line,
+                start: code_block_start as u32,
+                end: text.len() as u32,
+            },
+        });
+    }
+    Ok(result)
 }
 
 #[cfg(test)]
 mod tests {
+
+    mod sanitize_code_segments {
+        use super::super::sanitize_code_segments;
+        use crate::{Issue, Location};
+        use std::path::{Path, PathBuf};
+
+        #[test]
+        fn with_code_blocks() {
+            let give = "one `map[0]` two `more code` three";
+            let want = "one `      ` two `         ` three".to_string();
+            assert_eq!(sanitize_code_segments(give, Path::new(""), 0), Ok(want))
+        }
+
+        #[test]
+        fn empty_string() {
+            let give = "";
+            let want = "".to_string();
+            assert_eq!(sanitize_code_segments(give, Path::new(""), 0), Ok(want))
+        }
+
+        #[test]
+        fn unclosed_backtick() {
+            let give = "one `unclosed";
+            let want = Err(Issue::UnclosedBacktick {
+                location: Location {
+                    file: PathBuf::from(""),
+                    line: 12,
+                    start: 4,
+                    end: 13,
+                },
+            });
+            let have = sanitize_code_segments(give, Path::new(""), 12);
+            assert_eq!(have, want)
+        }
+    }
 
     mod references {
         use super::super::Reference;
@@ -78,9 +164,13 @@ mod tests {
             let want = vec![
                 Reference::Link {
                     destination: "one.md".into(),
+                    start: 12,
+                    end: 25,
                 },
                 Reference::Link {
                     destination: "two.md".into(),
+                    start: 48,
+                    end: 75,
                 },
             ];
             pretty::assert_eq!(have, want)
@@ -92,6 +182,8 @@ mod tests {
             let have = line.references();
             let want = vec![Reference::Link {
                 destination: "two.md".into(),
+                start: 14,
+                end: 38,
             }];
             pretty::assert_eq!(have, want)
         }
@@ -102,6 +194,8 @@ mod tests {
             let have = line.references();
             let want = vec![Reference::Image {
                 src: "zonk.md".into(),
+                start: 13,
+                end: 29,
             }];
             pretty::assert_eq!(have, want)
         }
@@ -112,6 +206,8 @@ mod tests {
             let have = line.references();
             let want = vec![Reference::Image {
                 src: "zonk.md".into(),
+                start: 0,
+                end: 19,
             }];
             pretty::assert_eq!(have, want)
         }
@@ -122,6 +218,8 @@ mod tests {
             let have = line.references();
             let want = vec![Reference::Image {
                 src: "zonk.md".into(),
+                start: 0,
+                end: 42,
             }];
             pretty::assert_eq!(have, want)
         }
@@ -132,6 +230,8 @@ mod tests {
             let have = line.references();
             let want = vec![Reference::Image {
                 src: "zonk.md".into(),
+                start: 0,
+                end: 20,
             }];
             pretty::assert_eq!(have, want)
         }
@@ -142,43 +242,66 @@ mod tests {
             let have = line.references();
             let want = vec![Reference::Image {
                 src: "zonk.md".into(),
+                start: 0,
+                end: 21,
             }];
             pretty::assert_eq!(have, want)
         }
     }
 
     mod used_sources {
-        use crate::database::Line;
+        use crate::database::{Line, SourceReference};
+        use std::path::Path;
 
         #[test]
         fn no_source() {
             let line = Line::from("text");
-            let have = line.used_sources();
-            assert_eq!(have.len(), 0);
+            let have = line.source_references(Path::new(""), 0);
+            let want = Ok(vec![]);
+            pretty::assert_eq!(have, want);
         }
 
         #[test]
         fn single_source() {
             let line = Line::from("- text [1]");
-            let have = line.used_sources();
-            let want = vec!["1".to_string()];
-            assert_eq!(have, want);
+            let have = line.source_references(Path::new(""), 0);
+            let want = Ok(vec![SourceReference {
+                identifier: "1".into(),
+                start: 7,
+                end: 10,
+            }]);
+            pretty::assert_eq!(have, want);
         }
 
         #[test]
         fn multiple_sources() {
             let line = Line::from("- text [1] [2]");
-            let have = line.used_sources();
-            let want = vec!["1".to_string(), "2".to_string()];
-            assert_eq!(have, want);
+            let have = line.source_references(Path::new(""), 0);
+            let want = Ok(vec![
+                SourceReference {
+                    identifier: "1".into(),
+                    start: 7,
+                    end: 10,
+                },
+                SourceReference {
+                    identifier: "2".into(),
+                    start: 11,
+                    end: 14,
+                },
+            ]);
+            pretty::assert_eq!(have, want);
         }
 
         #[test]
-        fn code_segment() {
-            let line = Line::from("code: `map[0]`");
-            let have = line.used_sources();
-            let want: Vec<String> = vec![];
-            assert_eq!(have, want);
+        fn ignore_code_looking_like_source_references() {
+            let line = Line::from("the code `map[0]` is mentioned in [1]");
+            let have = line.source_references(Path::new(""), 0);
+            let want = Ok(vec![SourceReference {
+                identifier: "1".into(),
+                start: 34,
+                end: 37,
+            }]);
+            pretty::assert_eq!(have, want);
         }
     }
 }

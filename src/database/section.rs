@@ -2,7 +2,7 @@ use super::Line;
 use heck::ToKebabCase;
 
 /// a section in a document, from one heading to above the next heading
-#[derive(Debug, PartialEq)]
+#[derive(Debug, Default, PartialEq)]
 pub struct Section {
     /// the line number at which this section starts, 0-based
     pub line_number: u32,
@@ -15,7 +15,7 @@ pub struct Section {
 impl Section {
     /// provides the link anchor for this section, in GitHub format
     pub fn anchor(&self) -> String {
-        format!("#{}", self.title().to_kebab_case())
+        format!("#{}", self.title().text.to_kebab_case())
     }
 
     /// provides a non-consuming iterator for all lines in this section
@@ -24,6 +24,14 @@ impl Section {
             title_line: &self.title_line,
             body_iter: self.body.iter(),
             emitted_title: false,
+        }
+    }
+
+    /// returns the last line of this section
+    pub fn last_line(&self) -> &Line {
+        match self.body.last() {
+            Some(last_body_line) => last_body_line,
+            None => &self.title_line,
         }
     }
 
@@ -58,13 +66,17 @@ impl Section {
     }
 
     /// provides a human-readable description of this section, e.g. "Hello" for a section with the title "# Hello"
-    pub fn title(&self) -> &str {
+    /// as well as the column at which this description stars on the line
+    pub fn title(&self) -> SectionTitle {
         for (i, c) in self.title_line.text().char_indices() {
             if c != '#' && c != ' ' {
-                return &self.title_line.text()[i..];
+                return SectionTitle {
+                    text: &self.title_line.text()[i..],
+                    start: i as u32,
+                };
             }
         }
-        ""
+        SectionTitle { text: "", start: 0 }
     }
 
     /// provides a section with the given title
@@ -76,6 +88,19 @@ impl Section {
             title_line: Line::from(title),
             body: Vec::new(),
         }
+    }
+}
+
+/// describes the title of a section: its text and where on the line it is located
+#[derive(Debug, PartialEq)]
+pub struct SectionTitle<'a> {
+    pub text: &'a str,
+    pub start: u32,
+}
+
+impl SectionTitle<'_> {
+    pub fn end(&self) -> u32 {
+        self.start + self.text.len() as u32
     }
 }
 
@@ -152,6 +177,33 @@ mod tests {
         }
     }
 
+    mod last_line {
+        use crate::database::{Line, Section};
+
+        #[test]
+        fn with_body() {
+            let section = Section {
+                body: vec![Line::from("one"), Line::from("two")],
+                ..Section::default()
+            };
+            let have = section.last_line();
+            let want = Line::from("two");
+            assert_eq!(have, &want)
+        }
+
+        #[test]
+        fn without_body() {
+            let section = Section {
+                body: vec![],
+                title_line: Line::from("title"),
+                ..Section::default()
+            };
+            let have = section.last_line();
+            let want = Line::from("title");
+            assert_eq!(have, &want)
+        }
+    }
+
     mod last_line_abs {
         use crate::database::{Line, Section};
 
@@ -220,30 +272,49 @@ title content";
     }
 
     mod title {
+        use super::SectionTitle;
         use crate::database::Section;
 
         #[test]
         fn h1() {
             let section = Section::with_title("# Title");
-            assert_eq!(section.title(), "Title");
+            pretty::assert_eq!(
+                section.title(),
+                SectionTitle {
+                    text: "Title",
+                    start: 2
+                }
+            );
         }
 
         #[test]
         fn h3() {
             let section = Section::with_title("### Title");
-            assert_eq!(section.title(), "Title");
+            assert_eq!(
+                section.title(),
+                SectionTitle {
+                    text: "Title",
+                    start: 4
+                }
+            );
         }
 
         #[test]
         fn no_header() {
             let section = Section::with_title("Title");
-            assert_eq!(section.title(), "Title");
+            assert_eq!(
+                section.title(),
+                SectionTitle {
+                    text: "Title",
+                    start: 0
+                }
+            );
         }
 
         #[test]
         fn no_text() {
             let section = Section::with_title("###");
-            assert_eq!(section.title(), "");
+            assert_eq!(section.title(), SectionTitle { text: "", start: 0 });
         }
     }
 

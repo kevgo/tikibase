@@ -64,7 +64,7 @@ pub enum Issue {
     },
     MissingSource {
         location: Location,
-        index: String,
+        identifier: String,
     },
     MixCapSection {
         location: Location,
@@ -83,6 +83,9 @@ pub enum Issue {
         location: Location,
     },
     SectionWithoutHeader {
+        location: Location,
+    },
+    UnclosedBacktick {
         location: Location,
     },
     UnclosedFence {
@@ -110,4 +113,6 @@ pub struct MissingLink {
 pub struct Location {
     pub file: PathBuf,
     pub line: u32,
+    pub start: u32,
+    pub end: u32,
 }

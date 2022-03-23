@@ -1,14 +1,18 @@
 //! Tooling for outputting the results of lint operations in text/JSON format.
 
-use crate::{Fix, Issue, Location, Outcome};
+use crate::{Fix, Issue, Outcome};
 use serde::Serialize;
 use std::borrow::Cow;
+use std::path::PathBuf;
 
 /// human-readable summary of running a single command
 #[derive(Debug, PartialEq, Serialize)]
 pub struct Message {
-    pub location: Location,
     pub text: String,
+    pub file: PathBuf,
+    pub line: u32,
+    pub start: u32,
+    pub end: u32,
 }
 
 impl Message {
@@ -16,8 +20,8 @@ impl Message {
     pub fn to_text(&self) -> String {
         format!(
             "{}:{}  {}",
-            self.location.file.to_string_lossy(),
-            self.location.line + 1,
+            self.file.to_string_lossy(),
+            self.line + 1,
             self.text
         )
     }
@@ -27,19 +31,31 @@ impl Message {
         match fix {
             Fix::RemovedEmptySection { title, location } => Message {
                 text: format!("removed empty section \"{}\"", title),
-                location,
+                file: location.file,
+                line: location.line,
+                start: location.start,
+                end: location.end,
             },
             Fix::AddedOccurrencesSection { location } => Message {
                 text: "added occurrences section".into(),
-                location,
+                file: location.file,
+                line: location.line,
+                start: location.start,
+                end: location.end,
             },
             Fix::RemovedObsoleteOccurrencesSection { location } => Message {
                 text: "removed obsolete occurrences section".into(),
-                location,
+                file: location.file,
+                line: location.line,
+                start: location.start,
+                end: location.end,
             },
             Fix::SortedSections { location } => Message {
                 text: "fixed section order".into(),
-                location,
+                file: location.file,
+                line: location.line,
+                start: location.start,
+                end: location.end,
             },
         }
     }
@@ -49,11 +65,17 @@ impl Message {
         match issue {
             Issue::BrokenImage { location, target } => Message {
                 text: format!("image link to non-existing file \"{}\"", target),
-                location,
+                file: location.file,
+                line: location.line,
+                start: location.start,
+                end: location.end,
             },
             Issue::BrokenLink { location, target } => Message {
                 text: format!("link to non-existing file \"{}\"", target),
-                location,
+                file: location.file,
+                line: location.line,
+                start: location.start,
+                end: location.end,
             },
             Issue::CannotReadConfigurationFile { location, message } => Message {
                 text: format!(
@@ -61,69 +83,121 @@ impl Message {
                     location.file.to_string_lossy(),
                     message
                 ),
-                location,
+                file: location.file,
+                line: location.line,
+                start: location.start,
+                end: location.end,
             },
             Issue::DuplicateSection { location, title } => Message {
                 text: format!("document contains multiple \"{}\" sections", title),
-                location,
+                file: location.file,
+                line: location.line,
+                start: location.start,
+                end: location.end,
             },
             Issue::EmptySection { location, title } => Message {
                 text: format!("section \"{}\" has no content", title),
-                location,
+                file: location.file,
+                line: location.line,
+                start: location.start,
+                end: location.end,
             },
             Issue::InvalidConfigurationFile { location, message } => Message {
                 text: format!(
                     "tikibase.json  invalid configuration file structure: {}",
                     message
                 ),
-                location,
+                file: location.file,
+                line: location.line,
+                start: location.start,
+                end: location.end,
             },
             Issue::LinkToSameDocument { location } => Message {
                 text: "document contains link to itself".into(),
-                location,
+                file: location.file,
+                line: location.line,
+                start: location.start,
+                end: location.end,
             },
             Issue::LinkWithoutDestination { location } => Message {
                 text: "link without destination".into(),
-                location,
+                file: location.file,
+                line: location.line,
+                start: location.start,
+                end: location.end,
             },
             Issue::MissingLinks { location, links } => {
                 let links: Vec<Cow<str>> =
                     links.iter().map(|ml| ml.path.to_string_lossy()).collect();
                 Message {
                     text: format!("missing link to {}", links.join(", ")),
-                    location,
+                    file: location.file,
+                    line: location.line,
+                    start: location.start,
+                    end: location.end,
                 }
             }
-            Issue::MissingSource { location, index } => Message {
-                text: format!("source [{}] doesn't exist", index),
+            Issue::MissingSource {
                 location,
+                identifier: index,
+            } => Message {
+                text: format!("source [{}] doesn't exist", index),
+                file: location.file,
+                line: location.line,
+                start: location.start,
+                end: location.end,
             },
             Issue::MixCapSection { location, variants } => Message {
                 text: format!(
                     "section title occurs with inconsistent capitalization: {}",
                     variants.join("|")
                 ),
-                location,
+                file: location.file,
+                line: location.line,
+                start: location.start,
+                end: location.end,
             },
             Issue::NoTitleSection { location } => Message {
                 text: "no title section".into(),
-                location,
+                file: location.file,
+                line: location.line,
+                start: location.start,
+                end: location.end,
             },
             Issue::ObsoleteOccurrencesSection { location } => Message {
                 text: "obsolete \"occurrences\" section".into(),
-                location,
+                file: location.file,
+                line: location.line,
+                start: location.start,
+                end: location.end,
             },
             Issue::OrphanedResource { location } => Message {
                 text: "file isn't linked to".into(),
-                location,
+                file: location.file,
+                line: location.line,
+                start: location.start,
+                end: location.end,
             },
             Issue::SectionWithoutHeader { location } => Message {
                 text: "section with empty title".into(),
-                location,
+                file: location.file,
+                line: location.line,
+                start: location.start,
+                end: location.end,
+            },
+            Issue::UnclosedBacktick { location } => Message {
+                text: "unclosed backtick".into(),
+                file: location.file,
+                line: location.line,
+                start: location.start,
+                end: location.end,
             },
             Issue::UnclosedFence { location } => Message {
                 text: "unclosed fence".into(),
-                location,
+                file: location.file,
+                line: location.line,
+                start: location.start,
+                end: location.end,
             },
             Issue::UnknownSection {
                 location,
@@ -140,12 +214,18 @@ impl Message {
                         title,
                         alloweds.join("")
                     ),
-                    location,
+                    file: location.file,
+                    line: location.line,
+                    start: location.start,
+                    end: location.end,
                 }
             }
             Issue::UnorderedSections { location } => Message {
                 text: "sections occur in different order than specified by tikibase.json".into(),
-                location,
+                file: location.file,
+                line: location.line,
+                start: location.start,
+                end: location.end,
             },
         }
     }

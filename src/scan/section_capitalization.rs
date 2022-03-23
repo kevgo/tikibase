@@ -9,12 +9,13 @@ pub(crate) fn scan(base: &Tikibase) -> Vec<Issue> {
         for section in doc.sections() {
             let section_title = section.title();
             title_variants
-                .entry(normalize(section_title))
+                .entry(normalize(section_title.text))
                 .or_insert_with(Vec::new)
                 .push(FileSection {
-                    title: section_title,
+                    title: section_title.text,
                     file: &doc.path,
                     line: section.line_number,
+                    start: section_title.start,
                 });
         }
     }
@@ -23,10 +24,9 @@ pub(crate) fn scan(base: &Tikibase) -> Vec<Issue> {
         if variants_count(&file_sections) < 2 {
             continue;
         }
-        let mut variants: Vec<String> = file_sections
-            .iter()
-            .map(|variant| variant.title.into())
-            .collect();
+        let variants: AHashSet<String> =
+            AHashSet::from_iter(file_sections.iter().map(|variant| variant.title.into()));
+        let mut variants: Vec<String> = Vec::from_iter(variants);
         variants.sort();
         for file_section in file_sections {
             issues.push(Issue::MixCapSection {
@@ -34,6 +34,8 @@ pub(crate) fn scan(base: &Tikibase) -> Vec<Issue> {
                 location: Location {
                     file: file_section.file.into(),
                     line: file_section.line,
+                    start: file_section.start,
+                    end: file_section.end(),
                 },
             });
         }
@@ -44,16 +46,24 @@ pub(crate) fn scan(base: &Tikibase) -> Vec<Issue> {
 #[derive(Eq, Hash, Ord, PartialEq, PartialOrd)]
 pub struct FileSection<'a> {
     pub file: &'a Path,
-    pub line: u32,
     pub title: &'a str,
+    pub line: u32,
+    pub start: u32,
+}
+
+impl FileSection<'_> {
+    pub fn end(&self) -> u32 {
+        self.start + self.title.len() as u32
+    }
 }
 
 impl Default for FileSection<'_> {
     fn default() -> Self {
         Self {
             file: Path::new(""),
-            line: 0,
             title: "",
+            line: 0,
+            start: 0,
         }
     }
 }
@@ -96,6 +106,9 @@ content";
 # another document
 
 ### one
+content
+
+### ONE
 content";
         test::create_file("2.md", content2, &dir);
         let base = Tikibase::load(dir, &Config::default()).unwrap();
@@ -105,6 +118,8 @@ content";
                 location: Location {
                     file: PathBuf::from("1.md"),
                     line: 2,
+                    start: 4,
+                    end: 7,
                 },
                 variants: vec!["ONE".into(), "One".into(), "one".into()],
             },
@@ -112,6 +127,8 @@ content";
                 location: Location {
                     file: PathBuf::from("1.md"),
                     line: 5,
+                    start: 4,
+                    end: 7,
                 },
                 variants: vec!["ONE".into(), "One".into(), "one".into()],
             },
@@ -119,6 +136,17 @@ content";
                 location: Location {
                     file: PathBuf::from("2.md"),
                     line: 2,
+                    start: 4,
+                    end: 7,
+                },
+                variants: vec!["ONE".into(), "One".into(), "one".into()],
+            },
+            Issue::MixCapSection {
+                location: Location {
+                    file: PathBuf::from("2.md"),
+                    line: 5,
+                    start: 4,
+                    end: 7,
                 },
                 variants: vec!["ONE".into(), "One".into(), "one".into()],
             },
@@ -163,5 +191,19 @@ content";
         let have = super::variants_count(&give);
         let want = 2;
         assert_eq!(have, want)
+    }
+
+    mod file_section {
+        use crate::scan::section_capitalization::FileSection;
+
+        #[test]
+        fn end() {
+            let file_section = FileSection {
+                title: "test section",
+                start: 4,
+                ..FileSection::default()
+            };
+            assert_eq!(file_section.end(), 16);
+        }
     }
 }

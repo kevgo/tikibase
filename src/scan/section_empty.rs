@@ -13,8 +13,10 @@ pub(crate) fn scan(base: &Tikibase) -> Vec<Issue> {
                     location: Location {
                         file: doc.path.clone(),
                         line: section.line_number,
+                        start: 0,
+                        end: section.title_line.text().len() as u32,
                     },
-                    title: section.title().into(),
+                    title: section.title().text.into(),
                 });
             }
         }
@@ -46,6 +48,8 @@ content";
             location: Location {
                 file: PathBuf::from("test.md"),
                 line: 2,
+                start: 0,
+                end: 17,
             },
             title: "empty section".into(),
         }];
@@ -70,6 +74,8 @@ content";
             location: Location {
                 file: PathBuf::from("test.md"),
                 line: 2,
+                start: 0,
+                end: 17,
             },
             title: "empty section".into(),
         }];

@@ -40,7 +40,7 @@ pub fn fix(issue: Issue, base: &mut Tikibase, config: &Config) -> Option<Fix> {
         }
         Issue::MissingSource {
             location: _,
-            index: _,
+            identifier: _,
         } => None,
         Issue::MixCapSection {
             variants: _,
@@ -52,6 +52,7 @@ pub fn fix(issue: Issue, base: &mut Tikibase, config: &Config) -> Option<Fix> {
         ),
         Issue::OrphanedResource { location: _ } => None,
         Issue::SectionWithoutHeader { location: _ } => None,
+        Issue::UnclosedBacktick { location: _ } => None,
         Issue::UnclosedFence { location: _ } => None,
         Issue::UnknownSection {
             location: _,

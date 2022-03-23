@@ -12,14 +12,16 @@ pub(crate) fn scan(base: &Tikibase, config: &Config) -> Vec<Issue> {
             // HACK: see https://github.com/rust-lang/rust/issues/42671
             if !config_sections
                 .iter()
-                .any(|config_section| config_section == section_title)
+                .any(|config_section| config_section == section_title.text)
             {
                 issues.push(Issue::UnknownSection {
                     location: Location {
                         file: doc.path.clone(),
                         line: section.line_number,
+                        start: section_title.start,
+                        end: section_title.end(),
                     },
-                    title: section_title.into(),
+                    title: section_title.text.into(),
                     allowed_titles: config.sections.clone().unwrap(),
                 });
             }

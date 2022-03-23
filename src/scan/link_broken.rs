@@ -27,12 +27,18 @@ pub(crate) fn scan(base: &Tikibase) -> LinksResult {
             for (i, line) in section.lines().enumerate() {
                 for reference in line.references() {
                     match reference {
-                        Reference::Link { mut destination } => {
+                        Reference::Link {
+                            mut destination,
+                            start,
+                            end,
+                        } => {
                             if destination.is_empty() {
                                 result.issues.push(Issue::LinkWithoutDestination {
                                     location: Location {
                                         file: doc.path.clone(),
                                         line: section.line_number + (i as u32),
+                                        start,
+                                        end,
                                     },
                                 });
                                 continue;
@@ -47,6 +53,8 @@ pub(crate) fn scan(base: &Tikibase) -> LinksResult {
                                     location: Location {
                                         file: doc.path.clone(),
                                         line: section.line_number + (i as u32),
+                                        start,
+                                        end,
                                     },
                                     target: destination,
                                 });
@@ -57,6 +65,8 @@ pub(crate) fn scan(base: &Tikibase) -> LinksResult {
                                     location: Location {
                                         file: doc.path.clone(),
                                         line: section.line_number + (i as u32),
+                                        start,
+                                        end,
                                     },
                                 });
                                 continue;
@@ -66,7 +76,7 @@ pub(crate) fn scan(base: &Tikibase) -> LinksResult {
                                 .add(&destination, doc.path.clone());
                             result.outgoing_doc_links.add(doc.path.clone(), destination);
                         }
-                        Reference::Image { src } => {
+                        Reference::Image { src, start, end } => {
                             if src.starts_with("http") {
                                 continue;
                             }
@@ -75,6 +85,8 @@ pub(crate) fn scan(base: &Tikibase) -> LinksResult {
                                     location: Location {
                                         file: doc.path.clone(),
                                         line: section.line_number + (i as u32),
+                                        start,
+                                        end,
                                     },
                                     target: src.clone(),
                                 });
@@ -125,16 +137,16 @@ mod tests {
             test::create_file("one.md", "# One\n\n[invalid](non-existing.md)\n", &dir);
             let base = Tikibase::load(dir, &Config::default()).unwrap();
             let have = scan(&base);
-            pretty::assert_eq!(
-                have.issues,
-                vec![Issue::BrokenLink {
-                    location: Location {
-                        file: "one.md".into(),
-                        line: 2,
-                    },
-                    target: "non-existing.md".into()
-                }]
-            );
+            let want = vec![Issue::BrokenLink {
+                location: Location {
+                    file: "one.md".into(),
+                    line: 2,
+                    start: 0,
+                    end: 26,
+                },
+                target: "non-existing.md".into(),
+            }];
+            pretty::assert_eq!(have.issues, want);
             assert_eq!(have.incoming_doc_links.data.len(), 0);
             assert_eq!(have.outgoing_doc_links.data.len(), 0);
             assert_eq!(have.outgoing_resource_links.len(), 0);
@@ -184,7 +196,9 @@ Here is a link to [Three](3.md) that also works.
                 vec![Issue::LinkWithoutDestination {
                     location: Location {
                         file: "one.md".into(),
-                        line: 2
+                        line: 2,
+                        start: 0,
+                        end: 11,
                     }
                 }]
             );
@@ -232,16 +246,16 @@ Here is a link to [Three](3.md) that also works.
             test::create_file("1.md", "# One\n\n![image](zonk.png)\n", &dir);
             let base = Tikibase::load(dir, &Config::default()).unwrap();
             let have = scan(&base);
-            pretty::assert_eq!(
-                have.issues,
-                vec![Issue::BrokenImage {
-                    location: Location {
-                        file: "1.md".into(),
-                        line: 2,
-                    },
-                    target: "zonk.png".into()
-                }]
-            );
+            let want = vec![Issue::BrokenImage {
+                location: Location {
+                    file: "1.md".into(),
+                    line: 2,
+                    start: 0,
+                    end: 18,
+                },
+                target: "zonk.png".into(),
+            }];
+            pretty::assert_eq!(have.issues, want);
             assert_eq!(have.outgoing_resource_links.len(), 1);
             assert_eq!(have.outgoing_resource_links[0], "zonk.png");
             assert_eq!(have.incoming_doc_links.data.len(), 0);

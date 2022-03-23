@@ -1,4 +1,4 @@
-use super::{section, Section};
+use super::{section, Line, Section, SourceReference};
 use crate::{Issue, Location};
 use ahash::AHashSet;
 use once_cell::sync::Lazy;
@@ -13,11 +13,8 @@ pub struct Document {
     pub path: PathBuf,
     pub title_section: Section,
     pub content_sections: Vec<Section>,
-    /// The line where the "occurrences" section in this document starts.
-    /// Loading a document filters out its "occurrences" section to we have to store this value separately.
-    /// `Some` means this document had an "occurrences" section at the given line when loading it.
-    /// `None` means this document had no occurrences section when loading it.
-    pub occurrences_section_line: Option<u32>,
+    /// The old "occurrences" section that was filtered out when loading the document.
+    pub old_occurrences_section: Option<Section>,
 }
 
 static SOURCE_RE: Lazy<Regex> = Lazy::new(|| Regex::new("^(\\d+)\\.").unwrap());
@@ -33,13 +30,13 @@ impl Document {
         let mut section_builder: Option<section::Builder> = None;
         let mut inside_fence = false;
         let mut fence_line = 0;
-        let mut occurrences_section_line: Option<u32> = None;
+        let mut old_occurrences_section: Option<Section> = None;
         for (line_number, line) in lines.enumerate() {
             if line.starts_with('#') && !inside_fence {
                 if let Some(section_builder) = section_builder {
                     let section = section_builder.result();
-                    if section.title() == "occurrences" {
-                        occurrences_section_line = Some(section.line_number);
+                    if section.title().text == "occurrences" {
+                        old_occurrences_section = Some(section);
                     } else {
                         sections.push(section);
                     }
@@ -58,6 +55,8 @@ impl Document {
                         location: Location {
                             file: path,
                             line: line_number as u32,
+                            start: 0,
+                            end: line.len() as u32,
                         },
                     })
                 }
@@ -65,8 +64,8 @@ impl Document {
         }
         if let Some(section_builder) = section_builder {
             let section = section_builder.result();
-            if section.title() == "occurrences" {
-                occurrences_section_line = Some(section.line_number);
+            if section.title().text == "occurrences" {
+                old_occurrences_section = Some(section);
             } else {
                 sections.push(section);
             }
@@ -76,6 +75,8 @@ impl Document {
                 location: Location {
                     file: path,
                     line: (fence_line as u32),
+                    start: 0,
+                    end: 0,
                 },
             });
         }
@@ -84,7 +85,7 @@ impl Document {
             path,
             title_section: sections.next().unwrap(),
             content_sections: sections.collect(),
-            occurrences_section_line,
+            old_occurrences_section,
         })
     }
 
@@ -104,7 +105,20 @@ impl Document {
     pub fn section_with_title(&self, title: &str) -> Option<&Section> {
         self.content_sections
             .iter()
-            .find(|section| section.title() == title)
+            .find(|section| section.title().text == title)
+    }
+
+    /// provides the last line in this document
+    pub fn last_line(&self) -> &Line {
+        self.last_section().last_line()
+    }
+
+    /// provides the last section in this document
+    pub fn last_section(&self) -> &Section {
+        match self.content_sections.last() {
+            Some(last_content_section) => last_content_section,
+            None => &self.title_section,
+        }
     }
 
     /// provides the last section in this document
@@ -135,7 +149,10 @@ impl Document {
 
     /// provides the section titles in this document
     pub fn section_titles(&self) -> Vec<&str> {
-        self.content_sections.iter().map(Section::title).collect()
+        self.content_sections
+            .iter()
+            .map(|section| section.title().text)
+            .collect()
     }
 
     /// provides all the sources that this document defines
@@ -154,11 +171,11 @@ impl Document {
     }
 
     /// provides all the sources used in this document
-    pub fn sources_used(&self) -> AHashSet<UsedSource> {
-        let mut result = AHashSet::new();
+    pub fn sources_used(&self) -> Result<Vec<UsedSource>, Issue> {
+        let mut used_sources = AHashSet::new();
         let mut in_code_block = false;
         for section in self.sections() {
-            if section.title() == "occurrences" {
+            if section.title().text == "occurrences" {
                 continue;
             }
             for (line_idx, line) in section.lines().enumerate() {
@@ -167,16 +184,19 @@ impl Document {
                     continue;
                 }
                 if !in_code_block {
-                    for index in line.used_sources() {
-                        result.insert(UsedSource {
+                    let line_nr_in_doc = section.line_number + line_idx as u32;
+                    for source_ref in line.source_references(&self.path, line_nr_in_doc)? {
+                        used_sources.insert(UsedSource {
                             line: section.line_number + (line_idx as u32),
-                            index,
+                            source_ref,
                         });
                     }
                 }
             }
         }
-        result
+        let mut result = Vec::from_iter(used_sources);
+        result.sort();
+        Ok(result)
     }
 
     /// provides the complete textual content of this document
@@ -190,7 +210,7 @@ impl Document {
 
     /// provides the human-readable title of this document
     pub fn title(&self) -> &str {
-        self.title_section.title()
+        self.title_section.title().text
     }
 }
 
@@ -214,11 +234,11 @@ impl<'a> Iterator for SectionIterator<'a> {
     }
 }
 
-#[derive(Debug, PartialEq, Eq, Hash)]
+/// a SourceReference in a Document
+#[derive(Debug, Eq, Hash, Ord, PartialEq, PartialOrd)]
 pub struct UsedSource {
     pub line: u32,
-    /// the index used for the source, e.g. "[1]"
-    pub index: String,
+    pub source_ref: SourceReference,
 }
 
 // -------------------------------------------------------------------------------------
@@ -254,7 +274,7 @@ content";
                     title_line: Line::from("### section 1"),
                     body: vec![Line::from("content")],
                 }],
-                occurrences_section_line: None,
+                old_occurrences_section: None,
             });
             pretty::assert_eq!(have, want);
         }
@@ -266,6 +286,8 @@ content";
                 location: Location {
                     file: PathBuf::from("one.md"),
                     line: 0,
+                    start: 0,
+                    end: 8,
                 },
             });
             pretty::assert_eq!(have, want)
@@ -294,7 +316,7 @@ text
                     ],
                 },
                 content_sections: vec![],
-                occurrences_section_line: None,
+                old_occurrences_section: None,
             });
             pretty::assert_eq!(have, want);
         }
@@ -312,6 +334,8 @@ text
                 location: Location {
                     file: PathBuf::from("test.md"),
                     line: 1,
+                    start: 0,
+                    end: 0,
                 },
             });
             pretty::assert_eq!(have, want)
@@ -347,9 +371,71 @@ content
                         body: vec![Line::from("- link 1")],
                     },
                 ],
-                occurrences_section_line: Some(3),
+                old_occurrences_section: Some(Section {
+                    line_number: 3,
+                    title_line: Line::from("### occurrences"),
+                    body: vec![Line::from("- occurrence 1")],
+                }),
             });
             pretty::assert_eq!(have, want);
+        }
+    }
+
+    mod last_line {
+        use crate::database::{Document, Line};
+
+        #[test]
+        fn title_section_only() {
+            let doc = Document::from_str("test.md", "# Title\ntitle text\n").unwrap();
+            let have = doc.last_line();
+            let want = Line::from("title text");
+            pretty::assert_eq!(have, &want)
+        }
+
+        #[test]
+        fn with_body() {
+            let doc =
+                Document::from_str("test.md", "# Title\n### section 1\nsection text").unwrap();
+            let have = doc.last_line();
+            let want = Line::from("section text");
+            pretty::assert_eq!(have, &want)
+        }
+
+        #[test]
+        fn title_only() {
+            let doc = Document::from_str("test.md", "# Title").unwrap();
+            let have = doc.last_line();
+            let want = Line::from("# Title");
+            pretty::assert_eq!(have, &want)
+        }
+
+        #[test]
+        fn section_without_body() {
+            let doc = Document::from_str("test.md", "# Title\n### section 1").unwrap();
+            let have = doc.last_line();
+            let want = Line::from("### section 1");
+            pretty::assert_eq!(have, &want)
+        }
+    }
+
+    mod last_section {
+        use crate::database::Document;
+
+        #[test]
+        fn title_only() {
+            let doc = Document::from_str("test.md", "# Title").unwrap();
+            let have = doc.last_section();
+            let want = &doc.title_section;
+            pretty::assert_eq!(&have, &want)
+        }
+
+        #[test]
+        fn with_body() {
+            let doc =
+                Document::from_str("test.md", "# Title\n### section 1\nsection text").unwrap();
+            let have = doc.last_section();
+            let want = &doc.content_sections[0];
+            pretty::assert_eq!(&have, &want)
         }
     }
 
@@ -515,8 +601,8 @@ title text
     }
 
     mod sources_used {
-        use crate::database::document::{Document, UsedSource};
-        use ahash::AHashSet;
+        use crate::database::document::UsedSource;
+        use crate::database::{Document, SourceReference};
 
         #[test]
         fn no_sources() {
@@ -526,7 +612,8 @@ title text
 ";
             let doc = Document::from_str("test.md", give).unwrap();
             let have = doc.sources_used();
-            assert_eq!(have.len(), 0);
+            let want = Ok(vec![]);
+            pretty::assert_eq!(have, want);
         }
 
         #[test]
@@ -539,20 +626,33 @@ text [1] [3]
 ";
             let doc = Document::from_str("test.md", give).unwrap();
             let have = doc.sources_used();
-            let mut want = AHashSet::new();
-            want.insert(UsedSource {
-                line: 1,
-                index: "2".into(),
-            });
-            want.insert(UsedSource {
-                line: 3,
-                index: "1".into(),
-            });
-            want.insert(UsedSource {
-                line: 3,
-                index: "3".into(),
-            });
-            assert_eq!(have, want);
+            let want = Ok(vec![
+                UsedSource {
+                    line: 1,
+                    source_ref: SourceReference {
+                        identifier: "2".into(),
+                        start: 11,
+                        end: 14,
+                    },
+                },
+                UsedSource {
+                    line: 3,
+                    source_ref: SourceReference {
+                        identifier: "1".into(),
+                        start: 5,
+                        end: 8,
+                    },
+                },
+                UsedSource {
+                    line: 3,
+                    source_ref: SourceReference {
+                        identifier: "3".into(),
+                        start: 9,
+                        end: 12,
+                    },
+                },
+            ]);
+            pretty::assert_eq!(have, want);
         }
 
         #[test]
@@ -563,7 +663,8 @@ Example code: `map[0]`
 ";
             let doc = Document::from_str("test.md", give).unwrap();
             let have = doc.sources_used();
-            assert_eq!(have.len(), 0);
+            let want = Ok(vec![]);
+            assert_eq!(have, want);
         }
 
         #[test]
@@ -577,7 +678,8 @@ map[0]
 ";
             let doc = Document::from_str("test.md", give).unwrap();
             let have = doc.sources_used();
-            assert_eq!(have.len(), 0);
+            let want = Ok(vec![]);
+            assert_eq!(have, want);
         }
     }
 }
