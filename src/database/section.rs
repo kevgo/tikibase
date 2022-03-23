@@ -92,6 +92,12 @@ pub struct SectionTitle<'a> {
     pub start: u32,
 }
 
+impl SectionTitle<'_> {
+    pub fn end(&self) -> u32 {
+        self.start + self.title.len() as u32
+    }
+}
+
 /// an iterator for Lines
 pub struct LinesIterator<'a> {
     title_line: &'a Line,

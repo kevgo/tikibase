@@ -35,7 +35,7 @@ pub(crate) fn scan(base: &Tikibase) -> Vec<Issue> {
                     file: file_section.file.into(),
                     line: file_section.line,
                     start: file_section.start,
-                    end: file_section.start + file_section.title.len() as u32,
+                    end: file_section.end(),
                 },
             });
         }
@@ -49,6 +49,12 @@ pub struct FileSection<'a> {
     pub title: &'a str,
     pub line: u32,
     pub start: u32,
+}
+
+impl FileSection<'_> {
+    pub fn end(&self) -> u32 {
+        self.start + self.title.len() as u32
+    }
 }
 
 impl Default for FileSection<'_> {
@@ -185,5 +191,19 @@ content";
         let have = super::variants_count(&give);
         let want = 2;
         assert_eq!(have, want)
+    }
+
+    mod file_section {
+        use crate::scan::section_capitalization::FileSection;
+
+        #[test]
+        fn end() {
+            let file_section = FileSection {
+                title: "test section",
+                start: 4,
+                ..FileSection::default()
+            };
+            assert_eq!(file_section.end(), 16);
+        }
     }
 }
