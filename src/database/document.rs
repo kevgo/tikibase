@@ -35,7 +35,7 @@ impl Document {
             if line.starts_with('#') && !inside_fence {
                 if let Some(section_builder) = section_builder {
                     let section = section_builder.result();
-                    if section.title().title == "occurrences" {
+                    if section.title().text == "occurrences" {
                         old_occurrences_section = Some(section);
                     } else {
                         sections.push(section);
@@ -64,7 +64,7 @@ impl Document {
         }
         if let Some(section_builder) = section_builder {
             let section = section_builder.result();
-            if section.title().title == "occurrences" {
+            if section.title().text == "occurrences" {
                 old_occurrences_section = Some(section);
             } else {
                 sections.push(section);
@@ -105,7 +105,7 @@ impl Document {
     pub fn section_with_title(&self, title: &str) -> Option<&Section> {
         self.content_sections
             .iter()
-            .find(|section| section.title().title == title)
+            .find(|section| section.title().text == title)
     }
 
     /// provides the last line in this document
@@ -151,7 +151,7 @@ impl Document {
     pub fn section_titles(&self) -> Vec<&str> {
         self.content_sections
             .iter()
-            .map(|section| section.title().title)
+            .map(|section| section.title().text)
             .collect()
     }
 
@@ -175,7 +175,7 @@ impl Document {
         let mut used_sources = AHashSet::new();
         let mut in_code_block = false;
         for section in self.sections() {
-            if section.title().title == "occurrences" {
+            if section.title().text == "occurrences" {
                 continue;
             }
             for (line_idx, line) in section.lines().enumerate() {
@@ -209,7 +209,7 @@ impl Document {
 
     /// provides the human-readable title of this document
     pub fn title(&self) -> &str {
-        self.title_section.title().title
+        self.title_section.title().text
     }
 }
 

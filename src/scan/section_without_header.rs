@@ -5,7 +5,7 @@ pub(crate) fn scan(base: &Tikibase) -> Vec<Issue> {
     for doc in &base.docs {
         for section in doc.sections() {
             let section_title = section.title();
-            if section_title.title.is_empty() {
+            if section_title.text.is_empty() {
                 issues.push(Issue::SectionWithoutHeader {
                     location: Location {
                         file: doc.path.clone(),

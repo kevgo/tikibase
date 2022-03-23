@@ -9,10 +9,10 @@ pub(crate) fn scan(base: &Tikibase) -> Vec<Issue> {
         for section in doc.sections() {
             let section_title = section.title();
             title_variants
-                .entry(normalize(section_title.title))
+                .entry(normalize(section_title.text))
                 .or_insert_with(Vec::new)
                 .push(FileSection {
-                    title: section_title.title,
+                    title: section_title.text,
                     file: &doc.path,
                     line: section.line_number,
                     start: section_title.start,

@@ -10,7 +10,7 @@ pub(crate) fn scan(base: &Tikibase) -> Vec<Issue> {
         for section in doc.sections() {
             let section_title = section.title();
             sections_lines
-                .entry(section_title.title)
+                .entry(section_title.text)
                 .or_insert_with(Vec::new)
                 .push((section.line_number, section_title.start))
         }

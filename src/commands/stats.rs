@@ -19,7 +19,7 @@ fn collect_section_titles(tb: &Tikibase) -> AHashMap<&str, u32> {
     let mut result: AHashMap<&str, u32> = AHashMap::new();
     for doc in &tb.docs {
         for section in &doc.content_sections {
-            let section_title = section.title().title;
+            let section_title = section.title().text;
             match result.get(section_title) {
                 None => result.insert(section_title, 1),
                 Some(count) => {

@@ -15,7 +15,7 @@ pub struct Section {
 impl Section {
     /// provides the link anchor for this section, in GitHub format
     pub fn anchor(&self) -> String {
-        format!("#{}", self.title().title.to_kebab_case())
+        format!("#{}", self.title().text.to_kebab_case())
     }
 
     /// provides a non-consuming iterator for all lines in this section
@@ -71,15 +71,12 @@ impl Section {
         for (i, c) in self.title_line.text().char_indices() {
             if c != '#' && c != ' ' {
                 return SectionTitle {
-                    title: &self.title_line.text()[i..],
+                    text: &self.title_line.text()[i..],
                     start: i as u32,
                 };
             }
         }
-        SectionTitle {
-            title: "",
-            start: 0,
-        }
+        SectionTitle { text: "", start: 0 }
     }
 
     /// provides a section with the given title
@@ -96,13 +93,13 @@ impl Section {
 
 #[derive(Debug, PartialEq)]
 pub struct SectionTitle<'a> {
-    pub title: &'a str,
+    pub text: &'a str,
     pub start: u32,
 }
 
 impl SectionTitle<'_> {
     pub fn end(&self) -> u32 {
-        self.start + self.title.len() as u32
+        self.start + self.text.len() as u32
     }
 }
 
@@ -283,7 +280,7 @@ title content";
             pretty::assert_eq!(
                 section.title(),
                 SectionTitle {
-                    title: "Title",
+                    text: "Title",
                     start: 2
                 }
             );
@@ -295,7 +292,7 @@ title content";
             assert_eq!(
                 section.title(),
                 SectionTitle {
-                    title: "Title",
+                    text: "Title",
                     start: 4
                 }
             );
@@ -307,7 +304,7 @@ title content";
             assert_eq!(
                 section.title(),
                 SectionTitle {
-                    title: "Title",
+                    text: "Title",
                     start: 0
                 }
             );
@@ -316,13 +313,7 @@ title content";
         #[test]
         fn no_text() {
             let section = Section::with_title("###");
-            assert_eq!(
-                section.title(),
-                SectionTitle {
-                    title: "",
-                    start: 0
-                }
-            );
+            assert_eq!(section.title(), SectionTitle { text: "", start: 0 });
         }
     }
 
