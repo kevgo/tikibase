@@ -381,9 +381,8 @@ content
     }
 
     mod last_line {
-        use crate::database::Line;
-
         use super::super::Document;
+        use crate::database::Line;
 
         #[test]
         fn title_section_only() {
