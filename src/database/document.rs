@@ -17,7 +17,14 @@ pub struct Document {
     /// Loading a document filters out its "occurrences" section to we have to store this value separately.
     /// `Some` means this document had an "occurrences" section at the given line when loading it.
     /// `None` means this document had no occurrences section when loading it.
-    pub occurrences_section_line: Option<(u32, u32, u32)>,
+    pub occurrences_section_line: Option<OccurrencesSectionLine>,
+}
+
+#[derive(Debug, PartialEq)]
+pub struct OccurrencesSectionLine {
+    pub line: u32,
+    pub start: u32,
+    pub end: u32,
 }
 
 static SOURCE_RE: Lazy<Regex> = Lazy::new(|| Regex::new("^(\\d+)\\.").unwrap());
@@ -33,15 +40,18 @@ impl Document {
         let mut section_builder: Option<section::Builder> = None;
         let mut inside_fence = false;
         let mut fence_line = 0;
-        let mut occurrences_section_line: Option<(u32, u32, u32)> = None;
+        let mut occurrences_section_line: Option<OccurrencesSectionLine> = None;
         for (line_number, line) in lines.enumerate() {
             if line.starts_with('#') && !inside_fence {
                 if let Some(section_builder) = section_builder {
                     let section = section_builder.result();
                     let (title, start) = section.title();
                     if title == "occurrences" {
-                        occurrences_section_line =
-                            Some((section.line_number, start, start + title.len() as u32));
+                        occurrences_section_line = Some(OccurrencesSectionLine {
+                            line: section.line_number,
+                            start,
+                            end: start + title.len() as u32,
+                        });
                     } else {
                         sections.push(section);
                     }
@@ -71,8 +81,11 @@ impl Document {
             let section = section_builder.result();
             let (title, start) = section.title();
             if title == "occurrences" {
-                occurrences_section_line =
-                    Some((section.line_number, start, start + title.len() as u32));
+                occurrences_section_line = Some(OccurrencesSectionLine {
+                    line: section.line_number,
+                    start,
+                    end: start + title.len() as u32,
+                });
             } else {
                 sections.push(section);
             }
@@ -257,6 +270,7 @@ mod tests {
 
     mod from_str {
         use super::super::Document;
+        use crate::database::document::OccurrencesSectionLine;
         use crate::database::{Line, Section};
         use crate::{Issue, Location};
         use std::path::PathBuf;
@@ -377,7 +391,11 @@ content
                         body: vec![Line::from("- link 1")],
                     },
                 ],
-                occurrences_section_line: Some((3, 4, 15)),
+                occurrences_section_line: Some(OccurrencesSectionLine {
+                    line: 3,
+                    start: 4,
+                    end: 15,
+                }),
             });
             pretty::assert_eq!(have, want);
         }
