@@ -248,19 +248,21 @@ pub struct UsedSource {
 #[cfg(test)]
 mod tests {
     use super::Document;
+    use indoc::indoc;
 
     mod from_str {
         use super::super::Document;
         use crate::database::{Line, Section};
         use crate::{Issue, Location};
+        use indoc::indoc;
         use std::path::PathBuf;
 
         #[test]
         fn valid() {
-            let give = "\
-# test
-### section 1
-content";
+            let give = indoc! {"
+                # test
+                ### section 1
+                content"};
             let have = Document::from_str("one.md", give);
             let want = Ok(Document {
                 path: PathBuf::from("one.md"),
@@ -295,13 +297,13 @@ content";
 
         #[test]
         fn with_fenced_code_block() {
-            let give = "\
-# test
-```md
-### not a document section
-text
-```
-";
+            let give = indoc! {"
+                # test
+                ```md
+                ### not a document section
+                text
+                ```
+                "};
             let have = Document::from_str("test.md", give);
             let want = Ok(Document {
                 path: PathBuf::from("test.md"),
@@ -323,12 +325,12 @@ text
 
         #[test]
         fn open_fenced_code_block() {
-            let give = "\
-# test
-```md
-### not a document section
-text
-";
+            let give = indoc! {"
+                # test
+                ```md
+                ### not a document section
+                text
+                "};
             let have = Document::from_str("test.md", give);
             let want = Err(Issue::UnclosedFence {
                 location: Location {
@@ -343,14 +345,14 @@ text
 
         #[test]
         fn with_occurrences_section() {
-            let give = "\
-# test
-### section 1
-content
-### occurrences
-- occurrence 1
-### links
-- link 1";
+            let give = indoc! {"
+                # test
+                ### section 1
+                content
+                ### occurrences
+                - occurrence 1
+                ### links
+                - link 1"};
             let have = Document::from_str("one.md", give);
             let want = Ok(Document {
                 path: PathBuf::from("one.md"),
@@ -441,28 +443,29 @@ content
 
     mod lines_count {
         use super::super::Document;
+        use indoc::indoc;
 
         #[test]
         fn with_content_sections() {
-            let give = "\
-# Title
-title text
-### Section 1
-one
-two
-### Section 2
-foo
-";
+            let give = indoc! {"
+                # Title
+                title text
+                ### Section 1
+                one
+                two
+                ### Section 2
+                foo
+                "};
             let doc = Document::from_str("test.md", give).unwrap();
             assert_eq!(doc.lines_count(), 6);
         }
 
         #[test]
         fn no_content_sections() {
-            let give = "\
-# Title
-title text
-";
+            let give = indoc! {"
+                # Title
+                title text
+                "};
             let doc = Document::from_str("test.md", give).unwrap();
             assert_eq!(doc.lines_count(), 1);
         }
@@ -471,17 +474,18 @@ title text
     mod last_section_mut {
         use super::super::Document;
         use crate::database::{Line, Section};
+        use indoc::indoc;
 
         #[test]
         fn has_content_section() {
-            let give = "\
-# Title
-title text
+            let give = indoc! {"
+                # Title
+                title text
 
-### s1
+                ### s1
 
-text
-";
+                text
+                "};
             let mut doc = Document::from_str("test.md", give).unwrap();
             let have = doc.last_section_mut();
             let mut want = Section {
@@ -494,10 +498,10 @@ text
 
         #[test]
         fn no_content_sections() {
-            let give = "\
-# Title
-title text
-";
+            let give = indoc! {"
+                # Title
+                title text
+                "};
             let mut doc = Document::from_str("test.md", give).unwrap();
             let have = doc.last_section_mut();
             let mut want = Section {
@@ -511,14 +515,14 @@ title text
 
     #[test]
     fn section_titles() {
-        let content = "\
-# Title
-title text
-### Section 1
-two
-### Section 2
-foo
-";
+        let content = indoc! {"
+            # Title
+            title text
+            ### Section 1
+            two
+            ### Section 2
+            foo
+            "};
         let doc = Document::from_str("test.md", content).unwrap();
         let have = doc.section_titles();
         let want = vec!["Section 1".to_string(), "Section 2".to_string()];
@@ -527,15 +531,15 @@ foo
 
     #[test]
     fn text() {
-        let give = "\
-# Title
-title text
-### Section 1
-one
-two
-### Section 2
-foo
-";
+        let give = indoc! {"
+            # Title
+            title text
+            ### Section 1
+            one
+            two
+            ### Section 2
+            foo
+            "};
         let doc = Document::from_str("test.md", give).unwrap();
         let have = doc.text();
         assert_eq!(have, give);
@@ -543,12 +547,12 @@ foo
 
     #[test]
     fn title() {
-        let give = "\
-# Title
-title text
-### Section 1
-one
-";
+        let give = indoc! {"
+            # Title
+            title text
+            ### Section 1
+            one
+            "};
         let doc = Document::from_str("test.md", give).unwrap();
         let have = doc.title();
         assert_eq!(have, "Title");
@@ -557,13 +561,14 @@ one
     mod sources_defined {
         use crate::database::document::Document;
         use ahash::AHashSet;
+        use indoc::indoc;
 
         #[test]
         fn no_links() {
-            let give = "\
-# Title
-title text
-";
+            let give = indoc! {"
+                # Title
+                title text
+                "};
             let doc = Document::from_str("test.md", give).unwrap();
             let have = doc.sources_defined();
             assert_eq!(have.len(), 0);
@@ -571,12 +576,12 @@ title text
 
         #[test]
         fn unordered_links() {
-            let give = "\
-# Title
-title text
-### links
-- https://foo.com
-";
+            let give = indoc! {"
+                # Title
+                title text
+                ### links
+                - https://foo.com
+                "};
             let doc = Document::from_str("test.md", give).unwrap();
             let have = doc.sources_defined();
             assert_eq!(have.len(), 0);
@@ -584,13 +589,13 @@ title text
 
         #[test]
         fn ordered_links() {
-            let give = "\
-# Title
-title text
-### links
-1. https://one.com
-2. https://two.com
-";
+            let give = indoc! {"
+                # Title
+                title text
+                ### links
+                1. https://one.com
+                2. https://two.com
+                "};
             let doc = Document::from_str("test.md", give).unwrap();
             let have = doc.sources_defined();
             let mut want = AHashSet::new();
@@ -603,13 +608,14 @@ title text
     mod sources_used {
         use crate::database::document::UsedSource;
         use crate::database::{Document, SourceReference};
+        use indoc::indoc;
 
         #[test]
         fn no_sources() {
-            let give = "\
-# Title
-title text
-";
+            let give = indoc! {"
+                # Title
+                title text
+                "};
             let doc = Document::from_str("test.md", give).unwrap();
             let have = doc.sources_used();
             let want = Ok(vec![]);
@@ -618,12 +624,12 @@ title text
 
         #[test]
         fn with_sources() {
-            let give = "\
-# Title
-title text [2]
-### sec 1
-text [1] [3]
-";
+            let give = indoc! {"
+                # Title
+                title text [2]
+                ### sec 1
+                text [1] [3]
+                "};
             let doc = Document::from_str("test.md", give).unwrap();
             let have = doc.sources_used();
             let want = Ok(vec![
@@ -657,10 +663,10 @@ text [1] [3]
 
         #[test]
         fn code_segment() {
-            let give = "\
-# Title
-Example code: `map[0]`
-";
+            let give = indoc! {"
+                # Title
+                Example code: `map[0]`
+                "};
             let doc = Document::from_str("test.md", give).unwrap();
             let have = doc.sources_used();
             let want = Ok(vec![]);
@@ -669,13 +675,13 @@ Example code: `map[0]`
 
         #[test]
         fn code_block() {
-            let give = "\
-# Title
-Example code:
-```
-map[0]
-```
-";
+            let give = indoc! {"
+                # Title
+                Example code:
+                ```
+                map[0]
+                ```
+                "};
             let doc = Document::from_str("test.md", give).unwrap();
             let have = doc.sources_used();
             let want = Ok(vec![]);

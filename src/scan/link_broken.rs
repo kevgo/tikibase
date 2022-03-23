@@ -129,6 +129,7 @@ mod tests {
     mod process {
         use super::super::scan;
         use crate::{test, Config, Issue, Location, Tikibase};
+        use indoc::indoc;
         use std::path::PathBuf;
 
         #[test]
@@ -155,15 +156,15 @@ mod tests {
         #[test]
         fn link_to_existing_file() {
             let dir = test::tmp_dir();
-            let content = "\
-# One
+            let content = indoc! {"
+                # One
 
-Here is a link to [Two](2.md) that works.
+                Here is a link to [Two](2.md) that works.
 
-### section
+                ### section
 
-Here is a link to [Three](3.md) that also works.
-";
+                Here is a link to [Three](3.md) that also works.
+                "};
             test::create_file("1.md", content, &dir);
             test::create_file("2.md", "# Two", &dir);
             test::create_file("3.md", "# Three", &dir);
@@ -210,12 +211,12 @@ Here is a link to [Three](3.md) that also works.
         #[test]
         fn external_urls() {
             let dir = test::tmp_dir();
-            let content = "\
-# One
+            let content = indoc! {"
+                # One
 
-[external site](https://google.com)
-![external image](https://google.com/foo.png)
-";
+                [external site](https://google.com)
+                ![external image](https://google.com/foo.png)
+                "};
             test::create_file("one.md", content, &dir);
             test::create_file("two.md", "# Two", &dir);
             let base = Tikibase::load(dir, &Config::default()).unwrap();

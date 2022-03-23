@@ -112,6 +112,7 @@ impl FileType {
 mod tests {
     use super::*;
     use crate::test;
+    use indoc::indoc;
 
     mod get_doc {
         use crate::{test, Config, Tikibase};
@@ -175,13 +176,13 @@ mod tests {
     #[test]
     fn link_targets() {
         let dir = test::tmp_dir();
-        let content = "\
-# One
+        let content = indoc! {"
+            # One
 
-### Alpha
-### Beta
+            ### Alpha
+            ### Beta
 
-content";
+            content"};
         test::create_file("one.md", content, &dir);
         test::create_file("two.md", content, &dir);
         let base = Tikibase::load(dir, &Config::default()).unwrap();
@@ -202,15 +203,15 @@ content";
     #[test]
     fn load() {
         let dir = test::tmp_dir();
-        let content = "\
-# Title
-title text
-### Section 1
-one
-two
-### Section 2
-foo
-";
+        let content = indoc! {"
+            # Title
+            title text
+            ### Section 1
+            one
+            two
+            ### Section 2
+            foo
+            "};
         test::create_file("file.md", content, &dir);
         let base = Tikibase::load(dir, &Config::default()).unwrap();
         // make sure we can load existing documents
