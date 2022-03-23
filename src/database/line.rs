@@ -224,7 +224,7 @@ mod tests {
         }
 
         #[test]
-        fn code_segment() {
+        fn ignore_code_looking_like_source_references() {
             let line = Line::from("code: `map[0]`");
             let have = line.source_references();
             pretty::assert_eq!(have, vec![]);
