@@ -20,12 +20,12 @@ impl Line {
     pub fn references(&self) -> Vec<Reference> {
         let mut result = Vec::new();
         for cap in MD_RE.captures_iter(&self.0) {
-            let match_ = cap.get(0).unwrap();
+            let full_match = cap.get(0).unwrap();
             match &cap[1] {
                 "!" => result.push(Reference::Image {
                     src: cap[2].to_string(),
-                    start: match_.start() as u32,
-                    end: match_.end() as u32,
+                    start: full_match.start() as u32,
+                    end: full_match.end() as u32,
                 }),
                 "" => {
                     let mut destination = cap[2].to_string();
@@ -34,8 +34,8 @@ impl Line {
                     }
                     result.push(Reference::Link {
                         destination,
-                        start: match_.start() as u32,
-                        end: match_.end() as u32,
+                        start: full_match.start() as u32,
+                        end: full_match.end() as u32,
                     });
                 }
                 _ => panic!("unexpected capture: '{}'", &cap[1]),
