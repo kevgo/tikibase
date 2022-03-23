@@ -29,18 +29,19 @@ mod tests {
     use super::scan;
     use crate::{test, Config, Location};
     use crate::{Issue, Tikibase};
+    use indoc::indoc;
     use std::path::PathBuf;
 
     #[test]
     fn empty_section() {
         let dir = test::tmp_dir();
-        let content = "\
-# test document
+        let content = indoc! {"
+            # test document
 
-### empty section
-### next section
+            ### empty section
+            ### next section
 
-content";
+            content"};
         test::create_file("test.md", content, &dir);
         let base = Tikibase::load(dir, &Config::default()).unwrap();
         let have = scan(&base);
@@ -59,14 +60,14 @@ content";
     #[test]
     fn blank_line() {
         let dir = test::tmp_dir();
-        let content = "\
-# test document
+        let content = indoc! {"
+            # test document
 
-### empty section
+            ### empty section
 
-### next section
+            ### next section
 
-content";
+            content"};
         test::create_file("test.md", content, &dir);
         let base = Tikibase::load(dir, &Config::default()).unwrap();
         let have = scan(&base);
@@ -85,12 +86,12 @@ content";
     #[test]
     fn content() {
         let dir = test::tmp_dir();
-        let content = "\
-# test document
+        let content = indoc! {"
+            # test document
 
-### section with content
+            ### section with content
 
-content";
+            content"};
         test::create_file("test.md", content, &dir);
         let base = Tikibase::load(dir, &Config::default()).unwrap();
         let have = scan(&base);

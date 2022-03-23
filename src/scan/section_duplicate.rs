@@ -37,18 +37,19 @@ pub(crate) fn scan(base: &Tikibase) -> Vec<Issue> {
 mod tests {
     use super::scan;
     use crate::{test, Config, Issue, Location, Tikibase};
+    use indoc::indoc;
     use std::path::PathBuf;
 
     #[test]
     fn duplicate_sections() {
         let dir = test::tmp_dir();
-        let content = "\
-# test document
+        let content = indoc! {"
+            # test document
 
-### One
-content
-### One
-content";
+            ### One
+            content
+            ### One
+            content"};
         test::create_file("test.md", content, &dir);
         let base = Tikibase::load(dir, &Config::default()).unwrap();
         let have = scan(&base);

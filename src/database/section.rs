@@ -163,6 +163,7 @@ impl Builder {
 mod tests {
     use super::super::document::Document;
     use super::*;
+    use indoc::indoc;
 
     #[test]
     fn anchor() {
@@ -229,9 +230,9 @@ mod tests {
 
     #[test]
     fn lines() {
-        let give = "\
-# test
-title content";
+        let give = indoc! {"
+            # test
+            title content"};
         let doc = Document::from_str("foo", give).unwrap();
         let mut have = doc.title_section.lines();
         let line = have.next().expect("expected title line");

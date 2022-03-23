@@ -81,6 +81,7 @@ fn normalize(section_title: &str) -> String {
 mod tests {
     use super::FileSection;
     use crate::{test, Config, Issue, Location, Tikibase};
+    use indoc::indoc;
     use std::path::PathBuf;
 
     #[test]
@@ -93,23 +94,23 @@ mod tests {
     #[test]
     fn different_capitalization() {
         let dir = test::tmp_dir();
-        let content1 = "\
-# test document
+        let content1 = indoc! {"
+            # test document
 
-### ONE
-content
+            ### ONE
+            content
 
-### One
-content";
+            ### One
+            content"};
         test::create_file("1.md", content1, &dir);
-        let content2 = "\
-# another document
+        let content2 = indoc! {"
+            # another document
 
-### one
-content
+            ### one
+            content
 
-### ONE
-content";
+            ### ONE
+            content"};
         test::create_file("2.md", content2, &dir);
         let base = Tikibase::load(dir, &Config::default()).unwrap();
         let have = super::scan(&base);
@@ -157,14 +158,14 @@ content";
     #[test]
     fn same_capitalization() {
         let dir = test::tmp_dir();
-        let content1 = "\
-# test document
+        let content1 = indoc! {"
+            # test document
 
-### One
-content
+            ### One
+            content
 
-### One
-content";
+            ### One
+            content"};
         test::create_file("1.md", content1, &dir);
         let base = Tikibase::load(dir, &Config::default()).unwrap();
         let have = super::scan(&base);
