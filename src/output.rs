@@ -141,7 +141,7 @@ impl Message {
                 location,
                 identifier: index,
             } => Message {
-                text: format!("source [{}] doesn't exist", index),
+                text: format!("footnote [^{}] doesn't exist", index),
                 file: location.file,
                 line: location.line,
                 start: location.start,

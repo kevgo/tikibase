@@ -1,6 +1,6 @@
 /// a source reference on a Line
 #[derive(Debug, Eq, Hash, Ord, PartialEq, PartialOrd)]
-pub struct SourceReference {
+pub struct Footnote {
     /// the textual identifier of the source
     pub identifier: String,
     /// where on the line the source reference starts

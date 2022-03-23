@@ -1,4 +1,4 @@
-use super::{Reference, SourceReference};
+use super::{Footnote, Reference};
 use crate::{Issue, Location};
 use once_cell::sync::Lazy;
 use regex::Regex;
@@ -10,7 +10,7 @@ pub struct Line(String);
 static MD_RE: Lazy<Regex> = Lazy::new(|| Regex::new("(!?)\\[[^\\]]*\\]\\(([^)]*)\\)").unwrap());
 static A_HTML_RE: Lazy<Regex> = Lazy::new(|| Regex::new(r#"<a href="(.*)">(.*)</a>"#).unwrap());
 static IMG_HTML_RE: Lazy<Regex> = Lazy::new(|| Regex::new(r#"<img src="([^"]*)"[^>]*>"#).unwrap());
-static SOURCE_RE: Lazy<Regex> = Lazy::new(|| Regex::new(r#"\[(\d+)\]"#).unwrap());
+static FOOTNOTE_RE: Lazy<Regex> = Lazy::new(|| Regex::new(r#"\[\^(\w+)\]"#).unwrap());
 
 impl Line {
     pub fn from<S: Into<String>>(text: S) -> Line {
@@ -67,12 +67,12 @@ impl Line {
     }
 
     /// provides the indexes of all sources referenced on this line
-    pub fn source_references(&self, file: &Path, line: u32) -> Result<Vec<SourceReference>, Issue> {
+    pub fn footnotes(&self, file: &Path, line: u32) -> Result<Vec<Footnote>, Issue> {
         let sanitized = sanitize_code_segments(&self.0, file, line)?;
         let mut result = vec![];
-        for captures in SOURCE_RE.captures_iter(&sanitized) {
+        for captures in FOOTNOTE_RE.captures_iter(&sanitized) {
             let total_match = captures.get(0).unwrap();
-            result.push(SourceReference {
+            result.push(Footnote {
                 identifier: captures.get(1).unwrap().as_str().to_string(),
                 start: total_match.start() as u32,
                 end: total_match.end() as u32,
@@ -249,57 +249,57 @@ mod tests {
         }
     }
 
-    mod used_sources {
-        use crate::database::{Line, SourceReference};
+    mod footnotes {
+        use crate::database::{Footnote, Line};
         use std::path::Path;
 
         #[test]
-        fn no_source() {
+        fn no_footnote() {
             let line = Line::from("text");
-            let have = line.source_references(Path::new(""), 0);
+            let have = line.footnotes(Path::new(""), 0);
             let want = Ok(vec![]);
             pretty::assert_eq!(have, want);
         }
 
         #[test]
-        fn single_source() {
-            let line = Line::from("- text [1]");
-            let have = line.source_references(Path::new(""), 0);
-            let want = Ok(vec![SourceReference {
+        fn single_footnote() {
+            let line = Line::from("- text [^1]");
+            let have = line.footnotes(Path::new(""), 0);
+            let want = Ok(vec![Footnote {
                 identifier: "1".into(),
                 start: 7,
-                end: 10,
+                end: 11,
             }]);
             pretty::assert_eq!(have, want);
         }
 
         #[test]
-        fn multiple_sources() {
-            let line = Line::from("- text [1] [2]");
-            let have = line.source_references(Path::new(""), 0);
+        fn multiple_footnotes() {
+            let line = Line::from("- text [^1] [^2]");
+            let have = line.footnotes(Path::new(""), 0);
             let want = Ok(vec![
-                SourceReference {
+                Footnote {
                     identifier: "1".into(),
                     start: 7,
-                    end: 10,
+                    end: 11,
                 },
-                SourceReference {
+                Footnote {
                     identifier: "2".into(),
-                    start: 11,
-                    end: 14,
+                    start: 12,
+                    end: 16,
                 },
             ]);
             pretty::assert_eq!(have, want);
         }
 
         #[test]
-        fn ignore_code_looking_like_source_references() {
-            let line = Line::from("the code `map[0]` is mentioned in [1]");
-            let have = line.source_references(Path::new(""), 0);
-            let want = Ok(vec![SourceReference {
+        fn ignore_code_looking_like_footnotes() {
+            let line = Line::from("the code `map[^0]` is mentioned in [^1]");
+            let have = line.footnotes(Path::new(""), 0);
+            let want = Ok(vec![Footnote {
                 identifier: "1".into(),
-                start: 34,
-                end: 37,
+                start: 35,
+                end: 39,
             }]);
             pretty::assert_eq!(have, want);
         }

@@ -1,4 +1,4 @@
-Feature: recognize missing sources
+Feature: recognize missing footnotes
 
   Background:
     Given file "1.md" with content:
@@ -6,24 +6,25 @@ Feature: recognize missing sources
       # Title
 
       ### metrics
-      - 100 tons of Rust [2]
+      - existing footnote[^existing]
+      - non-existing footnote[^2]
 
       ```go
-      result := map[0]
+      result := map[^0]
       ```
 
-      Also, you can do this: `map[0]`.
+      Another snippet of code that should be ignored is `map[^0]`.
 
       ### links
 
-      1. https://www.rust-lang.org
+      [^existing]: existing footnote
       """
 
   Scenario: check
     When checking
     Then it prints:
       """
-      1.md:4  source [2] doesn't exist
+      1.md:5  footnote [^2] doesn't exist
       """
     And all files are unchanged
     And the exit code is 1
@@ -37,7 +38,7 @@ Feature: recognize missing sources
     When doing a pitstop
     Then it prints:
       """
-      1.md:4  source [2] doesn't exist
+      1.md:5  footnote [^2] doesn't exist
       """
     And all files are unchanged
     And the exit code is 1

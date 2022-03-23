@@ -1,4 +1,4 @@
-use super::{section, Line, Section, SourceReference};
+use super::{section, Footnote, Line, Section};
 use crate::{Issue, Location};
 use ahash::AHashSet;
 use once_cell::sync::Lazy;
@@ -17,7 +17,7 @@ pub struct Document {
     pub old_occurrences_section: Option<Section>,
 }
 
-static SOURCE_RE: Lazy<Regex> = Lazy::new(|| Regex::new("^(\\d+)\\.").unwrap());
+static FOOTNOTE_DEFINITION_RE: Lazy<Regex> = Lazy::new(|| Regex::new("\\[\\^(\\w+)\\]:").unwrap());
 
 impl Document {
     /// provides a Document instance containing the given text
@@ -155,23 +155,25 @@ impl Document {
             .collect()
     }
 
-    /// provides all the sources that this document defines
-    pub fn sources_defined(&self) -> AHashSet<String> {
-        let mut result = AHashSet::new();
+    /// provides all the footnotes that this document defines
+    pub fn footnotes_defined(&self) -> Vec<String> {
+        let mut set = AHashSet::new();
         let links_section = match self.section_with_title("links") {
-            None => return result,
+            None => return vec![],
             Some(section) => section,
         };
         for line in links_section.lines() {
-            for cap in SOURCE_RE.captures_iter(line.text()) {
-                result.insert(cap[1].to_string());
+            for cap in FOOTNOTE_DEFINITION_RE.captures_iter(line.text()) {
+                set.insert(cap[1].to_string());
             }
         }
+        let mut result = Vec::from_iter(set);
+        result.sort();
         result
     }
 
     /// provides all the sources used in this document
-    pub fn sources_used(&self) -> Result<Vec<UsedSource>, Issue> {
+    pub fn footnotes_used(&self) -> Result<Vec<UsedFootnote>, Issue> {
         let mut used_sources = AHashSet::new();
         let mut in_code_block = false;
         for section in self.sections() {
@@ -185,10 +187,10 @@ impl Document {
                 }
                 if !in_code_block {
                     let line_nr_in_doc = section.line_number + line_idx as u32;
-                    for source_ref in line.source_references(&self.path, line_nr_in_doc)? {
-                        used_sources.insert(UsedSource {
+                    for source_ref in line.footnotes(&self.path, line_nr_in_doc)? {
+                        used_sources.insert(UsedFootnote {
                             line: section.line_number + (line_idx as u32),
-                            source_ref,
+                            footnote_ref: source_ref,
                         });
                     }
                 }
@@ -236,9 +238,9 @@ impl<'a> Iterator for SectionIterator<'a> {
 
 /// a SourceReference in a Document
 #[derive(Debug, Eq, Hash, Ord, PartialEq, PartialOrd)]
-pub struct UsedSource {
+pub struct UsedFootnote {
     pub line: u32,
-    pub source_ref: SourceReference,
+    pub footnote_ref: Footnote,
 }
 
 // -------------------------------------------------------------------------------------
@@ -554,55 +556,39 @@ one
         assert_eq!(have, "Title");
     }
 
-    mod sources_defined {
+    mod footnotes_defined {
         use crate::database::document::Document;
-        use ahash::AHashSet;
 
         #[test]
-        fn no_links() {
+        fn no_footnotes() {
             let give = "\
 # Title
 title text
 ";
             let doc = Document::from_str("test.md", give).unwrap();
-            let have = doc.sources_defined();
+            let have = doc.footnotes_defined();
             assert_eq!(have.len(), 0);
         }
 
         #[test]
-        fn unordered_links() {
+        fn has_footnotes() {
             let give = "\
 # Title
 title text
 ### links
-- https://foo.com
+[^1]: first footnote
+[^second]: second footnote
 ";
             let doc = Document::from_str("test.md", give).unwrap();
-            let have = doc.sources_defined();
-            assert_eq!(have.len(), 0);
-        }
-
-        #[test]
-        fn ordered_links() {
-            let give = "\
-# Title
-title text
-### links
-1. https://one.com
-2. https://two.com
-";
-            let doc = Document::from_str("test.md", give).unwrap();
-            let have = doc.sources_defined();
-            let mut want = AHashSet::new();
-            want.insert("1".into());
-            want.insert("2".into());
+            let have = doc.footnotes_defined();
+            let want = vec!["1".to_string(), "second".to_string()];
             assert_eq!(have, want);
         }
     }
 
-    mod sources_used {
-        use crate::database::document::UsedSource;
-        use crate::database::{Document, SourceReference};
+    mod footnotes_used {
+        use crate::database::document::UsedFootnote;
+        use crate::database::{Document, Footnote};
 
         #[test]
         fn no_sources() {
@@ -611,7 +597,7 @@ title text
 title text
 ";
             let doc = Document::from_str("test.md", give).unwrap();
-            let have = doc.sources_used();
+            let have = doc.footnotes_used();
             let want = Ok(vec![]);
             pretty::assert_eq!(have, want);
         }
@@ -620,35 +606,35 @@ title text
         fn with_sources() {
             let give = "\
 # Title
-title text [2]
+title text [^2]
 ### sec 1
-text [1] [3]
+text [^1] [^3]
 ";
             let doc = Document::from_str("test.md", give).unwrap();
-            let have = doc.sources_used();
+            let have = doc.footnotes_used();
             let want = Ok(vec![
-                UsedSource {
+                UsedFootnote {
                     line: 1,
-                    source_ref: SourceReference {
+                    footnote_ref: Footnote {
                         identifier: "2".into(),
                         start: 11,
-                        end: 14,
+                        end: 15,
                     },
                 },
-                UsedSource {
+                UsedFootnote {
                     line: 3,
-                    source_ref: SourceReference {
+                    footnote_ref: Footnote {
                         identifier: "1".into(),
                         start: 5,
-                        end: 8,
+                        end: 9,
                     },
                 },
-                UsedSource {
+                UsedFootnote {
                     line: 3,
-                    source_ref: SourceReference {
+                    footnote_ref: Footnote {
                         identifier: "3".into(),
-                        start: 9,
-                        end: 12,
+                        start: 10,
+                        end: 14,
                     },
                 },
             ]);
@@ -662,7 +648,7 @@ text [1] [3]
 Example code: `map[0]`
 ";
             let doc = Document::from_str("test.md", give).unwrap();
-            let have = doc.sources_used();
+            let have = doc.footnotes_used();
             let want = Ok(vec![]);
             assert_eq!(have, want);
         }
@@ -677,7 +663,7 @@ map[0]
 ```
 ";
             let doc = Document::from_str("test.md", give).unwrap();
-            let have = doc.sources_used();
+            let have = doc.footnotes_used();
             let want = Ok(vec![]);
             assert_eq!(have, want);
         }
