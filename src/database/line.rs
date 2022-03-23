@@ -65,7 +65,7 @@ impl Line {
         &self.0
     }
 
-    /// provides the indexes of all sources used in this line
+    /// provides the indexes of all sources referenced on this line
     pub fn source_references(&self) -> Vec<SourceReference> {
         let sanitized = CODE_RE.replace_all(&self.0, "");
         let mut result = vec![];
