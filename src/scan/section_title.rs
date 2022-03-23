@@ -8,20 +8,20 @@ pub(crate) fn scan(base: &Tikibase, config: &Config) -> Vec<Issue> {
     };
     for doc in &base.docs {
         for section in &doc.content_sections {
-            let (section_title, start) = section.title();
+            let section_title = section.title();
             // HACK: see https://github.com/rust-lang/rust/issues/42671
             if !config_sections
                 .iter()
-                .any(|config_section| config_section == section_title)
+                .any(|config_section| config_section == section_title.title)
             {
                 issues.push(Issue::UnknownSection {
                     location: Location {
                         file: doc.path.clone(),
                         line: section.line_number,
-                        start,
-                        end: start + section_title.len() as u32,
+                        start: section_title.start,
+                        end: section_title.start + section_title.title.len() as u32,
                     },
-                    title: section_title.into(),
+                    title: section_title.title.into(),
                     allowed_titles: config.sections.clone().unwrap(),
                 });
             }

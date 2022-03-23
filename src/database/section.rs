@@ -15,7 +15,7 @@ pub struct Section {
 impl Section {
     /// provides the link anchor for this section, in GitHub format
     pub fn anchor(&self) -> String {
-        format!("#{}", self.title().0.to_kebab_case())
+        format!("#{}", self.title().title.to_kebab_case())
     }
 
     /// provides a non-consuming iterator for all lines in this section
@@ -59,13 +59,19 @@ impl Section {
 
     /// provides a human-readable description of this section, e.g. "Hello" for a section with the title "# Hello"
     /// as well as the column at which this description stars on the line
-    pub fn title(&self) -> (&str, u32) {
+    pub fn title(&self) -> SectionTitle {
         for (i, c) in self.title_line.text().char_indices() {
             if c != '#' && c != ' ' {
-                return (&self.title_line.text()[i..], i as u32);
+                return SectionTitle {
+                    title: &self.title_line.text()[i..],
+                    start: i as u32,
+                };
             }
         }
-        ("", 0)
+        SectionTitle {
+            title: "",
+            start: 0,
+        }
     }
 
     /// provides a section with the given title
@@ -78,6 +84,12 @@ impl Section {
             body: Vec::new(),
         }
     }
+}
+
+#[derive(Debug, PartialEq)]
+pub struct SectionTitle<'a> {
+    pub title: &'a str,
+    pub start: u32,
 }
 
 /// an iterator for Lines
@@ -221,30 +233,55 @@ title content";
     }
 
     mod title {
+        use super::SectionTitle;
         use crate::database::Section;
 
         #[test]
         fn h1() {
             let section = Section::with_title("# Title");
-            assert_eq!(section.title(), ("Title", 2));
+            pretty::assert_eq!(
+                section.title(),
+                SectionTitle {
+                    title: "Title",
+                    start: 2
+                }
+            );
         }
 
         #[test]
         fn h3() {
             let section = Section::with_title("### Title");
-            assert_eq!(section.title(), ("Title", 4));
+            assert_eq!(
+                section.title(),
+                SectionTitle {
+                    title: "Title",
+                    start: 4
+                }
+            );
         }
 
         #[test]
         fn no_header() {
             let section = Section::with_title("Title");
-            assert_eq!(section.title(), ("Title", 0));
+            assert_eq!(
+                section.title(),
+                SectionTitle {
+                    title: "Title",
+                    start: 0
+                }
+            );
         }
 
         #[test]
         fn no_text() {
             let section = Section::with_title("###");
-            assert_eq!(section.title(), ("", 0));
+            assert_eq!(
+                section.title(),
+                SectionTitle {
+                    title: "",
+                    start: 0
+                }
+            );
         }
     }
 

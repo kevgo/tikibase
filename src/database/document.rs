@@ -45,12 +45,12 @@ impl Document {
             if line.starts_with('#') && !inside_fence {
                 if let Some(section_builder) = section_builder {
                     let section = section_builder.result();
-                    let (title, start) = section.title();
-                    if title == "occurrences" {
+                    let section_title = section.title();
+                    if section_title.title == "occurrences" {
                         occurrences_section_line = Some(OccurrencesSectionLine {
                             line: section.line_number,
-                            start,
-                            end: start + title.len() as u32,
+                            start: section_title.start,
+                            end: section_title.start + section_title.title.len() as u32,
                         });
                     } else {
                         sections.push(section);
@@ -79,12 +79,12 @@ impl Document {
         }
         if let Some(section_builder) = section_builder {
             let section = section_builder.result();
-            let (title, start) = section.title();
-            if title == "occurrences" {
+            let section_title = section.title();
+            if section_title.title == "occurrences" {
                 occurrences_section_line = Some(OccurrencesSectionLine {
                     line: section.line_number,
-                    start,
-                    end: start + title.len() as u32,
+                    start: section_title.start,
+                    end: section_title.start + section_title.title.len() as u32,
                 });
             } else {
                 sections.push(section);
@@ -125,7 +125,7 @@ impl Document {
     pub fn section_with_title(&self, title: &str) -> Option<&Section> {
         self.content_sections
             .iter()
-            .find(|section| section.title().0 == title)
+            .find(|section| section.title().title == title)
     }
 
     pub fn last_line(&self) -> Option<&Line> {
@@ -169,7 +169,7 @@ impl Document {
     pub fn section_titles(&self) -> Vec<&str> {
         self.content_sections
             .iter()
-            .map(|section| section.title().0)
+            .map(|section| section.title().title)
             .collect()
     }
 
@@ -193,7 +193,7 @@ impl Document {
         let mut result = AHashSet::new();
         let mut in_code_block = false;
         for section in self.sections() {
-            if section.title().0 == "occurrences" {
+            if section.title().title == "occurrences" {
                 continue;
             }
             for (line_idx, line) in section.lines().enumerate() {
@@ -227,7 +227,7 @@ impl Document {
 
     /// provides the human-readable title of this document
     pub fn title(&self) -> &str {
-        self.title_section.title().0
+        self.title_section.title().title
     }
 }
 

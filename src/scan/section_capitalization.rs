@@ -7,15 +7,15 @@ pub(crate) fn scan(base: &Tikibase) -> Vec<Issue> {
     let mut title_variants: AHashMap<String, Vec<FileSection>> = AHashMap::new();
     for doc in &base.docs {
         for section in doc.sections() {
-            let (section_title, start) = section.title();
+            let section_title = section.title();
             title_variants
-                .entry(normalize(section_title))
+                .entry(normalize(section_title.title))
                 .or_insert_with(Vec::new)
                 .push(FileSection {
-                    title: section_title,
+                    title: section_title.title,
                     file: &doc.path,
                     line: section.line_number,
-                    start,
+                    start: section_title.start,
                 });
         }
     }

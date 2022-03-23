@@ -8,11 +8,11 @@ pub(crate) fn scan(base: &Tikibase) -> Vec<Issue> {
         // section title -> [lines with this section]
         let mut sections_lines: AHashMap<&str, Vec<(u32, u32)>> = AHashMap::new();
         for section in doc.sections() {
-            let (section_title, start) = section.title();
+            let section_title = section.title();
             sections_lines
-                .entry(section_title)
+                .entry(section_title.title)
                 .or_insert_with(Vec::new)
-                .push((section.line_number, start))
+                .push((section.line_number, section_title.start))
         }
         for (title, lines) in sections_lines.drain() {
             if lines.len() > 1 {
