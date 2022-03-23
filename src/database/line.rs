@@ -50,11 +50,11 @@ impl Line {
             });
         }
         for cap in IMG_HTML_RE.captures_iter(&self.0) {
-            let match_ = cap.get(0).unwrap();
+            let full_match = cap.get(0).unwrap();
             result.push(Reference::Image {
                 src: cap[1].to_string(),
-                start: match_.start() as u32,
-                end: match_.end() as u32,
+                start: full_match.start() as u32,
+                end: full_match.end() as u32,
             });
         }
         result
