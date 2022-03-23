@@ -99,6 +99,10 @@ pub enum Issue {
     UnorderedSections {
         location: Location,
     },
+    UnusedFootnote {
+        location: Location,
+        identifier: String,
+    },
 }
 
 /// a missing link to a document

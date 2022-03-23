@@ -1,4 +1,5 @@
-use super::{Footnote, Reference};
+use super::footnote::FootnoteDefinition;
+use super::{FootnoteReference, Reference};
 use crate::{Issue, Location};
 use once_cell::sync::Lazy;
 use regex::Regex;
@@ -10,7 +11,8 @@ pub struct Line(String);
 static MD_RE: Lazy<Regex> = Lazy::new(|| Regex::new("(!?)\\[[^\\]]*\\]\\(([^)]*)\\)").unwrap());
 static A_HTML_RE: Lazy<Regex> = Lazy::new(|| Regex::new(r#"<a href="(.*)">(.*)</a>"#).unwrap());
 static IMG_HTML_RE: Lazy<Regex> = Lazy::new(|| Regex::new(r#"<img src="([^"]*)"[^>]*>"#).unwrap());
-static FOOTNOTE_RE: Lazy<Regex> = Lazy::new(|| Regex::new(r#"\[\^(\w+)\]"#).unwrap());
+static FOOTNOTE_REFERENCE_RE: Lazy<Regex> = Lazy::new(|| Regex::new(r#"\[\^(\w+)\]"#).unwrap());
+static FOOTNOTE_DEFINITION_RE: Lazy<Regex> = Lazy::new(|| Regex::new("\\[\\^(\\w+)\\]:").unwrap());
 
 impl Line {
     pub fn from<S: Into<String>>(text: S) -> Line {
@@ -66,13 +68,37 @@ impl Line {
         &self.0
     }
 
-    /// provides the indexes of all sources referenced on this line
-    pub fn footnotes(&self, file: &Path, line: u32) -> Result<Vec<Footnote>, Issue> {
+    pub fn footnote_definitions(
+        &self,
+        file: &Path,
+        line: u32,
+    ) -> Result<Vec<FootnoteDefinition>, Issue> {
         let sanitized = sanitize_code_segments(&self.0, file, line)?;
         let mut result = vec![];
-        for captures in FOOTNOTE_RE.captures_iter(&sanitized) {
+        for captures in FOOTNOTE_DEFINITION_RE.captures_iter(&sanitized) {
             let total_match = captures.get(0).unwrap();
-            result.push(Footnote {
+            result.push(FootnoteDefinition {
+                line,
+                identifier: captures.get(1).unwrap().as_str().to_string(),
+                start: total_match.start() as u32,
+                end: total_match.end() as u32,
+            });
+        }
+        Ok(result)
+    }
+
+    /// provides al footnote references on this line
+    pub fn footnote_references(
+        &self,
+        file: &Path,
+        line: u32,
+    ) -> Result<Vec<FootnoteReference>, Issue> {
+        let sanitized = sanitize_code_segments(&self.0, file, line)?;
+        let mut result = vec![];
+        for captures in FOOTNOTE_REFERENCE_RE.captures_iter(&sanitized) {
+            let total_match = captures.get(0).unwrap();
+            result.push(FootnoteReference {
+                line,
                 identifier: captures.get(1).unwrap().as_str().to_string(),
                 start: total_match.start() as u32,
                 end: total_match.end() as u32,
@@ -250,13 +276,13 @@ mod tests {
     }
 
     mod footnotes {
-        use crate::database::{Footnote, Line};
+        use crate::database::{FootnoteReference, Line};
         use std::path::Path;
 
         #[test]
         fn no_footnote() {
             let line = Line::from("text");
-            let have = line.footnotes(Path::new(""), 0);
+            let have = line.footnote_references(Path::new(""), 0);
             let want = Ok(vec![]);
             pretty::assert_eq!(have, want);
         }
@@ -264,8 +290,9 @@ mod tests {
         #[test]
         fn single_footnote() {
             let line = Line::from("- text [^1]");
-            let have = line.footnotes(Path::new(""), 0);
-            let want = Ok(vec![Footnote {
+            let have = line.footnote_references(Path::new(""), 0);
+            let want = Ok(vec![FootnoteReference {
+                line: 0,
                 identifier: "1".into(),
                 start: 7,
                 end: 11,
@@ -276,14 +303,16 @@ mod tests {
         #[test]
         fn multiple_footnotes() {
             let line = Line::from("- text [^1] [^2]");
-            let have = line.footnotes(Path::new(""), 0);
+            let have = line.footnote_references(Path::new(""), 0);
             let want = Ok(vec![
-                Footnote {
+                FootnoteReference {
+                    line: 0,
                     identifier: "1".into(),
                     start: 7,
                     end: 11,
                 },
-                Footnote {
+                FootnoteReference {
+                    line: 0,
                     identifier: "2".into(),
                     start: 12,
                     end: 16,
@@ -295,8 +324,9 @@ mod tests {
         #[test]
         fn ignore_code_looking_like_footnotes() {
             let line = Line::from("the code `map[^0]` is mentioned in [^1]");
-            let have = line.footnotes(Path::new(""), 0);
-            let want = Ok(vec![Footnote {
+            let have = line.footnote_references(Path::new(""), 0);
+            let want = Ok(vec![FootnoteReference {
+                line: 0,
                 identifier: "1".into(),
                 start: 35,
                 end: 39,

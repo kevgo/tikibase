@@ -1,8 +1,6 @@
-use super::{section, Footnote, Line, Section};
+use super::footnote::FootnoteDefinition;
+use super::{section, FootnoteReference, Line, Section};
 use crate::{Issue, Location};
-use ahash::AHashSet;
-use once_cell::sync::Lazy;
-use regex::Regex;
 use std::fs;
 use std::io::prelude::*;
 use std::path::{Path, PathBuf};
@@ -16,8 +14,6 @@ pub struct Document {
     /// The old "occurrences" section that was filtered out when loading the document.
     pub old_occurrences_section: Option<Section>,
 }
-
-static FOOTNOTE_DEFINITION_RE: Lazy<Regex> = Lazy::new(|| Regex::new("\\[\\^(\\w+)\\]:").unwrap());
 
 impl Document {
     /// provides a Document instance containing the given text
@@ -129,6 +125,16 @@ impl Document {
             .unwrap()
     }
 
+    pub fn lines(&self) -> LinesIterator {
+        let mut section_iter = self.sections();
+        let section = section_iter.next().unwrap();
+        let lines_iter = section.lines();
+        LinesIterator {
+            section_iter,
+            lines_iter,
+        }
+    }
+
     /// provides the number of lines in this document
     pub fn lines_count(&self) -> u32 {
         self.content_sections
@@ -156,48 +162,67 @@ impl Document {
     }
 
     /// provides all the footnotes that this document defines
-    pub fn footnotes_defined(&self) -> Vec<String> {
-        let mut set = AHashSet::new();
-        let links_section = match self.section_with_title("links") {
-            None => return vec![],
-            Some(section) => section,
-        };
-        for line in links_section.lines() {
-            for cap in FOOTNOTE_DEFINITION_RE.captures_iter(line.text()) {
-                set.insert(cap[1].to_string());
+    pub fn footnote_definitions(&self) -> Result<Vec<FootnoteDefinition>, Issue> {
+        let mut result: Vec<FootnoteDefinition> = vec![];
+        let mut code_block_start: Option<CodeblockStart> = None;
+        for (i, line) in self.lines().enumerate() {
+            if line.text().starts_with("```") {
+                code_block_start = match code_block_start {
+                    Some(_) => None,
+                    None => Some(CodeblockStart {
+                        line: i as u32,
+                        len: line.text().len() as u32,
+                    }),
+                }
+            }
+            if code_block_start.is_none() {
+                let mut f = line.footnote_definitions(&self.path, i as u32)?;
+                result.append(&mut f);
             }
         }
-        let mut result = Vec::from_iter(set);
-        result.sort();
-        result
+        if let Some(code_block_start) = code_block_start {
+            return Err(Issue::UnclosedFence {
+                location: Location {
+                    file: self.path.clone(),
+                    line: code_block_start.line,
+                    start: 0,
+                    end: code_block_start.len,
+                },
+            });
+        }
+        Ok(result)
     }
 
     /// provides all the sources used in this document
-    pub fn footnotes_used(&self) -> Result<Vec<UsedFootnote>, Issue> {
-        let mut used_sources = AHashSet::new();
-        let mut in_code_block = false;
-        for section in self.sections() {
-            if section.title().text == "occurrences" {
+    pub fn footnote_references(&self) -> Result<Vec<FootnoteReference>, Issue> {
+        let mut result: Vec<FootnoteReference> = vec![];
+        let mut code_block_start: Option<CodeblockStart> = None;
+        for (i, line) in self.lines().enumerate() {
+            if line.text().starts_with("```") {
+                code_block_start = match code_block_start {
+                    Some(_) => None,
+                    None => Some(CodeblockStart {
+                        line: i as u32,
+                        len: line.text().len() as u32,
+                    }),
+                };
                 continue;
             }
-            for (line_idx, line) in section.lines().enumerate() {
-                if line.text().starts_with("```") {
-                    in_code_block = !in_code_block;
-                    continue;
-                }
-                if !in_code_block {
-                    let line_nr_in_doc = section.line_number + line_idx as u32;
-                    for source_ref in line.footnotes(&self.path, line_nr_in_doc)? {
-                        used_sources.insert(UsedFootnote {
-                            line: section.line_number + (line_idx as u32),
-                            footnote_ref: source_ref,
-                        });
-                    }
-                }
+            if code_block_start.is_none() {
+                let mut f = line.footnote_references(&self.path, i as u32)?;
+                result.append(&mut f);
             }
         }
-        let mut result = Vec::from_iter(used_sources);
-        result.sort();
+        if let Some(code_block_start) = code_block_start {
+            return Err(Issue::UnclosedFence {
+                location: Location {
+                    file: self.path.clone(),
+                    line: code_block_start.line,
+                    start: 0,
+                    end: code_block_start.len,
+                },
+            });
+        }
         Ok(result)
     }
 
@@ -236,11 +261,35 @@ impl<'a> Iterator for SectionIterator<'a> {
     }
 }
 
-/// a SourceReference in a Document
-#[derive(Debug, Eq, Hash, Ord, PartialEq, PartialOrd)]
-pub struct UsedFootnote {
-    pub line: u32,
-    pub footnote_ref: Footnote,
+pub struct LinesIterator<'a> {
+    section_iter: SectionIterator<'a>,
+    lines_iter: section::LinesIterator<'a>,
+}
+
+impl<'a> Iterator for LinesIterator<'a> {
+    type Item = &'a Line;
+
+    fn next(&mut self) -> Option<Self::Item> {
+        if let Some(next_line) = self.lines_iter.next() {
+            return Some(next_line);
+        }
+        // no more lines in the current section --> get the next section
+        let next_section = match self.section_iter.next() {
+            Some(section) => section,
+            None => return None,
+        };
+        // here we have a new section
+        self.lines_iter = next_section.lines();
+        self.lines_iter.next()
+    }
+}
+
+/// describes the start of a codeblock
+struct CodeblockStart {
+    /// the line on which this codeblock starts
+    line: u32,
+    /// length of the text on this line
+    len: u32,
 }
 
 // -------------------------------------------------------------------------------------
@@ -558,6 +607,7 @@ one
 
     mod footnotes_defined {
         use crate::database::document::Document;
+        use crate::database::footnote::FootnoteDefinition;
 
         #[test]
         fn no_footnotes() {
@@ -566,8 +616,9 @@ one
 title text
 ";
             let doc = Document::from_str("test.md", give).unwrap();
-            let have = doc.footnotes_defined();
-            assert_eq!(have.len(), 0);
+            let have = doc.footnote_definitions();
+            let want = Ok(vec![]);
+            pretty::assert_eq!(have, want)
         }
 
         #[test]
@@ -580,15 +631,27 @@ title text
 [^second]: second footnote
 ";
             let doc = Document::from_str("test.md", give).unwrap();
-            let have = doc.footnotes_defined();
-            let want = vec!["1".to_string(), "second".to_string()];
-            assert_eq!(have, want);
+            let have = doc.footnote_definitions();
+            let want = Ok(vec![
+                FootnoteDefinition {
+                    identifier: "1".into(),
+                    line: 3,
+                    start: 0,
+                    end: 5,
+                },
+                FootnoteDefinition {
+                    identifier: "second".into(),
+                    line: 4,
+                    start: 0,
+                    end: 10,
+                },
+            ]);
+            pretty::assert_eq!(have, want)
         }
     }
 
-    mod footnotes_used {
-        use crate::database::document::UsedFootnote;
-        use crate::database::{Document, Footnote};
+    mod footnote_references {
+        use crate::database::{Document, FootnoteReference};
 
         #[test]
         fn no_sources() {
@@ -597,7 +660,7 @@ title text
 title text
 ";
             let doc = Document::from_str("test.md", give).unwrap();
-            let have = doc.footnotes_used();
+            let have = doc.footnote_references();
             let want = Ok(vec![]);
             pretty::assert_eq!(have, want);
         }
@@ -611,31 +674,25 @@ title text [^2]
 text [^1] [^3]
 ";
             let doc = Document::from_str("test.md", give).unwrap();
-            let have = doc.footnotes_used();
+            let have = doc.footnote_references();
             let want = Ok(vec![
-                UsedFootnote {
+                FootnoteReference {
+                    identifier: "2".into(),
                     line: 1,
-                    footnote_ref: Footnote {
-                        identifier: "2".into(),
-                        start: 11,
-                        end: 15,
-                    },
+                    start: 11,
+                    end: 15,
                 },
-                UsedFootnote {
+                FootnoteReference {
+                    identifier: "1".into(),
                     line: 3,
-                    footnote_ref: Footnote {
-                        identifier: "1".into(),
-                        start: 5,
-                        end: 9,
-                    },
+                    start: 5,
+                    end: 9,
                 },
-                UsedFootnote {
+                FootnoteReference {
+                    identifier: "3".into(),
                     line: 3,
-                    footnote_ref: Footnote {
-                        identifier: "3".into(),
-                        start: 10,
-                        end: 14,
-                    },
+                    start: 10,
+                    end: 14,
                 },
             ]);
             pretty::assert_eq!(have, want);
@@ -645,10 +702,10 @@ text [^1] [^3]
         fn code_segment() {
             let give = "\
 # Title
-Example code: `map[0]`
+Example code: `map[^0]`
 ";
             let doc = Document::from_str("test.md", give).unwrap();
-            let have = doc.footnotes_used();
+            let have = doc.footnote_references();
             let want = Ok(vec![]);
             assert_eq!(have, want);
         }
@@ -659,13 +716,13 @@ Example code: `map[0]`
 # Title
 Example code:
 ```
-map[0]
+map[^0]
 ```
 ";
             let doc = Document::from_str("test.md", give).unwrap();
-            let have = doc.footnotes_used();
+            let have = doc.footnote_references();
             let want = Ok(vec![]);
-            assert_eq!(have, want);
+            pretty::assert_eq!(have, want);
         }
     }
 }

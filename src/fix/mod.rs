@@ -64,6 +64,10 @@ pub fn fix(issue: Issue, base: &mut Tikibase, config: &Config) -> Option<Fix> {
             location,
             config.sections.as_ref().unwrap(),
         )),
+        Issue::UnusedFootnote {
+            location: _,
+            identifier: _,
+        } => None,
     }
 }
 
