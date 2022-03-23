@@ -184,9 +184,8 @@ impl Document {
                     continue;
                 }
                 if !in_code_block {
-                    for source_ref in
-                        line.source_references(&self.path, section.line_number + line_idx as u32)?
-                    {
+                    let line_nr_in_doc = section.line_number + line_idx as u32;
+                    for source_ref in line.source_references(&self.path, line_nr_in_doc)? {
                         used_sources.insert(UsedSource {
                             line: section.line_number + (line_idx as u32),
                             source_ref,
