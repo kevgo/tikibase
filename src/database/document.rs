@@ -173,7 +173,8 @@ impl Document {
                         line: i as u32,
                         len: line.text().len() as u32,
                     }),
-                }
+                };
+                continue;
             }
             if code_block_start.is_none() {
                 let mut f = line.footnote_definitions(&self.path, i as u32)?;
@@ -490,6 +491,38 @@ content
         }
     }
 
+    mod lines {
+        use super::super::Document;
+        use crate::database::Line;
+
+        #[test]
+        fn multiple_sections() {
+            let give = "\
+# Title
+title text
+
+### Section 1
+one
+two
+
+### Section 2
+foo
+";
+            let doc = Document::from_str("test.md", give).unwrap();
+            let mut lines = doc.lines();
+            pretty::assert_eq!(lines.next(), Some(&Line::from("# Title")));
+            pretty::assert_eq!(lines.next(), Some(&Line::from("title text")));
+            pretty::assert_eq!(lines.next(), Some(&Line::from("")));
+            pretty::assert_eq!(lines.next(), Some(&Line::from("### Section 1")));
+            pretty::assert_eq!(lines.next(), Some(&Line::from("one")));
+            pretty::assert_eq!(lines.next(), Some(&Line::from("two")));
+            pretty::assert_eq!(lines.next(), Some(&Line::from("")));
+            pretty::assert_eq!(lines.next(), Some(&Line::from("### Section 2")));
+            pretty::assert_eq!(lines.next(), Some(&Line::from("foo")));
+            pretty::assert_eq!(lines.next(), None);
+        }
+    }
+
     mod lines_count {
         use super::super::Document;
 
@@ -605,7 +638,7 @@ one
         assert_eq!(have, "Title");
     }
 
-    mod footnotes_defined {
+    mod footnote_definitions {
         use crate::database::document::Document;
         use crate::database::footnote::FootnoteDefinition;
 
@@ -646,6 +679,32 @@ title text
                     end: 10,
                 },
             ]);
+            pretty::assert_eq!(have, want)
+        }
+
+        #[test]
+        fn code_block() {
+            let give = "\
+# Title
+```
+[^1]
+```
+";
+            let doc = Document::from_str("test.md", give).unwrap();
+            let have = doc.footnote_definitions();
+            let want = Ok(vec![]);
+            pretty::assert_eq!(have, want)
+        }
+
+        #[test]
+        fn code_segment() {
+            let give = "\
+# Title
+a `[^1]` code block
+";
+            let doc = Document::from_str("test.md", give).unwrap();
+            let have = doc.footnote_definitions();
+            let want = Ok(vec![]);
             pretty::assert_eq!(have, want)
         }
     }

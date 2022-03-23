@@ -21,6 +21,7 @@ Feature: recognize unused footnotes
       [^unused]: unused footnote
       """
 
+  @this
   Scenario: check
     When checking
     Then it prints:
