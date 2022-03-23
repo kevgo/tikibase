@@ -233,9 +233,9 @@ impl<'a> Iterator for SectionIterator<'a> {
     }
 }
 
+/// a SourceReference in a Document
 #[derive(Debug, Eq, Hash, Ord, PartialEq, PartialOrd)]
 pub struct UsedSource {
-    /// the index used for the source, e.g. "[1]"
     pub line: u32,
     pub source_ref: SourceReference,
 }
