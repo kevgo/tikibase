@@ -184,12 +184,12 @@ impl Document {
                     continue;
                 }
                 if !in_code_block {
-                    for (index, start, end) in line.used_sources() {
+                    for source_ref in line.source_references() {
                         result.insert(UsedSource {
                             line: section.line_number + (line_idx as u32),
-                            index,
-                            start,
-                            end,
+                            index: source_ref.identifier,
+                            start: source_ref.start,
+                            end: source_ref.end,
                         });
                     }
                 }

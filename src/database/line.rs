@@ -1,4 +1,4 @@
-use super::Reference;
+use super::{Reference, SourceReference};
 use once_cell::sync::Lazy;
 use regex::Regex;
 
@@ -66,16 +66,16 @@ impl Line {
     }
 
     /// provides the indexes of all sources used in this line
-    pub fn used_sources(&self) -> Vec<(String, u32, u32)> {
+    pub fn source_references(&self) -> Vec<SourceReference> {
         let sanitized = CODE_RE.replace_all(&self.0, "");
         let mut result = vec![];
         for captures in SOURCE_RE.captures_iter(&sanitized) {
             let total_match = captures.get(0).unwrap();
-            result.push((
-                captures.get(1).unwrap().as_str().to_string(),
-                total_match.start() as u32,
-                total_match.end() as u32,
-            ));
+            result.push(SourceReference {
+                identifier: captures.get(1).unwrap().as_str().to_string(),
+                start: total_match.start() as u32,
+                end: total_match.end() as u32,
+            });
         }
         result
     }
@@ -183,36 +183,51 @@ mod tests {
     }
 
     mod used_sources {
-        use crate::database::Line;
+        use crate::database::{Line, SourceReference};
 
         #[test]
         fn no_source() {
             let line = Line::from("text");
-            let have = line.used_sources();
+            let have = line.source_references();
             assert_eq!(have.len(), 0);
         }
 
         #[test]
         fn single_source() {
             let line = Line::from("- text [1]");
-            let have = line.used_sources();
-            let want = vec![("1".to_string(), 7, 10)];
-            assert_eq!(have, want);
+            let have = line.source_references();
+            let want = vec![SourceReference {
+                identifier: "1".into(),
+                start: 7,
+                end: 10,
+            }];
+            pretty::assert_eq!(have, want);
         }
 
         #[test]
         fn multiple_sources() {
             let line = Line::from("- text [1] [2]");
-            let have = line.used_sources();
-            let want = vec![("1".to_string(), 7, 10), ("2".to_string(), 11, 14)];
-            assert_eq!(have, want);
+            let have = line.source_references();
+            let want = vec![
+                SourceReference {
+                    identifier: "1".into(),
+                    start: 7,
+                    end: 10,
+                },
+                SourceReference {
+                    identifier: "2".into(),
+                    start: 11,
+                    end: 14,
+                },
+            ];
+            pretty::assert_eq!(have, want);
         }
 
         #[test]
         fn code_segment() {
             let line = Line::from("code: `map[0]`");
-            let have = line.used_sources();
-            assert_eq!(have, vec![]);
+            let have = line.source_references();
+            pretty::assert_eq!(have, vec![]);
         }
     }
 }
