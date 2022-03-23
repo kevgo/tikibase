@@ -64,7 +64,7 @@ pub enum Issue {
     },
     MissingSource {
         location: Location,
-        index: String,
+        identifier: String,
     },
     MixCapSection {
         location: Location,

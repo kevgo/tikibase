@@ -1,4 +1,4 @@
-use super::{section, Line, Section};
+use super::{section, Line, Section, SourceReference};
 use crate::{Issue, Location};
 use ahash::AHashSet;
 use once_cell::sync::Lazy;
@@ -187,9 +187,7 @@ impl Document {
                     for source_ref in line.source_references() {
                         used_sources.insert(UsedSource {
                             line: section.line_number + (line_idx as u32),
-                            identifier: source_ref.identifier,
-                            start: source_ref.start,
-                            end: source_ref.end,
+                            source_ref,
                         });
                     }
                 }
@@ -238,10 +236,8 @@ impl<'a> Iterator for SectionIterator<'a> {
 #[derive(Debug, Eq, Hash, Ord, PartialEq, PartialOrd)]
 pub struct UsedSource {
     /// the index used for the source, e.g. "[1]"
-    pub identifier: String,
     pub line: u32,
-    pub start: u32,
-    pub end: u32,
+    pub source_ref: SourceReference,
 }
 
 // -------------------------------------------------------------------------------------
@@ -586,6 +582,7 @@ title text
 
     mod sources_used {
         use crate::database::document::{Document, UsedSource};
+        use crate::database::SourceReference;
 
         #[test]
         fn no_sources() {
@@ -610,22 +607,28 @@ text [1] [3]
             let have = doc.sources_used();
             let want = vec![
                 UsedSource {
-                    line: 3,
-                    identifier: "1".into(),
-                    start: 5,
-                    end: 8,
-                },
-                UsedSource {
                     line: 1,
-                    identifier: "2".into(),
-                    start: 11,
-                    end: 14,
+                    source_ref: SourceReference {
+                        identifier: "2".into(),
+                        start: 11,
+                        end: 14,
+                    },
                 },
                 UsedSource {
                     line: 3,
-                    identifier: "3".into(),
-                    start: 9,
-                    end: 12,
+                    source_ref: SourceReference {
+                        identifier: "1".into(),
+                        start: 5,
+                        end: 8,
+                    },
+                },
+                UsedSource {
+                    line: 3,
+                    source_ref: SourceReference {
+                        identifier: "3".into(),
+                        start: 9,
+                        end: 12,
+                    },
                 },
             ];
             pretty::assert_eq!(have, want);

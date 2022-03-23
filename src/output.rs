@@ -137,7 +137,10 @@ impl Message {
                     end: location.end,
                 }
             }
-            Issue::MissingSource { location, index } => Message {
+            Issue::MissingSource {
+                location,
+                identifier: index,
+            } => Message {
                 text: format!("source [{}] doesn't exist", index),
                 file: location.file,
                 line: location.line,

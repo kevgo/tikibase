@@ -1,5 +1,5 @@
 /// a source reference on a Line
-#[derive(Debug, PartialEq)]
+#[derive(Debug, Eq, Hash, Ord, PartialEq, PartialOrd)]
 pub struct SourceReference {
     /// the textual identifier of the source
     pub identifier: String,
