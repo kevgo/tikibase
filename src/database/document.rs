@@ -22,8 +22,11 @@ pub struct Document {
 
 #[derive(Debug, PartialEq)]
 pub struct OccurrencesSectionLine {
+    /// line number
     pub line: u32,
+    /// start column
     pub start: u32,
+    /// end column
     pub end: u32,
 }
 
