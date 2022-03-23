@@ -16,4 +16,4 @@ pub(crate) use line::Line;
 pub(crate) use reference::Reference;
 use resource::Resource;
 pub(crate) use section::Section;
-pub(crate) use source_reference::SourceReference;
+use source_reference::SourceReference;
