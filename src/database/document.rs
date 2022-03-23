@@ -171,8 +171,8 @@ impl Document {
     }
 
     /// provides all the sources used in this document
-    pub fn sources_used(&self) -> AHashSet<UsedSource> {
-        let mut result = AHashSet::new();
+    pub fn sources_used(&self) -> Vec<UsedSource> {
+        let mut used_sources = AHashSet::new();
         let mut in_code_block = false;
         for section in self.sections() {
             if section.title().title == "occurrences" {
@@ -185,9 +185,9 @@ impl Document {
                 }
                 if !in_code_block {
                     for source_ref in line.source_references() {
-                        result.insert(UsedSource {
+                        used_sources.insert(UsedSource {
                             line: section.line_number + (line_idx as u32),
-                            index: source_ref.identifier,
+                            identifier: source_ref.identifier,
                             start: source_ref.start,
                             end: source_ref.end,
                         });
@@ -195,6 +195,8 @@ impl Document {
                 }
             }
         }
+        let mut result = Vec::from_iter(used_sources);
+        result.sort();
         result
     }
 
@@ -233,10 +235,10 @@ impl<'a> Iterator for SectionIterator<'a> {
     }
 }
 
-#[derive(Debug, PartialEq, Eq, Hash)]
+#[derive(Debug, Eq, Hash, Ord, PartialEq, PartialOrd)]
 pub struct UsedSource {
     /// the index used for the source, e.g. "[1]"
-    pub index: String,
+    pub identifier: String,
     pub line: u32,
     pub start: u32,
     pub end: u32,
@@ -584,7 +586,6 @@ title text
 
     mod sources_used {
         use crate::database::document::{Document, UsedSource};
-        use ahash::AHashSet;
 
         #[test]
         fn no_sources() {
@@ -607,25 +608,26 @@ text [1] [3]
 ";
             let doc = Document::from_str("test.md", give).unwrap();
             let have = doc.sources_used();
-            let mut want = AHashSet::new();
-            want.insert(UsedSource {
-                line: 1,
-                index: "2".into(),
-                start: 11,
-                end: 14,
-            });
-            want.insert(UsedSource {
-                line: 3,
-                index: "1".into(),
-                start: 5,
-                end: 8,
-            });
-            want.insert(UsedSource {
-                line: 3,
-                index: "3".into(),
-                start: 9,
-                end: 12,
-            });
+            let want = vec![
+                UsedSource {
+                    line: 3,
+                    identifier: "1".into(),
+                    start: 5,
+                    end: 8,
+                },
+                UsedSource {
+                    line: 1,
+                    identifier: "2".into(),
+                    start: 11,
+                    end: 14,
+                },
+                UsedSource {
+                    line: 3,
+                    identifier: "3".into(),
+                    start: 9,
+                    end: 12,
+                },
+            ];
             pretty::assert_eq!(have, want);
         }
 
