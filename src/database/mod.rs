@@ -11,9 +11,9 @@ mod tikibase;
 
 pub(crate) use crate::database::tikibase::Tikibase;
 pub(crate) use doc_links::DocLinks;
-pub(crate) use document::Document;
+use document::Document;
 pub(crate) use line::Line;
 pub(crate) use reference::Reference;
-pub(crate) use resource::Resource;
+use resource::Resource;
 pub(crate) use section::Section;
 pub(crate) use source_reference::SourceReference;
