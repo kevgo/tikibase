@@ -108,15 +108,17 @@ impl Document {
             .find(|section| section.title().title == title)
     }
 
+    /// provides the last line in this document
     pub fn last_line(&self) -> &Line {
         self.last_section().last_line()
     }
 
+    /// provides the last section in this document
     pub fn last_section(&self) -> &Section {
-        self.content_sections
-            .last()
-            .or(Some(&self.title_section))
-            .unwrap()
+        match self.content_sections.last() {
+            Some(last_content_section) => last_content_section,
+            None => &self.title_section,
+        }
     }
 
     /// provides the last section in this document
