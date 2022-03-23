@@ -46,7 +46,7 @@ pub(crate) fn scan(
                 file: doc.path.clone(),
                 line: doc.lines_count(),
                 start: 0,
-                end: doc.last_line().unwrap().text().len() as u32,
+                end: doc.last_line().text().len() as u32,
             },
             links: missing_outgoing
                 .into_iter()

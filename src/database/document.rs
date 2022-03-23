@@ -108,8 +108,8 @@ impl Document {
             .find(|section| section.title().title == title)
     }
 
-    pub fn last_line(&self) -> Option<&Line> {
-        self.last_section().body.last()
+    pub fn last_line(&self) -> &Line {
+        self.last_section().last_line()
     }
 
     pub fn last_section(&self) -> &Section {
@@ -377,6 +377,45 @@ content
                 }),
             });
             pretty::assert_eq!(have, want);
+        }
+    }
+
+    mod last_line {
+        use crate::database::Line;
+
+        use super::super::Document;
+
+        #[test]
+        fn title_section_only() {
+            let doc = Document::from_str("test.md", "# Title\ntitle text\n").unwrap();
+            let have = doc.last_line();
+            let want = Line::from("title text");
+            assert_eq!(have, &want)
+        }
+
+        #[test]
+        fn with_body() {
+            let doc =
+                Document::from_str("test.md", "# Title\n### section 1\nsection text").unwrap();
+            let have = doc.last_line();
+            let want = Line::from("section text");
+            assert_eq!(have, &want)
+        }
+
+        #[test]
+        fn title_only() {
+            let doc = Document::from_str("test.md", "# Title").unwrap();
+            let have = doc.last_line();
+            let want = Line::from("# Title");
+            assert_eq!(have, &want)
+        }
+
+        #[test]
+        fn section_without_body() {
+            let doc = Document::from_str("test.md", "# Title\n### section 1").unwrap();
+            let have = doc.last_line();
+            let want = Line::from("### section 1");
+            assert_eq!(have, &want)
         }
     }
 

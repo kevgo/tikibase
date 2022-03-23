@@ -2,7 +2,7 @@ use super::Line;
 use heck::ToKebabCase;
 
 /// a section in a document, from one heading to above the next heading
-#[derive(Debug, PartialEq)]
+#[derive(Debug, Default, PartialEq)]
 pub struct Section {
     /// the line number at which this section starts, 0-based
     pub line_number: u32,
@@ -24,6 +24,14 @@ impl Section {
             title_line: &self.title_line,
             body_iter: self.body.iter(),
             emitted_title: false,
+        }
+    }
+
+    /// returns the last line of this section
+    pub fn last_line(&self) -> &Line {
+        match self.body.last() {
+            Some(last_body_line) => last_body_line,
+            None => &self.title_line,
         }
     }
 
@@ -168,6 +176,33 @@ mod tests {
         for (give, want) in tests {
             let section = Section::with_title(give);
             assert_eq!(section.anchor(), want);
+        }
+    }
+
+    mod last_line {
+        use crate::database::{Line, Section};
+
+        #[test]
+        fn with_body() {
+            let section = Section {
+                body: vec![Line::from("one"), Line::from("two")],
+                ..Section::default()
+            };
+            let have = section.last_line();
+            let want = Line::from("two");
+            assert_eq!(have, &want)
+        }
+
+        #[test]
+        fn without_body() {
+            let section = Section {
+                body: vec![],
+                title_line: Line::from("title"),
+                ..Section::default()
+            };
+            let have = section.last_line();
+            let want = Line::from("title");
+            assert_eq!(have, &want)
         }
     }
 

@@ -2,7 +2,7 @@ use super::Reference;
 use once_cell::sync::Lazy;
 use regex::Regex;
 
-#[derive(Debug, PartialEq)]
+#[derive(Debug, Default, PartialEq)]
 pub struct Line(String);
 
 static MD_RE: Lazy<Regex> = Lazy::new(|| Regex::new("(!?)\\[[^\\]]*\\]\\(([^)]*)\\)").unwrap());
