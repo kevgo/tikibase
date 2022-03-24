@@ -23,76 +23,74 @@ pub(crate) fn scan(base: &Tikibase) -> LinksResult {
     };
     let existing_targets = base.link_targets();
     for doc in &base.docs {
-        for section in doc.sections() {
-            for (i, line) in section.lines().enumerate() {
-                for reference in line.references() {
-                    match reference {
-                        Reference::Link {
-                            mut destination,
-                            start,
-                            end,
-                        } => {
-                            if destination.is_empty() {
-                                result.issues.push(Issue::LinkWithoutDestination {
-                                    location: Location {
-                                        file: doc.path.clone(),
-                                        line: section.line_number + (i as u32),
-                                        start,
-                                        end,
-                                    },
-                                });
-                                continue;
-                            }
-                            if destination.starts_with("http") {
-                                // ignore external links
-                                continue;
-                            }
-                            make_link_anchor(&mut destination);
-                            if !existing_targets.contains(&destination) {
-                                result.issues.push(Issue::BrokenLink {
-                                    location: Location {
-                                        file: doc.path.clone(),
-                                        line: section.line_number + (i as u32),
-                                        start,
-                                        end,
-                                    },
-                                    target: destination,
-                                });
-                                continue;
-                            }
-                            if destination == doc.path.to_string_lossy() {
-                                result.issues.push(Issue::LinkToSameDocument {
-                                    location: Location {
-                                        file: doc.path.clone(),
-                                        line: section.line_number + (i as u32),
-                                        start,
-                                        end,
-                                    },
-                                });
-                                continue;
-                            }
-                            result
-                                .incoming_doc_links
-                                .add(&destination, doc.path.clone());
-                            result.outgoing_doc_links.add(doc.path.clone(), destination);
+        for (i, line) in doc.lines().enumerate() {
+            for reference in line.references() {
+                match reference {
+                    Reference::Link {
+                        mut destination,
+                        start,
+                        end,
+                    } => {
+                        if destination.is_empty() {
+                            result.issues.push(Issue::LinkWithoutDestination {
+                                location: Location {
+                                    file: doc.path.clone(),
+                                    line: i as u32,
+                                    start,
+                                    end,
+                                },
+                            });
+                            continue;
                         }
-                        Reference::Image { src, start, end } => {
-                            if src.starts_with("http") {
-                                continue;
-                            }
-                            if !base.has_resource(&src) {
-                                result.issues.push(Issue::BrokenImage {
-                                    location: Location {
-                                        file: doc.path.clone(),
-                                        line: section.line_number + (i as u32),
-                                        start,
-                                        end,
-                                    },
-                                    target: src.clone(),
-                                });
-                            }
-                            result.outgoing_resource_links.push(src);
+                        if destination.starts_with("http") {
+                            // ignore external links
+                            continue;
                         }
+                        make_link_anchor(&mut destination);
+                        if !existing_targets.contains(&destination) {
+                            result.issues.push(Issue::BrokenLink {
+                                location: Location {
+                                    file: doc.path.clone(),
+                                    line: i as u32,
+                                    start,
+                                    end,
+                                },
+                                target: destination,
+                            });
+                            continue;
+                        }
+                        if destination == doc.path.to_string_lossy() {
+                            result.issues.push(Issue::LinkToSameDocument {
+                                location: Location {
+                                    file: doc.path.clone(),
+                                    line: i as u32,
+                                    start,
+                                    end,
+                                },
+                            });
+                            continue;
+                        }
+                        result
+                            .incoming_doc_links
+                            .add(&destination, doc.path.clone());
+                        result.outgoing_doc_links.add(doc.path.clone(), destination);
+                    }
+                    Reference::Image { src, start, end } => {
+                        if src.starts_with("http") {
+                            continue;
+                        }
+                        if !base.has_resource(&src) {
+                            result.issues.push(Issue::BrokenImage {
+                                location: Location {
+                                    file: doc.path.clone(),
+                                    line: i as u32,
+                                    start,
+                                    end,
+                                },
+                                target: src.clone(),
+                            });
+                        }
+                        result.outgoing_resource_links.push(src);
                     }
                 }
             }
