@@ -227,6 +227,7 @@ impl<'a> Iterator for SectionIterator<'a> {
     }
 }
 
+/// iterates over all lines in a Document
 pub struct LinesIterator<'a> {
     section_iter: SectionIterator<'a>,
     lines_iter: section::LinesIterator<'a>,
