@@ -162,7 +162,7 @@ mod tests {
 
         #[test]
         fn definitions() {
-            let line = Line::from("[^1]: the one");
+            let line = Line::from("[^1]: the one\nother");
             let mut have = Footnotes::default();
             line.footnotes(&mut have, Path::new(""), 0).unwrap();
             let want = Footnotes {

@@ -653,32 +653,32 @@ mod tests {
             let doc = Document::from_str("test.md", give).unwrap();
             let have = doc.footnotes();
             let want = Ok(Footnotes {
-                references: vec![
-                    Footnote {
-                        identifier: "1".into(),
-                        line: 1,
-                        start: 13,
-                        end: 16,
-                    },
-                    Footnote {
-                        identifier: "rust".into(),
-                        line: 2,
-                        start: 12,
-                        end: 19,
-                    },
-                ],
                 definitions: vec![
                     Footnote {
                         identifier: "1".into(),
                         line: 4,
                         start: 0,
-                        end: 17,
+                        end: 5,
                     },
                     Footnote {
                         identifier: "second".into(),
                         line: 5,
                         start: 0,
                         end: 10,
+                    },
+                ],
+                references: vec![
+                    Footnote {
+                        identifier: "1".into(),
+                        line: 1,
+                        start: 13,
+                        end: 17,
+                    },
+                    Footnote {
+                        identifier: "rust".into(),
+                        line: 2,
+                        start: 12,
+                        end: 19,
                     },
                 ],
             });
