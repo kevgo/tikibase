@@ -6,7 +6,7 @@ Feature: recognize unused footnotes
       # Title
 
       ### metrics
-      - existing footnote[^existing]
+      existing footnote[^existing]
 
       ```go
       result := map[^0]

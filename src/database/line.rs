@@ -1,5 +1,5 @@
-use super::footnote::FootnoteDefinition;
-use super::{FootnoteReference, Reference};
+use super::{Footnotes, Reference};
+use crate::database::footnote::Footnote;
 use crate::{Issue, Location};
 use once_cell::sync::Lazy;
 use regex::Regex;
@@ -11,8 +11,7 @@ pub struct Line(String);
 static MD_RE: Lazy<Regex> = Lazy::new(|| Regex::new("(!?)\\[[^\\]]*\\]\\(([^)]*)\\)").unwrap());
 static A_HTML_RE: Lazy<Regex> = Lazy::new(|| Regex::new(r#"<a href="(.*)">(.*)</a>"#).unwrap());
 static IMG_HTML_RE: Lazy<Regex> = Lazy::new(|| Regex::new(r#"<img src="([^"]*)"[^>]*>"#).unwrap());
-static FOOTNOTE_REFERENCE_RE: Lazy<Regex> = Lazy::new(|| Regex::new(r#"\[\^(\w+)\]"#).unwrap());
-static FOOTNOTE_DEFINITION_RE: Lazy<Regex> = Lazy::new(|| Regex::new("\\[\\^(\\w+)\\]:").unwrap());
+static FOOTNOTE_RE: Lazy<Regex> = Lazy::new(|| Regex::new("\\[\\^(\\w+)\\](:?)").unwrap());
 
 impl Line {
     pub fn from<S: Into<String>>(text: S) -> Line {
@@ -68,41 +67,21 @@ impl Line {
         &self.0
     }
 
-    pub fn footnote_definitions(
-        &self,
-        file: &Path,
-        line: u32,
-    ) -> Result<Vec<FootnoteDefinition>, Issue> {
+    pub fn footnotes(&self, file: &Path, line: u32) -> Result<Footnotes, Issue> {
         let sanitized = sanitize_code_segments(&self.0, file, line)?;
-        let mut result = vec![];
-        for captures in FOOTNOTE_DEFINITION_RE.captures_iter(&sanitized) {
+        let mut result = Footnotes::default();
+        for captures in FOOTNOTE_RE.captures_iter(&sanitized) {
             let total_match = captures.get(0).unwrap();
-            result.push(FootnoteDefinition {
-                line,
+            let footnote = Footnote {
                 identifier: captures.get(1).unwrap().as_str().to_string(),
+                line,
                 start: total_match.start() as u32,
                 end: total_match.end() as u32,
-            });
-        }
-        Ok(result)
-    }
-
-    /// provides al footnote references on this line
-    pub fn footnote_references(
-        &self,
-        file: &Path,
-        line: u32,
-    ) -> Result<Vec<FootnoteReference>, Issue> {
-        let sanitized = sanitize_code_segments(&self.0, file, line)?;
-        let mut result = vec![];
-        for captures in FOOTNOTE_REFERENCE_RE.captures_iter(&sanitized) {
-            let total_match = captures.get(0).unwrap();
-            result.push(FootnoteReference {
-                line,
-                identifier: captures.get(1).unwrap().as_str().to_string(),
-                start: total_match.start() as u32,
-                end: total_match.end() as u32,
-            });
+            };
+            match captures.get(3) {
+                Some(_) => result.definitions.push(footnote),
+                None => result.references.push(footnote),
+            };
         }
         Ok(result)
     }
@@ -139,41 +118,71 @@ fn sanitize_code_segments(text: &str, file: &Path, line: u32) -> Result<String, 
     Ok(result)
 }
 
+trait Lines {
+    fn lines(&self);
+}
+
 #[cfg(test)]
 mod tests {
 
-    mod sanitize_code_segments {
-        use super::super::sanitize_code_segments;
-        use crate::{Issue, Location};
-        use std::path::{Path, PathBuf};
+    mod footnotes {
+        use crate::database::{Footnote, Footnotes, Line};
+        use std::path::Path;
 
         #[test]
-        fn with_code_blocks() {
-            let give = "one `map[0]` two `more code` three";
-            let want = "one `      ` two `         ` three".to_string();
-            assert_eq!(sanitize_code_segments(give, Path::new(""), 0), Ok(want))
+        fn none() {
+            let line = Line::from("text");
+            let have = line.footnotes(Path::new(""), 0);
+            let want = Ok(Footnotes::default());
+            pretty::assert_eq!(have, want);
         }
 
         #[test]
-        fn empty_string() {
-            let give = "";
-            let want = "".to_string();
-            assert_eq!(sanitize_code_segments(give, Path::new(""), 0), Ok(want))
-        }
-
-        #[test]
-        fn unclosed_backtick() {
-            let give = "one `unclosed";
-            let want = Err(Issue::UnclosedBacktick {
-                location: Location {
-                    file: PathBuf::from(""),
-                    line: 12,
-                    start: 4,
-                    end: 13,
-                },
+        fn references() {
+            let line = Line::from("- text [^1] [^2]");
+            let have = line.footnotes(Path::new(""), 0);
+            let want = Ok(Footnotes {
+                references: vec![
+                    Footnote {
+                        line: 0,
+                        identifier: "1".into(),
+                        start: 7,
+                        end: 11,
+                    },
+                    Footnote {
+                        line: 0,
+                        identifier: "2".into(),
+                        start: 12,
+                        end: 16,
+                    },
+                ],
+                definitions: vec![],
             });
-            let have = sanitize_code_segments(give, Path::new(""), 12);
-            assert_eq!(have, want)
+            pretty::assert_eq!(have, want);
+        }
+
+        #[test]
+        fn definitions() {
+            let line = Line::from("[^1]: the one");
+            let have = line.footnotes(Path::new(""), 0);
+            let want = Ok(Footnotes {
+                definitions: vec![Footnote {
+                    identifier: "1".into(),
+                    line: 0,
+                    start: 0,
+                    end: 5,
+                }],
+                references: vec![],
+            });
+            pretty::assert_eq!(have, want);
+        }
+
+        #[test]
+        fn ignore_code_looking_like_footnotes() {
+            let line = Line::from("the code `map[^0]`");
+            let have = line.footnotes(Path::new(""), 0);
+            let want = Ok(Footnotes::default());
+            pretty::assert_eq!(have, want);
         }
     }
 
@@ -275,63 +284,38 @@ mod tests {
         }
     }
 
-    mod footnotes {
-        use crate::database::{FootnoteReference, Line};
-        use std::path::Path;
+    mod sanitize_code_segments {
+        use super::super::sanitize_code_segments;
+        use crate::{Issue, Location};
+        use std::path::{Path, PathBuf};
 
         #[test]
-        fn no_footnote() {
-            let line = Line::from("text");
-            let have = line.footnote_references(Path::new(""), 0);
-            let want = Ok(vec![]);
-            pretty::assert_eq!(have, want);
+        fn with_code_blocks() {
+            let give = "one `map[0]` two `more code` three";
+            let want = "one `      ` two `         ` three".to_string();
+            assert_eq!(sanitize_code_segments(give, Path::new(""), 0), Ok(want))
         }
 
         #[test]
-        fn single_footnote() {
-            let line = Line::from("- text [^1]");
-            let have = line.footnote_references(Path::new(""), 0);
-            let want = Ok(vec![FootnoteReference {
-                line: 0,
-                identifier: "1".into(),
-                start: 7,
-                end: 11,
-            }]);
-            pretty::assert_eq!(have, want);
+        fn empty_string() {
+            let give = "";
+            let want = "".to_string();
+            assert_eq!(sanitize_code_segments(give, Path::new(""), 0), Ok(want))
         }
 
         #[test]
-        fn multiple_footnotes() {
-            let line = Line::from("- text [^1] [^2]");
-            let have = line.footnote_references(Path::new(""), 0);
-            let want = Ok(vec![
-                FootnoteReference {
-                    line: 0,
-                    identifier: "1".into(),
-                    start: 7,
-                    end: 11,
+        fn unclosed_backtick() {
+            let give = "one `unclosed";
+            let want = Err(Issue::UnclosedBacktick {
+                location: Location {
+                    file: PathBuf::from(""),
+                    line: 12,
+                    start: 4,
+                    end: 13,
                 },
-                FootnoteReference {
-                    line: 0,
-                    identifier: "2".into(),
-                    start: 12,
-                    end: 16,
-                },
-            ]);
-            pretty::assert_eq!(have, want);
-        }
-
-        #[test]
-        fn ignore_code_looking_like_footnotes() {
-            let line = Line::from("the code `map[^0]` is mentioned in [^1]");
-            let have = line.footnote_references(Path::new(""), 0);
-            let want = Ok(vec![FootnoteReference {
-                line: 0,
-                identifier: "1".into(),
-                start: 35,
-                end: 39,
-            }]);
-            pretty::assert_eq!(have, want);
+            });
+            let have = sanitize_code_segments(give, Path::new(""), 12);
+            assert_eq!(have, want)
         }
     }
 }

@@ -38,7 +38,7 @@ pub fn fix(issue: Issue, base: &mut Tikibase, config: &Config) -> Option<Fix> {
         Issue::MissingLinks { location, links } => {
             Some(missing_links::add_occurrences(base, location, links))
         }
-        Issue::MissingSource {
+        Issue::MissingFootnote {
             location: _,
             identifier: _,
         } => None,

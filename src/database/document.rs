@@ -1,5 +1,4 @@
-use super::footnote::FootnoteDefinition;
-use super::{section, FootnoteReference, Line, Section};
+use super::{section, Footnotes, Line, Section};
 use crate::{Issue, Location};
 use std::fs;
 use std::io::prelude::*;
@@ -163,8 +162,8 @@ impl Document {
     }
 
     /// provides all the footnotes that this document defines
-    pub fn footnote_definitions(&self) -> Result<Vec<FootnoteDefinition>, Issue> {
-        let mut result: Vec<FootnoteDefinition> = vec![];
+    pub fn footnotes(&self) -> Result<Footnotes, Issue> {
+        let mut result: Footnotes = Footnotes::default();
         let mut code_block_start: Option<CodeblockStart> = None;
         for (i, line) in self.lines().enumerate() {
             if line.text().starts_with("```") {
@@ -178,41 +177,7 @@ impl Document {
                 continue;
             }
             if code_block_start.is_none() {
-                let mut f = line.footnote_definitions(&self.path, i as u32)?;
-                result.append(&mut f);
-            }
-        }
-        if let Some(code_block_start) = code_block_start {
-            return Err(Issue::UnclosedFence {
-                location: Location {
-                    file: self.path.clone(),
-                    line: code_block_start.line,
-                    start: 0,
-                    end: code_block_start.len,
-                },
-            });
-        }
-        Ok(result)
-    }
-
-    /// provides all the sources used in this document
-    pub fn footnote_references(&self) -> Result<Vec<FootnoteReference>, Issue> {
-        let mut result: Vec<FootnoteReference> = vec![];
-        let mut code_block_start: Option<CodeblockStart> = None;
-        for (i, line) in self.lines().enumerate() {
-            if line.text().starts_with("```") {
-                code_block_start = match code_block_start {
-                    Some(_) => None,
-                    None => Some(CodeblockStart {
-                        line: i as u32,
-                        len: line.text().len() as u32,
-                    }),
-                };
-                continue;
-            }
-            if code_block_start.is_none() {
-                let mut f = line.footnote_references(&self.path, i as u32)?;
-                result.append(&mut f);
+                result.append(line.footnotes(&self.path, i as u32)?);
             }
         }
         if let Some(code_block_start) = code_block_start {
@@ -657,9 +622,10 @@ mod tests {
         assert_eq!(have, "Title");
     }
 
-    mod footnote_definitions {
+    mod footnotes {
         use crate::database::document::Document;
-        use crate::database::footnote::FootnoteDefinition;
+        use crate::database::footnote::Footnotes;
+        use crate::database::Footnote;
         use indoc::indoc;
 
         #[test]
@@ -669,8 +635,8 @@ mod tests {
                 title text
                 "};
             let doc = Document::from_str("test.md", give).unwrap();
-            let have = doc.footnote_definitions();
-            let want = Ok(vec![]);
+            let have = doc.footnotes();
+            let want = Ok(Footnotes::default());
             pretty::assert_eq!(have, want)
         }
 
@@ -678,27 +644,44 @@ mod tests {
         fn has_footnotes() {
             let give = indoc! {"
                 # Title
-                title text
+                reference to [^1]
+                100 tons of [^rust]
                 ### links
                 [^1]: first footnote
                 [^second]: second footnote
                 "};
             let doc = Document::from_str("test.md", give).unwrap();
-            let have = doc.footnote_definitions();
-            let want = Ok(vec![
-                FootnoteDefinition {
-                    identifier: "1".into(),
-                    line: 3,
-                    start: 0,
-                    end: 5,
-                },
-                FootnoteDefinition {
-                    identifier: "second".into(),
-                    line: 4,
-                    start: 0,
-                    end: 10,
-                },
-            ]);
+            let have = doc.footnotes();
+            let want = Ok(Footnotes {
+                references: vec![
+                    Footnote {
+                        identifier: "1".into(),
+                        line: 1,
+                        start: 13,
+                        end: 16,
+                    },
+                    Footnote {
+                        identifier: "rust".into(),
+                        line: 2,
+                        start: 12,
+                        end: 19,
+                    },
+                ],
+                definitions: vec![
+                    Footnote {
+                        identifier: "1".into(),
+                        line: 4,
+                        start: 0,
+                        end: 17,
+                    },
+                    Footnote {
+                        identifier: "second".into(),
+                        line: 5,
+                        start: 0,
+                        end: 10,
+                    },
+                ],
+            });
             pretty::assert_eq!(have, want)
         }
 
@@ -711,8 +694,8 @@ mod tests {
                 ```
                 "};
             let doc = Document::from_str("test.md", give).unwrap();
-            let have = doc.footnote_definitions();
-            let want = Ok(vec![]);
+            let have = doc.footnotes();
+            let want = Ok(Footnotes::default());
             pretty::assert_eq!(have, want)
         }
 
@@ -723,86 +706,9 @@ mod tests {
                 a `[^1]` code block
                 "};
             let doc = Document::from_str("test.md", give).unwrap();
-            let have = doc.footnote_definitions();
-            let want = Ok(vec![]);
+            let have = doc.footnotes();
+            let want = Ok(Footnotes::default());
             pretty::assert_eq!(have, want)
-        }
-    }
-
-    mod footnote_references {
-        use crate::database::{Document, FootnoteReference};
-        use indoc::indoc;
-
-        #[test]
-        fn no_sources() {
-            let give = indoc! {"
-                # Title
-                title text
-                "};
-            let doc = Document::from_str("test.md", give).unwrap();
-            let have = doc.footnote_references();
-            let want = Ok(vec![]);
-            pretty::assert_eq!(have, want);
-        }
-
-        #[test]
-        fn with_sources() {
-            let give = indoc! {"
-                # Title
-                title text [^2]
-                ### sec 1
-                text [^1] [^3]
-                "};
-            let doc = Document::from_str("test.md", give).unwrap();
-            let have = doc.footnote_references();
-            let want = Ok(vec![
-                FootnoteReference {
-                    identifier: "2".into(),
-                    line: 1,
-                    start: 11,
-                    end: 15,
-                },
-                FootnoteReference {
-                    identifier: "1".into(),
-                    line: 3,
-                    start: 5,
-                    end: 9,
-                },
-                FootnoteReference {
-                    identifier: "3".into(),
-                    line: 3,
-                    start: 10,
-                    end: 14,
-                },
-            ]);
-            pretty::assert_eq!(have, want);
-        }
-
-        #[test]
-        fn code_segment() {
-            let give = indoc! {"
-                # Title
-                Example code: `map[^0]`
-                "};
-            let doc = Document::from_str("test.md", give).unwrap();
-            let have = doc.footnote_references();
-            let want = Ok(vec![]);
-            assert_eq!(have, want);
-        }
-
-        #[test]
-        fn code_block() {
-            let give = indoc! {"
-                # Title
-                Example code:
-                ```
-                map[^0]
-                ```
-                "};
-            let doc = Document::from_str("test.md", give).unwrap();
-            let have = doc.footnote_references();
-            let want = Ok(vec![]);
-            pretty::assert_eq!(have, want);
         }
     }
 }

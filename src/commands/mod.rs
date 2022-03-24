@@ -62,7 +62,7 @@ pub enum Issue {
         location: Location,
         links: Vec<MissingLink>,
     },
-    MissingSource {
+    MissingFootnote {
         location: Location,
         identifier: String,
     },

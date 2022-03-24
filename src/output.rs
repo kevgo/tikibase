@@ -137,7 +137,7 @@ impl Message {
                     end: location.end,
                 }
             }
-            Issue::MissingSource {
+            Issue::MissingFootnote {
                 location,
                 identifier: index,
             } => Message {

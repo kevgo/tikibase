@@ -1,55 +1,75 @@
-use crate::database::{FootnoteDefinition, FootnoteReference};
+use crate::database::{Footnote, Footnotes};
 use crate::{Issue, Location, Tikibase};
 
 pub(crate) fn scan(base: &Tikibase) -> Vec<Issue> {
     let mut issues = Vec::<Issue>::new();
     for doc in &base.docs {
-        let footnote_references = match doc.footnote_references() {
-            Ok(used_sources) => used_sources,
+        let footnotes = match doc.footnotes() {
+            Ok(footnotes) => footnotes,
             Err(issue) => return vec![issue],
         };
-        let footnote_definitions = match doc.footnote_definitions() {
-            Ok(footnote_definitions) => footnote_definitions,
-            Err(issue) => return vec![issue],
-        };
-        for footnote_reference in &footnote_references {
-            if !contains_reference(&footnote_definitions, &footnote_reference.identifier) {
-                issues.push(Issue::MissingSource {
-                    location: Location {
-                        file: doc.path.clone(),
-                        line: footnote_reference.line,
-                        start: footnote_reference.start,
-                        end: footnote_reference.end,
-                    },
-                    identifier: footnote_reference.identifier.clone(),
-                });
-            }
+        for missing_reference in footnotes.missing_references() {
+            issues.push(Issue::MissingFootnote {
+                location: Location {
+                    file: doc.path.clone(),
+                    line: missing_reference.line,
+                    start: missing_reference.start,
+                    end: missing_reference.end,
+                },
+                identifier: missing_reference.identifier.clone(),
+            });
         }
-        for footnote_definition in &footnote_definitions {
-            if !contains_definition(&footnote_references, &footnote_definition.identifier) {
-                issues.push(Issue::UnusedFootnote {
-                    location: Location {
-                        file: doc.path.clone(),
-                        line: footnote_definition.line,
-                        start: footnote_definition.start,
-                        end: footnote_definition.end,
-                    },
-                    identifier: footnote_definition.identifier.clone(),
-                })
-            }
+        for unused_definition in footnotes.unused_definitions() {
+            issues.push(Issue::UnusedFootnote {
+                location: Location {
+                    file: doc.path.clone(),
+                    line: unused_definition.line,
+                    start: unused_definition.start,
+                    end: unused_definition.end,
+                },
+                identifier: unused_definition.identifier.clone(),
+            })
         }
     }
     issues
 }
 
-fn contains_reference(definitions: &[FootnoteDefinition], identifier: &str) -> bool {
-    definitions
-        .iter()
-        .any(|definition| definition.identifier == identifier)
-}
+#[cfg(test)]
+mod tests {
+    use crate::{test, Config, Issue, Location, Tikibase};
+    use indoc::indoc;
+    use std::path::PathBuf;
 
-fn contains_definition(references: &[FootnoteReference], identifier: &str) -> bool {
-    references
-        .iter()
-        .any(|reference| reference.identifier == identifier)
+    #[test]
+    fn unused_footnote() {
+        let dir = test::tmp_dir();
+        let content = indoc! {"
+            # Title
+            existing footnote[^existing]
+
+            ```go
+            result := map[^0]
+            ```
+
+            Another snippet of code that should be ignored is `map[^0]`.
+
+            ### links
+
+            [^existing]: existing footnote
+            [^unused]: unused footnote
+            "};
+        test::create_file("1.md", content, &dir);
+        let base = Tikibase::load(dir, &Config::default()).unwrap();
+        let have = super::scan(&base);
+        let want = vec![Issue::UnusedFootnote {
+            location: Location {
+                file: PathBuf::from("1.md"),
+                line: 12,
+                start: 0,
+                end: 10,
+            },
+            identifier: "unused".into(),
+        }];
+        pretty::assert_eq!(have, want)
+    }
 }
