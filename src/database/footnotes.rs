@@ -6,15 +6,24 @@ pub struct Footnotes {
 }
 
 impl Footnotes {
+    fn contains_definition(&self, identifier: &str) -> bool {
+        self.definitions
+            .iter()
+            .any(|definition| definition.identifier == identifier)
+    }
+
+    /// indicates whether this footnotes collection contains a footnote reference with the given identifier
+    fn contains_reference(&self, identifier: &str) -> bool {
+        self.references
+            .iter()
+            .any(|reference| reference.identifier == identifier)
+    }
+
     /// provides footnote definitions that aren't referenced in the text
     pub fn missing_references(&self) -> Vec<&Footnote> {
         let mut result = vec![];
         for reference in &self.references {
-            if !self
-                .definitions
-                .iter()
-                .any(|definition| definition.identifier == reference.identifier)
-            {
+            if !self.contains_definition(&reference.identifier) {
                 result.push(reference);
             }
         }
@@ -25,11 +34,7 @@ impl Footnotes {
     pub fn unused_definitions(&self) -> Vec<&Footnote> {
         let mut result = vec![];
         for definition in &self.definitions {
-            if !self
-                .references
-                .iter()
-                .any(|reference| reference.identifier == definition.identifier)
-            {
+            if !self.contains_reference(&definition.identifier) {
                 result.push(definition);
             }
         }
@@ -52,6 +57,66 @@ pub struct Footnote {
 
 #[cfg(test)]
 mod tests {
+
+    mod contains_definition {
+        use crate::database::{Footnote, Footnotes};
+
+        #[test]
+        fn contains() {
+            let give = Footnotes {
+                definitions: vec![Footnote {
+                    identifier: "f2".into(),
+                    ..Footnote::default()
+                }],
+                references: vec![],
+            };
+            let have = give.contains_definition("f2");
+            assert!(have)
+        }
+
+        #[test]
+        fn does_not_contain() {
+            let give = Footnotes {
+                definitions: vec![Footnote {
+                    identifier: "f1".into(),
+                    ..Footnote::default()
+                }],
+                references: vec![],
+            };
+            let have = give.contains_definition("f2");
+            assert!(!have)
+        }
+    }
+
+    mod contains_reference {
+        use crate::database::{Footnote, Footnotes};
+
+        #[test]
+        fn contains() {
+            let give = Footnotes {
+                definitions: vec![],
+                references: vec![Footnote {
+                    identifier: "f2".into(),
+                    ..Footnote::default()
+                }],
+            };
+            let have = give.contains_reference("f2");
+            assert!(have)
+        }
+
+        #[test]
+        fn does_not_contain() {
+            let give = Footnotes {
+                definitions: vec![],
+                references: vec![Footnote {
+                    identifier: "f1".into(),
+                    ..Footnote::default()
+                }],
+            };
+            let have = give.contains_reference("f2");
+            assert!(!have)
+        }
+    }
 
     mod missing_references {
         use crate::database::{Footnote, Footnotes};
