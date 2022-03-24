@@ -23,14 +23,14 @@ impl Footnotes {
     pub fn missing_references(&self) -> impl Iterator<Item = &Footnote> {
         self.references
             .iter()
-            .filter(|r| !self.contains_definition(&r.identifier))
+            .filter(|reference| !self.contains_definition(&reference.identifier))
     }
 
     /// provides footnote references that have no definition
     pub fn unused_definitions(&self) -> impl Iterator<Item = &Footnote> {
         self.definitions
             .iter()
-            .filter(|d| !self.contains_reference(&d.identifier))
+            .filter(|definition| !self.contains_reference(&definition.identifier))
     }
 }
 
