@@ -999,6 +999,7 @@ dependencies = [
  "futures",
  "heck 0.4.0",
  "indoc",
+ "itertools",
  "once_cell",
  "pretty_assertions",
  "rand",

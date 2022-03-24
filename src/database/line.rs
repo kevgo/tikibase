@@ -1,4 +1,4 @@
-use super::{Reference, SourceReference};
+use crate::database::{Footnote, Footnotes, Reference};
 use crate::{Issue, Location};
 use once_cell::sync::Lazy;
 use regex::Regex;
@@ -7,17 +7,50 @@ use std::path::Path;
 #[derive(Debug, Default, PartialEq)]
 pub struct Line(String);
 
-static MD_RE: Lazy<Regex> = Lazy::new(|| Regex::new("(!?)\\[[^\\]]*\\]\\(([^)]*)\\)").unwrap());
+static MD_RE: Lazy<Regex> = Lazy::new(|| Regex::new(r#"(!?)\[[^\]]*\]\(([^)]*)\)"#).unwrap());
 static A_HTML_RE: Lazy<Regex> = Lazy::new(|| Regex::new(r#"<a href="(.*)">(.*)</a>"#).unwrap());
 static IMG_HTML_RE: Lazy<Regex> = Lazy::new(|| Regex::new(r#"<img src="([^"]*)"[^>]*>"#).unwrap());
-static SOURCE_RE: Lazy<Regex> = Lazy::new(|| Regex::new(r#"\[(\d+)\]"#).unwrap());
+static FOOTNOTE_RE: Lazy<Regex> = Lazy::new(|| Regex::new(r#"\[\^(\w+)\](:?)"#).unwrap());
 
 impl Line {
+    /// appends all footnote definitions and references to the given result structure
+    ///
+    /// This is implemented using a mutable accumulator parameter to minimize memory allocations
+    /// since this code is running for every line in a Tikibase, i.e. potentially hundreds of thousands of times.
+    pub fn add_footnotes_to(
+        &self,
+        result: &mut Footnotes,
+        file: &Path,
+        line: u32,
+    ) -> Result<(), Issue> {
+        let sanitized = sanitize_code_segments(&self.0, file, line)?;
+        for captures in FOOTNOTE_RE.captures_iter(&sanitized) {
+            let total_match = captures.get(0).unwrap();
+            let footnote = Footnote {
+                identifier: captures.get(1).unwrap().as_str().to_string(),
+                line,
+                start: total_match.start() as u32,
+                end: total_match.end() as u32,
+            };
+            match captures[2].is_empty() {
+                false => result.definitions.push(footnote),
+                true => result.references.push(footnote),
+            };
+        }
+        Ok(())
+    }
+
     pub fn from<S: Into<String>>(text: S) -> Line {
         Line(text.into())
     }
 
+    /// indicates whether this line is the beginning or end of a code block
+    pub fn is_code_block_boundary(&self) -> bool {
+        self.text().starts_with("```")
+    }
+
     /// provides all links and images in this line
+    // TODO: reuse shared global Vec here
     pub fn references(&self) -> Vec<Reference> {
         let mut result = Vec::new();
         for cap in MD_RE.captures_iter(&self.0) {
@@ -65,21 +98,6 @@ impl Line {
     pub fn text(&self) -> &str {
         &self.0
     }
-
-    /// provides the indexes of all sources referenced on this line
-    pub fn source_references(&self, file: &Path, line: u32) -> Result<Vec<SourceReference>, Issue> {
-        let sanitized = sanitize_code_segments(&self.0, file, line)?;
-        let mut result = vec![];
-        for captures in SOURCE_RE.captures_iter(&sanitized) {
-            let total_match = captures.get(0).unwrap();
-            result.push(SourceReference {
-                identifier: captures.get(1).unwrap().as_str().to_string(),
-                start: total_match.start() as u32,
-                end: total_match.end() as u32,
-            });
-        }
-        Ok(result)
-    }
 }
 
 /// non-destructively overwrites areas inside backticks in the given string with spaces
@@ -116,38 +134,93 @@ fn sanitize_code_segments(text: &str, file: &Path, line: u32) -> Result<String, 
 #[cfg(test)]
 mod tests {
 
-    mod sanitize_code_segments {
-        use super::super::sanitize_code_segments;
-        use crate::{Issue, Location};
-        use std::path::{Path, PathBuf};
+    mod add_footnotes_to {
+        use crate::database::{Footnote, Footnotes, Line};
+        use std::path::Path;
 
         #[test]
-        fn with_code_blocks() {
-            let give = "one `map[0]` two `more code` three";
-            let want = "one `      ` two `         ` three".to_string();
-            assert_eq!(sanitize_code_segments(give, Path::new(""), 0), Ok(want))
+        fn no_footnotes() {
+            let line = Line::from("text");
+            let mut have = Footnotes::default();
+            line.add_footnotes_to(&mut have, Path::new(""), 0).unwrap();
+            let want = Footnotes::default();
+            pretty::assert_eq!(have, want);
         }
 
         #[test]
-        fn empty_string() {
-            let give = "";
-            let want = "".to_string();
-            assert_eq!(sanitize_code_segments(give, Path::new(""), 0), Ok(want))
+        fn with_footnote_references() {
+            let line = Line::from("- text [^1] [^2]");
+            let mut have = Footnotes::default();
+            line.add_footnotes_to(&mut have, Path::new(""), 0).unwrap();
+            let want = Footnotes {
+                definitions: vec![],
+                references: vec![
+                    Footnote {
+                        line: 0,
+                        identifier: "1".into(),
+                        start: 7,
+                        end: 11,
+                    },
+                    Footnote {
+                        line: 0,
+                        identifier: "2".into(),
+                        start: 12,
+                        end: 16,
+                    },
+                ],
+            };
+            pretty::assert_eq!(have, want);
         }
 
         #[test]
-        fn unclosed_backtick() {
-            let give = "one `unclosed";
-            let want = Err(Issue::UnclosedBacktick {
-                location: Location {
-                    file: PathBuf::from(""),
-                    line: 12,
-                    start: 4,
-                    end: 13,
-                },
-            });
-            let have = sanitize_code_segments(give, Path::new(""), 12);
-            assert_eq!(have, want)
+        fn with_footnote_definitions() {
+            let line = Line::from("[^1]: the one\nother");
+            let mut have = Footnotes::default();
+            line.add_footnotes_to(&mut have, Path::new(""), 0).unwrap();
+            let want = Footnotes {
+                definitions: vec![Footnote {
+                    identifier: "1".into(),
+                    line: 0,
+                    start: 0,
+                    end: 5,
+                }],
+                references: vec![],
+            };
+            pretty::assert_eq!(have, want);
+        }
+
+        #[test]
+        fn ignore_code_looking_like_footnotes() {
+            let line = Line::from("the code `map[^0]`");
+            let mut have = Footnotes::default();
+            line.add_footnotes_to(&mut have, Path::new(""), 0).unwrap();
+            let want = Footnotes::default();
+            pretty::assert_eq!(have, want);
+        }
+    }
+
+    mod is_code_block_boundary {
+        use crate::database::Line;
+
+        #[test]
+        fn no_boundary() {
+            let line = Line::from("foo");
+            let have = line.is_code_block_boundary();
+            assert!(!have)
+        }
+
+        #[test]
+        fn plain_boundary() {
+            let line = Line::from("```");
+            let have = line.is_code_block_boundary();
+            assert!(have)
+        }
+
+        #[test]
+        fn boundary_with_language() {
+            let line = Line::from("```rs");
+            let have = line.is_code_block_boundary();
+            assert!(have)
         }
     }
 
@@ -249,59 +322,38 @@ mod tests {
         }
     }
 
-    mod used_sources {
-        use crate::database::{Line, SourceReference};
-        use std::path::Path;
+    mod sanitize_code_segments {
+        use super::super::sanitize_code_segments;
+        use crate::{Issue, Location};
+        use std::path::{Path, PathBuf};
 
         #[test]
-        fn no_source() {
-            let line = Line::from("text");
-            let have = line.source_references(Path::new(""), 0);
-            let want = Ok(vec![]);
-            pretty::assert_eq!(have, want);
+        fn with_code_blocks() {
+            let give = "one `map[0]` two `more code` three";
+            let want = "one `      ` two `         ` three".to_string();
+            assert_eq!(sanitize_code_segments(give, Path::new(""), 0), Ok(want))
         }
 
         #[test]
-        fn single_source() {
-            let line = Line::from("- text [1]");
-            let have = line.source_references(Path::new(""), 0);
-            let want = Ok(vec![SourceReference {
-                identifier: "1".into(),
-                start: 7,
-                end: 10,
-            }]);
-            pretty::assert_eq!(have, want);
+        fn empty_string() {
+            let give = "";
+            let want = "".to_string();
+            assert_eq!(sanitize_code_segments(give, Path::new(""), 0), Ok(want))
         }
 
         #[test]
-        fn multiple_sources() {
-            let line = Line::from("- text [1] [2]");
-            let have = line.source_references(Path::new(""), 0);
-            let want = Ok(vec![
-                SourceReference {
-                    identifier: "1".into(),
-                    start: 7,
-                    end: 10,
+        fn unclosed_backtick() {
+            let give = "one `unclosed";
+            let want = Err(Issue::UnclosedBacktick {
+                location: Location {
+                    file: PathBuf::from(""),
+                    line: 12,
+                    start: 4,
+                    end: 13,
                 },
-                SourceReference {
-                    identifier: "2".into(),
-                    start: 11,
-                    end: 14,
-                },
-            ]);
-            pretty::assert_eq!(have, want);
-        }
-
-        #[test]
-        fn ignore_code_looking_like_source_references() {
-            let line = Line::from("the code `map[0]` is mentioned in [1]");
-            let have = line.source_references(Path::new(""), 0);
-            let want = Ok(vec![SourceReference {
-                identifier: "1".into(),
-                start: 34,
-                end: 37,
-            }]);
-            pretty::assert_eq!(have, want);
+            });
+            let have = sanitize_code_segments(give, Path::new(""), 12);
+            assert_eq!(have, want)
         }
     }
 }

@@ -32,8 +32,7 @@ issues:
 - **inconsistent section capitalization**
 - **duplicate sections**
 - **empty sections**
-- **missing sources:** you can name sources by creating an ordered list in the
-  `### links` section. You can reference sources like `[1]` in the document.
+- **missing footnote definitions and references**
 
 When the config file defines the allowed section names, Tikibase verifies these
 additional properties:

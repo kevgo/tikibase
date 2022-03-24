@@ -62,7 +62,7 @@ pub enum Issue {
         location: Location,
         links: Vec<MissingLink>,
     },
-    MissingSource {
+    MissingFootnote {
         location: Location,
         identifier: String,
     },
@@ -98,6 +98,10 @@ pub enum Issue {
     },
     UnorderedSections {
         location: Location,
+    },
+    UnusedFootnote {
+        location: Location,
+        identifier: String,
     },
 }
 

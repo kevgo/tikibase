@@ -1,8 +1,5 @@
-use super::{section, Line, Section, SourceReference};
+use super::{section, Footnotes, Line, Section};
 use crate::{Issue, Location};
-use ahash::AHashSet;
-use once_cell::sync::Lazy;
-use regex::Regex;
 use std::fs;
 use std::io::prelude::*;
 use std::path::{Path, PathBuf};
@@ -16,8 +13,6 @@ pub struct Document {
     /// The old "occurrences" section that was filtered out when loading the document.
     pub old_occurrences_section: Option<Section>,
 }
-
-static SOURCE_RE: Lazy<Regex> = Lazy::new(|| Regex::new("^(\\d+)\\.").unwrap());
 
 impl Document {
     /// provides a Document instance containing the given text
@@ -129,6 +124,16 @@ impl Document {
             .unwrap()
     }
 
+    /// provides an iterator over all lines in this document
+    pub fn lines(&self) -> LinesIterator {
+        let mut section_iter = self.sections();
+        let section = section_iter.next().unwrap();
+        LinesIterator {
+            section_iter,
+            lines_iter: section.lines(),
+        }
+    }
+
     /// provides the number of lines in this document
     pub fn lines_count(&self) -> u32 {
         self.content_sections
@@ -155,47 +160,35 @@ impl Document {
             .collect()
     }
 
-    /// provides all the sources that this document defines
-    pub fn sources_defined(&self) -> AHashSet<String> {
-        let mut result = AHashSet::new();
-        let links_section = match self.section_with_title("links") {
-            None => return result,
-            Some(section) => section,
-        };
-        for line in links_section.lines() {
-            for cap in SOURCE_RE.captures_iter(line.text()) {
-                result.insert(cap[1].to_string());
-            }
-        }
-        result
-    }
-
-    /// provides all the sources used in this document
-    pub fn sources_used(&self) -> Result<Vec<UsedSource>, Issue> {
-        let mut used_sources = AHashSet::new();
-        let mut in_code_block = false;
-        for section in self.sections() {
-            if section.title().text == "occurrences" {
+    /// provides all the footnotes that this document defines and references
+    pub fn footnotes(&self) -> Result<Footnotes, Issue> {
+        let mut result = Footnotes::default();
+        let mut code_block_start: Option<CodeblockStart> = None;
+        for (i, line) in self.lines().enumerate() {
+            if line.is_code_block_boundary() {
+                code_block_start = match code_block_start {
+                    Some(_) => None,
+                    None => Some(CodeblockStart {
+                        line: i as u32,
+                        len: line.text().len() as u32,
+                    }),
+                };
                 continue;
             }
-            for (line_idx, line) in section.lines().enumerate() {
-                if line.text().starts_with("```") {
-                    in_code_block = !in_code_block;
-                    continue;
-                }
-                if !in_code_block {
-                    let line_nr_in_doc = section.line_number + line_idx as u32;
-                    for source_ref in line.source_references(&self.path, line_nr_in_doc)? {
-                        used_sources.insert(UsedSource {
-                            line: section.line_number + (line_idx as u32),
-                            source_ref,
-                        });
-                    }
-                }
+            if code_block_start.is_none() {
+                line.add_footnotes_to(&mut result, &self.path, i as u32)?;
             }
         }
-        let mut result = Vec::from_iter(used_sources);
-        result.sort();
+        if let Some(code_block_start) = code_block_start {
+            return Err(Issue::UnclosedFence {
+                location: Location {
+                    file: self.path.clone(),
+                    line: code_block_start.line,
+                    start: 0,
+                    end: code_block_start.len,
+                },
+            });
+        }
         Ok(result)
     }
 
@@ -234,11 +227,37 @@ impl<'a> Iterator for SectionIterator<'a> {
     }
 }
 
-/// a SourceReference in a Document
-#[derive(Debug, Eq, Hash, Ord, PartialEq, PartialOrd)]
-pub struct UsedSource {
-    pub line: u32,
-    pub source_ref: SourceReference,
+/// iterates over all lines in a Document
+pub struct LinesIterator<'a> {
+    /// to get the next section
+    section_iter: SectionIterator<'a>,
+    /// iterator over the lines in the current section
+    lines_iter: section::LinesIterator<'a>,
+}
+
+impl<'a> Iterator for LinesIterator<'a> {
+    type Item = &'a Line;
+
+    fn next(&mut self) -> Option<Self::Item> {
+        let next_line = self.lines_iter.next();
+        if next_line.is_some() {
+            return next_line;
+        }
+        let next_section = match self.section_iter.next() {
+            Some(section) => section,
+            None => return None,
+        };
+        self.lines_iter = next_section.lines();
+        self.lines_iter.next()
+    }
+}
+
+/// describes the start of a codeblock
+struct CodeblockStart {
+    /// the line on which this codeblock starts
+    line: u32,
+    /// length of the text on this line
+    len: u32,
 }
 
 // -------------------------------------------------------------------------------------
@@ -425,7 +444,8 @@ mod tests {
 
         #[test]
         fn title_only() {
-            let doc = Document::from_str("test.md", "# Title").unwrap();
+            let text = &"# Title";
+            let doc = Document::from_str("test.md", text).unwrap();
             let have = doc.last_section();
             let want = &doc.title_section;
             pretty::assert_eq!(&have, &want)
@@ -433,11 +453,59 @@ mod tests {
 
         #[test]
         fn with_body() {
-            let doc =
-                Document::from_str("test.md", "# Title\n### section 1\nsection text").unwrap();
+            let text = &"# Title\n### section 1\nsection text";
+            let doc = Document::from_str("test.md", text).unwrap();
             let have = doc.last_section();
             let want = &doc.content_sections[0];
             pretty::assert_eq!(&have, &want)
+        }
+    }
+
+    mod lines {
+        use super::super::Document;
+        use crate::database::Line;
+        use indoc::indoc;
+
+        #[test]
+        fn multiple_sections() {
+            let give = indoc! {"
+            # Title
+            title text
+
+            ### Section 1
+            one
+            two
+
+            ### Section 2
+            foo
+            "};
+            let doc = Document::from_str("test.md", give).unwrap();
+            let mut lines = doc.lines();
+            pretty::assert_eq!(lines.next(), Some(&Line::from("# Title")));
+            pretty::assert_eq!(lines.next(), Some(&Line::from("title text")));
+            pretty::assert_eq!(lines.next(), Some(&Line::from("")));
+            pretty::assert_eq!(lines.next(), Some(&Line::from("### Section 1")));
+            pretty::assert_eq!(lines.next(), Some(&Line::from("one")));
+            pretty::assert_eq!(lines.next(), Some(&Line::from("two")));
+            pretty::assert_eq!(lines.next(), Some(&Line::from("")));
+            pretty::assert_eq!(lines.next(), Some(&Line::from("### Section 2")));
+            pretty::assert_eq!(lines.next(), Some(&Line::from("foo")));
+            pretty::assert_eq!(lines.next(), None);
+        }
+
+        #[test]
+        fn section_without_body() {
+            let give = indoc! {"
+                # Title
+                ### Section 1
+                ### Section 2
+                "};
+            let doc = Document::from_str("test.md", give).unwrap();
+            let mut lines = doc.lines();
+            pretty::assert_eq!(lines.next(), Some(&Line::from("# Title")));
+            pretty::assert_eq!(lines.next(), Some(&Line::from("### Section 1")));
+            pretty::assert_eq!(lines.next(), Some(&Line::from("### Section 2")));
+            pretty::assert_eq!(lines.next(), None);
         }
     }
 
@@ -456,8 +524,8 @@ mod tests {
                 ### Section 2
                 foo
                 "};
-            let doc = Document::from_str("test.md", give).unwrap();
-            assert_eq!(doc.lines_count(), 6);
+            let have = Document::from_str("test.md", give).unwrap().lines_count();
+            assert_eq!(have, 6);
         }
 
         #[test]
@@ -466,8 +534,8 @@ mod tests {
                 # Title
                 title text
                 "};
-            let doc = Document::from_str("test.md", give).unwrap();
-            assert_eq!(doc.lines_count(), 1);
+            let have = Document::from_str("test.md", give).unwrap().lines_count();
+            assert_eq!(have, 1);
         }
     }
 
@@ -540,8 +608,7 @@ mod tests {
             ### Section 2
             foo
             "};
-        let doc = Document::from_str("test.md", give).unwrap();
-        let have = doc.text();
+        let have = Document::from_str("test.md", give).unwrap().text();
         assert_eq!(have, give);
     }
 
@@ -558,134 +625,87 @@ mod tests {
         assert_eq!(have, "Title");
     }
 
-    mod sources_defined {
-        use crate::database::document::Document;
-        use ahash::AHashSet;
+    mod footnotes {
+        use crate::database::{Document, Footnote, Footnotes};
         use indoc::indoc;
 
         #[test]
-        fn no_links() {
+        fn no_footnotes() {
             let give = indoc! {"
                 # Title
                 title text
                 "};
-            let doc = Document::from_str("test.md", give).unwrap();
-            let have = doc.sources_defined();
-            assert_eq!(have.len(), 0);
+            let have = Document::from_str("test.md", give).unwrap().footnotes();
+            let want = Ok(Footnotes::default());
+            pretty::assert_eq!(have, want)
         }
 
         #[test]
-        fn unordered_links() {
+        fn has_footnotes() {
             let give = indoc! {"
                 # Title
-                title text
+                reference to [^1]
+                100 tons of [^rust]
                 ### links
-                - https://foo.com
+                [^1]: first footnote
+                [^second]: second footnote
                 "};
-            let doc = Document::from_str("test.md", give).unwrap();
-            let have = doc.sources_defined();
-            assert_eq!(have.len(), 0);
-        }
-
-        #[test]
-        fn ordered_links() {
-            let give = indoc! {"
-                # Title
-                title text
-                ### links
-                1. https://one.com
-                2. https://two.com
-                "};
-            let doc = Document::from_str("test.md", give).unwrap();
-            let have = doc.sources_defined();
-            let mut want = AHashSet::new();
-            want.insert("1".into());
-            want.insert("2".into());
-            assert_eq!(have, want);
-        }
-    }
-
-    mod sources_used {
-        use crate::database::document::UsedSource;
-        use crate::database::{Document, SourceReference};
-        use indoc::indoc;
-
-        #[test]
-        fn no_sources() {
-            let give = indoc! {"
-                # Title
-                title text
-                "};
-            let doc = Document::from_str("test.md", give).unwrap();
-            let have = doc.sources_used();
-            let want = Ok(vec![]);
-            pretty::assert_eq!(have, want);
-        }
-
-        #[test]
-        fn with_sources() {
-            let give = indoc! {"
-                # Title
-                title text [2]
-                ### sec 1
-                text [1] [3]
-                "};
-            let doc = Document::from_str("test.md", give).unwrap();
-            let have = doc.sources_used();
-            let want = Ok(vec![
-                UsedSource {
-                    line: 1,
-                    source_ref: SourceReference {
-                        identifier: "2".into(),
-                        start: 11,
-                        end: 14,
-                    },
-                },
-                UsedSource {
-                    line: 3,
-                    source_ref: SourceReference {
+            let have = Document::from_str("test.md", give).unwrap().footnotes();
+            let want = Ok(Footnotes {
+                definitions: vec![
+                    Footnote {
                         identifier: "1".into(),
-                        start: 5,
-                        end: 8,
+                        line: 4,
+                        start: 0,
+                        end: 5,
                     },
-                },
-                UsedSource {
-                    line: 3,
-                    source_ref: SourceReference {
-                        identifier: "3".into(),
-                        start: 9,
-                        end: 12,
+                    Footnote {
+                        identifier: "second".into(),
+                        line: 5,
+                        start: 0,
+                        end: 10,
                     },
-                },
-            ]);
-            pretty::assert_eq!(have, want);
-        }
-
-        #[test]
-        fn code_segment() {
-            let give = indoc! {"
-                # Title
-                Example code: `map[0]`
-                "};
-            let doc = Document::from_str("test.md", give).unwrap();
-            let have = doc.sources_used();
-            let want = Ok(vec![]);
-            assert_eq!(have, want);
+                ],
+                references: vec![
+                    Footnote {
+                        identifier: "1".into(),
+                        line: 1,
+                        start: 13,
+                        end: 17,
+                    },
+                    Footnote {
+                        identifier: "rust".into(),
+                        line: 2,
+                        start: 12,
+                        end: 19,
+                    },
+                ],
+            });
+            pretty::assert_eq!(have, want)
         }
 
         #[test]
         fn code_block() {
             let give = indoc! {"
                 # Title
-                Example code:
                 ```
-                map[0]
+                [^1]
                 ```
                 "};
-            let doc = Document::from_str("test.md", give).unwrap();
-            let have = doc.sources_used();
-            let want = Ok(vec![]);
-            assert_eq!(have, want);
+            let have = Document::from_str("test.md", give).unwrap().footnotes();
+            let want = Ok(Footnotes::default());
+            pretty::assert_eq!(have, want)
+        }
+
+        #[test]
+        fn code_segment() {
+            let give = indoc! {"
+                # Title
+                a `[^1]` code block
+                "};
+            let have = Document::from_str("test.md", give).unwrap().footnotes();
+            let want = Ok(Footnotes::default());
+            pretty::assert_eq!(have, want)
         }
     }
 }

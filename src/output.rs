@@ -137,11 +137,11 @@ impl Message {
                     end: location.end,
                 }
             }
-            Issue::MissingSource {
+            Issue::MissingFootnote {
                 location,
                 identifier: index,
             } => Message {
-                text: format!("source [{}] doesn't exist", index),
+                text: format!("footnote [^{}] doesn't exist", index),
                 file: location.file,
                 line: location.line,
                 start: location.start,
@@ -222,6 +222,16 @@ impl Message {
             }
             Issue::UnorderedSections { location } => Message {
                 text: "sections occur in different order than specified by tikibase.json".into(),
+                file: location.file,
+                line: location.line,
+                start: location.start,
+                end: location.end,
+            },
+            Issue::UnusedFootnote {
+                location,
+                identifier,
+            } => Message {
+                text: format!("unused footnote [^{}]", identifier),
                 file: location.file,
                 line: location.line,
                 start: location.start,
