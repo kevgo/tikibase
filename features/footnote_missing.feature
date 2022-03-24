@@ -1,4 +1,4 @@
-Feature: recognize missing footnotes
+Feature: recognize missing footnote definitions
 
   Background:
     Given file "1.md" with content:

@@ -1,4 +1,4 @@
-Feature: recognize unused footnotes
+Feature: recognize unused footnote definitions
 
   Background:
     Given file "1.md" with content:
