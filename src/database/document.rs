@@ -87,7 +87,7 @@ impl Document {
     #[cfg(test)]
     /// provides Document instances in tests
     pub fn from_str<P: Into<PathBuf>>(path: P, text: &str) -> Result<Document, Issue> {
-        Document::from_lines(text.lines().map(|line| line.to_string()), path)
+        Document::from_lines(text.lines().map(std::string::ToString::to_string), path)
     }
 
     /// persists the changes made to this document to disk
