@@ -37,13 +37,13 @@ impl Footnotes {
 /// reference to a footnote
 #[derive(Debug, Default, Eq, Hash, Ord, PartialEq, PartialOrd)]
 pub struct Footnote {
-    /// the textual identifier of the source
+    /// the textual identifier of the footnote
     pub identifier: String,
-    /// the line on which this footnote definition exists
+    /// the line on which this footnote exists
     pub line: u32,
-    /// where on the line the source reference starts
+    /// where on the line the footnote starts
     pub start: u32,
-    /// where on the line the source reference ends
+    /// where on the line the footnote ends
     pub end: u32,
 }
 
