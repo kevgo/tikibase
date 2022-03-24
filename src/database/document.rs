@@ -444,7 +444,8 @@ mod tests {
 
         #[test]
         fn title_only() {
-            let doc = Document::from_str("test.md", "# Title").unwrap();
+            let text = &"# Title";
+            let doc = Document::from_str("test.md", text).unwrap();
             let have = doc.last_section();
             let want = &doc.title_section;
             pretty::assert_eq!(&have, &want)
@@ -452,8 +453,8 @@ mod tests {
 
         #[test]
         fn with_body() {
-            let doc =
-                Document::from_str("test.md", "# Title\n### section 1\nsection text").unwrap();
+            let text = &"# Title\n### section 1\nsection text";
+            let doc = Document::from_str("test.md", text).unwrap();
             let have = doc.last_section();
             let want = &doc.content_sections[0];
             pretty::assert_eq!(&have, &want)
@@ -524,7 +525,8 @@ mod tests {
                 foo
                 "};
             let doc = Document::from_str("test.md", give).unwrap();
-            assert_eq!(doc.lines_count(), 6);
+            let have = doc.lines_count();
+            assert_eq!(have, 6);
         }
 
         #[test]
