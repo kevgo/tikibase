@@ -27,14 +27,10 @@ impl Footnotes {
     }
 
     /// provides footnote references that have no definition
-    pub fn unused_definitions(&self) -> Vec<&Footnote> {
-        let mut result = vec![];
-        for definition in &self.definitions {
-            if !self.contains_reference(&definition.identifier) {
-                result.push(definition);
-            }
-        }
-        result
+    pub fn unused_definitions(&self) -> impl Iterator<Item = &Footnote> {
+        self.definitions
+            .iter()
+            .filter(|d| !self.contains_reference(&d.identifier))
     }
 }
 
@@ -189,12 +185,9 @@ mod tests {
                     ..Footnote::default()
                 }],
             };
-            let have = give.unused_definitions();
-            let want = vec![Footnote {
-                identifier: "f1".into(),
-                ..Footnote::default()
-            }];
-            pretty::assert_eq!(have, Vec::from_iter(&want))
+            let have = give.unused_definitions().map(|d| &d.identifier);
+            let want = vec!["f1"];
+            itertools::assert_equal(have, want)
         }
 
         #[test]
@@ -221,9 +214,9 @@ mod tests {
                     },
                 ],
             };
-            let have = give.unused_definitions();
-            let want = vec![];
-            pretty::assert_eq!(have, Vec::from_iter(&want))
+            let have = give.unused_definitions().map(|d| &d.identifier);
+            let want: Vec<&str> = vec![];
+            itertools::assert_equal(have, want)
         }
     }
 }
