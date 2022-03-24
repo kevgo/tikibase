@@ -128,10 +128,9 @@ impl Document {
     pub fn lines(&self) -> LinesIterator {
         let mut section_iter = self.sections();
         let section = section_iter.next().unwrap();
-        let lines_iter = section.lines();
         LinesIterator {
             section_iter,
-            lines_iter,
+            lines_iter: section.lines(),
         }
     }
 
