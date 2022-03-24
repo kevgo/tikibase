@@ -7,7 +7,7 @@ use std::path::Path;
 #[derive(Debug, Default, PartialEq)]
 pub struct Line(String);
 
-static MD_RE: Lazy<Regex> = Lazy::new(|| Regex::new("(!?)\\[[^\\]]*\\]\\(([^)]*)\\)").unwrap());
+static MD_RE: Lazy<Regex> = Lazy::new(|| Regex::new(r#"(!?)\[[^\]]*\]\(([^)]*)\)"#).unwrap());
 static A_HTML_RE: Lazy<Regex> = Lazy::new(|| Regex::new(r#"<a href="(.*)">(.*)</a>"#).unwrap());
 static IMG_HTML_RE: Lazy<Regex> = Lazy::new(|| Regex::new(r#"<img src="([^"]*)"[^>]*>"#).unwrap());
 static FOOTNOTE_RE: Lazy<Regex> = Lazy::new(|| Regex::new(r#"\[\^(\w+)\](:?)"#).unwrap());
