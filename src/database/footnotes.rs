@@ -210,9 +210,8 @@ mod tests {
                     },
                 ],
             };
-            let have = give.unused_definitions().map(|d| &d.identifier);
-            let want: Vec<&str> = vec![];
-            itertools::assert_equal(have, want)
+            let have = give.unused_definitions();
+            itertools::assert_equal(have, Vec::<&Footnote>::new())
         }
     }
 }
