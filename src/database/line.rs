@@ -79,7 +79,7 @@ impl Line {
                 start: total_match.start() as u32,
                 end: total_match.end() as u32,
             };
-            match captures.get(3) {
+            match captures.get(2) {
                 Some(_) => result.definitions.push(footnote),
                 None => result.references.push(footnote),
             };

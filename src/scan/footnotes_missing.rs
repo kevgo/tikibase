@@ -50,7 +50,7 @@ mod tests {
             result := map[^0]
             ```
 
-            Another snippet of code that should be ignored is `map[^0]`.
+            Another snippet of code that should be ignored: `map[^0]`.
 
             ### links
 

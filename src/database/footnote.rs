@@ -8,7 +8,7 @@ impl Footnotes {
     pub fn missing_references(&self) -> Vec<&Footnote> {
         let mut result = vec![];
         for reference in &self.references {
-            if self
+            if !self
                 .definitions
                 .iter()
                 .any(|definition| definition.identifier == reference.identifier)
@@ -22,7 +22,7 @@ impl Footnotes {
     pub fn unused_definitions(&self) -> Vec<&Footnote> {
         let mut result = vec![];
         for definition in &self.definitions {
-            if self
+            if !self
                 .references
                 .iter()
                 .any(|reference| reference.identifier == definition.identifier)
@@ -54,7 +54,66 @@ mod tests {
         use crate::database::{Footnote, Footnotes};
 
         #[test]
-        fn has_missing() {
+        fn missing() {
+            let give = Footnotes {
+                definitions: vec![Footnote {
+                    identifier: "f2".into(),
+                    ..Footnote::default()
+                }],
+                references: vec![
+                    Footnote {
+                        identifier: "f1".into(),
+                        ..Footnote::default()
+                    },
+                    Footnote {
+                        identifier: "f2".into(),
+                        ..Footnote::default()
+                    },
+                ],
+            };
+            let have = give.missing_references();
+            let want = vec![Footnote {
+                identifier: "f1".into(),
+                ..Footnote::default()
+            }];
+            pretty::assert_eq!(have, Vec::from_iter(&want))
+        }
+
+        #[test]
+        fn all_used() {
+            let give = Footnotes {
+                definitions: vec![
+                    Footnote {
+                        identifier: "f1".into(),
+                        ..Footnote::default()
+                    },
+                    Footnote {
+                        identifier: "f2".into(),
+                        ..Footnote::default()
+                    },
+                ],
+                references: vec![
+                    Footnote {
+                        identifier: "f1".into(),
+                        ..Footnote::default()
+                    },
+                    Footnote {
+                        identifier: "f2".into(),
+                        ..Footnote::default()
+                    },
+                ],
+            };
+            let have = give.missing_references();
+            let want = vec![];
+            pretty::assert_eq!(have, Vec::from_iter(&want))
+        }
+    }
+
+    mod unused_definitions {
+        use crate::database::{Footnote, Footnotes};
+
+        #[test]
+        fn missing() {
             let give = Footnotes {
                 definitions: vec![
                     Footnote {
@@ -71,11 +130,40 @@ mod tests {
                     ..Footnote::default()
                 }],
             };
-            let have = give.missing_references();
+            let have = give.unused_definitions();
             let want = vec![Footnote {
                 identifier: "f1".into(),
                 ..Footnote::default()
             }];
+            pretty::assert_eq!(have, Vec::from_iter(&want))
+        }
+
+        #[test]
+        fn all_used() {
+            let give = Footnotes {
+                definitions: vec![
+                    Footnote {
+                        identifier: "f1".into(),
+                        ..Footnote::default()
+                    },
+                    Footnote {
+                        identifier: "f2".into(),
+                        ..Footnote::default()
+                    },
+                ],
+                references: vec![
+                    Footnote {
+                        identifier: "f1".into(),
+                        ..Footnote::default()
+                    },
+                    Footnote {
+                        identifier: "f2".into(),
+                        ..Footnote::default()
+                    },
+                ],
+            };
+            let have = give.unused_definitions();
+            let want = vec![];
             pretty::assert_eq!(have, Vec::from_iter(&want))
         }
     }
