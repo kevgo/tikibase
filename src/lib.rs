@@ -29,7 +29,7 @@ pub fn run(command: input::Command, dir: PathBuf) -> Messages {
         Command::Check => commands::check(&mut base, &config),
         Command::Stats => commands::stats(&base),
         Command::Fix => commands::fix(&mut base, &config),
-        Command::Pitstop => commands::pitstop(&mut base, &config),
+        Command::P => commands::pitstop(&mut base, &config),
     };
     Messages::from_outcome(outcome)
 }

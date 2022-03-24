@@ -36,8 +36,8 @@ pub enum Command {
     Check,
     /// Corrects all auto-fixable issues
     Fix,
-    /// Corrects all auto-fixable issues, prints all remaining issues
-    Pitstop,
+    /// corrects all auto-fixable issues and prints all remaining issues ("pitstop")
+    P,
     /// Displays statistics about this Tikibase
     Stats,
 }
