@@ -626,9 +626,7 @@ mod tests {
     }
 
     mod footnotes {
-        use crate::database::document::Document;
-        use crate::database::footnote::Footnotes;
-        use crate::database::Footnote;
+        use crate::database::{Document, Footnote, Footnotes};
         use indoc::indoc;
 
         #[test]
