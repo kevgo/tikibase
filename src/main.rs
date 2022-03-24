@@ -7,7 +7,7 @@ use std::path::PathBuf;
 use tikibase::{input, run, Message};
 
 fn main() {
-    let args = input::Args::parse();
+    let args = input::Arguments::parse();
     let result = run(args.command, PathBuf::from("."));
     match args.format {
         Text => print_text(result.messages),

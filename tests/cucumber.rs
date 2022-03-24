@@ -52,7 +52,7 @@ fn checking(world: &mut MyWorld) {
 
 #[when("doing a pitstop")]
 fn doing_a_pitstop(world: &mut MyWorld) {
-    world.output = tikibase::run(Command::Pitstop, world.dir.clone());
+    world.output = tikibase::run(Command::P, world.dir.clone());
 }
 
 #[when("fixing")]

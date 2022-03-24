@@ -5,7 +5,7 @@ use clap;
 /// Linter for Markdown-based knowledge databases
 #[derive(Debug, clap::StructOpt)]
 #[clap(version, about, long_about = None)]
-pub struct Args {
+pub struct Arguments {
     /// the command to run
     #[clap(subcommand)]
     pub command: Command,
@@ -32,12 +32,12 @@ impl Default for Format {
 /// the subcommands of the CLI app
 #[derive(clap::Subcommand, Debug, PartialEq)]
 pub enum Command {
-    /// Finds and prints issues, does not make changes
+    /// Prints all issues
     Check,
     /// Corrects all auto-fixable issues
     Fix,
-    /// Corrects all auto-fixable issues, prints all remaining issues
-    Pitstop,
+    /// Corrects all auto-fixable issues and prints the remaining ("pitstop")
+    P,
     /// Displays statistics about this Tikibase
     Stats,
 }
