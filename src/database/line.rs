@@ -1,5 +1,5 @@
 use super::{Footnotes, Reference};
-use crate::database::footnote::Footnote;
+use crate::database::footnotes::Footnote;
 use crate::{Issue, Location};
 use once_cell::sync::Lazy;
 use regex::Regex;
