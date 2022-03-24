@@ -229,7 +229,9 @@ impl<'a> Iterator for SectionIterator<'a> {
 
 /// iterates over all lines in a Document
 pub struct LinesIterator<'a> {
+    /// to get the next section
     section_iter: SectionIterator<'a>,
+    /// iterator over the lines in the current section
     lines_iter: section::LinesIterator<'a>,
 }
 
@@ -237,8 +239,9 @@ impl<'a> Iterator for LinesIterator<'a> {
     type Item = &'a Line;
 
     fn next(&mut self) -> Option<Self::Item> {
-        if let Some(next_line) = self.lines_iter.next() {
-            return Some(next_line);
+        let next_line = self.lines_iter.next();
+        if next_line.is_some() {
+            return next_line;
         }
         let next_section = match self.section_iter.next() {
             Some(section) => section,
