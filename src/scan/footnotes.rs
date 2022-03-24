@@ -1,14 +1,14 @@
 use crate::{Issue, Location, Tikibase};
 
 pub(crate) fn scan(base: &Tikibase) -> Vec<Issue> {
-    let mut issues = Vec::<Issue>::new();
+    let mut result = Vec::<Issue>::new();
     for doc in &base.docs {
         let footnotes = match doc.footnotes() {
             Ok(footnotes) => footnotes,
             Err(issue) => return vec![issue],
         };
         for missing_reference in footnotes.missing_references() {
-            issues.push(Issue::MissingFootnote {
+            result.push(Issue::MissingFootnote {
                 location: Location {
                     file: doc.path.clone(),
                     line: missing_reference.line,
@@ -19,7 +19,7 @@ pub(crate) fn scan(base: &Tikibase) -> Vec<Issue> {
             });
         }
         for unused_definition in footnotes.unused_definitions() {
-            issues.push(Issue::UnusedFootnote {
+            result.push(Issue::UnusedFootnote {
                 location: Location {
                     file: doc.path.clone(),
                     line: unused_definition.line,
@@ -30,7 +30,7 @@ pub(crate) fn scan(base: &Tikibase) -> Vec<Issue> {
             })
         }
     }
-    issues
+    result
 }
 
 #[cfg(test)]
