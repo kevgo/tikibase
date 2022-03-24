@@ -57,12 +57,12 @@ mod tests {
         fn contains() {
             let give = Footnotes {
                 definitions: vec![Footnote {
-                    identifier: "f2".into(),
+                    identifier: "f1".into(),
                     ..Footnote::default()
                 }],
                 references: vec![],
             };
-            assert!(give.contains_definition("f2"))
+            assert!(give.contains_definition("f1"))
         }
 
         #[test]
@@ -86,11 +86,11 @@ mod tests {
             let give = Footnotes {
                 definitions: vec![],
                 references: vec![Footnote {
-                    identifier: "f2".into(),
+                    identifier: "f1".into(),
                     ..Footnote::default()
                 }],
             };
-            assert!(give.contains_reference("f2"))
+            assert!(give.contains_reference("f1"))
         }
 
         #[test]
