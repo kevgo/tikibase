@@ -72,11 +72,11 @@ mod tests {
                 }],
             };
             let have = give.missing_references();
-            let want1 = Footnote {
+            let want = vec![Footnote {
                 identifier: "f1".into(),
                 ..Footnote::default()
-            };
-            pretty::assert_eq!(have, vec![&want1]);
+            }];
+            pretty::assert_eq!(have, Vec::from_iter(&want))
         }
     }
 }
