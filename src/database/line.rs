@@ -32,9 +32,10 @@ impl Line {
                 start: total_match.start() as u32,
                 end: total_match.end() as u32,
             };
-            match captures[2].is_empty() {
-                false => result.definitions.push(footnote),
-                true => result.references.push(footnote),
+            if captures[2].is_empty() {
+                result.references.push(footnote);
+            } else {
+                result.definitions.push(footnote);
             };
         }
         Ok(())

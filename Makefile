@@ -23,7 +23,7 @@ install:  # installs the binary in the system
 
 lint:  # checks formatting
 	dprint check
-	cargo clippy --all-targets --all-features -- -W clippy::pedantic -A clippy::cast_possible_wrap -A clippy::cast_possible_truncation -A clippy::missing_panics_doc -A clippy::must_use_candidate -A clippy::match_bool -A clippy::missing_errors_doc -A clippy::too-many-lines
+	cargo clippy --all-targets --all-features -- -W clippy::pedantic -A clippy::cast_possible_wrap -A clippy::cast_possible_truncation -A clippy::missing_panics_doc -A clippy::must_use_candidate -A clippy::missing_errors_doc -A clippy::too-many-lines
 	cargo fmt -- --check
 # cargo udeps   # requires nightly
 	git diff --check
