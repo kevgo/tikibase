@@ -231,7 +231,7 @@ impl Message {
                 location,
                 identifier,
             } => Message {
-                text: format!("unused footnote \"{}\"", identifier),
+                text: format!("unused footnote [^{}]", identifier),
                 file: location.file,
                 line: location.line,
                 start: location.start,
