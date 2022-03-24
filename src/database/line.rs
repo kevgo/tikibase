@@ -10,7 +10,7 @@ pub struct Line(String);
 static MD_RE: Lazy<Regex> = Lazy::new(|| Regex::new("(!?)\\[[^\\]]*\\]\\(([^)]*)\\)").unwrap());
 static A_HTML_RE: Lazy<Regex> = Lazy::new(|| Regex::new(r#"<a href="(.*)">(.*)</a>"#).unwrap());
 static IMG_HTML_RE: Lazy<Regex> = Lazy::new(|| Regex::new(r#"<img src="([^"]*)"[^>]*>"#).unwrap());
-static FOOTNOTE_RE: Lazy<Regex> = Lazy::new(|| Regex::new("\\[\\^(\\w+)\\](:?)").unwrap());
+static FOOTNOTE_RE: Lazy<Regex> = Lazy::new(|| Regex::new(r#"\[\^(\w+)\](:?)"#).unwrap());
 
 impl Line {
     /// appends all footnote definitions and references to the given result structure
