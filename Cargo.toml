@@ -1,6 +1,6 @@
 [package]
 name = "tikibase"
-version = "0.3.0"
+version = "0.4.0"
 authors = ["Kevin Goslar <kevin.goslar@gmail.com>"]
 edition = "2021"
 rust-version = "1.59"
