@@ -14,6 +14,33 @@ static IMG_HTML_RE: Lazy<Regex> = Lazy::new(|| Regex::new(r#"<img src="([^"]*)"[
 static FOOTNOTE_RE: Lazy<Regex> = Lazy::new(|| Regex::new("\\[\\^(\\w+)\\](:?)").unwrap());
 
 impl Line {
+    /// appends all footnote definitions and references to the given result structure
+    ///
+    /// This is implemented using a mutable accumulator parameter to minimize memory allocations
+    /// since this code is running for every line in a Tikibase, i.e. potentially hundreds of thousands of times.
+    pub fn add_footnotes_to(
+        &self,
+        result: &mut Footnotes,
+        file: &Path,
+        line: u32,
+    ) -> Result<(), Issue> {
+        let sanitized = sanitize_code_segments(&self.0, file, line)?;
+        for captures in FOOTNOTE_RE.captures_iter(&sanitized) {
+            let total_match = captures.get(0).unwrap();
+            let footnote = Footnote {
+                identifier: captures.get(1).unwrap().as_str().to_string(),
+                line,
+                start: total_match.start() as u32,
+                end: total_match.end() as u32,
+            };
+            match captures[2].is_empty() {
+                false => result.definitions.push(footnote),
+                true => result.references.push(footnote),
+            };
+        }
+        Ok(())
+    }
+
     pub fn from<S: Into<String>>(text: S) -> Line {
         Line(text.into())
     }
@@ -72,25 +99,6 @@ impl Line {
     pub fn text(&self) -> &str {
         &self.0
     }
-
-    /// appends all footnote definitions and references to the given result structure
-    pub fn footnotes(&self, result: &mut Footnotes, file: &Path, line: u32) -> Result<(), Issue> {
-        let sanitized = sanitize_code_segments(&self.0, file, line)?;
-        for captures in FOOTNOTE_RE.captures_iter(&sanitized) {
-            let total_match = captures.get(0).unwrap();
-            let footnote = Footnote {
-                identifier: captures.get(1).unwrap().as_str().to_string(),
-                line,
-                start: total_match.start() as u32,
-                end: total_match.end() as u32,
-            };
-            match captures[2].is_empty() {
-                false => result.definitions.push(footnote),
-                true => result.references.push(footnote),
-            };
-        }
-        Ok(())
-    }
 }
 
 /// non-destructively overwrites areas inside backticks in the given string with spaces
@@ -127,7 +135,7 @@ fn sanitize_code_segments(text: &str, file: &Path, line: u32) -> Result<String, 
 #[cfg(test)]
 mod tests {
 
-    mod footnotes {
+    mod add_footnotes_to {
         use crate::database::{Footnote, Footnotes, Line};
         use std::path::Path;
 
@@ -135,7 +143,7 @@ mod tests {
         fn none() {
             let line = Line::from("text");
             let mut have = Footnotes::default();
-            line.footnotes(&mut have, Path::new(""), 0).unwrap();
+            line.add_footnotes_to(&mut have, Path::new(""), 0).unwrap();
             let want = Footnotes::default();
             pretty::assert_eq!(have, want);
         }
@@ -144,7 +152,7 @@ mod tests {
         fn references() {
             let line = Line::from("- text [^1] [^2]");
             let mut have = Footnotes::default();
-            line.footnotes(&mut have, Path::new(""), 0).unwrap();
+            line.add_footnotes_to(&mut have, Path::new(""), 0).unwrap();
             let want = Footnotes {
                 definitions: vec![],
                 references: vec![
@@ -169,7 +177,7 @@ mod tests {
         fn definitions() {
             let line = Line::from("[^1]: the one\nother");
             let mut have = Footnotes::default();
-            line.footnotes(&mut have, Path::new(""), 0).unwrap();
+            line.add_footnotes_to(&mut have, Path::new(""), 0).unwrap();
             let want = Footnotes {
                 definitions: vec![Footnote {
                     identifier: "1".into(),
@@ -186,7 +194,7 @@ mod tests {
         fn ignore_code_looking_like_footnotes() {
             let line = Line::from("the code `map[^0]`");
             let mut have = Footnotes::default();
-            line.footnotes(&mut have, Path::new(""), 0).unwrap();
+            line.add_footnotes_to(&mut have, Path::new(""), 0).unwrap();
             let want = Footnotes::default();
             pretty::assert_eq!(have, want);
         }

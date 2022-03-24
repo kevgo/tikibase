@@ -176,7 +176,7 @@ impl Document {
                 continue;
             }
             if code_block_start.is_none() {
-                line.footnotes(&mut result, &self.path, i as u32)?;
+                line.add_footnotes_to(&mut result, &self.path, i as u32)?;
             }
         }
         if let Some(code_block_start) = code_block_start {
