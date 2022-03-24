@@ -534,8 +534,7 @@ mod tests {
                 # Title
                 title text
                 "};
-            let doc = Document::from_str("test.md", give).unwrap();
-            let have = doc.lines_count();
+            let have = Document::from_str("test.md", give).unwrap().lines_count();
             assert_eq!(have, 1);
         }
     }
