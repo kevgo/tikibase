@@ -155,8 +155,8 @@ mod tests {
                     },
                 ],
             };
-            let mut have = give.missing_references();
-            pretty::assert_eq!(have.next(), None)
+            let have = give.missing_references();
+            itertools::assert_equal(have, Vec::<&Footnote>::new())
         }
     }
 
