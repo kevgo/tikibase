@@ -20,14 +20,10 @@ impl Footnotes {
     }
 
     /// provides footnote definitions that aren't referenced in the text
-    pub fn missing_references(&self) -> Vec<&Footnote> {
-        let mut result = vec![];
-        for reference in &self.references {
-            if !self.contains_definition(&reference.identifier) {
-                result.push(reference);
-            }
-        }
-        result
+    pub fn missing_references(&self) -> impl Iterator<Item = &Footnote> {
+        self.references
+            .iter()
+            .filter(|r| !self.contains_definition(&r.identifier))
     }
 
     /// provides footnote references that have no definition
@@ -139,12 +135,8 @@ mod tests {
                     },
                 ],
             };
-            let have = give.missing_references();
-            let want = vec![Footnote {
-                identifier: "f1".into(),
-                ..Footnote::default()
-            }];
-            pretty::assert_eq!(have, Vec::from_iter(&want))
+            let have = give.missing_references().map(|f| f.identifier.as_str());
+            itertools::assert_equal(have, vec!["f1"]);
         }
 
         #[test]
@@ -171,9 +163,8 @@ mod tests {
                     },
                 ],
             };
-            let have = give.missing_references();
-            let want = vec![];
-            pretty::assert_eq!(have, Vec::from_iter(&want))
+            let mut have = give.missing_references();
+            pretty::assert_eq!(have.next(), None)
         }
     }
 
