@@ -93,6 +93,7 @@ impl Section {
 
 /// describes the title of a section: its text and where on the line it is located
 #[derive(Debug, PartialEq)]
+#[allow(clippy::module_name_repetitions)]
 pub struct SectionTitle<'a> {
     pub text: &'a str,
     pub start: u32,
