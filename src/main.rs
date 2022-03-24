@@ -8,7 +8,7 @@ use tikibase::{input, run, Message};
 
 fn main() {
     let args = input::Arguments::parse();
-    let result = run(args.command, PathBuf::from("."));
+    let result = run(&args.command, PathBuf::from("."));
     match args.format {
         Text => print_text(&result.messages),
         Json => print_json(&result.messages),
