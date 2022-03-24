@@ -651,8 +651,7 @@ mod tests {
                 [^1]: first footnote
                 [^second]: second footnote
                 "};
-            let doc = Document::from_str("test.md", give).unwrap();
-            let have = doc.footnotes();
+            let have = Document::from_str("test.md", give).unwrap().footnotes();
             let want = Ok(Footnotes {
                 definitions: vec![
                     Footnote {
@@ -694,8 +693,7 @@ mod tests {
                 [^1]
                 ```
                 "};
-            let doc = Document::from_str("test.md", give).unwrap();
-            let have = doc.footnotes();
+            let have = Document::from_str("test.md", give).unwrap().footnotes();
             let want = Ok(Footnotes::default());
             pretty::assert_eq!(have, want)
         }
@@ -706,8 +704,7 @@ mod tests {
                 # Title
                 a `[^1]` code block
                 "};
-            let doc = Document::from_str("test.md", give).unwrap();
-            let have = doc.footnotes();
+            let have = Document::from_str("test.md", give).unwrap().footnotes();
             let want = Ok(Footnotes::default());
             pretty::assert_eq!(have, want)
         }
