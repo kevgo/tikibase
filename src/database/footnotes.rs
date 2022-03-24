@@ -1,3 +1,4 @@
+/// footnote definitions and references contained in a document
 #[derive(Debug, Default, PartialEq)]
 pub struct Footnotes {
     pub definitions: Vec<Footnote>,
@@ -5,6 +6,7 @@ pub struct Footnotes {
 }
 
 impl Footnotes {
+    /// provides footnote definitions that aren't referenced in the text
     pub fn missing_references(&self) -> Vec<&Footnote> {
         let mut result = vec![];
         for reference in &self.references {
@@ -19,6 +21,7 @@ impl Footnotes {
         result
     }
 
+    /// provides footnote references that have no definition
     pub fn unused_definitions(&self) -> Vec<&Footnote> {
         let mut result = vec![];
         for definition in &self.definitions {
