@@ -139,7 +139,7 @@ mod tests {
         use std::path::Path;
 
         #[test]
-        fn none() {
+        fn no_footnotes() {
             let line = Line::from("text");
             let mut have = Footnotes::default();
             line.add_footnotes_to(&mut have, Path::new(""), 0).unwrap();
@@ -148,7 +148,7 @@ mod tests {
         }
 
         #[test]
-        fn references() {
+        fn with_footnote_references() {
             let line = Line::from("- text [^1] [^2]");
             let mut have = Footnotes::default();
             line.add_footnotes_to(&mut have, Path::new(""), 0).unwrap();
@@ -173,7 +173,7 @@ mod tests {
         }
 
         #[test]
-        fn definitions() {
+        fn with_footnote_definitions() {
             let line = Line::from("[^1]: the one\nother");
             let mut have = Footnotes::default();
             line.add_footnotes_to(&mut have, Path::new(""), 0).unwrap();
