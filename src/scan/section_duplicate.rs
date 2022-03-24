@@ -12,7 +12,7 @@ pub(crate) fn scan(base: &Tikibase) -> Vec<Issue> {
             sections_lines
                 .entry(section_title.text)
                 .or_insert_with(Vec::new)
-                .push((section.line_number, section_title.start))
+                .push((section.line_number, section_title.start));
         }
         for (title, lines) in sections_lines.drain() {
             if lines.len() > 1 {

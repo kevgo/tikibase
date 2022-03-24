@@ -27,7 +27,7 @@ pub(crate) fn scan(base: &Tikibase) -> Vec<Issue> {
                     end: unused_definition.end,
                 },
                 identifier: unused_definition.identifier.clone(),
-            })
+            });
         }
     }
     result
