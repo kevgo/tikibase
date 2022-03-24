@@ -69,7 +69,7 @@ mod tests {
             },
             identifier: "unused".into(),
         }];
-        pretty::assert_eq!(have, want)
+        pretty::assert_eq!(have, want);
     }
 
     #[test]
@@ -102,6 +102,6 @@ mod tests {
             },
             identifier: "other".into(),
         }];
-        pretty::assert_eq!(have, want)
+        pretty::assert_eq!(have, want);
     }
 }

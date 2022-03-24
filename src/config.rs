@@ -110,7 +110,7 @@ mod tests {
                     end: 1,
                 },
             });
-            pretty::assert_eq!(have, want)
+            pretty::assert_eq!(have, want);
         }
     }
 }

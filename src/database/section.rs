@@ -189,7 +189,7 @@ mod tests {
             };
             let have = section.last_line();
             let want = Line::from("two");
-            assert_eq!(have, &want)
+            assert_eq!(have, &want);
         }
 
         #[test]
@@ -201,7 +201,7 @@ mod tests {
             };
             let have = section.last_line();
             let want = Line::from("title");
-            assert_eq!(have, &want)
+            assert_eq!(have, &want);
         }
     }
 
@@ -256,7 +256,7 @@ mod tests {
                 body: vec![Line::from("new line")],
                 ..Section::scaffold()
             };
-            pretty::assert_eq!(have, want)
+            pretty::assert_eq!(have, want);
         }
 
         #[test]
@@ -268,7 +268,7 @@ mod tests {
             section.push_line("new line");
             let have = section.body;
             let want = vec![Line::from("l1"), Line::from("new line")];
-            pretty::assert_eq!(have, want)
+            pretty::assert_eq!(have, want);
         }
     }
 

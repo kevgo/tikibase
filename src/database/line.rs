@@ -206,21 +206,21 @@ mod tests {
         fn no_boundary() {
             let line = Line::from("foo");
             let have = line.is_code_block_boundary();
-            assert!(!have)
+            assert!(!have);
         }
 
         #[test]
         fn plain_boundary() {
             let line = Line::from("```");
             let have = line.is_code_block_boundary();
-            assert!(have)
+            assert!(have);
         }
 
         #[test]
         fn boundary_with_language() {
             let line = Line::from("```rs");
             let have = line.is_code_block_boundary();
-            assert!(have)
+            assert!(have);
         }
     }
 
@@ -246,7 +246,7 @@ mod tests {
                     end: 75,
                 },
             ];
-            pretty::assert_eq!(have, want)
+            pretty::assert_eq!(have, want);
         }
 
         #[test]
@@ -258,7 +258,7 @@ mod tests {
                 start: 14,
                 end: 38,
             }];
-            pretty::assert_eq!(have, want)
+            pretty::assert_eq!(have, want);
         }
 
         #[test]
@@ -270,7 +270,7 @@ mod tests {
                 start: 13,
                 end: 29,
             }];
-            pretty::assert_eq!(have, want)
+            pretty::assert_eq!(have, want);
         }
 
         #[test]
@@ -282,7 +282,7 @@ mod tests {
                 start: 0,
                 end: 19,
             }];
-            pretty::assert_eq!(have, want)
+            pretty::assert_eq!(have, want);
         }
 
         #[test]
@@ -294,7 +294,7 @@ mod tests {
                 start: 0,
                 end: 42,
             }];
-            pretty::assert_eq!(have, want)
+            pretty::assert_eq!(have, want);
         }
 
         #[test]
@@ -306,7 +306,7 @@ mod tests {
                 start: 0,
                 end: 20,
             }];
-            pretty::assert_eq!(have, want)
+            pretty::assert_eq!(have, want);
         }
 
         #[test]
@@ -318,7 +318,7 @@ mod tests {
                 start: 0,
                 end: 21,
             }];
-            pretty::assert_eq!(have, want)
+            pretty::assert_eq!(have, want);
         }
     }
 
@@ -331,14 +331,14 @@ mod tests {
         fn with_code_blocks() {
             let give = "one `map[0]` two `more code` three";
             let want = "one `      ` two `         ` three".to_string();
-            assert_eq!(sanitize_code_segments(give, Path::new(""), 0), Ok(want))
+            assert_eq!(sanitize_code_segments(give, Path::new(""), 0), Ok(want));
         }
 
         #[test]
         fn empty_string() {
             let give = "";
             let want = "".to_string();
-            assert_eq!(sanitize_code_segments(give, Path::new(""), 0), Ok(want))
+            assert_eq!(sanitize_code_segments(give, Path::new(""), 0), Ok(want));
         }
 
         #[test]
@@ -353,7 +353,7 @@ mod tests {
                 },
             });
             let have = sanitize_code_segments(give, Path::new(""), 12);
-            assert_eq!(have, want)
+            assert_eq!(have, want);
         }
     }
 }

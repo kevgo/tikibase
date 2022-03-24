@@ -191,7 +191,7 @@ mod tests {
         ];
         let have = super::variants_count(&give);
         let want = 2;
-        assert_eq!(have, want)
+        assert_eq!(have, want);
     }
 
     mod file_section {

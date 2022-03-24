@@ -311,7 +311,7 @@ mod tests {
                     end: 8,
                 },
             });
-            pretty::assert_eq!(have, want)
+            pretty::assert_eq!(have, want);
         }
 
         #[test]
@@ -359,7 +359,7 @@ mod tests {
                     end: 0,
                 },
             });
-            pretty::assert_eq!(have, want)
+            pretty::assert_eq!(have, want);
         }
 
         #[test]
@@ -410,7 +410,7 @@ mod tests {
             let doc = Document::from_str("test.md", "# Title\ntitle text\n").unwrap();
             let have = doc.last_line();
             let want = Line::from("title text");
-            pretty::assert_eq!(have, &want)
+            pretty::assert_eq!(have, &want);
         }
 
         #[test]
@@ -419,7 +419,7 @@ mod tests {
                 Document::from_str("test.md", "# Title\n### section 1\nsection text").unwrap();
             let have = doc.last_line();
             let want = Line::from("section text");
-            pretty::assert_eq!(have, &want)
+            pretty::assert_eq!(have, &want);
         }
 
         #[test]
@@ -427,7 +427,7 @@ mod tests {
             let doc = Document::from_str("test.md", "# Title").unwrap();
             let have = doc.last_line();
             let want = Line::from("# Title");
-            pretty::assert_eq!(have, &want)
+            pretty::assert_eq!(have, &want);
         }
 
         #[test]
@@ -435,7 +435,7 @@ mod tests {
             let doc = Document::from_str("test.md", "# Title\n### section 1").unwrap();
             let have = doc.last_line();
             let want = Line::from("### section 1");
-            pretty::assert_eq!(have, &want)
+            pretty::assert_eq!(have, &want);
         }
     }
 
@@ -448,7 +448,7 @@ mod tests {
             let doc = Document::from_str("test.md", text).unwrap();
             let have = doc.last_section();
             let want = &doc.title_section;
-            pretty::assert_eq!(&have, &want)
+            pretty::assert_eq!(&have, &want);
         }
 
         #[test]
@@ -457,7 +457,7 @@ mod tests {
             let doc = Document::from_str("test.md", text).unwrap();
             let have = doc.last_section();
             let want = &doc.content_sections[0];
-            pretty::assert_eq!(&have, &want)
+            pretty::assert_eq!(&have, &want);
         }
     }
 
@@ -561,7 +561,7 @@ mod tests {
                 title_line: Line::from("### s1"),
                 body: vec![Line::from(""), Line::from("text")],
             };
-            pretty::assert_eq!(have, &mut want)
+            pretty::assert_eq!(have, &mut want);
         }
 
         #[test]
@@ -577,7 +577,7 @@ mod tests {
                 title_line: Line::from("# Title"),
                 body: vec![Line::from("title text")],
             };
-            pretty::assert_eq!(have, &mut want)
+            pretty::assert_eq!(have, &mut want);
         }
     }
 
@@ -637,7 +637,7 @@ mod tests {
                 "};
             let have = Document::from_str("test.md", give).unwrap().footnotes();
             let want = Ok(Footnotes::default());
-            pretty::assert_eq!(have, want)
+            pretty::assert_eq!(have, want);
         }
 
         #[test]
@@ -681,7 +681,7 @@ mod tests {
                     },
                 ],
             });
-            pretty::assert_eq!(have, want)
+            pretty::assert_eq!(have, want);
         }
 
         #[test]
@@ -694,7 +694,7 @@ mod tests {
                 "};
             let have = Document::from_str("test.md", give).unwrap().footnotes();
             let want = Ok(Footnotes::default());
-            pretty::assert_eq!(have, want)
+            pretty::assert_eq!(have, want);
         }
 
         #[test]
@@ -705,7 +705,7 @@ mod tests {
                 "};
             let have = Document::from_str("test.md", give).unwrap().footnotes();
             let want = Ok(Footnotes::default());
-            pretty::assert_eq!(have, want)
+            pretty::assert_eq!(have, want);
         }
     }
 }

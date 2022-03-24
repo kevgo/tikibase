@@ -73,6 +73,6 @@ mod tests {
                 title: "One".into(),
             },
         ];
-        pretty::assert_eq!(have, want)
+        pretty::assert_eq!(have, want);
     }
 }
