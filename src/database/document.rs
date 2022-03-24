@@ -160,12 +160,12 @@ impl Document {
             .collect()
     }
 
-    /// provides all the footnotes that this document defines
+    /// provides all the footnotes that this document defines and references
     pub fn footnotes(&self) -> Result<Footnotes, Issue> {
-        let mut result: Footnotes = Footnotes::default();
+        let mut result = Footnotes::default();
         let mut code_block_start: Option<CodeblockStart> = None;
         for (i, line) in self.lines().enumerate() {
-            if line.text().starts_with("```") {
+            if line.is_code_block_boundary() {
                 code_block_start = match code_block_start {
                     Some(_) => None,
                     None => Some(CodeblockStart {

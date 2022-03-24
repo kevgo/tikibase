@@ -18,6 +18,11 @@ impl Line {
         Line(text.into())
     }
 
+    /// indicates whether this line is the beginning or end of a code block
+    pub fn is_code_block_boundary(&self) -> bool {
+        self.text().starts_with("```")
+    }
+
     /// provides all links and images in this line
     // TODO: reuse shared global Vec here
     pub fn references(&self) -> Vec<Reference> {
@@ -184,6 +189,31 @@ mod tests {
             line.footnotes(&mut have, Path::new(""), 0).unwrap();
             let want = Footnotes::default();
             pretty::assert_eq!(have, want);
+        }
+    }
+
+    mod is_code_block_boundary {
+        use crate::database::Line;
+
+        #[test]
+        fn no_boundary() {
+            let line = Line::from("foo");
+            let have = line.is_code_block_boundary();
+            assert!(!have)
+        }
+
+        #[test]
+        fn plain_boundary() {
+            let line = Line::from("```");
+            let have = line.is_code_block_boundary();
+            assert!(have)
+        }
+
+        #[test]
+        fn boundary_with_language() {
+            let line = Line::from("```rs");
+            let have = line.is_code_block_boundary();
+            assert!(have)
         }
     }
 
