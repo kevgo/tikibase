@@ -636,8 +636,7 @@ mod tests {
                 # Title
                 title text
                 "};
-            let doc = Document::from_str("test.md", give).unwrap();
-            let have = doc.footnotes();
+            let have = Document::from_str("test.md", give).unwrap().footnotes();
             let want = Ok(Footnotes::default());
             pretty::assert_eq!(have, want)
         }
