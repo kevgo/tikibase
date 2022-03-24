@@ -12,7 +12,7 @@ pub fn fix(issue: Issue, base: &mut Tikibase, config: &Config) -> Option<Fix> {
     match issue {
         // actual fixes
         Issue::EmptySection { location, title } => {
-            Some(empty_section::remove_empty_section(base, title, location))
+            Some(empty_section::remove_section(base, title, location))
         }
         Issue::MissingLinks { location, links } => {
             Some(missing_links::add_occurrences(base, location, links))
