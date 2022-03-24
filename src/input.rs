@@ -32,11 +32,11 @@ impl Default for Format {
 /// the subcommands of the CLI app
 #[derive(clap::Subcommand, Debug, PartialEq)]
 pub enum Command {
-    /// Finds and prints issues, does not make changes
+    /// Prints all issues
     Check,
     /// Corrects all auto-fixable issues
     Fix,
-    /// corrects all auto-fixable issues and prints all remaining issues ("pitstop")
+    /// Corrects all auto-fixable issues and prints the remaining ("pitstop")
     P,
     /// Displays statistics about this Tikibase
     Stats,
