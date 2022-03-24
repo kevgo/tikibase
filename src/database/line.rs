@@ -19,6 +19,7 @@ impl Line {
     }
 
     /// provides all links and images in this line
+    // TODO: reuse shared global Vec here
     pub fn references(&self) -> Vec<Reference> {
         let mut result = Vec::new();
         for cap in MD_RE.captures_iter(&self.0) {
@@ -67,9 +68,9 @@ impl Line {
         &self.0
     }
 
-    pub fn footnotes(&self, file: &Path, line: u32) -> Result<Footnotes, Issue> {
+    /// appends all footnote definitions and references to the given result structure
+    pub fn footnotes(&self, result: &mut Footnotes, file: &Path, line: u32) -> Result<(), Issue> {
         let sanitized = sanitize_code_segments(&self.0, file, line)?;
-        let mut result = Footnotes::default();
         for captures in FOOTNOTE_RE.captures_iter(&sanitized) {
             let total_match = captures.get(0).unwrap();
             let footnote = Footnote {
@@ -83,7 +84,7 @@ impl Line {
                 None => result.references.push(footnote),
             };
         }
-        Ok(result)
+        Ok(())
     }
 }
 
@@ -118,9 +119,10 @@ fn sanitize_code_segments(text: &str, file: &Path, line: u32) -> Result<String, 
     Ok(result)
 }
 
-trait Lines {
-    fn lines(&self);
-}
+// /// the ability to emit its lines
+// trait Lines {
+//     fn lines(&self);
+// }
 
 #[cfg(test)]
 mod tests {
@@ -132,16 +134,18 @@ mod tests {
         #[test]
         fn none() {
             let line = Line::from("text");
-            let have = line.footnotes(Path::new(""), 0);
-            let want = Ok(Footnotes::default());
+            let mut have = Footnotes::default();
+            line.footnotes(&mut have, Path::new(""), 0).unwrap();
+            let want = Footnotes::default();
             pretty::assert_eq!(have, want);
         }
 
         #[test]
         fn references() {
             let line = Line::from("- text [^1] [^2]");
-            let have = line.footnotes(Path::new(""), 0);
-            let want = Ok(Footnotes {
+            let mut have = Footnotes::default();
+            line.footnotes(&mut have, Path::new(""), 0).unwrap();
+            let want = Footnotes {
                 references: vec![
                     Footnote {
                         line: 0,
@@ -157,15 +161,16 @@ mod tests {
                     },
                 ],
                 definitions: vec![],
-            });
+            };
             pretty::assert_eq!(have, want);
         }
 
         #[test]
         fn definitions() {
             let line = Line::from("[^1]: the one");
-            let have = line.footnotes(Path::new(""), 0);
-            let want = Ok(Footnotes {
+            let mut have = Footnotes::default();
+            line.footnotes(&mut have, Path::new(""), 0).unwrap();
+            let want = Footnotes {
                 definitions: vec![Footnote {
                     identifier: "1".into(),
                     line: 0,
@@ -173,15 +178,16 @@ mod tests {
                     end: 5,
                 }],
                 references: vec![],
-            });
+            };
             pretty::assert_eq!(have, want);
         }
 
         #[test]
         fn ignore_code_looking_like_footnotes() {
             let line = Line::from("the code `map[^0]`");
-            let have = line.footnotes(Path::new(""), 0);
-            let want = Ok(Footnotes::default());
+            let mut have = Footnotes::default();
+            line.footnotes(&mut have, Path::new(""), 0).unwrap();
+            let want = Footnotes::default();
             pretty::assert_eq!(have, want);
         }
     }

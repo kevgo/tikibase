@@ -5,26 +5,37 @@ pub struct Footnotes {
 }
 
 impl Footnotes {
-    /// consumes the given Footnotes and adds all their content to self
-    pub fn append(&mut self, other: Footnotes) {
-        self.definitions.append(&mut other.definitions);
-        self.references.append(&mut other.references);
-    }
-    fn missing_references(&self) -> Vec<&Footnote> {
-        self.definitions
-            .iter()
-            .any(|definition| definition.identifier == identifier)
+    pub fn missing_references(&self) -> Vec<&Footnote> {
+        let mut result = vec![];
+        for reference in &self.references {
+            if self
+                .definitions
+                .iter()
+                .any(|definition| definition.identifier == reference.identifier)
+            {
+                result.push(reference);
+            }
+        }
+        result
     }
 
-    fn unused_definitions(references: &[FootnoteReference], identifier: &str) -> bool {
-        references
-            .iter()
-            .any(|reference| reference.identifier == identifier)
+    pub fn unused_definitions(&self) -> Vec<&Footnote> {
+        let mut result = vec![];
+        for definition in &self.definitions {
+            if self
+                .references
+                .iter()
+                .any(|reference| reference.identifier == definition.identifier)
+            {
+                result.push(definition);
+            }
+        }
+        result
     }
 }
 
 /// reference to a footnote
-#[derive(Debug, Eq, Hash, Ord, PartialEq, PartialOrd)]
+#[derive(Debug, Default, Eq, Hash, Ord, PartialEq, PartialOrd)]
 pub struct Footnote {
     /// the textual identifier of the source
     pub identifier: String,
@@ -34,4 +45,38 @@ pub struct Footnote {
     pub start: u32,
     /// where on the line the source reference ends
     pub end: u32,
+}
+
+#[cfg(test)]
+mod tests {
+
+    mod missing_references {
+        use crate::database::{Footnote, Footnotes};
+
+        #[test]
+        fn has_missing() {
+            let give = Footnotes {
+                definitions: vec![
+                    Footnote {
+                        identifier: "f1".into(),
+                        ..Footnote::default()
+                    },
+                    Footnote {
+                        identifier: "f2".into(),
+                        ..Footnote::default()
+                    },
+                ],
+                references: vec![Footnote {
+                    identifier: "f2".into(),
+                    ..Footnote::default()
+                }],
+            };
+            let have = give.missing_references();
+            let want1 = Footnote {
+                identifier: "f1".into(),
+                ..Footnote::default()
+            };
+            pretty::assert_eq!(have, vec![&want1]);
+        }
+    }
 }

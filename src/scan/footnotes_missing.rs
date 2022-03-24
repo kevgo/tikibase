@@ -1,4 +1,3 @@
-use crate::database::{Footnote, Footnotes};
 use crate::{Issue, Location, Tikibase};
 
 pub(crate) fn scan(base: &Tikibase) -> Vec<Issue> {
