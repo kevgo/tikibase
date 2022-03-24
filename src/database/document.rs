@@ -220,10 +220,9 @@ impl<'a> Iterator for SectionIterator<'a> {
     fn next(&mut self) -> Option<Self::Item> {
         if !self.emitted_title {
             self.emitted_title = true;
-            Some(self.title_section)
-        } else {
-            self.body_iter.next()
+            return Some(self.title_section);
         }
+        self.body_iter.next()
     }
 }
 
