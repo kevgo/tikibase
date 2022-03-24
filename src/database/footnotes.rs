@@ -62,8 +62,7 @@ mod tests {
                 }],
                 references: vec![],
             };
-            let have = give.contains_definition("f2");
-            assert!(have)
+            assert!(give.contains_definition("f2"))
         }
 
         #[test]
@@ -75,8 +74,7 @@ mod tests {
                 }],
                 references: vec![],
             };
-            let have = give.contains_definition("f2");
-            assert!(!have)
+            assert!(!give.contains_definition("f2"))
         }
     }
 
@@ -92,8 +90,7 @@ mod tests {
                     ..Footnote::default()
                 }],
             };
-            let have = give.contains_reference("f2");
-            assert!(have)
+            assert!(give.contains_reference("f2"))
         }
 
         #[test]
@@ -105,8 +102,7 @@ mod tests {
                     ..Footnote::default()
                 }],
             };
-            let have = give.contains_reference("f2");
-            assert!(!have)
+            assert!(!give.contains_reference("f2"))
         }
     }
 
