@@ -5,7 +5,7 @@ use clap;
 /// Linter for Markdown-based knowledge databases
 #[derive(Debug, clap::StructOpt)]
 #[clap(version, about, long_about = None)]
-pub struct Args {
+pub struct Arguments {
     /// the command to run
     #[clap(subcommand)]
     pub command: Command,
