@@ -534,7 +534,8 @@ mod tests {
                 # Title
                 title text
                 "};
-            let have = Document::from_str("test.md", give).unwrap().lines_count();
+            let doc = Document::from_str("test.md", give).unwrap();
+            let have = doc.lines_count();
             assert_eq!(have, 1);
         }
     }
@@ -608,8 +609,7 @@ mod tests {
             ### Section 2
             foo
             "};
-        let doc = Document::from_str("test.md", give).unwrap();
-        let have = doc.text();
+        let have = Document::from_str("test.md", give).unwrap().text();
         assert_eq!(have, give);
     }
 
