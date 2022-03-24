@@ -52,13 +52,14 @@ impl Line {
 
     /// provides all links and images in this line
     // TODO: reuse shared global Vec here
-    pub fn references(&self) -> Vec<Reference> {
+    pub fn references(&self, line: u32) -> Vec<Reference> {
         let mut result = Vec::new();
         for cap in MD_RE.captures_iter(&self.0) {
             let full_match = cap.get(0).unwrap();
             match &cap[1] {
                 "!" => result.push(Reference::Image {
                     src: cap[2].to_string(),
+                    line,
                     start: full_match.start() as u32,
                     end: full_match.end() as u32,
                 }),
@@ -69,6 +70,7 @@ impl Line {
                     }
                     result.push(Reference::Link {
                         destination,
+                        line,
                         start: full_match.start() as u32,
                         end: full_match.end() as u32,
                     });
@@ -80,6 +82,7 @@ impl Line {
             let full_match = cap.get(0).unwrap();
             result.push(Reference::Link {
                 destination: cap[1].to_string(),
+                line,
                 start: full_match.start() as u32,
                 end: full_match.end() as u32,
             });
@@ -88,6 +91,7 @@ impl Line {
             let full_match = cap.get(0).unwrap();
             result.push(Reference::Image {
                 src: cap[1].to_string(),
+                line,
                 start: full_match.start() as u32,
                 end: full_match.end() as u32,
             });
@@ -234,15 +238,17 @@ mod tests {
             let line = Line::from(
                 r#"an MD link: [one](one.md) and one to a section: [two pieces](two.md#pieces)!"#,
             );
-            let have = line.references();
+            let have = line.references(12);
             let want = vec![
                 Reference::Link {
                     destination: "one.md".into(),
+                    line: 12,
                     start: 12,
                     end: 25,
                 },
                 Reference::Link {
                     destination: "two.md".into(),
+                    line: 12,
                     start: 48,
                     end: 75,
                 },
@@ -253,9 +259,10 @@ mod tests {
         #[test]
         fn link_html() {
             let line = Line::from(r#"an HTML link: <a href="two.md">two</a>"#);
-            let have = line.references();
+            let have = line.references(12);
             let want = vec![Reference::Link {
                 destination: "two.md".into(),
+                line: 12,
                 start: 14,
                 end: 38,
             }];
@@ -265,9 +272,10 @@ mod tests {
         #[test]
         fn img_md() {
             let line = Line::from(r#"an MD image: ![zonk](zonk.md)"#);
-            let have = line.references();
+            let have = line.references(12);
             let want = vec![Reference::Image {
                 src: "zonk.md".into(),
+                line: 12,
                 start: 13,
                 end: 29,
             }];
@@ -277,9 +285,10 @@ mod tests {
         #[test]
         fn img_html() {
             let line = Line::from(r#"<img src="zonk.md">"#);
-            let have = line.references();
+            let have = line.references(12);
             let want = vec![Reference::Image {
                 src: "zonk.md".into(),
+                line: 12,
                 start: 0,
                 end: 19,
             }];
@@ -289,9 +298,10 @@ mod tests {
         #[test]
         fn img_html_extra_attributes() {
             let line = Line::from(r#"<img src="zonk.md" width="10" height="10">"#);
-            let have = line.references();
+            let have = line.references(12);
             let want = vec![Reference::Image {
                 src: "zonk.md".into(),
+                line: 12,
                 start: 0,
                 end: 42,
             }];
@@ -301,9 +311,10 @@ mod tests {
         #[test]
         fn img_xml_nospace() {
             let line = Line::from(r#"<img src="zonk.md"/>"#);
-            let have = line.references();
+            let have = line.references(12);
             let want = vec![Reference::Image {
                 src: "zonk.md".into(),
+                line: 12,
                 start: 0,
                 end: 20,
             }];
@@ -313,9 +324,10 @@ mod tests {
         #[test]
         fn img_xml_space() {
             let line = Line::from(r#"<img src="zonk.md" />"#);
-            let have = line.references();
+            let have = line.references(12);
             let want = vec![Reference::Image {
                 src: "zonk.md".into(),
+                line: 12,
                 start: 0,
                 end: 21,
             }];
