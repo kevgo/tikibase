@@ -80,7 +80,7 @@ mod tests {
             },
             title: "empty section".into(),
         }];
-        pretty::assert_eq!(have, want)
+        pretty::assert_eq!(have, want);
     }
 
     #[test]

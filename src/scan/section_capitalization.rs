@@ -24,8 +24,12 @@ pub(crate) fn scan(base: &Tikibase) -> Vec<Issue> {
         if variants_count(&file_sections) < 2 {
             continue;
         }
-        let variants: AHashSet<String> =
-            AHashSet::from_iter(file_sections.iter().map(|variant| variant.title.into()));
+        // remove duplicates
+        let variants: AHashSet<String> = file_sections
+            .iter()
+            .map(|variant| variant.title.into())
+            .collect();
+        // sort
         let mut variants: Vec<String> = Vec::from_iter(variants);
         variants.sort();
         for file_section in file_sections {
@@ -69,7 +73,7 @@ impl Default for FileSection<'_> {
 }
 
 fn variants_count(file_sections: &[FileSection]) -> usize {
-    let set: AHashSet<&str> = AHashSet::from_iter(file_sections.iter().map(|fs| fs.title));
+    let set: AHashSet<&str> = file_sections.iter().map(|fs| fs.title).collect();
     set.len()
 }
 
@@ -191,7 +195,7 @@ mod tests {
         ];
         let have = super::variants_count(&give);
         let want = 2;
-        assert_eq!(have, want)
+        assert_eq!(have, want);
     }
 
     mod file_section {

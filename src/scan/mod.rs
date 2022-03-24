@@ -1,4 +1,4 @@
-//! The probes module contains the code that scans for problems in a TikiBase
+//! The probes module contains the code that scans for problems in a `TikiBase`
 //! and reports problems found as `Issues`.
 
 pub(crate) mod footnotes;

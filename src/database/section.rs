@@ -93,6 +93,7 @@ impl Section {
 
 /// describes the title of a section: its text and where on the line it is located
 #[derive(Debug, PartialEq)]
+#[allow(clippy::module_name_repetitions)]
 pub struct SectionTitle<'a> {
     pub text: &'a str,
     pub start: u32,
@@ -117,10 +118,9 @@ impl<'a> Iterator for LinesIterator<'a> {
     fn next(&mut self) -> Option<Self::Item> {
         if !self.emitted_title {
             self.emitted_title = true;
-            Some(self.title_line)
-        } else {
-            self.body_iter.next()
+            return Some(self.title_line);
         }
+        self.body_iter.next()
     }
 }
 
@@ -189,7 +189,7 @@ mod tests {
             };
             let have = section.last_line();
             let want = Line::from("two");
-            assert_eq!(have, &want)
+            assert_eq!(have, &want);
         }
 
         #[test]
@@ -201,7 +201,7 @@ mod tests {
             };
             let have = section.last_line();
             let want = Line::from("title");
-            assert_eq!(have, &want)
+            assert_eq!(have, &want);
         }
     }
 
@@ -256,7 +256,7 @@ mod tests {
                 body: vec![Line::from("new line")],
                 ..Section::scaffold()
             };
-            pretty::assert_eq!(have, want)
+            pretty::assert_eq!(have, want);
         }
 
         #[test]
@@ -268,7 +268,7 @@ mod tests {
             section.push_line("new line");
             let have = section.body;
             let want = vec![Line::from("l1"), Line::from("new line")];
-            pretty::assert_eq!(have, want)
+            pretty::assert_eq!(have, want);
         }
     }
 

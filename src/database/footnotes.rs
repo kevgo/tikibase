@@ -62,7 +62,7 @@ mod tests {
                 }],
                 references: vec![],
             };
-            assert!(give.contains_definition("f1"))
+            assert!(give.contains_definition("f1"));
         }
 
         #[test]
@@ -74,7 +74,7 @@ mod tests {
                 }],
                 references: vec![],
             };
-            assert!(!give.contains_definition("f2"))
+            assert!(!give.contains_definition("f2"));
         }
     }
 
@@ -90,7 +90,7 @@ mod tests {
                     ..Footnote::default()
                 }],
             };
-            assert!(give.contains_reference("f1"))
+            assert!(give.contains_reference("f1"));
         }
 
         #[test]
@@ -102,7 +102,7 @@ mod tests {
                     ..Footnote::default()
                 }],
             };
-            assert!(!give.contains_reference("f2"))
+            assert!(!give.contains_reference("f2"));
         }
     }
 
@@ -156,7 +156,7 @@ mod tests {
                 ],
             };
             let have = give.missing_references();
-            itertools::assert_equal(have, Vec::<&Footnote>::new())
+            itertools::assert_equal(have, Vec::<&Footnote>::new());
         }
     }
 
@@ -183,7 +183,7 @@ mod tests {
             };
             let have = give.unused_definitions().map(|d| &d.identifier);
             let want = vec!["f1"];
-            itertools::assert_equal(have, want)
+            itertools::assert_equal(have, want);
         }
 
         #[test]
@@ -211,7 +211,7 @@ mod tests {
                 ],
             };
             let have = give.unused_definitions();
-            itertools::assert_equal(have, Vec::<&Footnote>::new())
+            itertools::assert_equal(have, Vec::<&Footnote>::new());
         }
     }
 }
