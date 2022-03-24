@@ -79,9 +79,9 @@ impl Line {
                 start: total_match.start() as u32,
                 end: total_match.end() as u32,
             };
-            match captures.get(2) {
-                Some(_) => result.definitions.push(footnote),
-                None => result.references.push(footnote),
+            match captures[2].is_empty() {
+                false => result.definitions.push(footnote),
+                true => result.references.push(footnote),
             };
         }
         Ok(())
@@ -119,11 +119,6 @@ fn sanitize_code_segments(text: &str, file: &Path, line: u32) -> Result<String, 
     Ok(result)
 }
 
-// /// the ability to emit its lines
-// trait Lines {
-//     fn lines(&self);
-// }
-
 #[cfg(test)]
 mod tests {
 
@@ -146,6 +141,7 @@ mod tests {
             let mut have = Footnotes::default();
             line.footnotes(&mut have, Path::new(""), 0).unwrap();
             let want = Footnotes {
+                definitions: vec![],
                 references: vec![
                     Footnote {
                         line: 0,
@@ -160,7 +156,6 @@ mod tests {
                         end: 16,
                     },
                 ],
-                definitions: vec![],
             };
             pretty::assert_eq!(have, want);
         }
