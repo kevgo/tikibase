@@ -114,6 +114,14 @@ mod tests {
     use crate::test;
     use indoc::indoc;
 
+    #[test]
+    fn empty() {
+        let dir = test::tmp_dir();
+        let base = Tikibase::load(dir, &Config::default()).unwrap();
+        assert_eq!(base.docs.len(), 0);
+        assert_eq!(base.resources.len(), 0);
+    }
+
     mod get_doc {
         use crate::{test, Config, Tikibase};
 
@@ -223,14 +231,6 @@ mod tests {
         let dir = test::tmp_dir();
         test::create_file(".hidden", "content", &dir);
         let base = Tikibase::load(dir, &Config::default()).unwrap();
-        assert_eq!(base.resources.len(), 0);
-    }
-
-    #[test]
-    fn empty() {
-        let dir = test::tmp_dir();
-        let base = Tikibase::load(dir, &Config::default()).unwrap();
-        assert_eq!(base.docs.len(), 0);
         assert_eq!(base.resources.len(), 0);
     }
 }
