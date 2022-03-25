@@ -27,8 +27,8 @@ pub(crate) fn scan(base: &Tikibase) -> LinksResult {
     };
     let existing_targets = base.link_targets();
     for doc in &base.docs {
-        let doc_references = doc.references();
-        if doc_references.is_empty() {
+        let references = doc.references();
+        if references.is_empty() {
             result.issues.push(Issue::DocumentWithoutLinks {
                 location: Location {
                     file: doc.path.clone(),
@@ -39,8 +39,8 @@ pub(crate) fn scan(base: &Tikibase) -> LinksResult {
             });
             continue;
         }
-        for doc_reference in doc_references {
-            match doc_reference {
+        for reference in references {
+            match reference {
                 Reference::Link {
                     destination,
                     line,
