@@ -40,6 +40,9 @@ pub enum Issue {
         location: Location,
         message: String,
     },
+    DocumentWithoutLinks {
+        location: Location,
+    },
     DuplicateSection {
         location: Location,
         title: String,

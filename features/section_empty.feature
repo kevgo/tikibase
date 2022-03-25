@@ -3,23 +3,27 @@ Feature: recognize/fix sections without content
   Background:
     Given file "1.md" with content:
       """
-      # Title 1
+      # One
 
-      ### One
+      ### section 1
 
-      ### Two
+      ### section 2
+      [Two](2.md)
 
-      content
-
-      ### Three
+      ### section 3
+      """
+    And file "2.md" with content:
+      """
+      # Two
+      [One](1.md)
       """
 
   Scenario: check
     When checking
     Then it prints:
       """
-      1.md:3  section "One" has no content
-      1.md:9  section "Three" has no content
+      1.md:3  section "section 1" has no content
+      1.md:8  section "section 3" has no content
       """
     And the exit code is 2
 
@@ -27,16 +31,15 @@ Feature: recognize/fix sections without content
     When fixing
     Then it prints:
       """
-      1.md:3  removed empty section "One"
-      1.md:9  removed empty section "Three"
+      1.md:3  removed empty section "section 1"
+      1.md:8  removed empty section "section 3"
       """
     And file "1.md" should contain:
       """
-      # Title 1
+      # One
 
-      ### Two
-
-      content
+      ### section 2
+      [Two](2.md)
       """
     And the exit code is 0
 
@@ -44,15 +47,14 @@ Feature: recognize/fix sections without content
     When doing a pitstop
     Then it prints:
       """
-      1.md:3  removed empty section "One"
-      1.md:9  removed empty section "Three"
+      1.md:3  removed empty section "section 1"
+      1.md:8  removed empty section "section 3"
       """
     And file "1.md" should contain:
       """
-      # Title 1
+      # One
 
-      ### Two
-
-      content
+      ### section 2
+      [Two](2.md)
       """
     And the exit code is 0

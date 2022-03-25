@@ -4,6 +4,7 @@ Feature: recognize missing footnote definitions
     Given file "1.md" with content:
       """
       # Title
+      [Two](2.md)
 
       ### metrics
       - existing footnote[^existing]
@@ -19,12 +20,17 @@ Feature: recognize missing footnote definitions
 
       [^existing]: existing footnote
       """
+    And file "2.md" with content:
+      """
+      # Two
+      [One](1.md)
+      """
 
   Scenario: check
     When checking
     Then it prints:
       """
-      1.md:5  footnote [^2] doesn't exist
+      1.md:6  footnote [^2] doesn't exist
       """
     And all files are unchanged
     And the exit code is 1
@@ -38,7 +44,7 @@ Feature: recognize missing footnote definitions
     When doing a pitstop
     Then it prints:
       """
-      1.md:5  footnote [^2] doesn't exist
+      1.md:6  footnote [^2] doesn't exist
       """
     And all files are unchanged
     And the exit code is 1
