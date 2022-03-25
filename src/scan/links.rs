@@ -318,4 +318,11 @@ mod tests {
             assert_eq!(have.outgoing_doc_links.data.len(), 0);
         }
     }
+
+    #[test]
+    fn strings_contain() {
+        let strings = vec!["1".to_string(), "2".to_string()];
+        assert!(super::strings_contain(&strings, "1"));
+        assert!(!super::strings_contain(&strings, "3"));
+    }
 }
