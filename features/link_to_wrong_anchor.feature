@@ -5,8 +5,8 @@ Feature: link to wrong anchor
       """
       # One
 
-      [wrong anchor](2.md#zonk)
-      <a href="2.md#zonk">wrong anchor</a>
+      [wrong anchor, existing file](2.md#zonk)
+      <a href="2.md#zonk">wrong anchor, existing file</a>
       """
     And file "2.md" with content:
       """
