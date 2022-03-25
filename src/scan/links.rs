@@ -73,8 +73,7 @@ pub(crate) fn scan(base: &Tikibase) -> LinksResult {
                         });
                         continue;
                     }
-                    let dest_path = PathBuf::from(&destination);
-                    if dest_path.extension() == Some(OsStr::new("md")) {
+                    if is_md_document(&destination) {
                         // NOTE: cannot use "contains" here because https://github.com/rust-lang/rust/issues/42671#issuecomment-308713035
                         if !existing_targets
                             .iter()
@@ -127,6 +126,12 @@ pub(crate) fn scan(base: &Tikibase) -> LinksResult {
     result
 }
 
+/// indicates whether the given filename is for a resource or a Markdown document
+fn is_md_document(filename: &str) -> bool {
+    let dest_path = PathBuf::from(&filename);
+    dest_path.extension() == Some(OsStr::new("md"))
+}
+
 /// converts the given URL into the anchor portion of it
 fn link_anchor(link: &str) -> &str {
     // NOTE: it would probably be cleaner to return a &str to the portion of the given &String,
@@ -141,6 +146,14 @@ fn link_anchor(link: &str) -> &str {
 
 #[cfg(test)]
 mod tests {
+    use super::is_md_document;
+
+    #[test]
+    fn markdown() {
+        assert!(is_md_document("foo.md"));
+        assert!(!is_md_document("foo.pdf"));
+        assert!(!is_md_document("foo.png"));
+    }
 
     mod link_anchor {
         use super::super::link_anchor;
