@@ -1,5 +1,5 @@
 use crate::scan::{
-    footnotes, image_orphaned, link_broken, occurrences, section_capitalization, section_duplicate,
+    footnotes, image_orphaned, links, occurrences, section_capitalization, section_duplicate,
     section_empty, section_order, section_title, section_without_header,
 };
 use crate::{Config, Outcome, Tikibase};
@@ -13,7 +13,7 @@ pub fn check(base: &mut Tikibase, config: &Config) -> Outcome {
     issues.extend(section_order::scan(base, config));
     issues.extend(section_without_header::scan(base));
     issues.extend(footnotes::scan(base));
-    let links_result = link_broken::scan(base);
+    let links_result = links::scan(base);
     issues.extend(links_result.issues);
     issues.extend(image_orphaned::scan(
         base,
