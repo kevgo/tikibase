@@ -1,17 +1,20 @@
 Feature: recognize/fix duplicate sections
 
   Background:
-    Given file "1.md" with content:
+    Given file "2.md" with content:
       """
-      # Title 1
+      # One
 
       ### One
-
-      content
+      [Two](2.md)
 
       ### One
-
       content
+      """
+    And file "2.md" with content:
+      """
+      # Other
+      [Two](2.md)
       """
 
   Scenario: check
@@ -19,7 +22,7 @@ Feature: recognize/fix duplicate sections
     Then it prints:
       """
       1.md:3  document contains multiple "One" sections
-      1.md:7  document contains multiple "One" sections
+      1.md:6  document contains multiple "One" sections
       """
     And all files are unchanged
 
@@ -33,6 +36,6 @@ Feature: recognize/fix duplicate sections
     Then it prints:
       """
       1.md:3  document contains multiple "One" sections
-      1.md:7  document contains multiple "One" sections
+      1.md:6  document contains multiple "One" sections
       """
     And all files are unchanged

@@ -3,23 +3,20 @@ Feature: recognize sections with different capitalization
   Background:
     Given file "1.md" with content:
       """
-      # Title 1
+      # One
 
       ### One
-
-      content
+      [Two](2.md)
 
       ### one
-
       content
       """
     And file "2.md" with content:
       """
-      # Title 2
+      # Two
 
       ### ONE
-
-      content
+      [Two](2.md)
       """
 
   Scenario: check
@@ -27,7 +24,7 @@ Feature: recognize sections with different capitalization
     Then it prints:
       """
       1.md:3  section title occurs with inconsistent capitalization: ONE|One|one
-      1.md:7  section title occurs with inconsistent capitalization: ONE|One|one
+      1.md:6  section title occurs with inconsistent capitalization: ONE|One|one
       2.md:3  section title occurs with inconsistent capitalization: ONE|One|one
       """
     And all files are unchanged
@@ -42,7 +39,7 @@ Feature: recognize sections with different capitalization
     Then it prints:
       """
       1.md:3  section title occurs with inconsistent capitalization: ONE|One|one
-      1.md:7  section title occurs with inconsistent capitalization: ONE|One|one
+      1.md:6  section title occurs with inconsistent capitalization: ONE|One|one
       2.md:3  section title occurs with inconsistent capitalization: ONE|One|one
       """
     And all files are unchanged

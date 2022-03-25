@@ -5,25 +5,22 @@ Feature: add occurrence sections
       """
       # One
 
-      ### section 1
-
-      text
+      ### section
+      [Two](2.md)
       """
     And file "2.md" with content:
       """
       # [One](1.md) times two
 
       ### Foo
-
-      [one](1.md)
+      [One](1.md)
       """
     And file "3.md" with content:
       """
       # Three
 
       ### Bar
-
-      [one](1.md#section-1)
+      [One](1.md#section)
       """
 
   Scenario: check
@@ -45,11 +42,9 @@ Feature: add occurrence sections
       # One
 
       ### section 1
-
       text
 
       ### occurrences
-
       - [One times two](2.md)
       - [Three](3.md)
       """
@@ -68,11 +63,9 @@ Feature: add occurrence sections
       # One
 
       ### section 1
-
       text
 
       ### occurrences
-
       - [One times two](2.md)
       - [Three](3.md)
       """

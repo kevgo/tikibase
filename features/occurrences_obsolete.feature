@@ -6,19 +6,22 @@ Feature: obsolete occurrence sections
       # One
 
       ### section 1
-
-      text
+      [Two](2.md)
 
       ### occurrences
-
       text
+      """
+    And file "2.md" with content:
+      """
+      # Other
+      [One](1.md)
       """
 
   Scenario: check
     When checking
     Then it prints:
       """
-      1.md:7  obsolete "occurrences" section
+      1.md:6  obsolete "occurrences" section
       """
     And the exit code is 1
 
@@ -26,15 +29,14 @@ Feature: obsolete occurrence sections
     When fixing
     Then it prints:
       """
-      1.md:7  removed obsolete occurrences section
+      1.md:6  removed obsolete occurrences section
       """
     And file "1.md" should contain:
       """
       # One
 
       ### section 1
-
-      text
+      [Two](2.md)
       """
     And the exit code is 0
 
@@ -42,14 +44,13 @@ Feature: obsolete occurrence sections
     When doing a pitstop
     Then it prints:
       """
-      1.md:7  removed obsolete occurrences section
+      1.md:6  removed obsolete occurrences section
       """
     And file "1.md" should contain:
       """
       # One
 
       ### section 1
-
-      text
+      [Two](2.md)
       """
     And the exit code is 0
