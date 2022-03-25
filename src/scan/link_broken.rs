@@ -38,7 +38,7 @@ pub(crate) fn scan(base: &Tikibase) -> LinksResult {
         for reference in references {
             match reference {
                 Reference::Link {
-                    mut destination,
+                    destination,
                     line,
                     start,
                     end,
@@ -58,19 +58,6 @@ pub(crate) fn scan(base: &Tikibase) -> LinksResult {
                         // ignore external links
                         continue;
                     }
-                    make_link_anchor(&mut destination);
-                    if !existing_targets.contains(&destination) {
-                        result.issues.push(Issue::BrokenLink {
-                            location: Location {
-                                file: doc.path.clone(),
-                                line,
-                                start,
-                                end,
-                            },
-                            target: destination,
-                        });
-                        continue;
-                    }
                     if destination == doc.path.to_string_lossy() {
                         result.issues.push(Issue::LinkToSameDocument {
                             location: Location {
@@ -79,6 +66,22 @@ pub(crate) fn scan(base: &Tikibase) -> LinksResult {
                                 start,
                                 end,
                             },
+                        });
+                        continue;
+                    }
+                    // NOTE: cannot use "contains" here because https://github.com/rust-lang/rust/issues/42671#issuecomment-308713035
+                    if !existing_targets
+                        .iter()
+                        .any(|existing_target| existing_target == link_anchor(&destination))
+                    {
+                        result.issues.push(Issue::BrokenLink {
+                            location: Location {
+                                file: doc.path.clone(),
+                                line,
+                                start,
+                                end,
+                            },
+                            target: destination,
                         });
                         continue;
                     }
@@ -116,12 +119,14 @@ pub(crate) fn scan(base: &Tikibase) -> LinksResult {
 }
 
 /// converts the given URL into the anchor portion of it
-fn make_link_anchor(url: &mut String) {
+fn link_anchor(link: &str) -> &str {
     // NOTE: it would probably be cleaner to return a &str to the portion of the given &String,
     // but that isn't needed here and it yields to type incompatibilities.
     // We are therefore reducing the string in place.
-    if let Some(index) = url.find('#') {
-        url.replace_range(0..index, "");
+    if let Some(index) = link.find('#') {
+        &link[index..]
+    } else {
+        link
     }
 }
 
@@ -129,14 +134,14 @@ fn make_link_anchor(url: &mut String) {
 mod tests {
 
     mod link_anchor {
-        use super::super::make_link_anchor;
+        use super::super::link_anchor;
 
         #[test]
         fn with_anchor() {
-            let mut give = "1.md#foo".to_string();
-            let want = "#foo".to_string();
-            make_link_anchor(&mut give);
-            assert_eq!(give, want);
+            let give = "1.md#foo";
+            let want = "#foo";
+            let have = link_anchor(give);
+            assert_eq!(have, want);
         }
     }
 
