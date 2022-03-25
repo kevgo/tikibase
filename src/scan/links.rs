@@ -1,3 +1,6 @@
+use std::ffi::OsStr;
+use std::path::PathBuf;
+
 use crate::database::{DocLinks, Reference, Tikibase};
 use crate::{Issue, Location};
 
@@ -65,26 +68,26 @@ pub(crate) fn scan(base: &Tikibase) -> LinksResult {
                         });
                         continue;
                     }
-                    // NOTE: cannot use "contains" here because https://github.com/rust-lang/rust/issues/42671#issuecomment-308713035
-                    if !existing_targets
-                        .iter()
-                        .any(|existing_target| existing_target == link_anchor(&destination))
-                    {
-                        result.issues.push(Issue::BrokenLink {
-                            location: Location {
-                                file: doc.path.clone(),
-                                line,
-                                start,
-                                end,
-                            },
-                            target: destination,
-                        });
-                        continue;
+                    if is_md_document(&destination) {
+                        if !strings_contain(&existing_targets, link_anchor(&destination)) {
+                            result.issues.push(Issue::BrokenLink {
+                                location: Location {
+                                    file: doc.path.clone(),
+                                    line,
+                                    start,
+                                    end,
+                                },
+                                target: destination,
+                            });
+                            continue;
+                        }
+                        result
+                            .incoming_doc_links
+                            .add(&destination, doc.path.clone());
+                        result.outgoing_doc_links.add(doc.path.clone(), destination);
+                    } else {
+                        result.outgoing_resource_links.push(destination);
                     }
-                    result
-                        .incoming_doc_links
-                        .add(&destination, doc.path.clone());
-                    result.outgoing_doc_links.add(doc.path.clone(), destination);
                 }
                 Reference::Image {
                     src,
@@ -114,6 +117,12 @@ pub(crate) fn scan(base: &Tikibase) -> LinksResult {
     result
 }
 
+/// indicates whether the given filename is for a resource or a Markdown document
+fn is_md_document(filename: &str) -> bool {
+    let dest_path = PathBuf::from(&filename);
+    dest_path.extension() == Some(OsStr::new("md"))
+}
+
 /// converts the given URL into the anchor portion of it
 fn link_anchor(link: &str) -> &str {
     // NOTE: it would probably be cleaner to return a &str to the portion of the given &String,
@@ -126,8 +135,23 @@ fn link_anchor(link: &str) -> &str {
     }
 }
 
+/// indicates whether the given Vec<String> contains the given &str
+///
+// NOTE: cannot use "contains" because https://github.com/rust-lang/rust/issues/42671
+fn strings_contain(targets: &[String], target: &str) -> bool {
+    targets.iter().any(|t| t == target)
+}
+
 #[cfg(test)]
 mod tests {
+    use super::is_md_document;
+
+    #[test]
+    fn markdown() {
+        assert!(is_md_document("foo.md"));
+        assert!(!is_md_document("foo.pdf"));
+        assert!(!is_md_document("foo.png"));
+    }
 
     mod link_anchor {
         use super::super::link_anchor;
@@ -173,19 +197,16 @@ mod tests {
             let dir = test::tmp_dir();
             let content = indoc! {"
                 # One
-
-                Here is a link to [Two](2.md) that works.
-
+                working link to [Two](2.md)
                 ### section
-
-                Here is a link to [Three](3.md) that also works.
+                working link to [Three](3.md)
                 "};
             test::create_file("1.md", content, &dir);
             test::create_file("2.md", "# Two\n[1](1.md)", &dir);
             test::create_file("3.md", "# Three\n[1](1.md)", &dir);
             let base = Tikibase::load(dir, &Config::default()).unwrap();
             let have = scan(&base);
-            assert_eq!(have.issues.len(), 0);
+            pretty::assert_eq!(have.issues, vec![]);
             assert_eq!(have.outgoing_doc_links.data.len(), 3);
             let out_one = have.outgoing_doc_links.get("1.md").unwrap();
             assert_eq!(out_one.len(), 2);
@@ -243,7 +264,7 @@ mod tests {
         }
 
         #[test]
-        fn link_to_existing_image() {
+        fn imagelink_to_existing_image() {
             let dir = test::tmp_dir();
             test::create_file("1.md", "# One\n\n![image](foo.png)\n", &dir);
             test::create_file("foo.png", "image content", &dir);
@@ -257,7 +278,7 @@ mod tests {
         }
 
         #[test]
-        fn link_to_non_existing_image() {
+        fn imagelink_to_non_existing_image() {
             let dir = test::tmp_dir();
             test::create_file("1.md", "# One\n\n![image](zonk.png)\n", &dir);
             let base = Tikibase::load(dir, &Config::default()).unwrap();
@@ -277,5 +298,26 @@ mod tests {
             assert_eq!(have.incoming_doc_links.data.len(), 0);
             assert_eq!(have.outgoing_doc_links.data.len(), 0);
         }
+
+        #[test]
+        fn link_to_existing_resource() {
+            let dir = test::tmp_dir();
+            test::create_file("1.md", "# One\n\n[docs](docs.pdf)\n", &dir);
+            test::create_file("docs.pdf", "PDF content", &dir);
+            let base = Tikibase::load(dir, &Config::default()).unwrap();
+            let have = scan(&base);
+            pretty::assert_eq!(have.issues, vec![]);
+            assert_eq!(have.outgoing_resource_links.len(), 1);
+            assert_eq!(have.outgoing_resource_links[0], "docs.pdf");
+            assert_eq!(have.incoming_doc_links.data.len(), 0);
+            assert_eq!(have.outgoing_doc_links.data.len(), 0);
+        }
+    }
+
+    #[test]
+    fn strings_contain() {
+        let strings = vec!["1".to_string(), "2".to_string()];
+        assert!(super::strings_contain(&strings, "1"));
+        assert!(!super::strings_contain(&strings, "3"));
     }
 }
