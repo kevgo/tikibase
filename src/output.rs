@@ -147,8 +147,8 @@ impl Message {
                 start: location.start,
                 end: location.end,
             },
-            Issue::LinkWithoutDestination { location } => Message {
-                text: "link without destination".into(),
+            Issue::LinkWithoutTarget { location } => Message {
+                text: "link without target".into(),
                 file: location.file,
                 line: location.line,
                 start: location.start,
