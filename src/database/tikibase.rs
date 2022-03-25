@@ -96,7 +96,7 @@ struct LinesIterator<R> {
     reader: R,
 }
 
-impl<R> LinesIterator<R> {
+impl<R: BufRead> LinesIterator<R> {
     pub fn new(reader: R) -> Self {
         Self { reader }
     }
@@ -230,6 +230,37 @@ mod tests {
             test::create_file("foo.png", "content", &dir);
             let base = Tikibase::load(dir, &Config::default()).unwrap();
             assert!(base.has_resource("foo.png"));
+        }
+    }
+
+    mod lines_iterator {
+        use super::LinesIterator;
+
+        #[test]
+        fn unix() {
+            let give = "one\ntwo\nthree\n";
+            let mut have = LinesIterator::new(give.as_bytes());
+            assert_eq!(have.next(), Some("one\n".to_string()));
+            assert_eq!(have.next(), Some("two\n".to_string()));
+            assert_eq!(have.next(), Some("three\n".to_string()));
+            assert_eq!(have.next(), None);
+        }
+
+        #[test]
+        fn windows() {
+            let give = "one\r\ntwo\r\nthree\r\n";
+            let mut have = LinesIterator::new(give.as_bytes());
+            assert_eq!(have.next(), Some("one\r\n".to_string()));
+            assert_eq!(have.next(), Some("two\r\n".to_string()));
+            assert_eq!(have.next(), Some("three\r\n".to_string()));
+            assert_eq!(have.next(), None);
+        }
+
+        #[test]
+        fn empty() {
+            let give = "";
+            let mut have = LinesIterator::new(give.as_bytes());
+            assert_eq!(have.next(), None);
         }
     }
 
