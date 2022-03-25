@@ -211,7 +211,25 @@ mod tests {
         }
 
         #[test]
-        fn link_to_non_existing_anchor_in_current_file() {}
+        fn link_to_non_existing_anchor_in_current_file() {
+            let dir = test::tmp_dir();
+            test::create_file("1.md", "# One\n[non-existing anchor](#zonk)\n", &dir);
+            let base = Tikibase::load(dir, &Config::default()).unwrap();
+            let have = scan(&base);
+            let want = vec![Issue::LinkToNonExistingAnchorInCurrentDocument {
+                location: Location {
+                    file: "1.md".into(),
+                    line: 1,
+                    start: 0,
+                    end: 32,
+                },
+                anchor: "zonk".into(),
+            }];
+            pretty::assert_eq!(have.issues, want);
+            assert_eq!(have.incoming_doc_links.data.len(), 1);
+            assert_eq!(have.outgoing_doc_links.data.len(), 1);
+            assert_eq!(have.outgoing_resource_links.len(), 0);
+        }
 
         #[test]
         fn link_to_anchor_in_nonexisting_file() {}

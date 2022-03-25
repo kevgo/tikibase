@@ -47,6 +47,10 @@ pub fn fix(issue: Issue, base: &mut Tikibase, config: &Config) -> Option<Fix> {
             message: _,
             location: _,
         }
+        | Issue::LinkToNonExistingAnchorInCurrentDocument {
+            location: _,
+            anchor: _,
+        }
         | Issue::LinkToNonExistingAnchorInExistingDocument {
             location: _,
             target_file: _,

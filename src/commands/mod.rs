@@ -55,6 +55,11 @@ pub enum Issue {
         location: Location,
         message: String,
     },
+    LinkToNonExistingAnchorInCurrentDocument {
+        location: Location,
+        /// the non-existing anchor in the current
+        anchor: String,
+    },
     LinkToNonExistingAnchorInExistingDocument {
         location: Location,
         /// the file that the link points to

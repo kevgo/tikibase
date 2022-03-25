@@ -103,10 +103,14 @@ impl Message {
                 end: location.end,
             },
             Issue::InvalidConfigurationFile { location, message } => Message {
-                text: format!(
-                    "tikibase.json  invalid configuration file structure: {}",
-                    message
-                ),
+                text: format!("invalid configuration file structure: {}", message),
+                file: location.file,
+                line: location.line,
+                start: location.start,
+                end: location.end,
+            },
+            Issue::LinkToNonExistingAnchorInCurrentDocument { location, anchor } => Message {
+                text: format!("link to non-existing anchor \"{}\" in current file", anchor),
                 file: location.file,
                 line: location.line,
                 start: location.start,
