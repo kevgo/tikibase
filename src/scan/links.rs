@@ -37,12 +37,12 @@ pub(crate) fn scan(base: &Tikibase) -> LinksResult {
         for reference in references {
             match reference {
                 Reference::Link {
-                    target: destination,
+                    target,
                     line,
                     start,
                     end,
                 } => {
-                    if destination.is_empty() {
+                    if target.is_empty() {
                         result.issues.push(Issue::LinkWithoutDestination {
                             location: Location {
                                 file: doc.path.clone(),
@@ -53,11 +53,11 @@ pub(crate) fn scan(base: &Tikibase) -> LinksResult {
                         });
                         continue;
                     }
-                    if destination.starts_with("http") {
+                    if target.starts_with("http") {
                         // ignore external links
                         continue;
                     }
-                    if destination == doc.path.to_string_lossy() {
+                    if target == doc.path.to_string_lossy() {
                         result.issues.push(Issue::LinkToSameDocument {
                             location: Location {
                                 file: doc.path.clone(),
@@ -68,8 +68,8 @@ pub(crate) fn scan(base: &Tikibase) -> LinksResult {
                         });
                         continue;
                     }
-                    if is_md_document(&destination) {
-                        if !strings_contain(&existing_targets, link_anchor(&destination)) {
+                    if is_md_document(&target) {
+                        if !strings_contain(&existing_targets, link_anchor(&target)) {
                             result.issues.push(Issue::BrokenLink {
                                 location: Location {
                                     file: doc.path.clone(),
@@ -77,16 +77,14 @@ pub(crate) fn scan(base: &Tikibase) -> LinksResult {
                                     start,
                                     end,
                                 },
-                                target: destination,
+                                target,
                             });
                             continue;
                         }
-                        result
-                            .incoming_doc_links
-                            .add(&destination, doc.path.clone());
-                        result.outgoing_doc_links.add(doc.path.clone(), destination);
+                        result.incoming_doc_links.add(&target, doc.path.clone());
+                        result.outgoing_doc_links.add(doc.path.clone(), target);
                     } else {
-                        result.outgoing_resource_links.push(destination);
+                        result.outgoing_resource_links.push(target);
                     }
                 }
                 Reference::Image {
