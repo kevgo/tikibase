@@ -15,7 +15,7 @@ Feature: verify section titles
       # One
 
       ### what is it
-      [2](2.md)
+      [Two](2.md)
 
       ### zonk
       text
@@ -23,7 +23,7 @@ Feature: verify section titles
     And file "2.md" with content:
       """
       # Two
-      [1](1.md)
+      [One](1.md)
       """
 
   Scenario: check
