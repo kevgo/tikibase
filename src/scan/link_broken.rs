@@ -58,19 +58,6 @@ pub(crate) fn scan(base: &Tikibase) -> LinksResult {
                         // ignore external links
                         continue;
                     }
-                    let link_anchor = make_link_anchor(&destination);
-                    if !existing_targets.contains(&link_anchor) {
-                        result.issues.push(Issue::BrokenLink {
-                            location: Location {
-                                file: doc.path.clone(),
-                                line,
-                                start,
-                                end,
-                            },
-                            target: destination,
-                        });
-                        continue;
-                    }
                     if destination == doc.path.to_string_lossy() {
                         result.issues.push(Issue::LinkToSameDocument {
                             location: Location {
@@ -79,6 +66,18 @@ pub(crate) fn scan(base: &Tikibase) -> LinksResult {
                                 start,
                                 end,
                             },
+                        });
+                        continue;
+                    }
+                    if !existing_targets.contains(&link_anchor(&destination)) {
+                        result.issues.push(Issue::BrokenLink {
+                            location: Location {
+                                file: doc.path.clone(),
+                                line,
+                                start,
+                                end,
+                            },
+                            target: destination,
                         });
                         continue;
                     }
@@ -116,7 +115,7 @@ pub(crate) fn scan(base: &Tikibase) -> LinksResult {
 }
 
 /// converts the given URL into the anchor portion of it
-fn make_link_anchor(url: &str) -> String {
+fn link_anchor(url: &str) -> String {
     // NOTE: it would probably be cleaner to return a &str to the portion of the given &String,
     // but that isn't needed here and it yields to type incompatibilities.
     // We are therefore reducing the string in place.
@@ -131,13 +130,13 @@ fn make_link_anchor(url: &str) -> String {
 mod tests {
 
     mod link_anchor {
-        use super::super::make_link_anchor;
+        use super::super::link_anchor;
 
         #[test]
         fn with_anchor() {
             let give = "1.md#foo".to_string();
             let want = "#foo".to_string();
-            let have = make_link_anchor(&give);
+            let have = link_anchor(&give);
             assert_eq!(have, want);
         }
     }
