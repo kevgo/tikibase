@@ -4,13 +4,11 @@ Feature: Find documents without any links
     Given file "1.md" with content:
       """
       # One
-
       Hello!
       """
     And file "2.md" with content:
       """
       # Two
-
       Hello also!
       """
 
