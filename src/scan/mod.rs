@@ -3,7 +3,7 @@
 
 pub(crate) mod footnotes;
 pub(crate) mod image_orphaned;
-pub(crate) mod link_broken;
+pub(crate) mod links;
 pub(crate) mod occurrences;
 pub(crate) mod section_capitalization;
 pub(crate) mod section_duplicate;
