@@ -5,6 +5,7 @@ use std::path::{Path, PathBuf};
 #[derive(Default)]
 pub struct DocLinks {
     /// key = file path, value = files that the key document points to
+    // TODO: change PathBuf to Path
     pub data: AHashMap<PathBuf, AHashSet<PathBuf>>,
 }
 

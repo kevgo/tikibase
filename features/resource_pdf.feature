@@ -5,7 +5,7 @@ Feature: PDF resources
       """
       # Title
 
-      There is a [PDF file](./foo.pdf).
+      Check out this [PDF file](foo.pdf).
       """
     And file "foo.pdf"
 
