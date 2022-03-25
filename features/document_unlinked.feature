@@ -12,7 +12,6 @@ Feature: Find documents without any links
       Hello also!
       """
 
-  @this
   Scenario: check
     When checking
     Then it prints:
