@@ -69,7 +69,7 @@ pub(crate) fn scan(base: &Tikibase) -> LinksResult {
                         });
                         continue;
                     }
-                    if !existing_targets.contains(&link_anchor(&destination)) {
+                    if !existing_targets.contains(&link_anchor(&destination).into()) {
                         result.issues.push(Issue::BrokenLink {
                             location: Location {
                                 file: doc.path.clone(),
@@ -115,14 +115,14 @@ pub(crate) fn scan(base: &Tikibase) -> LinksResult {
 }
 
 /// converts the given URL into the anchor portion of it
-fn link_anchor(link: &str) -> String {
+fn link_anchor(link: &str) -> &str {
     // NOTE: it would probably be cleaner to return a &str to the portion of the given &String,
     // but that isn't needed here and it yields to type incompatibilities.
     // We are therefore reducing the string in place.
     if let Some(index) = link.find('#') {
-        link.sub[index..].into()
+        &link[index..]
     } else {
-        link.into()
+        link
     }
 }
 
