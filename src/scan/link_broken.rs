@@ -69,7 +69,7 @@ pub(crate) fn scan(base: &Tikibase) -> LinksResult {
                         });
                         continue;
                     }
-                    // HACK: see https://github.com/rust-lang/rust/issues/42671#issuecomment-308713035
+                    // NOTE: cannot use "contains" here because https://github.com/rust-lang/rust/issues/42671#issuecomment-308713035
                     if !existing_targets
                         .iter()
                         .any(|existing_target| existing_target == link_anchor(&destination))
