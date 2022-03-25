@@ -43,7 +43,7 @@ pub(crate) fn scan(base: &Tikibase) -> LinksResult {
                     end,
                 } => {
                     if target.is_empty() {
-                        result.issues.push(Issue::LinkWithoutDestination {
+                        result.issues.push(Issue::LinkWithoutTarget {
                             location: Location {
                                 file: doc.path.clone(),
                                 line,
@@ -221,14 +221,14 @@ mod tests {
         }
 
         #[test]
-        fn link_without_destination() {
+        fn link_without_target() {
             let dir = test::tmp_dir();
             test::create_file("one.md", "# One\n\n[invalid]()\n", &dir);
             let base = Tikibase::load(dir, &Config::default()).unwrap();
             let have = scan(&base);
             pretty::assert_eq!(
                 have.issues,
-                vec![Issue::LinkWithoutDestination {
+                vec![Issue::LinkWithoutTarget {
                     location: Location {
                         file: "one.md".into(),
                         line: 2,

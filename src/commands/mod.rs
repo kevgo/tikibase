@@ -58,7 +58,7 @@ pub enum Issue {
     LinkToSameDocument {
         location: Location,
     },
-    LinkWithoutDestination {
+    LinkWithoutTarget {
         location: Location,
     },
     MissingLinks {

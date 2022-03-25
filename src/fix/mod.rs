@@ -56,7 +56,7 @@ pub fn fix(issue: Issue, base: &mut Tikibase, config: &Config) -> Option<Fix> {
             location: _,
         }
         | Issue::LinkToSameDocument { location: _ }
-        | Issue::LinkWithoutDestination { location: _ }
+        | Issue::LinkWithoutTarget { location: _ }
         | Issue::NoTitleSection { location: _ }
         | Issue::OrphanedResource { location: _ }
         | Issue::SectionWithoutHeader { location: _ }
