@@ -64,12 +64,12 @@ impl Line {
                     end: full_match.end() as u32,
                 }),
                 "" => {
-                    let mut destination = cap[2].to_string();
-                    if let Some(idx) = destination.find('#') {
-                        destination.truncate(idx);
+                    let mut target = cap[2].to_string();
+                    if let Some(idx) = target.find('#') {
+                        target.truncate(idx);
                     }
                     result.push(Reference::Link {
-                        target: destination,
+                        target,
                         line,
                         start: full_match.start() as u32,
                         end: full_match.end() as u32,
