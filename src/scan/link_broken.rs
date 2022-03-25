@@ -38,7 +38,7 @@ pub(crate) fn scan(base: &Tikibase) -> LinksResult {
         for reference in references {
             match reference {
                 Reference::Link {
-                    mut destination,
+                    destination,
                     line,
                     start,
                     end,
@@ -58,8 +58,8 @@ pub(crate) fn scan(base: &Tikibase) -> LinksResult {
                         // ignore external links
                         continue;
                     }
-                    make_link_anchor(&mut destination);
-                    if !existing_targets.contains(&destination) {
+                    let link_anchor = make_link_anchor(&destination);
+                    if !existing_targets.contains(&link_anchor) {
                         result.issues.push(Issue::BrokenLink {
                             location: Location {
                                 file: doc.path.clone(),
@@ -116,12 +116,14 @@ pub(crate) fn scan(base: &Tikibase) -> LinksResult {
 }
 
 /// converts the given URL into the anchor portion of it
-fn make_link_anchor(url: &mut String) {
+fn make_link_anchor(url: &str) -> String {
     // NOTE: it would probably be cleaner to return a &str to the portion of the given &String,
     // but that isn't needed here and it yields to type incompatibilities.
     // We are therefore reducing the string in place.
     if let Some(index) = url.find('#') {
-        url.replace_range(0..index, "");
+        url[index..].into()
+    } else {
+        url.into()
     }
 }
 
@@ -133,10 +135,10 @@ mod tests {
 
         #[test]
         fn with_anchor() {
-            let mut give = "1.md#foo".to_string();
+            let give = "1.md#foo".to_string();
             let want = "#foo".to_string();
-            make_link_anchor(&mut give);
-            assert_eq!(give, want);
+            let have = make_link_anchor(&give);
+            assert_eq!(have, want);
         }
     }
 
