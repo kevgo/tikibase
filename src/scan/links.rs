@@ -72,6 +72,23 @@ pub(crate) fn scan(base: &Tikibase) -> LinksResult {
                         });
                         continue;
                     }
+                    if let Some(anchor_without_prefix) = target.strip_prefix('#') {
+                        let full_target = format!("{}{}", doc.path.to_string_lossy(), target);
+                        if !strings_contain(&existing_targets, &full_target) {
+                            result
+                                .issues
+                                .push(Issue::LinkToNonExistingAnchorInCurrentDocument {
+                                    location: Location {
+                                        file: doc.path.clone(),
+                                        line,
+                                        start,
+                                        end,
+                                    },
+                                    anchor: anchor_without_prefix.into(),
+                                });
+                            continue;
+                        }
+                    }
                     if is_md_document(&target_file) {
                         if !strings_contain(&existing_targets, &target) {
                             if strings_contain(&existing_targets, &target_file) {
@@ -83,7 +100,7 @@ pub(crate) fn scan(base: &Tikibase) -> LinksResult {
                                             start,
                                             end,
                                         },
-                                        target_file,
+                                        target_file: target_file.clone(),
                                         anchor: target_anchor,
                                     },
                                 );
@@ -97,8 +114,8 @@ pub(crate) fn scan(base: &Tikibase) -> LinksResult {
                                     },
                                     target,
                                 });
+                                continue;
                             }
-                            continue;
                         }
                         result
                             .incoming_doc_links
@@ -205,8 +222,8 @@ mod tests {
                 anchor: "zonk".into(),
             }];
             pretty::assert_eq!(have.issues, want);
-            assert_eq!(have.incoming_doc_links.data.len(), 1);
-            assert_eq!(have.outgoing_doc_links.data.len(), 1);
+            assert_eq!(have.incoming_doc_links.data.len(), 2);
+            assert_eq!(have.outgoing_doc_links.data.len(), 2);
             assert_eq!(have.outgoing_resource_links.len(), 0);
         }
 
@@ -221,13 +238,13 @@ mod tests {
                     file: "1.md".into(),
                     line: 1,
                     start: 0,
-                    end: 32,
+                    end: 28,
                 },
                 anchor: "zonk".into(),
             }];
             pretty::assert_eq!(have.issues, want);
-            assert_eq!(have.incoming_doc_links.data.len(), 1);
-            assert_eq!(have.outgoing_doc_links.data.len(), 1);
+            assert_eq!(have.incoming_doc_links.data.len(), 0);
+            assert_eq!(have.outgoing_doc_links.data.len(), 0);
             assert_eq!(have.outgoing_resource_links.len(), 0);
         }
 

@@ -110,7 +110,10 @@ impl Message {
                 end: location.end,
             },
             Issue::LinkToNonExistingAnchorInCurrentDocument { location, anchor } => Message {
-                text: format!("link to non-existing anchor \"{}\" in current file", anchor),
+                text: format!(
+                    "link to non-existing anchor \"#{}\" in current file",
+                    anchor
+                ),
                 file: location.file,
                 line: location.line,
                 start: location.start,
@@ -122,7 +125,7 @@ impl Message {
                 anchor,
             } => Message {
                 text: format!(
-                    "link to non-existing anchor \"{}\" in \"{}\"",
+                    "link to non-existing anchor \"#{}\" in \"{}\"",
                     anchor, target_file
                 ),
                 file: location.file,
