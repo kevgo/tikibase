@@ -115,14 +115,14 @@ pub(crate) fn scan(base: &Tikibase) -> LinksResult {
 }
 
 /// converts the given URL into the anchor portion of it
-fn link_anchor(url: &str) -> String {
+fn link_anchor(link: &str) -> String {
     // NOTE: it would probably be cleaner to return a &str to the portion of the given &String,
     // but that isn't needed here and it yields to type incompatibilities.
     // We are therefore reducing the string in place.
-    if let Some(index) = url.find('#') {
-        url[index..].into()
+    if let Some(index) = link.find('#') {
+        link.sub[index..].into()
     } else {
-        url.into()
+        link.into()
     }
 }
 
