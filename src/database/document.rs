@@ -1,4 +1,4 @@
-use super::{section, Footnotes, Line, Section};
+use super::{section, Footnotes, Line, Reference, Section};
 use crate::{Issue, Location};
 use std::fs;
 use std::io::prelude::*;
@@ -162,6 +162,15 @@ impl Document {
             .last_line_abs()
     }
 
+    /// provides all the references in this document
+    pub fn references(&self) -> Vec<Reference> {
+        let mut result = vec![];
+        for (i, line) in self.lines().enumerate() {
+            result.append(&mut line.references(i as u32));
+        }
+        result
+    }
+
     /// persists the changes made to this document to disk
     pub fn save(&self, root: &Path) {
         let mut file = fs::File::create(root.join(&self.path)).unwrap();
@@ -266,6 +275,7 @@ struct CodeblockStart {
 #[cfg(test)]
 mod tests {
     use super::Document;
+    use crate::database::Reference;
     use indoc::indoc;
 
     mod footnotes {
@@ -662,6 +672,32 @@ mod tests {
             let have = Document::from_str("test.md", give).unwrap().lines_count();
             assert_eq!(have, 1);
         }
+    }
+
+    #[test]
+    fn references() {
+        let give = indoc! {"
+            # Title
+            a link: [one](1.md)
+            ### section
+            an image: ![two](2.png)
+            "};
+        let have = Document::from_str("test.md", give).unwrap().references();
+        let want = vec![
+            Reference::Link {
+                destination: "1.md".into(),
+                line: 1,
+                start: 8,
+                end: 19,
+            },
+            Reference::Image {
+                src: "2.png".into(),
+                line: 3,
+                start: 10,
+                end: 23,
+            },
+        ];
+        pretty::assert_eq!(have, want);
     }
 
     #[test]

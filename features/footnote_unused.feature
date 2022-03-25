@@ -20,7 +20,6 @@ Feature: recognize unused footnote definitions
       [^unused]: unused footnote
       """
 
-  @this
   Scenario: check
     When checking
     Then it prints:
