@@ -5,7 +5,7 @@ Feature: obsolete occurrence sections
       """
       # One
 
-      ### section 1
+      ### section
       [Two](2.md)
 
       ### occurrences
@@ -35,7 +35,7 @@ Feature: obsolete occurrence sections
       """
       # One
 
-      ### section 1
+      ### section
       [Two](2.md)
       """
     And the exit code is 0
@@ -50,7 +50,7 @@ Feature: obsolete occurrence sections
       """
       # One
 
-      ### section 1
+      ### section
       [Two](2.md)
       """
     And the exit code is 0
