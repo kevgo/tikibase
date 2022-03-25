@@ -18,6 +18,7 @@ pub(crate) struct LinksResult {
 }
 
 pub(crate) fn scan(base: &Tikibase) -> LinksResult {
+    // TODO: use default
     let mut result = LinksResult {
         issues: Vec::new(),
         incoming_doc_links: DocLinks::default(),
@@ -72,24 +73,24 @@ pub(crate) fn scan(base: &Tikibase) -> LinksResult {
                         });
                         continue;
                     }
-                    // NOTE: cannot use "contains" here because https://github.com/rust-lang/rust/issues/42671#issuecomment-308713035
-                    if !existing_targets
-                        .iter()
-                        .any(|existing_target| existing_target == link_anchor(&destination))
-                    {
-                        result.issues.push(Issue::BrokenLink {
-                            location: Location {
-                                file: doc.path.clone(),
-                                line,
-                                start,
-                                end,
-                            },
-                            target: destination,
-                        });
-                        continue;
-                    }
                     let dest_path = PathBuf::from(&destination);
                     if dest_path.extension() == Some(OsStr::new("md")) {
+                        // NOTE: cannot use "contains" here because https://github.com/rust-lang/rust/issues/42671#issuecomment-308713035
+                        if !existing_targets
+                            .iter()
+                            .any(|existing_target| existing_target == link_anchor(&destination))
+                        {
+                            result.issues.push(Issue::BrokenLink {
+                                location: Location {
+                                    file: doc.path.clone(),
+                                    line,
+                                    start,
+                                    end,
+                                },
+                                target: destination,
+                            });
+                            continue;
+                        }
                         result
                             .incoming_doc_links
                             .add(&destination, doc.path.clone());
@@ -252,7 +253,7 @@ mod tests {
         }
 
         #[test]
-        fn link_to_existing_image() {
+        fn imagelink_to_existing_image() {
             let dir = test::tmp_dir();
             test::create_file("1.md", "# One\n\n![image](foo.png)\n", &dir);
             test::create_file("foo.png", "image content", &dir);
@@ -266,7 +267,7 @@ mod tests {
         }
 
         #[test]
-        fn link_to_non_existing_image() {
+        fn imagelink_to_non_existing_image() {
             let dir = test::tmp_dir();
             test::create_file("1.md", "# One\n\n![image](zonk.png)\n", &dir);
             let base = Tikibase::load(dir, &Config::default()).unwrap();
@@ -283,6 +284,20 @@ mod tests {
             pretty::assert_eq!(have.issues, want);
             assert_eq!(have.outgoing_resource_links.len(), 1);
             assert_eq!(have.outgoing_resource_links[0], "zonk.png");
+            assert_eq!(have.incoming_doc_links.data.len(), 0);
+            assert_eq!(have.outgoing_doc_links.data.len(), 0);
+        }
+
+        #[test]
+        fn link_to_existing_resource() {
+            let dir = test::tmp_dir();
+            test::create_file("1.md", "# One\n\n[docs](docs.pdf)\n", &dir);
+            test::create_file("docs.pdf", "PDF content", &dir);
+            let base = Tikibase::load(dir, &Config::default()).unwrap();
+            let have = scan(&base);
+            pretty::assert_eq!(have.issues, vec![]);
+            assert_eq!(have.outgoing_resource_links.len(), 1);
+            assert_eq!(have.outgoing_resource_links[0], "docs.pdf");
             assert_eq!(have.incoming_doc_links.data.len(), 0);
             assert_eq!(have.outgoing_doc_links.data.len(), 0);
         }
