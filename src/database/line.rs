@@ -15,6 +15,18 @@ pub enum LineEnding {
     CR,
     LF,
     CRLF,
+    None,
+}
+
+impl LineEnding {
+    pub fn len(&self) -> usize {
+        match self {
+            LineEnding::CR => 1,
+            LineEnding::LF => 1,
+            LineEnding::CRLF => 2,
+            LineEnding::None => 0,
+        }
+    }
 }
 
 impl Default for LineEnding {

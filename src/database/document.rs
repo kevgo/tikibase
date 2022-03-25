@@ -291,30 +291,34 @@ impl<B: BufRead> Iterator for ReaderLinesIterator<B> {
             Ok(buffer) => buffer,
             Err(e) => panic!("cannot read: {}", e),
         };
-        if buffer.is_empty() {
+        let buf_len = buffer.len();
+        if buf_len == 0 {
             return None;
         }
         let consumed = buffer
             .iter()
             .take_while(|c| **c != b'\n' && **c != b'\r')
             .count();
-        if consumed == buffer.len() {
-            panic!("found a line that exceeds the buffer capacity");
-        }
-        let (ending, ending_len) = match (
-            consumed + 1 < buffer.len(),
-            buffer[consumed],
-            buffer[consumed + 1],
-        ) {
-            (true, b'\r', b'\n') => (LineEnding::CRLF, 2),
-            (false, b'\r', _) => (LineEnding::CR, 1),
-            (false, b'\n', _) => (LineEnding::LF, 1),
-            _ => panic!("unexpected line ending"),
+        let ending = match buffer.len() - consumed {
+            0 => LineEnding::None,
+            1 => match buffer[consumed] {
+                b'\r' => LineEnding::CR,
+                b'\n' => LineEnding::LF,
+                other => panic!("unexpected line ending: {}", other),
+            },
+            _ => match (buffer[consumed], buffer[consumed + 1]) {
+                (b'\r', b'\n') => LineEnding::CRLF,
+                (b'\r', _) => LineEnding::CR,
+                (b'\n', _) => LineEnding::CR,
+                other => panic!("unexpected line endings: {}, {}", other.0, other.1),
+            },
         };
-        let text: String = match str::from_utf8(&buffer[..consumed + ending_len]) {
-            Ok(line) => line.into(),
-            Err(e) => panic!("invalid unicode: {}", e),
-        };
+        let total = consumed + ending.len();
+        let text: String = str::from_utf8(&buffer[..total])
+            .expect("invalid unicode")
+            .into();
+        drop(buffer);
+        self.reader.consume(total);
         Some(Line { text, ending })
     }
 }
