@@ -685,7 +685,7 @@ mod tests {
         let have = Document::from_str("test.md", give).unwrap().references();
         let want = vec![
             Reference::Link {
-                destination: "1.md".into(),
+                target: "1.md".into(),
                 line: 1,
                 start: 8,
                 end: 19,

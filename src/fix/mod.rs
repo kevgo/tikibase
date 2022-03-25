@@ -30,7 +30,7 @@ pub fn fix(issue: Issue, base: &mut Tikibase, config: &Config) -> Option<Fix> {
             location: _,
             target: _,
         }
-        | Issue::BrokenLink {
+        | Issue::LinkToNonExistingFile {
             location: _,
             target: _,
         }
@@ -46,6 +46,11 @@ pub fn fix(issue: Issue, base: &mut Tikibase, config: &Config) -> Option<Fix> {
         | Issue::InvalidConfigurationFile {
             message: _,
             location: _,
+        }
+        | Issue::LinkToNonExistingAnchorInExistingDocument {
+            location: _,
+            target_file: _,
+            anchor: _,
         }
         | Issue::MissingFootnote {
             location: _,

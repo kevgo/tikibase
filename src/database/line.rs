@@ -64,12 +64,8 @@ impl Line {
                     end: full_match.end() as u32,
                 }),
                 "" => {
-                    let mut destination = cap[2].to_string();
-                    if let Some(idx) = destination.find('#') {
-                        destination.truncate(idx);
-                    }
                     result.push(Reference::Link {
-                        destination,
+                        target: cap[2].into(),
                         line,
                         start: full_match.start() as u32,
                         end: full_match.end() as u32,
@@ -81,7 +77,7 @@ impl Line {
         for cap in A_HTML_RE.captures_iter(&self.0) {
             let full_match = cap.get(0).unwrap();
             result.push(Reference::Link {
-                destination: cap[1].to_string(),
+                target: cap[1].into(),
                 line,
                 start: full_match.start() as u32,
                 end: full_match.end() as u32,
@@ -241,13 +237,13 @@ mod tests {
             let have = line.references(12);
             let want = vec![
                 Reference::Link {
-                    destination: "one.md".into(),
+                    target: "one.md".into(),
                     line: 12,
                     start: 12,
                     end: 25,
                 },
                 Reference::Link {
-                    destination: "two.md".into(),
+                    target: "two.md#pieces".into(),
                     line: 12,
                     start: 48,
                     end: 75,
@@ -261,7 +257,7 @@ mod tests {
             let line = Line::from(r#"an HTML link: <a href="two.md">two</a>"#);
             let have = line.references(12);
             let want = vec![Reference::Link {
-                destination: "two.md".into(),
+                target: "two.md".into(),
                 line: 12,
                 start: 14,
                 end: 38,

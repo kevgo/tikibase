@@ -70,13 +70,6 @@ impl Message {
                 start: location.start,
                 end: location.end,
             },
-            Issue::BrokenLink { location, target } => Message {
-                text: format!("link to non-existing file \"{}\"", target),
-                file: location.file,
-                line: location.line,
-                start: location.start,
-                end: location.end,
-            },
             Issue::CannotReadConfigurationFile { location, message } => Message {
                 text: format!(
                     "cannot read configuration file \"{}\": {}",
@@ -114,6 +107,27 @@ impl Message {
                     "tikibase.json  invalid configuration file structure: {}",
                     message
                 ),
+                file: location.file,
+                line: location.line,
+                start: location.start,
+                end: location.end,
+            },
+            Issue::LinkToNonExistingAnchorInExistingDocument {
+                location,
+                target_file,
+                anchor,
+            } => Message {
+                text: format!(
+                    "link to non-existing anchor \"{}\" in \"{}\"",
+                    anchor, target_file
+                ),
+                file: location.file,
+                line: location.line,
+                start: location.start,
+                end: location.end,
+            },
+            Issue::LinkToNonExistingFile { location, target } => Message {
+                text: format!("link to non-existing file \"{}\"", target),
                 file: location.file,
                 line: location.line,
                 start: location.start,
