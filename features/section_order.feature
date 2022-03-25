@@ -30,7 +30,6 @@ Feature: verify the ordering of content sections
       [unordered](unordered.md)
       """
 
-  @this
   Scenario: check
     When checking
     Then it prints:
