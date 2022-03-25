@@ -23,7 +23,19 @@ pub(crate) fn scan(base: &Tikibase) -> LinksResult {
     };
     let existing_targets = base.link_targets();
     for doc in &base.docs {
-        for reference in doc.references() {
+        let references = doc.references();
+        if references.is_empty() {
+            result.issues.push(Issue::DocumentWithoutLinks {
+                location: Location {
+                    file: doc.path.clone(),
+                    line: 0,
+                    start: 0,
+                    end: 0,
+                },
+            });
+            continue;
+        }
+        for reference in references {
             match reference {
                 Reference::Link {
                     mut destination,
@@ -168,18 +180,18 @@ mod tests {
                 Here is a link to [Three](3.md) that also works.
                 "};
             test::create_file("1.md", content, &dir);
-            test::create_file("2.md", "# Two", &dir);
-            test::create_file("3.md", "# Three", &dir);
+            test::create_file("2.md", "# Two\n[1](1.md)", &dir);
+            test::create_file("3.md", "# Three\n[1](1.md)", &dir);
             let base = Tikibase::load(dir, &Config::default()).unwrap();
             let have = scan(&base);
             assert_eq!(have.issues.len(), 0);
-            assert_eq!(have.outgoing_doc_links.data.len(), 1);
+            assert_eq!(have.outgoing_doc_links.data.len(), 3);
             let out_one = have.outgoing_doc_links.get("1.md").unwrap();
             assert_eq!(out_one.len(), 2);
             assert!(out_one.contains(&PathBuf::from("2.md")));
             assert!(out_one.contains(&PathBuf::from("3.md")));
 
-            assert_eq!(have.incoming_doc_links.data.len(), 2);
+            assert_eq!(have.incoming_doc_links.data.len(), 3);
             let into_two = have.incoming_doc_links.get("2.md").unwrap();
             assert_eq!(into_two.len(), 1);
             assert!(into_two.contains(&PathBuf::from("1.md")));
@@ -220,12 +232,12 @@ mod tests {
                 ![external image](https://google.com/foo.png)
                 "};
             test::create_file("one.md", content, &dir);
-            test::create_file("two.md", "# Two", &dir);
+            test::create_file("two.md", "# Two\n[one](one.md)", &dir);
             let base = Tikibase::load(dir, &Config::default()).unwrap();
             let have = scan(&base);
             assert!(have.issues.is_empty());
-            assert_eq!(have.incoming_doc_links.data.len(), 0);
-            assert_eq!(have.outgoing_doc_links.data.len(), 0);
+            assert_eq!(have.incoming_doc_links.data.len(), 1);
+            assert_eq!(have.outgoing_doc_links.data.len(), 1);
             assert_eq!(have.outgoing_resource_links.len(), 0);
         }
 

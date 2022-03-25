@@ -19,8 +19,8 @@ Feature: Find documents without any links
     When checking
     Then it prints:
       """
-      1.md:1  document is not contain any links
-      2.md:1  document does not contain any links
+      1.md:1  document is not connected to any other documents
+      2.md:1  document is not connected to any other documents
       """
     And all files are unchanged
     And the exit code is 2
@@ -34,8 +34,8 @@ Feature: Find documents without any links
     When doing a pitstop
     Then it prints:
       """
-      1.md:1  document is not contain any links
-      2.md:1  document does not contain any links
+      1.md:1  document is not connected to any other documents
+      2.md:1  document is not connected to any other documents
       """
     And all files are unchanged
     And the exit code is 2

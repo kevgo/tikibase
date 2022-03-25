@@ -38,6 +38,7 @@ pub fn fix(issue: Issue, base: &mut Tikibase, config: &Config) -> Option<Fix> {
             message: _,
             location: _,
         }
+        | Issue::DocumentWithoutLinks { location: _ }
         | Issue::DuplicateSection {
             location: _,
             title: _,
