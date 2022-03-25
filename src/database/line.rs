@@ -236,23 +236,19 @@ mod tests {
             );
             let have = line.references(12);
             let want = vec![
-                            Reference::Link {
-                                target: "one.md".into(),
-                                line: 12,
-                                start: 12,
-                                end: 25,
-                            },
-                            Reference::Link {
-            <<<<<<< HEAD
-                                target: "two.md#pieces".into(),
-            =======
-                                target: "two.md".into(),
-            >>>>>>> main
-                                line: 12,
-                                start: 48,
-                                end: 75,
-                            },
-                        ];
+                Reference::Link {
+                    target: "one.md".into(),
+                    line: 12,
+                    start: 12,
+                    end: 25,
+                },
+                Reference::Link {
+                    target: "two.md#pieces".into(),
+                    line: 12,
+                    start: 48,
+                    end: 75,
+                },
+            ];
             pretty::assert_eq!(have, want);
         }
 
