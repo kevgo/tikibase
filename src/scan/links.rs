@@ -74,11 +74,7 @@ pub(crate) fn scan(base: &Tikibase) -> LinksResult {
                         continue;
                     }
                     if is_md_document(&destination) {
-                        // NOTE: cannot use "contains" here because https://github.com/rust-lang/rust/issues/42671#issuecomment-308713035
-                        if !existing_targets
-                            .iter()
-                            .any(|existing_target| existing_target == link_anchor(&destination))
-                        {
+                        if !strings_contain(&existing_targets, link_anchor(&destination)) {
                             result.issues.push(Issue::BrokenLink {
                                 location: Location {
                                     file: doc.path.clone(),
@@ -142,6 +138,12 @@ fn link_anchor(link: &str) -> &str {
     } else {
         link
     }
+}
+
+/// indicates whether the given Vec<String> contains the given &str
+fn strings_contain(targets: &[String], target: &str) -> bool {
+    // NOTE: cannot use "contains" here because https://github.com/rust-lang/rust/issues/42671#issuecomment-308713035
+    targets.iter().any(|t| t == target)
 }
 
 #[cfg(test)]
