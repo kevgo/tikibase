@@ -1,30 +1,26 @@
-Feature: recognize/fix duplicate sections
+Feature: Find documents without any links
 
   Background:
     Given file "1.md" with content:
       """
       # One
-
-      ### section 1
-      [Two](2.md)
-
-      ### section 1
-      content
+      Hello!
       """
     And file "2.md" with content:
       """
       # Two
-      [One](1.md)
+      Hello also!
       """
 
   Scenario: check
     When checking
     Then it prints:
       """
-      1.md:3  document contains multiple "section 1" sections
-      1.md:6  document contains multiple "section 1" sections
+      1.md:1  document is not connected to any other documents
+      2.md:1  document is not connected to any other documents
       """
     And all files are unchanged
+    And the exit code is 2
 
   Scenario: fix
     When fixing
@@ -35,7 +31,8 @@ Feature: recognize/fix duplicate sections
     When doing a pitstop
     Then it prints:
       """
-      1.md:3  document contains multiple "section 1" sections
-      1.md:6  document contains multiple "section 1" sections
+      1.md:1  document is not connected to any other documents
+      2.md:1  document is not connected to any other documents
       """
     And all files are unchanged
+    And the exit code is 2

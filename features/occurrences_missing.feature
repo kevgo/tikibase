@@ -5,32 +5,34 @@ Feature: add occurrence sections
       """
       # One
 
-      ### section 1
-
-      text
+      ### section
+      [Four](4.md)
       """
     And file "2.md" with content:
       """
       # [One](1.md) times two
 
       ### Foo
-
-      [one](1.md)
+      [One](1.md)
       """
     And file "3.md" with content:
       """
       # Three
 
       ### Bar
-
-      [one](1.md#section-1)
+      [One](1.md#section)
+      """
+    And file "4.md" with content:
+      """
+      # Four
+      [One](1.md)
       """
 
   Scenario: check
     When checking
     Then it prints:
       """
-      1.md:5  missing link to 2.md, 3.md
+      1.md:4  missing link to 2.md, 3.md
       """
     And the exit code is 1
 
@@ -38,15 +40,14 @@ Feature: add occurrence sections
     When fixing
     Then it prints:
       """
-      1.md:7  added occurrences section
+      1.md:6  added occurrences section
       """
     And file "1.md" should contain:
       """
       # One
 
-      ### section 1
-
-      text
+      ### section
+      [Four](4.md)
 
       ### occurrences
 
@@ -61,15 +62,14 @@ Feature: add occurrence sections
     When doing a pitstop
     Then it prints:
       """
-      1.md:7  added occurrences section
+      1.md:6  added occurrences section
       """
     And file "1.md" should contain:
       """
       # One
 
-      ### section 1
-
-      text
+      ### section
+      [Four](4.md)
 
       ### occurrences
 

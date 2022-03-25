@@ -88,6 +88,13 @@ impl Message {
                 start: location.start,
                 end: location.end,
             },
+            Issue::DocumentWithoutLinks { location } => Message {
+                text: "document is not connected to any other documents".into(),
+                file: location.file,
+                line: location.line,
+                start: location.start,
+                end: location.end,
+            },
             Issue::DuplicateSection { location, title } => Message {
                 text: format!("document contains multiple \"{}\" sections", title),
                 file: location.file,
