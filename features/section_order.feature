@@ -11,12 +11,12 @@ Feature: verify the ordering of content sections
         ]
       }
       """
-    And file "test.md" with content:
+    And file "unordered.md" with content:
       """
       # Test
 
       ### two
-      text
+      [other](other.md)
 
       ### one
       text
@@ -24,12 +24,18 @@ Feature: verify the ordering of content sections
       ### three
       text
       """
+    And file "other.md" with content:
+      """
+      # Other
+      [unordered](unordered.md)
+      """
 
+  @this
   Scenario: check
     When checking
     Then it prints:
       """
-      test.md:1  sections occur in different order than specified by tikibase.json
+      unordered.md:1  sections occur in different order than specified by tikibase.json
       """
     And the exit code is 1
 
@@ -37,9 +43,9 @@ Feature: verify the ordering of content sections
     When fixing
     Then it prints:
       """
-      test.md:1  fixed section order
+      unordered.md:1  fixed section order
       """
-    And file "test.md" should contain:
+    And file "foo.md" should contain:
       """
       # Test
 
@@ -58,7 +64,7 @@ Feature: verify the ordering of content sections
     When doing a pitstop
     Then it prints:
       """
-      test.md:1  fixed section order
+      unordered.md:1  fixed section order
       """
     And file "test.md" should contain:
       """
