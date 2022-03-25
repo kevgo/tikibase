@@ -88,15 +88,14 @@ pub(crate) fn scan(base: &Tikibase) -> LinksResult {
                         });
                         continue;
                     }
-                    let p = PathBuf::from(&destination);
-                    let ext = p.extension();
-                    if ext == Some(OsStr::new("md")) {
+                    let dest_path = PathBuf::from(&destination);
+                    if dest_path.extension() == Some(OsStr::new("md")) {
                         result
                             .incoming_doc_links
                             .add(&destination, doc.path.clone());
                         result.outgoing_doc_links.add(doc.path.clone(), destination);
                     } else {
-                        // link to local resource
+                        result.outgoing_resource_links.push(destination);
                     }
                 }
                 Reference::Image {
