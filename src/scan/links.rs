@@ -37,7 +37,7 @@ pub(crate) fn scan(base: &Tikibase) -> LinksResult {
         for reference in references {
             match reference {
                 Reference::Link {
-                    destination,
+                    target: destination,
                     line,
                     start,
                     end,
