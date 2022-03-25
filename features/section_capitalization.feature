@@ -5,27 +5,27 @@ Feature: recognize sections with different capitalization
       """
       # One
 
-      ### One
+      ### section
       [Two](2.md)
 
-      ### one
+      ### Section
       content
       """
     And file "2.md" with content:
       """
       # Two
 
-      ### ONE
-      [Two](2.md)
+      ### SECTION
+      [One](1.md)
       """
 
   Scenario: check
     When checking
     Then it prints:
       """
-      1.md:3  section title occurs with inconsistent capitalization: ONE|One|one
-      1.md:6  section title occurs with inconsistent capitalization: ONE|One|one
-      2.md:3  section title occurs with inconsistent capitalization: ONE|One|one
+      1.md:3  section title occurs with inconsistent capitalization: SECTION|Section|section
+      1.md:6  section title occurs with inconsistent capitalization: SECTION|Section|section
+      2.md:3  section title occurs with inconsistent capitalization: SECTION|Section|section
       """
     And all files are unchanged
 
@@ -38,8 +38,8 @@ Feature: recognize sections with different capitalization
     When doing a pitstop
     Then it prints:
       """
-      1.md:3  section title occurs with inconsistent capitalization: ONE|One|one
-      1.md:6  section title occurs with inconsistent capitalization: ONE|One|one
-      2.md:3  section title occurs with inconsistent capitalization: ONE|One|one
+      1.md:3  section title occurs with inconsistent capitalization: SECTION|Section|section
+      1.md:6  section title occurs with inconsistent capitalization: SECTION|Section|section
+      2.md:3  section title occurs with inconsistent capitalization: SECTION|Section|section
       """
     And all files are unchanged
