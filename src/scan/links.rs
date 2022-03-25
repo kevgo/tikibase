@@ -141,8 +141,9 @@ fn link_anchor(link: &str) -> &str {
 }
 
 /// indicates whether the given Vec<String> contains the given &str
+///
+// NOTE: cannot use "contains" because https://github.com/rust-lang/rust/issues/42671
 fn strings_contain(targets: &[String], target: &str) -> bool {
-    // NOTE: cannot use "contains" here because https://github.com/rust-lang/rust/issues/42671#issuecomment-308713035
     targets.iter().any(|t| t == target)
 }
 
