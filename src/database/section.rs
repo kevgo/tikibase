@@ -18,15 +18,6 @@ impl Section {
         format!("#{}", self.title().text.to_kebab_case())
     }
 
-    /// provides a non-consuming iterator for all lines in this section
-    pub fn lines(&self) -> LinesIterator {
-        LinesIterator {
-            title_line: &self.title_line,
-            body_iter: self.body.iter(),
-            emitted_title: false,
-        }
-    }
-
     /// returns the last line of this section
     pub fn last_line(&self) -> &Line {
         match self.body.last() {
@@ -38,6 +29,15 @@ impl Section {
     /// provides the absolute line number of the last line in this section
     pub fn last_line_abs(&self) -> u32 {
         self.line_number + (self.body.len() as u32)
+    }
+
+    /// provides a non-consuming iterator for all lines in this section
+    pub fn lines(&self) -> LinesIterator {
+        LinesIterator {
+            title_line: &self.title_line,
+            body_iter: self.body.iter(),
+            emitted_title: false,
+        }
     }
 
     /// adds a new line with the given text to this section
@@ -272,6 +272,16 @@ mod tests {
         }
     }
 
+    #[test]
+    fn text() {
+        let section = Section {
+            title_line: Line::from("### welcome"),
+            body: vec![Line::from(""), Line::from("content")],
+            ..Section::scaffold()
+        };
+        assert_eq!(section.text(), "### welcome\n\ncontent\n");
+    }
+
     mod title {
         use super::SectionTitle;
         use crate::database::Section;
@@ -317,15 +327,5 @@ mod tests {
             let section = Section::with_title("###");
             assert_eq!(section.title(), SectionTitle { text: "", start: 0 });
         }
-    }
-
-    #[test]
-    fn text() {
-        let section = Section {
-            title_line: Line::from("### welcome"),
-            body: vec![Line::from(""), Line::from("content")],
-            ..Section::scaffold()
-        };
-        assert_eq!(section.text(), "### welcome\n\ncontent\n");
     }
 }
