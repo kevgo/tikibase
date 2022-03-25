@@ -45,7 +45,7 @@ Feature: verify the ordering of content sections
       """
       unordered.md:1  fixed section order
       """
-    And file "foo.md" should contain:
+    And file "unordered.md" should contain:
       """
       # Test
 
@@ -53,7 +53,7 @@ Feature: verify the ordering of content sections
       text
 
       ### two
-      text
+      [other](other.md)
 
       ### three
       text
@@ -66,7 +66,7 @@ Feature: verify the ordering of content sections
       """
       unordered.md:1  fixed section order
       """
-    And file "test.md" should contain:
+    And file "unordered.md" should contain:
       """
       # Test
 
@@ -74,7 +74,7 @@ Feature: verify the ordering of content sections
       text
 
       ### two
-      text
+      [other](other.md)
 
       ### three
       text
