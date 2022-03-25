@@ -3,6 +3,7 @@ use crate::{Config, Issue};
 use std::fs::File;
 use std::io::{BufRead, BufReader};
 use std::path::{Path, PathBuf};
+use std::str;
 use walkdir::WalkDir;
 
 pub struct Tikibase {
@@ -68,7 +69,7 @@ impl Tikibase {
             match FileType::from_ext(path.extension()) {
                 FileType::Document => {
                     let file = File::open(&path).unwrap();
-                    let lines = BufReader::new(file).lines().map(Result::unwrap);
+                    let lines = LinesIterator::new(BufReader::new(file));
                     match Document::from_lines(lines, filepath) {
                         Ok(doc) => docs.push(doc),
                         Err(err) => errors.push(err),
@@ -88,6 +89,57 @@ impl Tikibase {
         } else {
             Err(errors)
         }
+    }
+}
+
+struct LinesIterator<R> {
+    reader: R,
+}
+
+impl<R> LinesIterator<R> {
+    pub fn new(reader: R) -> Self {
+        Self { reader }
+    }
+}
+
+impl<B: BufRead> Iterator for LinesIterator<B> {
+    type Item = String;
+
+    fn next(&mut self) -> Option<Self::Item> {
+        let (line, total) = {
+            let buffer = match self.reader.fill_buf() {
+                Ok(buffer) => buffer,
+                Err(e) => panic!("cannot read: {}", e),
+            };
+            if buffer.is_empty() {
+                return None;
+            }
+            let consumed = buffer
+                .iter()
+                .take_while(|c| **c != b'\n' && **c != b'\r')
+                .count();
+            let total = consumed
+                + if consumed < buffer.len() {
+                    // we found a delimiter
+                    if consumed + 1 < buffer.len() // we look if we found two delimiter
+                    && buffer[consumed] == b'\r'
+                    && buffer[consumed + 1] == b'\n'
+                    {
+                        2
+                    } else {
+                        1
+                    }
+                } else {
+                    0
+                };
+            let line = match str::from_utf8(&buffer[..total]) {
+                Ok(line) => line.to_string(),
+                Err(e) => panic!("invalid unicode: {}", e),
+            };
+            (line, total)
+        };
+        self.reader.consume(total);
+        Some(line)
     }
 }
 

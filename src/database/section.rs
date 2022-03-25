@@ -60,7 +60,6 @@ impl Section {
         result.push('\n');
         for line in &self.body {
             result.push_str(line.text());
-            result.push('\n');
         }
         result
     }
