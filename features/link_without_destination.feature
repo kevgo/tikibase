@@ -12,7 +12,7 @@ Feature: recognize/fix links to non-existing documents
     When checking
     Then it prints:
       """
-      1.md:3  link without destination
+      1.md:3  link without target
       """
     And all files are unchanged
     And the exit code is 1
@@ -26,7 +26,7 @@ Feature: recognize/fix links to non-existing documents
     When doing a pitstop
     Then it prints:
       """
-      1.md:3  link without destination
+      1.md:3  link without target
       """
     And all files are unchanged
     And the exit code is 1
