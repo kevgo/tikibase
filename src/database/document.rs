@@ -274,9 +274,8 @@ struct CodeblockStart {
 
 #[cfg(test)]
 mod tests {
-    use crate::database::Reference;
-
     use super::Document;
+    use crate::database::Reference;
     use indoc::indoc;
 
     mod footnotes {
