@@ -40,39 +40,6 @@ mod tests {
     use std::path::PathBuf;
 
     #[test]
-    fn unused_footnote_definition() {
-        let dir = test::tmp_dir();
-        let content = indoc! {"
-            # Title
-            existing footnote[^existing]
-
-            ```go
-            result := map[^0]
-            ```
-
-            Another snippet of code that should be ignored: `map[^0]`.
-
-            ### links
-
-            [^existing]: existing footnote
-            [^unused]: unused footnote
-            "};
-        test::create_file("1.md", content, &dir);
-        let base = Tikibase::load(dir, &Config::default()).unwrap();
-        let have = super::scan(&base);
-        let want = vec![Issue::UnusedFootnote {
-            location: Location {
-                file: PathBuf::from("1.md"),
-                line: 12,
-                start: 0,
-                end: 10,
-            },
-            identifier: "unused".into(),
-        }];
-        pretty::assert_eq!(have, want);
-    }
-
-    #[test]
     fn missing_footnote_definition() {
         let dir = test::tmp_dir();
         let content = indoc! {"
@@ -101,6 +68,39 @@ mod tests {
                 end: 22,
             },
             identifier: "other".into(),
+        }];
+        pretty::assert_eq!(have, want);
+    }
+
+    #[test]
+    fn unused_footnote_definition() {
+        let dir = test::tmp_dir();
+        let content = indoc! {"
+            # Title
+            existing footnote[^existing]
+
+            ```go
+            result := map[^0]
+            ```
+
+            Another snippet of code that should be ignored: `map[^0]`.
+
+            ### links
+
+            [^existing]: existing footnote
+            [^unused]: unused footnote
+            "};
+        test::create_file("1.md", content, &dir);
+        let base = Tikibase::load(dir, &Config::default()).unwrap();
+        let have = super::scan(&base);
+        let want = vec![Issue::UnusedFootnote {
+            location: Location {
+                file: PathBuf::from("1.md"),
+                line: 12,
+                start: 0,
+                end: 10,
+            },
+            identifier: "unused".into(),
         }];
         pretty::assert_eq!(have, want);
     }

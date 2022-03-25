@@ -84,23 +84,42 @@ impl Document {
         })
     }
 
+    /// provides all the footnotes that this document defines and references
+    pub fn footnotes(&self) -> Result<Footnotes, Issue> {
+        let mut result = Footnotes::default();
+        let mut code_block_start: Option<CodeblockStart> = None;
+        for (i, line) in self.lines().enumerate() {
+            if line.is_code_block_boundary() {
+                code_block_start = match code_block_start {
+                    Some(_) => None,
+                    None => Some(CodeblockStart {
+                        line: i as u32,
+                        len: line.text().len() as u32,
+                    }),
+                };
+                continue;
+            }
+            if code_block_start.is_none() {
+                line.add_footnotes_to(&mut result, &self.path, i as u32)?;
+            }
+        }
+        if let Some(code_block_start) = code_block_start {
+            return Err(Issue::UnclosedFence {
+                location: Location {
+                    file: self.path.clone(),
+                    line: code_block_start.line,
+                    start: 0,
+                    end: code_block_start.len,
+                },
+            });
+        }
+        Ok(result)
+    }
+
     #[cfg(test)]
     /// provides Document instances in tests
     pub fn from_str<P: Into<PathBuf>>(path: P, text: &str) -> Result<Document, Issue> {
         Document::from_lines(text.lines().map(std::string::ToString::to_string), path)
-    }
-
-    /// persists the changes made to this document to disk
-    pub fn save(&self, root: &Path) {
-        let mut file = fs::File::create(root.join(&self.path)).unwrap();
-        file.write_all(self.text().as_bytes()).unwrap();
-    }
-
-    /// provides the section with the given title
-    pub fn section_with_title(&self, title: &str) -> Option<&Section> {
-        self.content_sections
-            .iter()
-            .find(|section| section.title().text == title)
     }
 
     /// provides the last line in this document
@@ -143,6 +162,12 @@ impl Document {
             .last_line_abs()
     }
 
+    /// persists the changes made to this document to disk
+    pub fn save(&self, root: &Path) {
+        let mut file = fs::File::create(root.join(&self.path)).unwrap();
+        file.write_all(self.text().as_bytes()).unwrap();
+    }
+
     /// provides a non-consuming iterator for all sections in this document
     pub fn sections(&self) -> SectionIterator {
         SectionIterator {
@@ -160,36 +185,11 @@ impl Document {
             .collect()
     }
 
-    /// provides all the footnotes that this document defines and references
-    pub fn footnotes(&self) -> Result<Footnotes, Issue> {
-        let mut result = Footnotes::default();
-        let mut code_block_start: Option<CodeblockStart> = None;
-        for (i, line) in self.lines().enumerate() {
-            if line.is_code_block_boundary() {
-                code_block_start = match code_block_start {
-                    Some(_) => None,
-                    None => Some(CodeblockStart {
-                        line: i as u32,
-                        len: line.text().len() as u32,
-                    }),
-                };
-                continue;
-            }
-            if code_block_start.is_none() {
-                line.add_footnotes_to(&mut result, &self.path, i as u32)?;
-            }
-        }
-        if let Some(code_block_start) = code_block_start {
-            return Err(Issue::UnclosedFence {
-                location: Location {
-                    file: self.path.clone(),
-                    line: code_block_start.line,
-                    start: 0,
-                    end: code_block_start.len,
-                },
-            });
-        }
-        Ok(result)
+    /// provides the section with the given title
+    pub fn section_with_title(&self, title: &str) -> Option<&Section> {
+        self.content_sections
+            .iter()
+            .find(|section| section.title().text == title)
     }
 
     /// provides the complete textual content of this document
@@ -267,6 +267,90 @@ struct CodeblockStart {
 mod tests {
     use super::Document;
     use indoc::indoc;
+
+    mod footnotes {
+        use crate::database::{Document, Footnote, Footnotes};
+        use indoc::indoc;
+
+        #[test]
+        fn no_footnotes() {
+            let give = indoc! {"
+                # Title
+                title text
+                "};
+            let have = Document::from_str("test.md", give).unwrap().footnotes();
+            let want = Ok(Footnotes::default());
+            pretty::assert_eq!(have, want);
+        }
+
+        #[test]
+        fn has_footnotes() {
+            let give = indoc! {"
+                # Title
+                reference to [^1]
+                100 tons of [^rust]
+                ### links
+                [^1]: first footnote
+                [^second]: second footnote
+                "};
+            let have = Document::from_str("test.md", give).unwrap().footnotes();
+            let want = Ok(Footnotes {
+                definitions: vec![
+                    Footnote {
+                        identifier: "1".into(),
+                        line: 4,
+                        start: 0,
+                        end: 5,
+                    },
+                    Footnote {
+                        identifier: "second".into(),
+                        line: 5,
+                        start: 0,
+                        end: 10,
+                    },
+                ],
+                references: vec![
+                    Footnote {
+                        identifier: "1".into(),
+                        line: 1,
+                        start: 13,
+                        end: 17,
+                    },
+                    Footnote {
+                        identifier: "rust".into(),
+                        line: 2,
+                        start: 12,
+                        end: 19,
+                    },
+                ],
+            });
+            pretty::assert_eq!(have, want);
+        }
+
+        #[test]
+        fn code_block() {
+            let give = indoc! {"
+                # Title
+                ```
+                [^1]
+                ```
+                "};
+            let have = Document::from_str("test.md", give).unwrap().footnotes();
+            let want = Ok(Footnotes::default());
+            pretty::assert_eq!(have, want);
+        }
+
+        #[test]
+        fn code_segment() {
+            let give = indoc! {"
+                # Title
+                a `[^1]` code block
+                "};
+            let have = Document::from_str("test.md", give).unwrap().footnotes();
+            let want = Ok(Footnotes::default());
+            pretty::assert_eq!(have, want);
+        }
+    }
 
     mod from_str {
         use super::super::Document;
@@ -460,6 +544,48 @@ mod tests {
         }
     }
 
+    mod last_section_mut {
+        use super::super::Document;
+        use crate::database::{Line, Section};
+        use indoc::indoc;
+
+        #[test]
+        fn has_content_section() {
+            let give = indoc! {"
+                # Title
+                title text
+
+                ### s1
+
+                text
+                "};
+            let mut doc = Document::from_str("test.md", give).unwrap();
+            let have = doc.last_section_mut();
+            let mut want = Section {
+                line_number: 3,
+                title_line: Line::from("### s1"),
+                body: vec![Line::from(""), Line::from("text")],
+            };
+            pretty::assert_eq!(have, &mut want);
+        }
+
+        #[test]
+        fn no_content_sections() {
+            let give = indoc! {"
+                # Title
+                title text
+                "};
+            let mut doc = Document::from_str("test.md", give).unwrap();
+            let have = doc.last_section_mut();
+            let mut want = Section {
+                line_number: 0,
+                title_line: Line::from("# Title"),
+                body: vec![Line::from("title text")],
+            };
+            pretty::assert_eq!(have, &mut want);
+        }
+    }
+
     mod lines {
         use super::super::Document;
         use crate::database::Line;
@@ -538,48 +664,6 @@ mod tests {
         }
     }
 
-    mod last_section_mut {
-        use super::super::Document;
-        use crate::database::{Line, Section};
-        use indoc::indoc;
-
-        #[test]
-        fn has_content_section() {
-            let give = indoc! {"
-                # Title
-                title text
-
-                ### s1
-
-                text
-                "};
-            let mut doc = Document::from_str("test.md", give).unwrap();
-            let have = doc.last_section_mut();
-            let mut want = Section {
-                line_number: 3,
-                title_line: Line::from("### s1"),
-                body: vec![Line::from(""), Line::from("text")],
-            };
-            pretty::assert_eq!(have, &mut want);
-        }
-
-        #[test]
-        fn no_content_sections() {
-            let give = indoc! {"
-                # Title
-                title text
-                "};
-            let mut doc = Document::from_str("test.md", give).unwrap();
-            let have = doc.last_section_mut();
-            let mut want = Section {
-                line_number: 0,
-                title_line: Line::from("# Title"),
-                body: vec![Line::from("title text")],
-            };
-            pretty::assert_eq!(have, &mut want);
-        }
-    }
-
     #[test]
     fn section_titles() {
         let content = indoc! {"
@@ -622,89 +706,5 @@ mod tests {
         let doc = Document::from_str("test.md", give).unwrap();
         let have = doc.title();
         assert_eq!(have, "Title");
-    }
-
-    mod footnotes {
-        use crate::database::{Document, Footnote, Footnotes};
-        use indoc::indoc;
-
-        #[test]
-        fn no_footnotes() {
-            let give = indoc! {"
-                # Title
-                title text
-                "};
-            let have = Document::from_str("test.md", give).unwrap().footnotes();
-            let want = Ok(Footnotes::default());
-            pretty::assert_eq!(have, want);
-        }
-
-        #[test]
-        fn has_footnotes() {
-            let give = indoc! {"
-                # Title
-                reference to [^1]
-                100 tons of [^rust]
-                ### links
-                [^1]: first footnote
-                [^second]: second footnote
-                "};
-            let have = Document::from_str("test.md", give).unwrap().footnotes();
-            let want = Ok(Footnotes {
-                definitions: vec![
-                    Footnote {
-                        identifier: "1".into(),
-                        line: 4,
-                        start: 0,
-                        end: 5,
-                    },
-                    Footnote {
-                        identifier: "second".into(),
-                        line: 5,
-                        start: 0,
-                        end: 10,
-                    },
-                ],
-                references: vec![
-                    Footnote {
-                        identifier: "1".into(),
-                        line: 1,
-                        start: 13,
-                        end: 17,
-                    },
-                    Footnote {
-                        identifier: "rust".into(),
-                        line: 2,
-                        start: 12,
-                        end: 19,
-                    },
-                ],
-            });
-            pretty::assert_eq!(have, want);
-        }
-
-        #[test]
-        fn code_block() {
-            let give = indoc! {"
-                # Title
-                ```
-                [^1]
-                ```
-                "};
-            let have = Document::from_str("test.md", give).unwrap().footnotes();
-            let want = Ok(Footnotes::default());
-            pretty::assert_eq!(have, want);
-        }
-
-        #[test]
-        fn code_segment() {
-            let give = indoc! {"
-                # Title
-                a `[^1]` code block
-                "};
-            let have = Document::from_str("test.md", give).unwrap().footnotes();
-            let want = Ok(Footnotes::default());
-            pretty::assert_eq!(have, want);
-        }
     }
 }
