@@ -1,4 +1,4 @@
-Feature: recognize links to wrong anchors
+Feature: link to wrong anchor
 
   Background:
     Given file "1.md" with content:
