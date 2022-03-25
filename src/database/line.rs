@@ -5,7 +5,23 @@ use regex::Regex;
 use std::path::Path;
 
 #[derive(Debug, Default, PartialEq)]
-pub struct Line(String);
+pub struct Line {
+    pub text: String,
+    pub ending: LineEnding,
+}
+
+#[derive(Debug, PartialEq)]
+pub enum LineEnding {
+    CR,
+    LF,
+    CRLF,
+}
+
+impl Default for LineEnding {
+    fn default() -> Self {
+        LineEnding::LF
+    }
+}
 
 static MD_RE: Lazy<Regex> = Lazy::new(|| Regex::new(r#"(!?)\[[^\]]*\]\(([^)]*)\)"#).unwrap());
 static A_HTML_RE: Lazy<Regex> = Lazy::new(|| Regex::new(r#"<a href="(.*)">(.*)</a>"#).unwrap());
@@ -23,7 +39,7 @@ impl Line {
         file: &Path,
         line: u32,
     ) -> Result<(), Issue> {
-        let sanitized = sanitize_code_segments(&self.0, file, line)?;
+        let sanitized = sanitize_code_segments(&self.text, file, line)?;
         for captures in FOOTNOTE_RE.captures_iter(&sanitized) {
             let total_match = captures.get(0).unwrap();
             let footnote = Footnote {
@@ -41,20 +57,30 @@ impl Line {
         Ok(())
     }
 
-    pub fn from<S: Into<String>>(text: S) -> Line {
-        Line(text.into())
+    pub fn empty() -> Line {
+        Line {
+            text: "".into(),
+            ending: LineEnding::LF,
+        }
+    }
+
+    pub fn scaffold<S: Into<String>>(text: S) -> Line {
+        Line {
+            text: text.into(),
+            ending: LineEnding::LF,
+        }
     }
 
     /// indicates whether this line is the beginning or end of a code block
     pub fn is_code_block_boundary(&self) -> bool {
-        self.text().starts_with("```")
+        self.text.starts_with("```")
     }
 
     /// provides all links and images in this line
     // TODO: reuse shared global Vec here
     pub fn references(&self, line: u32) -> Vec<Reference> {
         let mut result = Vec::new();
-        for cap in MD_RE.captures_iter(&self.0) {
+        for cap in MD_RE.captures_iter(&self.text) {
             let full_match = cap.get(0).unwrap();
             match &cap[1] {
                 "!" => result.push(Reference::Image {
@@ -74,7 +100,7 @@ impl Line {
                 _ => panic!("unexpected capture: '{}'", &cap[1]),
             }
         }
-        for cap in A_HTML_RE.captures_iter(&self.0) {
+        for cap in A_HTML_RE.captures_iter(&self.text) {
             let full_match = cap.get(0).unwrap();
             result.push(Reference::Link {
                 target: cap[1].into(),
@@ -83,7 +109,7 @@ impl Line {
                 end: full_match.end() as u32,
             });
         }
-        for cap in IMG_HTML_RE.captures_iter(&self.0) {
+        for cap in IMG_HTML_RE.captures_iter(&self.text) {
             let full_match = cap.get(0).unwrap();
             result.push(Reference::Image {
                 src: cap[1].to_string(),
@@ -93,11 +119,6 @@ impl Line {
             });
         }
         result
-    }
-
-    /// provides the text of this line
-    pub fn text(&self) -> &str {
-        &self.0
     }
 }
 
@@ -141,7 +162,7 @@ mod tests {
 
         #[test]
         fn no_footnotes() {
-            let line = Line::from("text");
+            let line = Line::scaffold("text");
             let mut have = Footnotes::default();
             line.add_footnotes_to(&mut have, Path::new(""), 0).unwrap();
             let want = Footnotes::default();
@@ -150,7 +171,7 @@ mod tests {
 
         #[test]
         fn with_footnote_references() {
-            let line = Line::from("- text [^1] [^2]");
+            let line = Line::scaffold("- text [^1] [^2]");
             let mut have = Footnotes::default();
             line.add_footnotes_to(&mut have, Path::new(""), 0).unwrap();
             let want = Footnotes {
@@ -175,7 +196,7 @@ mod tests {
 
         #[test]
         fn with_footnote_definitions() {
-            let line = Line::from("[^1]: the one\nother");
+            let line = Line::scaffold("[^1]: the one\nother");
             let mut have = Footnotes::default();
             line.add_footnotes_to(&mut have, Path::new(""), 0).unwrap();
             let want = Footnotes {
@@ -192,7 +213,7 @@ mod tests {
 
         #[test]
         fn ignore_code_looking_like_footnotes() {
-            let line = Line::from("the code `map[^0]`");
+            let line = Line::scaffold("the code `map[^0]`");
             let mut have = Footnotes::default();
             line.add_footnotes_to(&mut have, Path::new(""), 0).unwrap();
             let want = Footnotes::default();
@@ -205,21 +226,21 @@ mod tests {
 
         #[test]
         fn no_boundary() {
-            let line = Line::from("foo");
+            let line = Line::scaffold("foo");
             let have = line.is_code_block_boundary();
             assert!(!have);
         }
 
         #[test]
         fn plain_boundary() {
-            let line = Line::from("```");
+            let line = Line::scaffold("```");
             let have = line.is_code_block_boundary();
             assert!(have);
         }
 
         #[test]
         fn boundary_with_language() {
-            let line = Line::from("```rs");
+            let line = Line::scaffold("```rs");
             let have = line.is_code_block_boundary();
             assert!(have);
         }
@@ -231,7 +252,7 @@ mod tests {
 
         #[test]
         fn link_md() {
-            let line = Line::from(
+            let line = Line::scaffold(
                 r#"an MD link: [one](one.md) and one to a section: [two pieces](two.md#pieces)!"#,
             );
             let have = line.references(12);
@@ -254,7 +275,7 @@ mod tests {
 
         #[test]
         fn link_html() {
-            let line = Line::from(r#"an HTML link: <a href="two.md">two</a>"#);
+            let line = Line::scaffold(r#"an HTML link: <a href="two.md">two</a>"#);
             let have = line.references(12);
             let want = vec![Reference::Link {
                 target: "two.md".into(),
@@ -267,7 +288,7 @@ mod tests {
 
         #[test]
         fn img_md() {
-            let line = Line::from(r#"an MD image: ![zonk](zonk.md)"#);
+            let line = Line::scaffold(r#"an MD image: ![zonk](zonk.md)"#);
             let have = line.references(12);
             let want = vec![Reference::Image {
                 src: "zonk.md".into(),
@@ -280,7 +301,7 @@ mod tests {
 
         #[test]
         fn img_html() {
-            let line = Line::from(r#"<img src="zonk.md">"#);
+            let line = Line::scaffold(r#"<img src="zonk.md">"#);
             let have = line.references(12);
             let want = vec![Reference::Image {
                 src: "zonk.md".into(),
@@ -293,7 +314,7 @@ mod tests {
 
         #[test]
         fn img_html_extra_attributes() {
-            let line = Line::from(r#"<img src="zonk.md" width="10" height="10">"#);
+            let line = Line::scaffold(r#"<img src="zonk.md" width="10" height="10">"#);
             let have = line.references(12);
             let want = vec![Reference::Image {
                 src: "zonk.md".into(),
@@ -306,7 +327,7 @@ mod tests {
 
         #[test]
         fn img_xml_nospace() {
-            let line = Line::from(r#"<img src="zonk.md"/>"#);
+            let line = Line::scaffold(r#"<img src="zonk.md"/>"#);
             let have = line.references(12);
             let want = vec![Reference::Image {
                 src: "zonk.md".into(),
@@ -319,7 +340,7 @@ mod tests {
 
         #[test]
         fn img_xml_space() {
-            let line = Line::from(r#"<img src="zonk.md" />"#);
+            let line = Line::scaffold(r#"<img src="zonk.md" />"#);
             let have = line.references(12);
             let want = vec![Reference::Image {
                 src: "zonk.md".into(),

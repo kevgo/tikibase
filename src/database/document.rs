@@ -1,8 +1,10 @@
+use super::line::LineEnding;
 use super::{section, Footnotes, Line, Reference, Section};
 use crate::{Issue, Location};
-use std::fs;
-use std::io::prelude::*;
+use std::fs::{self, File};
+use std::io::{prelude::*, BufReader};
 use std::path::{Path, PathBuf};
+use std::str;
 
 #[derive(Debug, PartialEq)]
 pub struct Document {
@@ -18,7 +20,7 @@ impl Document {
     /// provides a Document instance containing the given text
     pub fn from_lines<T, P: Into<PathBuf>>(lines: T, path: P) -> Result<Document, Issue>
     where
-        T: Iterator<Item = String>,
+        T: Iterator<Item = Line>,
     {
         let path = path.into();
         let mut sections: Vec<Section> = Vec::new();
@@ -27,7 +29,7 @@ impl Document {
         let mut fence_line = 0;
         let mut old_occurrences_section: Option<Section> = None;
         for (line_number, line) in lines.enumerate() {
-            if line.starts_with('#') && !inside_fence {
+            if line.text.starts_with('#') && !inside_fence {
                 if let Some(section_builder) = section_builder {
                     let section = section_builder.result();
                     if section.title().text == "occurrences" {
@@ -39,7 +41,7 @@ impl Document {
                 section_builder = Some(section::Builder::new(line, line_number as u32));
                 continue;
             }
-            if line.starts_with("```") {
+            if line.text.starts_with("```") {
                 inside_fence = !inside_fence;
                 fence_line = line_number;
             }
@@ -51,7 +53,7 @@ impl Document {
                             file: path,
                             line: line_number as u32,
                             start: 0,
-                            end: line.len() as u32,
+                            end: line.text.len() as u32,
                         },
                     })
                 }
@@ -94,7 +96,7 @@ impl Document {
                     Some(_) => None,
                     None => Some(CodeblockStart {
                         line: i as u32,
-                        len: line.text().len() as u32,
+                        len: line.text.len() as u32,
                     }),
                 };
                 continue;
@@ -119,7 +121,10 @@ impl Document {
     #[cfg(test)]
     /// provides Document instances in tests
     pub fn from_str<P: Into<PathBuf>>(path: P, text: &str) -> Result<Document, Issue> {
-        Document::from_lines(text.lines().map(std::string::ToString::to_string), path)
+        let x = text.as_bytes();
+        let reader = BufReader::new(x);
+        let lines = ReaderLinesIterator::new(reader);
+        Document::from_lines(lines, path)
     }
 
     /// provides the last line in this document
@@ -144,10 +149,10 @@ impl Document {
     }
 
     /// provides an iterator over all lines in this document
-    pub fn lines(&self) -> LinesIterator {
+    pub fn lines(&self) -> DocumentLinesIterator {
         let mut section_iter = self.sections();
         let section = section_iter.next().unwrap();
-        LinesIterator {
+        DocumentLinesIterator {
             section_iter,
             lines_iter: section.lines(),
         }
@@ -160,6 +165,14 @@ impl Document {
             .or(Some(&self.title_section))
             .unwrap()
             .last_line_abs()
+    }
+
+    /// provides the Document inside the file with the given path
+    pub fn load<P: Into<PathBuf>>(path: P) -> Result<Document, Issue> {
+        let path = path.into();
+        let file = File::open(&path).unwrap();
+        let lines = ReaderLinesIterator::new(BufReader::new(file));
+        Document::from_lines(lines, path)
     }
 
     /// provides all the references in this document
@@ -236,14 +249,14 @@ impl<'a> Iterator for SectionIterator<'a> {
 }
 
 /// iterates over all lines in a Document
-pub struct LinesIterator<'a> {
+pub struct DocumentLinesIterator<'a> {
     /// to get the next section
     section_iter: SectionIterator<'a>,
     /// iterator over the lines in the current section
     lines_iter: section::LinesIterator<'a>,
 }
 
-impl<'a> Iterator for LinesIterator<'a> {
+impl<'a> Iterator for DocumentLinesIterator<'a> {
     type Item = &'a Line;
 
     fn next(&mut self) -> Option<Self::Item> {
@@ -257,6 +270,52 @@ impl<'a> Iterator for LinesIterator<'a> {
         };
         self.lines_iter = next_section.lines();
         self.lines_iter.next()
+    }
+}
+
+struct ReaderLinesIterator<R> {
+    reader: R,
+}
+
+impl<R: BufRead> ReaderLinesIterator<R> {
+    pub fn new(reader: R) -> Self {
+        Self { reader }
+    }
+}
+
+impl<B: BufRead> Iterator for ReaderLinesIterator<B> {
+    type Item = Line;
+
+    fn next(&mut self) -> Option<Self::Item> {
+        let buffer = match self.reader.fill_buf() {
+            Ok(buffer) => buffer,
+            Err(e) => panic!("cannot read: {}", e),
+        };
+        if buffer.is_empty() {
+            return None;
+        }
+        let consumed = buffer
+            .iter()
+            .take_while(|c| **c != b'\n' && **c != b'\r')
+            .count();
+        if consumed == buffer.len() {
+            panic!("found a line that exceeds the buffer capacity");
+        }
+        let (ending, ending_len) = match (
+            consumed + 1 < buffer.len(),
+            buffer[consumed],
+            buffer[consumed + 1],
+        ) {
+            (true, b'\r', b'\n') => (LineEnding::CRLF, 2),
+            (false, b'\r', _) => (LineEnding::CR, 1),
+            (false, b'\n', _) => (LineEnding::LF, 1),
+            _ => panic!("unexpected line ending"),
+        };
+        let text: String = match str::from_utf8(&buffer[..consumed + ending_len]) {
+            Ok(line) => line.into(),
+            Err(e) => panic!("invalid unicode: {}", e),
+        };
+        Some(Line { text, ending })
     }
 }
 
@@ -380,13 +439,13 @@ mod tests {
                 path: PathBuf::from("one.md"),
                 title_section: Section {
                     line_number: 0,
-                    title_line: Line::from("# test"),
+                    title_line: Line::scaffold("# test"),
                     body: vec![],
                 },
                 content_sections: vec![Section {
                     line_number: 1,
-                    title_line: Line::from("### section 1"),
-                    body: vec![Line::from("content")],
+                    title_line: Line::scaffold("### section 1"),
+                    body: vec![Line::scaffold("content")],
                 }],
                 old_occurrences_section: None,
             });
@@ -421,12 +480,12 @@ mod tests {
                 path: PathBuf::from("test.md"),
                 title_section: Section {
                     line_number: 0,
-                    title_line: Line::from("# test"),
+                    title_line: Line::scaffold("# test"),
                     body: vec![
-                        Line::from("```md"),
-                        Line::from("### not a document section"),
-                        Line::from("text"),
-                        Line::from("```"),
+                        Line::scaffold("```md"),
+                        Line::scaffold("### not a document section"),
+                        Line::scaffold("text"),
+                        Line::scaffold("```"),
                     ],
                 },
                 content_sections: vec![],
@@ -470,25 +529,25 @@ mod tests {
                 path: PathBuf::from("one.md"),
                 title_section: Section {
                     line_number: 0,
-                    title_line: Line::from("# test"),
+                    title_line: Line::scaffold("# test"),
                     body: vec![],
                 },
                 content_sections: vec![
                     Section {
                         line_number: 1,
-                        title_line: Line::from("### section 1"),
-                        body: vec![Line::from("content")],
+                        title_line: Line::scaffold("### section 1"),
+                        body: vec![Line::scaffold("content")],
                     },
                     Section {
                         line_number: 5,
-                        title_line: Line::from("### links"),
-                        body: vec![Line::from("- link 1")],
+                        title_line: Line::scaffold("### links"),
+                        body: vec![Line::scaffold("- link 1")],
                     },
                 ],
                 old_occurrences_section: Some(Section {
                     line_number: 3,
-                    title_line: Line::from("### occurrences"),
-                    body: vec![Line::from("- occurrence 1")],
+                    title_line: Line::scaffold("### occurrences"),
+                    body: vec![Line::scaffold("- occurrence 1")],
                 }),
             });
             pretty::assert_eq!(have, want);
@@ -502,7 +561,7 @@ mod tests {
         fn title_section_only() {
             let doc = Document::from_str("test.md", "# Title\ntitle text\n").unwrap();
             let have = doc.last_line();
-            let want = Line::from("title text");
+            let want = Line::scaffold("title text");
             pretty::assert_eq!(have, &want);
         }
 
@@ -511,7 +570,7 @@ mod tests {
             let doc =
                 Document::from_str("test.md", "# Title\n### section 1\nsection text").unwrap();
             let have = doc.last_line();
-            let want = Line::from("section text");
+            let want = Line::scaffold("section text");
             pretty::assert_eq!(have, &want);
         }
 
@@ -519,7 +578,7 @@ mod tests {
         fn title_only() {
             let doc = Document::from_str("test.md", "# Title").unwrap();
             let have = doc.last_line();
-            let want = Line::from("# Title");
+            let want = Line::scaffold("# Title");
             pretty::assert_eq!(have, &want);
         }
 
@@ -527,7 +586,7 @@ mod tests {
         fn section_without_body() {
             let doc = Document::from_str("test.md", "# Title\n### section 1").unwrap();
             let have = doc.last_line();
-            let want = Line::from("### section 1");
+            let want = Line::scaffold("### section 1");
             pretty::assert_eq!(have, &want);
         }
     }
@@ -573,8 +632,8 @@ mod tests {
             let have = doc.last_section_mut();
             let mut want = Section {
                 line_number: 3,
-                title_line: Line::from("### s1"),
-                body: vec![Line::from(""), Line::from("text")],
+                title_line: Line::scaffold("### s1"),
+                body: vec![Line::scaffold(""), Line::scaffold("text")],
             };
             pretty::assert_eq!(have, &mut want);
         }
@@ -589,8 +648,8 @@ mod tests {
             let have = doc.last_section_mut();
             let mut want = Section {
                 line_number: 0,
-                title_line: Line::from("# Title"),
-                body: vec![Line::from("title text")],
+                title_line: Line::scaffold("# Title"),
+                body: vec![Line::scaffold("title text")],
             };
             pretty::assert_eq!(have, &mut want);
         }
@@ -616,15 +675,15 @@ mod tests {
             "};
             let doc = Document::from_str("test.md", give).unwrap();
             let mut lines = doc.lines();
-            pretty::assert_eq!(lines.next(), Some(&Line::from("# Title")));
-            pretty::assert_eq!(lines.next(), Some(&Line::from("title text")));
-            pretty::assert_eq!(lines.next(), Some(&Line::from("")));
-            pretty::assert_eq!(lines.next(), Some(&Line::from("### Section 1")));
-            pretty::assert_eq!(lines.next(), Some(&Line::from("one")));
-            pretty::assert_eq!(lines.next(), Some(&Line::from("two")));
-            pretty::assert_eq!(lines.next(), Some(&Line::from("")));
-            pretty::assert_eq!(lines.next(), Some(&Line::from("### Section 2")));
-            pretty::assert_eq!(lines.next(), Some(&Line::from("foo")));
+            pretty::assert_eq!(lines.next(), Some(&Line::scaffold("# Title")));
+            pretty::assert_eq!(lines.next(), Some(&Line::scaffold("title text")));
+            pretty::assert_eq!(lines.next(), Some(&Line::scaffold("")));
+            pretty::assert_eq!(lines.next(), Some(&Line::scaffold("### Section 1")));
+            pretty::assert_eq!(lines.next(), Some(&Line::scaffold("one")));
+            pretty::assert_eq!(lines.next(), Some(&Line::scaffold("two")));
+            pretty::assert_eq!(lines.next(), Some(&Line::scaffold("")));
+            pretty::assert_eq!(lines.next(), Some(&Line::scaffold("### Section 2")));
+            pretty::assert_eq!(lines.next(), Some(&Line::scaffold("foo")));
             pretty::assert_eq!(lines.next(), None);
         }
 
@@ -637,9 +696,9 @@ mod tests {
                 "};
             let doc = Document::from_str("test.md", give).unwrap();
             let mut lines = doc.lines();
-            pretty::assert_eq!(lines.next(), Some(&Line::from("# Title")));
-            pretty::assert_eq!(lines.next(), Some(&Line::from("### Section 1")));
-            pretty::assert_eq!(lines.next(), Some(&Line::from("### Section 2")));
+            pretty::assert_eq!(lines.next(), Some(&Line::scaffold("# Title")));
+            pretty::assert_eq!(lines.next(), Some(&Line::scaffold("### Section 1")));
+            pretty::assert_eq!(lines.next(), Some(&Line::scaffold("### Section 2")));
             pretty::assert_eq!(lines.next(), None);
         }
     }
@@ -671,6 +730,75 @@ mod tests {
                 "};
             let have = Document::from_str("test.md", give).unwrap().lines_count();
             assert_eq!(have, 1);
+        }
+    }
+
+    mod reader_lines_iterator {
+        use super::super::ReaderLinesIterator;
+        use crate::database::line::LineEnding;
+        use crate::database::Line;
+
+        #[test]
+        fn unix() {
+            let give = "one\ntwo\nthree\n";
+            let mut have = ReaderLinesIterator::new(give.as_bytes());
+            pretty::assert_eq!(
+                have.next(),
+                Some(Line {
+                    text: "one\n".into(),
+                    ending: LineEnding::LF
+                })
+            );
+            pretty::assert_eq!(
+                have.next(),
+                Some(Line {
+                    text: "two\n".into(),
+                    ending: LineEnding::LF
+                })
+            );
+            pretty::assert_eq!(
+                have.next(),
+                Some(Line {
+                    text: "three\n".into(),
+                    ending: LineEnding::LF
+                })
+            );
+            assert_eq!(have.next(), None);
+        }
+
+        #[test]
+        fn windows() {
+            let give = "one\r\ntwo\r\nthree\r\n";
+            let mut have = ReaderLinesIterator::new(give.as_bytes());
+            pretty::assert_eq!(
+                have.next(),
+                Some(Line {
+                    text: "one\n".into(),
+                    ending: LineEnding::CRLF
+                })
+            );
+            pretty::assert_eq!(
+                have.next(),
+                Some(Line {
+                    text: "two\n".into(),
+                    ending: LineEnding::CRLF
+                })
+            );
+            pretty::assert_eq!(
+                have.next(),
+                Some(Line {
+                    text: "three\n".into(),
+                    ending: LineEnding::CRLF
+                })
+            );
+            assert_eq!(have.next(), None);
+        }
+
+        #[test]
+        fn empty() {
+            let give = "";
+            let mut have = ReaderLinesIterator::new(give.as_bytes());
+            assert_eq!(have.next(), None);
         }
     }
 

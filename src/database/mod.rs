@@ -13,7 +13,7 @@ pub(crate) use crate::database::tikibase::Tikibase;
 pub(crate) use doc_links::DocLinks;
 use document::Document;
 pub(crate) use footnotes::{Footnote, Footnotes};
-pub(crate) use line::Line;
+pub(crate) use line::{Line, LineEnding};
 pub(crate) use reference::Reference;
 use resource::Resource;
 pub(crate) use section::Section;

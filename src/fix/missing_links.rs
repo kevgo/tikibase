@@ -1,6 +1,6 @@
 use super::Fix;
 use crate::commands::MissingLink;
-use crate::database::{section, Tikibase};
+use crate::database::{section, Line, LineEnding, Tikibase};
 use crate::Location;
 use once_cell::sync::Lazy;
 use regex::{Captures, Regex};
@@ -14,18 +14,25 @@ pub fn add_occurrences(base: &mut Tikibase, location: Location, links: Vec<Missi
     doc.last_section_mut().push_line("");
 
     // insert occurrences section
-    let mut section_builder = section::Builder::new("### occurrences", doc.lines_count() + 1);
-    section_builder.add_line("");
+    let title_line = Line {
+        text: "### occurrences".into(),
+        ending: LineEnding::LF,
+    };
+    let mut section_builder = section::Builder::new(title_line, doc.lines_count() + 1);
+    section_builder.add_line(Line::empty());
     for link in links {
-        section_builder.add_line(format!(
-            "- [{}]({})",
-            strip_links(&link.title),
-            link.path.to_string_lossy()
-        ));
+        section_builder.add_line(Line {
+            text: format!(
+                "- [{}]({})",
+                strip_links(&link.title),
+                link.path.to_string_lossy()
+            ),
+            ending: LineEnding::LF,
+        });
     }
     let occurrences_section = section_builder.result();
     let line = occurrences_section.line_number;
-    let end = occurrences_section.title_line.text().len() as u32;
+    let end = occurrences_section.title_line.text.len() as u32;
     doc.content_sections.push(occurrences_section);
     doc.save(&base_dir);
     Fix::AddedOccurrencesSection {

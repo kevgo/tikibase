@@ -42,24 +42,24 @@ impl Section {
 
     /// adds a new line with the given text to this section
     pub fn push_line<S: Into<String>>(&mut self, text: S) {
-        self.body.push(Line::from(text));
+        self.body.push(Line::scaffold(text));
     }
 
     #[cfg(test)]
     fn scaffold() -> Self {
         Section {
             line_number: 0,
-            title_line: Line::from("### section"),
+            title_line: Line::scaffold("### section"),
             body: Vec::new(),
         }
     }
 
     /// provides the complete text of this section
     pub fn text(&self) -> String {
-        let mut result = self.title_line.text().to_string();
+        let mut result = self.title_line.text.to_string();
         result.push('\n');
         for line in &self.body {
-            result.push_str(line.text());
+            result.push_str(&line.text);
         }
         result
     }
@@ -67,10 +67,10 @@ impl Section {
     /// provides a human-readable description of this section, e.g. "Hello" for a section with the title "# Hello"
     /// as well as the column at which this description stars on the line
     pub fn title(&self) -> SectionTitle {
-        for (i, c) in self.title_line.text().char_indices() {
+        for (i, c) in self.title_line.text.char_indices() {
             if c != '#' && c != ' ' {
                 return SectionTitle {
-                    text: &self.title_line.text()[i..],
+                    text: &self.title_line.text[i..],
                     start: i as u32,
                 };
             }
@@ -84,7 +84,7 @@ impl Section {
     pub fn with_title(title: &str) -> Section {
         Section {
             line_number: 0,
-            title_line: Line::from(title),
+            title_line: Line::scaffold(title),
             body: Vec::new(),
         }
     }
@@ -130,28 +130,28 @@ impl<'a> Iterator for LinesIterator<'a> {
 /// allows building up sections one line at a time
 pub struct Builder {
     pub line_number: u32,
-    title_line: String,
+    title_line: Line,
     body: Vec<Line>,
 }
 
 impl Builder {
     /// Provides a builder instance loaded with the given title line.
-    pub fn new<S: Into<String>>(title: S, line_number: u32) -> Builder {
+    pub fn new(title_line: Line, line_number: u32) -> Builder {
         Builder {
-            title_line: title.into(),
+            title_line,
             line_number,
             body: Vec::new(),
         }
     }
 
-    pub fn add_line<S: Into<String>>(&mut self, text: S) {
-        self.body.push(Line::from(text));
+    pub fn add_line(&mut self, line: Line) {
+        self.body.push(line);
     }
 
     /// Provides the content this builder has accumulated.
     pub fn result(self) -> Section {
         Section {
-            title_line: Line::from(self.title_line),
+            title_line: self.title_line,
             line_number: self.line_number,
             body: self.body,
         }
@@ -160,6 +160,8 @@ impl Builder {
 
 #[cfg(test)]
 mod tests {
+    use crate::database::line::LineEnding;
+
     use super::super::document::Document;
     use super::*;
     use indoc::indoc;
@@ -183,11 +185,11 @@ mod tests {
         #[test]
         fn with_body() {
             let section = Section {
-                body: vec![Line::from("one"), Line::from("two")],
+                body: vec![Line::scaffold("one"), Line::scaffold("two")],
                 ..Section::default()
             };
             let have = section.last_line();
-            let want = Line::from("two");
+            let want = Line::scaffold("two");
             assert_eq!(have, &want);
         }
 
@@ -195,11 +197,11 @@ mod tests {
         fn without_body() {
             let section = Section {
                 body: vec![],
-                title_line: Line::from("title"),
+                title_line: Line::scaffold("title"),
                 ..Section::default()
             };
             let have = section.last_line();
-            let want = Line::from("title");
+            let want = Line::scaffold("title");
             assert_eq!(have, &want);
         }
     }
@@ -220,7 +222,7 @@ mod tests {
         fn with_body() {
             let section = Section {
                 line_number: 12,
-                body: vec![Line::from("")],
+                body: vec![Line::scaffold("")],
                 ..Section::scaffold()
             };
             assert_eq!(section.last_line_abs(), 13);
@@ -233,12 +235,22 @@ mod tests {
             # test
             title content"};
         let doc = Document::from_str("foo", give).unwrap();
-        let mut have = doc.title_section.lines();
-        let line = have.next().expect("expected title line");
-        assert_eq!(line.text(), "# test");
-        let line = have.next().expect("expected body line 1");
-        assert_eq!(line.text(), "title content");
-        assert!(have.next().is_none(), "unexpected line");
+        let mut iter = doc.title_section.lines();
+        pretty::assert_eq!(
+            iter.next(),
+            Some(&Line {
+                text: "# test".into(),
+                ending: LineEnding::LF
+            })
+        );
+        pretty::assert_eq!(
+            iter.next(),
+            Some(&Line {
+                text: "title content".into(),
+                ending: LineEnding::LF
+            })
+        );
+        assert_eq!(iter.next(), None);
     }
 
     mod push_line {
@@ -252,7 +264,7 @@ mod tests {
             };
             have.push_line("new line");
             let want = Section {
-                body: vec![Line::from("new line")],
+                body: vec![Line::scaffold("new line")],
                 ..Section::scaffold()
             };
             pretty::assert_eq!(have, want);
@@ -261,12 +273,12 @@ mod tests {
         #[test]
         fn with_existing_body() {
             let mut section = Section {
-                body: vec![Line::from("l1")],
+                body: vec![Line::scaffold("l1")],
                 ..Section::scaffold()
             };
             section.push_line("new line");
             let have = section.body;
-            let want = vec![Line::from("l1"), Line::from("new line")];
+            let want = vec![Line::scaffold("l1"), Line::scaffold("new line")];
             pretty::assert_eq!(have, want);
         }
     }
@@ -274,8 +286,8 @@ mod tests {
     #[test]
     fn text() {
         let section = Section {
-            title_line: Line::from("### welcome"),
-            body: vec![Line::from(""), Line::from("content")],
+            title_line: Line::scaffold("### welcome"),
+            body: vec![Line::scaffold(""), Line::scaffold("content")],
             ..Section::scaffold()
         };
         assert_eq!(section.text(), "### welcome\n\ncontent\n");
