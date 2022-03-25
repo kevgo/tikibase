@@ -138,9 +138,9 @@ mod tests {
 
         #[test]
         fn with_anchor() {
-            let give = "1.md#foo".to_string();
-            let want = "#foo".to_string();
-            let have = link_anchor(&give);
+            let give = "1.md#foo";
+            let want = "#foo";
+            let have = link_anchor(give);
             assert_eq!(have, want);
         }
     }
