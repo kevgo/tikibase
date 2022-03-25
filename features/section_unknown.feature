@@ -1,4 +1,4 @@
-Feature: verify section types
+Feature: verify section titles
 
   Background:
     Given file "tikibase.json" with content:
@@ -15,19 +15,22 @@ Feature: verify section types
       # One
 
       ### what is it
-
-      text
+      [Two](2.md)
 
       ### zonk
-
       text
+      """
+    And file "2.md" with content:
+      """
+      # Two
+      [One](1.md)
       """
 
   Scenario: check
     When checking
     Then it prints:
       """
-      1.md:7  unknown section "zonk", allowed sections:
+      1.md:6  section "zonk" isn't listed in tikibase.json, allowed sections:
         - what is it
         - links
       """
@@ -42,7 +45,7 @@ Feature: verify section types
     When doing a pitstop
     Then it prints:
       """
-      1.md:7  unknown section "zonk", allowed sections:
+      1.md:6  section "zonk" isn't listed in tikibase.json, allowed sections:
         - what is it
         - links
       """

@@ -1,61 +1,30 @@
 //! the CLI wrapper around lib.rs
 
-extern crate lazy_static;
-
-use tikibase::process;
-use tikibase::Command;
+use clap::StructOpt;
+use input::Format::{Json, Text};
+use std::io;
+use std::path::PathBuf;
+use tikibase::{input, run, Message};
 
 fn main() {
-    let command = parse(std::env::args());
-    let (mut outcomes, exitcode) = process(&command, ".");
-    outcomes.sort();
-    for outcome in outcomes {
-        println!("{}", outcome);
-    }
-    std::process::exit(exitcode);
+    let args = input::Arguments::parse();
+    let result = run(&args.command, PathBuf::from("."));
+    match args.format {
+        Text => print_text(&result.messages),
+        Json => print_json(&result.messages),
+    };
+    std::process::exit(result.exit_code);
 }
 
-/// Provides the command-line arguments as a Rust struct.
-fn parse<I>(mut argv: I) -> Command
-where
-    I: Iterator<Item = String>,
-{
-    argv.next(); // skip argv[0]
-
-    match argv.next() {
-        None => Command::Help,
-        Some(command) => match command.as_str() {
-            "check" | "c" => Command::Check,
-            "fix" | "f" => Command::Fix,
-            "pitstop" | "ps" => Command::Pitstop,
-            "stats" | "st" => Command::Stats,
-            "version" | "v" => Command::Version,
-            _ => Command::Help,
-        },
+fn print_text(messages: &[Message]) {
+    for message in messages {
+        println!("{}", message.to_text());
     }
 }
 
-#[cfg(test)]
-mod tests {
-    use tikibase::Command::{Check, Help, Stats, Version};
-
-    #[test]
-    fn parse() {
-        let tests = vec![
-            ("check", Check),
-            ("c", Check),
-            ("stats", Stats),
-            ("st", Stats),
-            ("version", Version),
-            ("v", Version),
-            ("help", Help),
-            ("h", Help),
-            ("foo", Help),
-        ];
-        for (give, want) in tests {
-            let args = vec!["tikibase".into(), give.into()];
-            let have = super::parse(args.into_iter());
-            assert_eq!(have, want);
-        }
+fn print_json(messages: &[Message]) {
+    // NOTE: using a buffered writer doesn't seem to improve performance here
+    if let Err(err) = serde_json::to_writer_pretty(io::stdout(), messages) {
+        println!("Error serializing JSON: {}", err);
     }
 }

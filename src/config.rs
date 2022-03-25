@@ -1,12 +1,13 @@
+use crate::{Issue, Location};
 use serde::Deserialize;
 use std::fs::File;
 use std::io::ErrorKind;
-use std::path::Path;
+use std::path::{Path, PathBuf};
 
 /// Tikibase configuration data
 #[derive(Deserialize, Default, PartialEq, Debug)]
-pub struct Data {
-    /// the allowed section types
+pub struct Config {
+    /// the allowed section titles
     pub sections: Option<Vec<String>>,
 
     /// files to ignore
@@ -14,92 +15,102 @@ pub struct Data {
 }
 
 /// reads the config file
-pub fn load<P: AsRef<Path>>(dir: P) -> Result<Data, String> {
+pub fn load<P: AsRef<Path>>(dir: P) -> Result<Config, Issue> {
     let config_path = dir.as_ref().join("tikibase.json");
-    let file = match File::open(config_path) {
+    let file = match File::open(&config_path) {
         Ok(reader) => reader,
         Err(e) => match e.kind() {
-            ErrorKind::NotFound => return Ok(Data::default()),
+            ErrorKind::NotFound => return Ok(Config::default()),
             _ => {
-                return Err(format!(
-                    "Cannot access configuration file (tikibase.json): {}",
-                    e
-                ))
+                return Err(Issue::CannotReadConfigurationFile {
+                    message: e.to_string(),
+                    location: Location {
+                        file: PathBuf::from("tikibase.json"),
+                        line: 0,
+                        start: 0,
+                        end: 0,
+                    },
+                })
             }
         },
     };
-    serde_json::from_reader(file)
-        .map_err(|e| format!("Configuration file has invalid structure: {}", e))
+    serde_json::from_reader(file).map_err(|e: serde_json::Error| Issue::InvalidConfigurationFile {
+        message: e.to_string(),
+        location: Location {
+            file: PathBuf::from("tikibase.json"),
+            line: e.line() as u32,
+            start: e.column() as u32,
+            end: e.column() as u32,
+        },
+    })
 }
 
 #[cfg(test)]
 mod tests {
-    use super::Data;
-
-    #[test]
-    fn defaults() {
-        let default_config = Data::default();
-        assert_eq!(default_config.sections, None);
-    }
 
     mod load {
-        use crate::testhelpers::{create_file, tmp_dir};
+        use super::super::{load, Config};
+        use crate::{test, Issue, Location};
+        use std::path::PathBuf;
 
         #[test]
         fn no_config_file() {
-            let dir = tmp_dir();
-            let have = super::super::load(dir).unwrap();
-            let want = super::super::Data {
+            let have = load(test::tmp_dir()).unwrap();
+            let want = Config {
                 sections: None,
                 ignore: None,
             };
-            assert_eq!(have, want);
+            pretty::assert_eq!(have, want);
         }
 
         #[test]
         fn empty_config_file() {
-            let dir = tmp_dir();
-            create_file("tikibase.json", "{}", &dir);
-            let have = super::super::load(&dir).unwrap();
-            let want = super::super::Data {
+            let dir = test::tmp_dir();
+            test::create_file("tikibase.json", "{}", &dir);
+            let have = load(&dir).unwrap();
+            let want = Config {
                 sections: None,
                 ignore: None,
             };
-            assert_eq!(have, want);
+            pretty::assert_eq!(have, want);
         }
 
         #[test]
         fn valid_config_file() {
-            let dir = tmp_dir();
-            let content = r#"
+            let dir = test::tmp_dir();
+            let give = r#"
             {
               "sections": [ "one", "two" ]
             }
             "#;
-            create_file("tikibase.json", content, &dir);
-            let have = super::super::load(&dir).unwrap();
-            let want = super::super::Data {
+            test::create_file("tikibase.json", give, &dir);
+            let have = load(&dir).unwrap();
+            let want = Config {
                 sections: Some(vec!["one".into(), "two".into()]),
                 ignore: None,
             };
-            assert_eq!(have, want);
+            pretty::assert_eq!(have, want);
         }
 
         #[test]
         fn invalid_config_file() {
-            let dir = tmp_dir();
-            let content = r#"{
+            let dir = test::tmp_dir();
+            let give = r#"{
     "sections": [
 }
 "#;
-            create_file("tikibase.json", content, &dir);
-            match super::super::load(&dir) {
-                Err(e) => assert_eq!(
-                    e,
-                    "Configuration file has invalid structure: expected value at line 3 column 1"
-                ),
-                Ok(_) => panic!(),
-            }
+            test::create_file("tikibase.json", give, &dir);
+            let have = load(&dir);
+            let want = Err(Issue::InvalidConfigurationFile {
+                message: "expected value at line 3 column 1".into(),
+                location: Location {
+                    file: PathBuf::from("tikibase.json"),
+                    line: 3,
+                    start: 1,
+                    end: 1,
+                },
+            });
+            pretty::assert_eq!(have, want);
         }
     }
 }

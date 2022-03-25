@@ -1,27 +1,31 @@
-use crate::config;
-use crate::database::Tikibase;
-use crate::probes;
-use crate::Issue;
+use crate::scan::{
+    footnotes, image_orphaned, link_broken, occurrences, section_capitalization, section_duplicate,
+    section_empty, section_order, section_title, section_without_header,
+};
+use crate::{Config, Outcome, Tikibase};
 
-pub(crate) fn check(base: &Tikibase, config: &config::Data) -> Vec<Box<dyn Issue>> {
+pub fn check(base: &mut Tikibase, config: &Config) -> Outcome {
     let mut issues = Vec::new();
-    issues.extend(probes::section_duplicate::scan(base));
-    issues.extend(probes::section_empty::scan(base));
-    issues.extend(probes::section_capitalization::scan(base));
-    issues.extend(probes::section_type::scan(base, config));
-    issues.extend(probes::section_order::scan(base, config));
-    issues.extend(probes::section_without_header::scan(base));
-    issues.extend(probes::sources_missing::scan(base));
-    let links_result = probes::link_broken::scan(base);
+    issues.extend(section_duplicate::scan(base));
+    issues.extend(section_empty::scan(base));
+    issues.extend(section_capitalization::scan(base));
+    issues.extend(section_title::scan(base, config));
+    issues.extend(section_order::scan(base, config));
+    issues.extend(section_without_header::scan(base));
+    issues.extend(footnotes::scan(base));
+    let links_result = link_broken::scan(base);
     issues.extend(links_result.issues);
-    issues.extend(probes::image_orphaned::scan(
+    issues.extend(image_orphaned::scan(
         base,
         &links_result.outgoing_resource_links,
     ));
-    issues.extend(probes::occurrences::scan(
+    issues.extend(occurrences::scan(
         base,
         &links_result.incoming_doc_links,
         &links_result.outgoing_doc_links,
     ));
-    issues
+    Outcome {
+        issues,
+        fixes: vec![],
+    }
 }

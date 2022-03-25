@@ -1,19 +1,24 @@
 Feature: recognize sections with an empty header
 
   Background:
-    Given file "1.md" with content:
+    Given file "test.md" with content:
       """
-      # Title 1
+      # Test
 
       ###
-      content
+      [other](other.md)
+      """
+    And file "other.md" with content:
+      """
+      # Other
+      [test](test.md)
       """
 
   Scenario: check
     When checking
     Then it prints:
       """
-      1.md:3  section has no title
+      test.md:3  section with empty title
       """
     And the exit code is 1
 
@@ -26,7 +31,7 @@ Feature: recognize sections with an empty header
     When doing a pitstop
     Then it prints:
       """
-      1.md:3  section has no title
+      test.md:3  section with empty title
       """
     And all files are unchanged
     And the exit code is 1
