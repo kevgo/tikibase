@@ -89,13 +89,6 @@ mod tests {
     use std::path::PathBuf;
 
     #[test]
-    fn normalize() {
-        assert_eq!(super::normalize("foo"), "foo");
-        assert_eq!(super::normalize("Foo"), "foo");
-        assert_eq!(super::normalize("FOO"), "foo");
-    }
-
-    #[test]
     fn different_capitalization() {
         let dir = test::tmp_dir();
         let content1 = indoc! {"
@@ -159,6 +152,27 @@ mod tests {
         pretty::assert_eq!(have, want);
     }
 
+    mod file_section {
+        use crate::scan::section_capitalization::FileSection;
+
+        #[test]
+        fn end() {
+            let file_section = FileSection {
+                title: "test section",
+                start: 4,
+                ..FileSection::default()
+            };
+            assert_eq!(file_section.end(), 16);
+        }
+    }
+
+    #[test]
+    fn normalize() {
+        assert_eq!(super::normalize("foo"), "foo");
+        assert_eq!(super::normalize("Foo"), "foo");
+        assert_eq!(super::normalize("FOO"), "foo");
+    }
+
     #[test]
     fn same_capitalization() {
         let dir = test::tmp_dir();
@@ -196,19 +210,5 @@ mod tests {
         let have = super::variants_count(&give);
         let want = 2;
         assert_eq!(have, want);
-    }
-
-    mod file_section {
-        use crate::scan::section_capitalization::FileSection;
-
-        #[test]
-        fn end() {
-            let file_section = FileSection {
-                title: "test section",
-                start: 4,
-                ..FileSection::default()
-            };
-            assert_eq!(file_section.end(), 16);
-        }
     }
 }
