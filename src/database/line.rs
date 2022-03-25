@@ -64,12 +64,8 @@ impl Line {
                     end: full_match.end() as u32,
                 }),
                 "" => {
-                    let mut target = cap[2].to_string();
-                    if let Some(idx) = target.find('#') {
-                        target.truncate(idx);
-                    }
                     result.push(Reference::Link {
-                        target,
+                        target: cap[2].into(),
                         line,
                         start: full_match.start() as u32,
                         end: full_match.end() as u32,
@@ -81,7 +77,7 @@ impl Line {
         for cap in A_HTML_RE.captures_iter(&self.0) {
             let full_match = cap.get(0).unwrap();
             result.push(Reference::Link {
-                target: cap[1].to_string(),
+                target: cap[1].into(),
                 line,
                 start: full_match.start() as u32,
                 end: full_match.end() as u32,
@@ -247,7 +243,7 @@ mod tests {
                     end: 25,
                 },
                 Reference::Link {
-                    target: "two.md".into(),
+                    target: "two.md#pieces".into(),
                     line: 12,
                     start: 48,
                     end: 75,

@@ -57,7 +57,11 @@ pub(crate) fn scan(base: &Tikibase) -> LinksResult {
                         // ignore external links
                         continue;
                     }
-                    if target == doc.path.to_string_lossy() {
+                    let (target_file, target_anchor) = match target.split_once('#') {
+                        Some((base, anchor)) => (base.to_string(), anchor.to_string()),
+                        None => (target.clone(), "".to_string()),
+                    };
+                    if target_file == doc.path.to_string_lossy() {
                         result.issues.push(Issue::LinkToSameDocument {
                             location: Location {
                                 file: doc.path.clone(),
@@ -68,23 +72,57 @@ pub(crate) fn scan(base: &Tikibase) -> LinksResult {
                         });
                         continue;
                     }
-                    if is_md_document(&target) {
-                        if !strings_contain(&existing_targets, link_anchor(&target)) {
-                            result.issues.push(Issue::BrokenLink {
-                                location: Location {
-                                    file: doc.path.clone(),
-                                    line,
-                                    start,
-                                    end,
-                                },
-                                target,
-                            });
+                    if let Some(anchor_without_prefix) = target.strip_prefix('#') {
+                        let full_target = format!("{}{}", doc.path.to_string_lossy(), target);
+                        if !strings_contain(&existing_targets, &full_target) {
+                            result
+                                .issues
+                                .push(Issue::LinkToNonExistingAnchorInCurrentDocument {
+                                    location: Location {
+                                        file: doc.path.clone(),
+                                        line,
+                                        start,
+                                        end,
+                                    },
+                                    anchor: anchor_without_prefix.into(),
+                                });
                             continue;
                         }
-                        result.incoming_doc_links.add(&target, doc.path.clone());
-                        result.outgoing_doc_links.add(doc.path.clone(), target);
+                    }
+                    if is_md_document(&target_file) {
+                        if !strings_contain(&existing_targets, &target) {
+                            if strings_contain(&existing_targets, &target_file) {
+                                result.issues.push(
+                                    Issue::LinkToNonExistingAnchorInExistingDocument {
+                                        location: Location {
+                                            file: doc.path.clone(),
+                                            line,
+                                            start,
+                                            end,
+                                        },
+                                        target_file: target_file.clone(),
+                                        anchor: target_anchor,
+                                    },
+                                );
+                            } else {
+                                result.issues.push(Issue::LinkToNonExistingFile {
+                                    location: Location {
+                                        file: doc.path.clone(),
+                                        line,
+                                        start,
+                                        end,
+                                    },
+                                    target,
+                                });
+                                continue;
+                            }
+                        }
+                        result
+                            .incoming_doc_links
+                            .add(&target_file, doc.path.clone());
+                        result.outgoing_doc_links.add(doc.path.clone(), target_file);
                     } else {
-                        result.outgoing_resource_links.push(target);
+                        result.outgoing_resource_links.push(target_file);
                     }
                 }
                 Reference::Image {
@@ -121,18 +159,6 @@ fn is_md_document(filename: &str) -> bool {
     dest_path.extension() == Some(OsStr::new("md"))
 }
 
-/// converts the given URL into the anchor portion of it
-fn link_anchor(link: &str) -> &str {
-    // NOTE: it would probably be cleaner to return a &str to the portion of the given &String,
-    // but that isn't needed here and it yields to type incompatibilities.
-    // We are therefore reducing the string in place.
-    if let Some(index) = link.find('#') {
-        &link[index..]
-    } else {
-        link
-    }
-}
-
 /// indicates whether the given Vec<String> contains the given &str
 ///
 // NOTE: cannot use "contains" because https://github.com/rust-lang/rust/issues/42671
@@ -151,19 +177,7 @@ mod tests {
         assert!(!is_md_document("foo.png"));
     }
 
-    mod link_anchor {
-        use super::super::link_anchor;
-
-        #[test]
-        fn with_anchor() {
-            let give = "1.md#foo";
-            let want = "#foo";
-            let have = link_anchor(give);
-            assert_eq!(have, want);
-        }
-    }
-
-    mod process {
+    mod scan {
         use super::super::scan;
         use crate::{test, Config, Issue, Location, Tikibase};
         use indoc::indoc;
@@ -175,7 +189,7 @@ mod tests {
             test::create_file("one.md", "# One\n\n[invalid](non-existing.md)\n", &dir);
             let base = Tikibase::load(dir, &Config::default()).unwrap();
             let have = scan(&base);
-            let want = vec![Issue::BrokenLink {
+            let want = vec![Issue::LinkToNonExistingFile {
                 location: Location {
                     file: "one.md".into(),
                     line: 2,
@@ -183,6 +197,75 @@ mod tests {
                     end: 26,
                 },
                 target: "non-existing.md".into(),
+            }];
+            pretty::assert_eq!(have.issues, want);
+            assert_eq!(have.incoming_doc_links.data.len(), 0);
+            assert_eq!(have.outgoing_doc_links.data.len(), 0);
+            assert_eq!(have.outgoing_resource_links.len(), 0);
+        }
+
+        #[test]
+        fn link_to_non_existing_anchor_in_existing_file() {
+            let dir = test::tmp_dir();
+            test::create_file("1.md", "# One\n[non-existing anchor](2.md#zonk)\n", &dir);
+            test::create_file("2.md", "# Two\n[One](1.md)", &dir);
+            let base = Tikibase::load(dir, &Config::default()).unwrap();
+            let have = scan(&base);
+            let want = vec![Issue::LinkToNonExistingAnchorInExistingDocument {
+                location: Location {
+                    file: "1.md".into(),
+                    line: 1,
+                    start: 0,
+                    end: 32,
+                },
+                target_file: "2.md".into(),
+                anchor: "zonk".into(),
+            }];
+            pretty::assert_eq!(have.issues, want);
+            assert_eq!(have.incoming_doc_links.data.len(), 2);
+            assert_eq!(have.outgoing_doc_links.data.len(), 2);
+            assert_eq!(have.outgoing_resource_links.len(), 0);
+        }
+
+        #[test]
+        fn link_to_non_existing_anchor_in_current_file() {
+            let dir = test::tmp_dir();
+            test::create_file("1.md", "# One\n[non-existing anchor](#zonk)\n", &dir);
+            let base = Tikibase::load(dir, &Config::default()).unwrap();
+            let have = scan(&base);
+            let want = vec![Issue::LinkToNonExistingAnchorInCurrentDocument {
+                location: Location {
+                    file: "1.md".into(),
+                    line: 1,
+                    start: 0,
+                    end: 28,
+                },
+                anchor: "zonk".into(),
+            }];
+            pretty::assert_eq!(have.issues, want);
+            assert_eq!(have.incoming_doc_links.data.len(), 0);
+            assert_eq!(have.outgoing_doc_links.data.len(), 0);
+            assert_eq!(have.outgoing_resource_links.len(), 0);
+        }
+
+        #[test]
+        fn link_to_anchor_in_nonexisting_file() {
+            let dir = test::tmp_dir();
+            test::create_file(
+                "1.md",
+                "# One\n[anchor in non-existing file](2.md#foo)\n",
+                &dir,
+            );
+            let base = Tikibase::load(dir, &Config::default()).unwrap();
+            let have = scan(&base);
+            let want = vec![Issue::LinkToNonExistingFile {
+                location: Location {
+                    file: "1.md".into(),
+                    line: 1,
+                    start: 0,
+                    end: 39,
+                },
+                target: "2.md#foo".into(),
             }];
             pretty::assert_eq!(have.issues, want);
             assert_eq!(have.incoming_doc_links.data.len(), 0);
@@ -243,7 +326,7 @@ mod tests {
         }
 
         #[test]
-        fn external_urls() {
+        fn link_to_external_url() {
             let dir = test::tmp_dir();
             let content = indoc! {"
                 # One
