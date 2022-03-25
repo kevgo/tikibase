@@ -1,4 +1,3 @@
-@this
 Feature: recognize links to wrong anchors
 
   Background:
