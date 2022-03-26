@@ -25,7 +25,7 @@ pub fn add_occurrences(base: &mut Tikibase, location: Location, links: Vec<Missi
     }
     let occurrences_section = section_builder.result();
     let line = occurrences_section.line_number;
-    let end = occurrences_section.title_line.text().len() as u32;
+    let end = occurrences_section.title_line.text.len() as u32;
     doc.content_sections.push(occurrences_section);
     doc.save(&base_dir);
     Fix::AddedOccurrencesSection {
