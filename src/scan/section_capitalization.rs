@@ -81,6 +81,7 @@ fn variants_count(file_sections: &[FileSection]) -> usize {
 fn normalize(section_title: &str) -> String {
     section_title.to_ascii_lowercase()
 }
+
 #[cfg(test)]
 mod tests {
     use super::FileSection;
