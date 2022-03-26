@@ -1,5 +1,7 @@
 use super::{Document, Resource};
 use crate::{Config, Issue};
+use std::fs::File;
+use std::io::BufReader;
 use std::path::{Path, PathBuf};
 use walkdir::WalkDir;
 
@@ -56,6 +58,7 @@ impl Tikibase {
             if filename.starts_with('.') || filename == "tikibase.json" {
                 continue;
             }
+            // TODO: make method on Config object
             if let Some(ignore) = &config.ignore {
                 if ignore.iter().any(|i| i == &filename) {
                     continue;
@@ -64,10 +67,13 @@ impl Tikibase {
             let path = entry.path();
             let filepath = path.strip_prefix(&dir).unwrap();
             match FileType::from_ext(path.extension()) {
-                FileType::Document => match Document::load(filepath) {
-                    Ok(doc) => docs.push(doc),
-                    Err(err) => errors.push(err),
-                },
+                FileType::Document => {
+                    let file = File::open(&path).unwrap();
+                    match Document::from_reader(BufReader::new(file), filepath) {
+                        Ok(doc) => docs.push(doc),
+                        Err(err) => errors.push(err),
+                    }
+                }
                 FileType::Resource => resources.push(Resource {
                     path: filepath.into(),
                 }),

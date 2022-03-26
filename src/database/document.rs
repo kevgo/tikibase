@@ -165,11 +165,12 @@ impl Document {
             .last_line_abs()
     }
 
-    /// provides the Document inside the file with the given path
-    pub fn load<P: Into<PathBuf>>(path: P) -> Result<Document, Issue> {
-        let path = path.into();
-        let file = File::open(&path).unwrap();
-        let lines = ReaderLinesIterator::new(BufReader::new(file));
+    /// provides the Document contained in the file with the given path
+    pub fn from_reader<R: BufRead, P: Into<PathBuf>>(
+        reader: R,
+        path: P,
+    ) -> Result<Document, Issue> {
+        let lines = reader.lines().map(Result::unwrap);
         Document::from_lines(lines, path)
     }
 
