@@ -121,9 +121,7 @@ impl Document {
     #[cfg(test)]
     /// provides Document instances in tests
     pub fn from_str<P: Into<PathBuf>>(path: P, text: &str) -> Result<Document, Issue> {
-        let x = text.as_bytes();
-        let reader = BufReader::new(x);
-        let lines = ReaderLinesIterator::new(reader);
+        let lines = ReaderLinesIterator::new(BufReader::new(text.as_bytes()));
         Document::from_lines(lines, path)
     }
 
