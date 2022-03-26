@@ -14,7 +14,7 @@ pub(crate) fn scan(base: &Tikibase, config: &Config) -> Vec<Issue> {
                     file: doc.path.clone(),
                     line: section.line_number,
                     start: 0,
-                    end: doc.title_section.title_line.text.len() as u32,
+                    end: section.title_line.text.len() as u32,
                 },
             });
         }
@@ -129,7 +129,7 @@ mod tests {
                 file: PathBuf::from("1.md"),
                 line: 5,
                 start: 0,
-                end: 6,
+                end: 7,
             },
         }];
         assert_eq!(have, want);
