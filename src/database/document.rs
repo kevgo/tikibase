@@ -162,6 +162,15 @@ impl Document {
             .last_line_abs()
     }
 
+    /// provides the Document contained in the file with the given path
+    pub fn from_reader<R: BufRead, P: Into<PathBuf>>(
+        reader: R,
+        path: P,
+    ) -> Result<Document, Issue> {
+        let lines = reader.lines().map(Result::unwrap);
+        Document::from_lines(lines, path)
+    }
+
     /// provides all the references in this document
     pub fn references(&self) -> Vec<Reference> {
         let mut result = vec![];
