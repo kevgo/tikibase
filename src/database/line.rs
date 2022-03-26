@@ -5,7 +5,9 @@ use regex::Regex;
 use std::path::Path;
 
 #[derive(Debug, Default, PartialEq)]
-pub struct Line(String);
+pub struct Line {
+    pub text: String,
+}
 
 static MD_RE: Lazy<Regex> = Lazy::new(|| Regex::new(r#"(!?)\[[^\]]*\]\(([^)]*)\)"#).unwrap());
 static A_HTML_RE: Lazy<Regex> = Lazy::new(|| Regex::new(r#"<a href="(.*)">(.*)</a>"#).unwrap());
@@ -23,7 +25,7 @@ impl Line {
         file: &Path,
         line: u32,
     ) -> Result<(), Issue> {
-        let sanitized = sanitize_code_segments(&self.0, file, line)?;
+        let sanitized = sanitize_code_segments(&self.text, file, line)?;
         for captures in FOOTNOTE_RE.captures_iter(&sanitized) {
             let total_match = captures.get(0).unwrap();
             let footnote = Footnote {
@@ -42,19 +44,19 @@ impl Line {
     }
 
     pub fn from<S: Into<String>>(text: S) -> Line {
-        Line(text.into())
+        Line { text: text.into() }
     }
 
     /// indicates whether this line is the beginning or end of a code block
     pub fn is_code_block_boundary(&self) -> bool {
-        self.text().starts_with("```")
+        self.text.starts_with("```")
     }
 
     /// provides all links and images in this line
     // TODO: reuse shared global Vec here
     pub fn references(&self, line: u32) -> Vec<Reference> {
         let mut result = Vec::new();
-        for cap in MD_RE.captures_iter(&self.0) {
+        for cap in MD_RE.captures_iter(&self.text) {
             let full_match = cap.get(0).unwrap();
             match &cap[1] {
                 "!" => result.push(Reference::Image {
@@ -64,12 +66,8 @@ impl Line {
                     end: full_match.end() as u32,
                 }),
                 "" => {
-                    let mut destination = cap[2].to_string();
-                    if let Some(idx) = destination.find('#') {
-                        destination.truncate(idx);
-                    }
                     result.push(Reference::Link {
-                        destination,
+                        target: cap[2].into(),
                         line,
                         start: full_match.start() as u32,
                         end: full_match.end() as u32,
@@ -78,16 +76,16 @@ impl Line {
                 _ => panic!("unexpected capture: '{}'", &cap[1]),
             }
         }
-        for cap in A_HTML_RE.captures_iter(&self.0) {
+        for cap in A_HTML_RE.captures_iter(&self.text) {
             let full_match = cap.get(0).unwrap();
             result.push(Reference::Link {
-                destination: cap[1].to_string(),
+                target: cap[1].into(),
                 line,
                 start: full_match.start() as u32,
                 end: full_match.end() as u32,
             });
         }
-        for cap in IMG_HTML_RE.captures_iter(&self.0) {
+        for cap in IMG_HTML_RE.captures_iter(&self.text) {
             let full_match = cap.get(0).unwrap();
             result.push(Reference::Image {
                 src: cap[1].to_string(),
@@ -97,11 +95,6 @@ impl Line {
             });
         }
         result
-    }
-
-    /// provides the text of this line
-    pub fn text(&self) -> &str {
-        &self.0
     }
 }
 
@@ -241,13 +234,13 @@ mod tests {
             let have = line.references(12);
             let want = vec![
                 Reference::Link {
-                    destination: "one.md".into(),
+                    target: "one.md".into(),
                     line: 12,
                     start: 12,
                     end: 25,
                 },
                 Reference::Link {
-                    destination: "two.md".into(),
+                    target: "two.md#pieces".into(),
                     line: 12,
                     start: 48,
                     end: 75,
@@ -261,7 +254,7 @@ mod tests {
             let line = Line::from(r#"an HTML link: <a href="two.md">two</a>"#);
             let have = line.references(12);
             let want = vec![Reference::Link {
-                destination: "two.md".into(),
+                target: "two.md".into(),
                 line: 12,
                 start: 14,
                 end: 38,

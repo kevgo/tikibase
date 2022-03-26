@@ -32,7 +32,7 @@ pub enum Issue {
         location: Location,
         target: String,
     },
-    BrokenLink {
+    LinkToNonExistingFile {
         location: Location,
         target: String,
     },
@@ -55,10 +55,22 @@ pub enum Issue {
         location: Location,
         message: String,
     },
+    LinkToNonExistingAnchorInCurrentDocument {
+        location: Location,
+        /// the non-existing anchor in the current
+        anchor: String,
+    },
+    LinkToNonExistingAnchorInExistingDocument {
+        location: Location,
+        /// the file that the link points to
+        target_file: String,
+        /// the non-existing anchor in that file
+        anchor: String,
+    },
     LinkToSameDocument {
         location: Location,
     },
-    LinkWithoutDestination {
+    LinkWithoutTarget {
         location: Location,
     },
     MissingLinks {

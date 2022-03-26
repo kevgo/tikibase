@@ -2,7 +2,7 @@
 #[derive(Debug, PartialEq)]
 pub enum Reference {
     Link {
-        destination: String,
+        target: String,
         line: u32,
         start: u32,
         end: u32,

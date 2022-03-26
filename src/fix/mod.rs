@@ -30,7 +30,7 @@ pub fn fix(issue: Issue, base: &mut Tikibase, config: &Config) -> Option<Fix> {
             location: _,
             target: _,
         }
-        | Issue::BrokenLink {
+        | Issue::LinkToNonExistingFile {
             location: _,
             target: _,
         }
@@ -47,6 +47,15 @@ pub fn fix(issue: Issue, base: &mut Tikibase, config: &Config) -> Option<Fix> {
             message: _,
             location: _,
         }
+        | Issue::LinkToNonExistingAnchorInCurrentDocument {
+            location: _,
+            anchor: _,
+        }
+        | Issue::LinkToNonExistingAnchorInExistingDocument {
+            location: _,
+            target_file: _,
+            anchor: _,
+        }
         | Issue::MissingFootnote {
             location: _,
             identifier: _,
@@ -56,7 +65,7 @@ pub fn fix(issue: Issue, base: &mut Tikibase, config: &Config) -> Option<Fix> {
             location: _,
         }
         | Issue::LinkToSameDocument { location: _ }
-        | Issue::LinkWithoutDestination { location: _ }
+        | Issue::LinkWithoutTarget { location: _ }
         | Issue::NoTitleSection { location: _ }
         | Issue::OrphanedResource { location: _ }
         | Issue::SectionWithoutHeader { location: _ }

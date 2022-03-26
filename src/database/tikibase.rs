@@ -1,7 +1,7 @@
 use super::{Document, Resource};
 use crate::{Config, Issue};
 use std::fs::File;
-use std::io::{BufRead, BufReader};
+use std::io::BufReader;
 use std::path::{Path, PathBuf};
 use walkdir::WalkDir;
 
@@ -58,6 +58,7 @@ impl Tikibase {
             if filename.starts_with('.') || filename == "tikibase.json" {
                 continue;
             }
+            // TODO: make method on Config object
             if let Some(ignore) = &config.ignore {
                 if ignore.iter().any(|i| i == &filename) {
                     continue;
@@ -68,8 +69,7 @@ impl Tikibase {
             match FileType::from_ext(path.extension()) {
                 FileType::Document => {
                     let file = File::open(&path).unwrap();
-                    let lines = BufReader::new(file).lines().map(Result::unwrap);
-                    match Document::from_lines(lines, filepath) {
+                    match Document::from_reader(BufReader::new(file), filepath) {
                         Ok(doc) => docs.push(doc),
                         Err(err) => errors.push(err),
                     }
@@ -131,7 +131,7 @@ mod tests {
             test::create_file("one.md", "# test doc", &dir);
             let base = Tikibase::load(dir, &Config::default()).unwrap();
             let doc = base.get_doc("one.md").expect("document not found");
-            assert_eq!(doc.title_section.title_line.text(), "# test doc");
+            assert_eq!(doc.title_section.title_line.text, "# test doc");
         }
 
         #[test]
@@ -151,7 +151,7 @@ mod tests {
             test::create_file("one.md", "# test doc", &dir);
             let mut base = Tikibase::load(dir, &Config::default()).unwrap();
             let doc = base.get_doc_mut("one.md").expect("document not found");
-            assert_eq!(doc.title_section.title_line.text(), "# test doc");
+            assert_eq!(doc.title_section.title_line.text, "# test doc");
         }
 
         #[test]

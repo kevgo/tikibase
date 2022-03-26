@@ -94,7 +94,7 @@ impl Document {
                     Some(_) => None,
                     None => Some(CodeblockStart {
                         line: i as u32,
-                        len: line.text().len() as u32,
+                        len: line.text.len() as u32,
                     }),
                 };
                 continue;
@@ -160,6 +160,15 @@ impl Document {
             .or(Some(&self.title_section))
             .unwrap()
             .last_line_abs()
+    }
+
+    /// provides the Document contained in the file with the given path
+    pub fn from_reader<R: BufRead, P: Into<PathBuf>>(
+        reader: R,
+        path: P,
+    ) -> Result<Document, Issue> {
+        let lines = reader.lines().map(Result::unwrap);
+        Document::from_lines(lines, path)
     }
 
     /// provides all the references in this document
@@ -685,7 +694,7 @@ mod tests {
         let have = Document::from_str("test.md", give).unwrap().references();
         let want = vec![
             Reference::Link {
-                destination: "1.md".into(),
+                target: "1.md".into(),
                 line: 1,
                 start: 8,
                 end: 19,

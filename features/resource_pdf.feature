@@ -1,21 +1,18 @@
-Feature: recognize/fix links to non-existing documents
+Feature: PDF resources
 
   Background:
     Given file "1.md" with content:
       """
       # Title
 
-      [Google]()
+      Check out this [PDF file](foo.pdf).
       """
+    And file "foo.pdf"
 
-  Scenario: check
+  Scenario: this
     When checking
-    Then it prints:
-      """
-      1.md:3  link without target
-      """
+    Then it finds no issues
     And all files are unchanged
-    And the exit code is 1
 
   Scenario: fix
     When fixing
@@ -24,9 +21,5 @@ Feature: recognize/fix links to non-existing documents
 
   Scenario: pitstop
     When doing a pitstop
-    Then it prints:
-      """
-      1.md:3  link without target
-      """
+    Then it finds no issues
     And all files are unchanged
-    And the exit code is 1
