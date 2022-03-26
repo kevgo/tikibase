@@ -7,11 +7,12 @@ pub(crate) fn scan(base: &Tikibase, config: &Config) -> Vec<Issue> {
         Some(expected_sections) => expected_sections,
     };
     for doc in &base.docs {
-        if !matches_schema(&doc.section_titles(), expected_order) {
+        if let Some(mismatching) = first_mismatching(&doc.section_titles(), expected_order) {
+            let section = doc.section_with_title(&mismatching).unwrap();
             issues.push(Issue::UnorderedSections {
                 location: crate::Location {
                     file: doc.path.clone(),
-                    line: 0,
+                    line: section.line_number,
                     start: 0,
                     end: doc.title_section.title_line.text.len() as u32,
                 },
@@ -21,11 +22,11 @@ pub(crate) fn scan(base: &Tikibase, config: &Config) -> Vec<Issue> {
     issues
 }
 
-/// Indicates whether the given actual contains a subset of schema, in the same order as schema.
-fn matches_schema(actual: &[&str], schema: &[String]) -> bool {
+/// provides the first element of actual that doesn't match schema.
+fn first_mismatching(actual: &[&str], schema: &[String]) -> Option<String> {
     if actual.len() < 2 {
         // 0 or 1 elements --> order always matches
-        return true;
+        return None;
     }
     let mut actual_iter = actual.iter();
     let mut actual_element = actual_iter.next();
@@ -33,11 +34,11 @@ fn matches_schema(actual: &[&str], schema: &[String]) -> bool {
     let mut schema_element = schema_iter.next();
     loop {
         let actual_value = match actual_element {
-            None => return true, // we reached the end of the actual list --> actual matches schema
+            None => return None, // we reached the end of the actual list --> actual matches schema
             Some(value) => value,
         };
         let schema_value = match schema_element {
-            None => return false, // we reached the end of schema but there are still elements in actual --> no match
+            None => return Some(actual_value.to_string()), // we reached the end of schema but there are still elements in actual --> no match
             Some(value) => value,
         };
 
@@ -63,36 +64,74 @@ fn matches_schema(actual: &[&str], schema: &[String]) -> bool {
 
 #[cfg(test)]
 mod tests {
+    use std::path::PathBuf;
+
+    use crate::database::Tikibase;
+    use crate::{test, Config, Issue, Location};
+    use indoc::indoc;
 
     mod matches_schema {
-        use super::super::matches_schema;
+        use super::super::first_mismatching;
 
         #[test]
         fn perfect_match() {
             let schema = vec!["one".to_string(), "two".to_string(), "three".to_string()];
             let give = vec!["one", "two", "three"];
-            assert!(matches_schema(&give, &schema));
+            assert_eq!(first_mismatching(&give, &schema), None);
         }
 
         #[test]
         fn match_but_missing() {
             let schema = vec!["one".to_string(), "two".to_string(), "three".to_string()];
             let give = vec!["one", "three"];
-            assert!(matches_schema(&give, &schema));
+            assert_eq!(first_mismatching(&give, &schema), None);
         }
 
         #[test]
         fn mismatch() {
             let schema = vec!["one".to_string(), "two".to_string(), "three".to_string()];
-            let give = vec!["two", "one"];
-            assert!(!matches_schema(&give, &schema));
+            let give = vec!["one", "three", "two"];
+            assert_eq!(first_mismatching(&give, &schema), Some("two".into()));
         }
 
         #[test]
         fn empty() {
             let schema = vec!["one".to_string(), "two".to_string(), "three".to_string()];
             let give = Vec::new();
-            assert!(matches_schema(&give, &schema));
+            assert_eq!(first_mismatching(&give, &schema), None);
         }
+    }
+
+    #[test]
+    fn mismatching_order() {
+        let dir = test::tmp_dir();
+        let content1 = indoc! {"
+            # Test
+            ### one
+            text
+            ### three
+            text
+            ### two
+            text"};
+        test::create_file("1.md", content1, &dir);
+        let content2 = indoc! {"
+            # another
+            [1](1.md) content"};
+        test::create_file("2.md", content2, &dir);
+        let config = Config {
+            sections: Some(vec!["one".into(), "two".into(), "three".into()]),
+            ignore: None,
+        };
+        let base = Tikibase::load(dir, &Config::default()).unwrap();
+        let have = super::scan(&base, &config);
+        let want = vec![Issue::UnorderedSections {
+            location: Location {
+                file: PathBuf::from("1.md"),
+                line: 5,
+                start: 0,
+                end: 6,
+            },
+        }];
+        assert_eq!(have, want);
     }
 }

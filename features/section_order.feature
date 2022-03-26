@@ -16,13 +16,13 @@ Feature: verify the ordering of content sections
       # Test
 
       ### one
-      text
+      The one.
 
       ### three
-      text
+      The third.
 
       ### two
-      text
+      The [other](other.md).
       """
     And file "other.md" with content:
       """
@@ -34,7 +34,7 @@ Feature: verify the ordering of content sections
     When checking
     Then it prints:
       """
-      unordered.md:6  sections occur in different order than specified by tikibase.json
+      unordered.md:9  sections occur in different order than specified by tikibase.json
       """
     And the exit code is 1
 
@@ -42,20 +42,19 @@ Feature: verify the ordering of content sections
     When fixing
     Then it prints:
       """
-      unordered.md:6  fixed section order
+      unordered.md:9  fixed section order
       """
     And file "unordered.md" should contain:
       """
       # Test
 
       ### one
-      text
+      The one.
 
       ### two
-      [other](other.md)
-
+      The [other](other.md).
       ### three
-      text
+      The third.
       """
     And the exit code is 0
 
@@ -63,19 +62,18 @@ Feature: verify the ordering of content sections
     When doing a pitstop
     Then it prints:
       """
-      unordered.md:6  fixed section order
+      unordered.md:9  fixed section order
       """
     And file "unordered.md" should contain:
       """
       # Test
 
       ### one
-      text
+      The one.
 
       ### two
-      [other](other.md)
-
+      The [other](other.md).
       ### three
-      text
+      The third.
       """
     And the exit code is 0
