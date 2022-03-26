@@ -56,10 +56,10 @@ impl Section {
 
     /// provides the complete text of this section
     pub fn text(&self) -> String {
-        let mut result = self.title_line.text().to_string();
+        let mut result = self.title_line.text.to_string();
         result.push('\n');
         for line in &self.body {
-            result.push_str(line.text());
+            result.push_str(&line.text);
             result.push('\n');
         }
         result
@@ -68,10 +68,10 @@ impl Section {
     /// provides a human-readable description of this section, e.g. "Hello" for a section with the title "# Hello"
     /// as well as the column at which this description stars on the line
     pub fn title(&self) -> SectionTitle {
-        for (i, c) in self.title_line.text().char_indices() {
+        for (i, c) in self.title_line.text.char_indices() {
             if c != '#' && c != ' ' {
                 return SectionTitle {
-                    text: &self.title_line.text()[i..],
+                    text: &self.title_line.text[i..],
                     start: i as u32,
                 };
             }
@@ -236,9 +236,9 @@ mod tests {
         let doc = Document::from_str("foo", give).unwrap();
         let mut have = doc.title_section.lines();
         let line = have.next().expect("expected title line");
-        assert_eq!(line.text(), "# test");
+        assert_eq!(line.text, "# test");
         let line = have.next().expect("expected body line 1");
-        assert_eq!(line.text(), "title content");
+        assert_eq!(line.text, "title content");
         assert!(have.next().is_none(), "unexpected line");
     }
 

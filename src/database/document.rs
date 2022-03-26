@@ -94,7 +94,7 @@ impl Document {
                     Some(_) => None,
                     None => Some(CodeblockStart {
                         line: i as u32,
-                        len: line.text().len() as u32,
+                        len: line.text.len() as u32,
                     }),
                 };
                 continue;
