@@ -64,11 +64,10 @@ fn first_mismatching(actual: &[&str], schema: &[String]) -> Option<String> {
 
 #[cfg(test)]
 mod tests {
-    use std::path::PathBuf;
-
     use crate::database::Tikibase;
     use crate::{test, Config, Issue, Location};
     use indoc::indoc;
+    use std::path::PathBuf;
 
     mod matches_schema {
         use super::super::first_mismatching;
