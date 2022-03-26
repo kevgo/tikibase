@@ -64,8 +64,7 @@ fn first_mismatching(actual: &[&str], schema: &[String]) -> Option<String> {
 
 #[cfg(test)]
 mod tests {
-    use crate::database::Tikibase;
-    use crate::{test, Config, Issue, Location};
+    use crate::{test, Config, Issue, Location, Tikibase};
     use indoc::indoc;
     use std::path::PathBuf;
 
