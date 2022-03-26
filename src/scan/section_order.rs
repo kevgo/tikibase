@@ -38,7 +38,7 @@ fn first_mismatching(actual: &[&str], schema: &[String]) -> Option<String> {
             Some(value) => value,
         };
         let schema_value = match schema_element {
-            None => return Some(actual_value.to_string()), // we reached the end of schema but there are still elements in actual --> no match
+            None => return Some((*actual_value).to_string()), // we reached the end of schema but there are still elements in actual --> no match
             Some(value) => value,
         };
 
