@@ -75,28 +75,32 @@ mod tests {
         fn perfect_match() {
             let schema = vec!["one".to_string(), "two".to_string(), "three".to_string()];
             let give = vec!["one", "two", "three"];
-            assert_eq!(first_mismatching(&give, &schema), None);
+            let have = first_mismatching(&give, &schema);
+            assert_eq!(have, None);
         }
 
         #[test]
         fn match_but_missing() {
             let schema = vec!["one".to_string(), "two".to_string(), "three".to_string()];
             let give = vec!["one", "three"];
-            assert_eq!(first_mismatching(&give, &schema), None);
+            let have = first_mismatching(&give, &schema);
+            assert_eq!(have, None);
         }
 
         #[test]
         fn mismatch() {
             let schema = vec!["one".to_string(), "two".to_string(), "three".to_string()];
             let give = vec!["one", "three", "two"];
-            assert_eq!(first_mismatching(&give, &schema), Some("two".into()));
+            let have = first_mismatching(&give, &schema);
+            assert_eq!(have, Some("two".into()));
         }
 
         #[test]
         fn empty() {
             let schema = vec!["one".to_string(), "two".to_string(), "three".to_string()];
             let give = Vec::new();
-            assert_eq!(first_mismatching(&give, &schema), None);
+            let have = first_mismatching(&give, &schema);
+            assert_eq!(have, None);
         }
     }
 
