@@ -13,6 +13,7 @@ pub struct Message {
     pub line: u32,
     pub start: u32,
     pub end: u32,
+    pub fixable: bool,
 }
 
 impl Message {
@@ -35,6 +36,7 @@ impl Message {
                 line: location.line,
                 start: location.start,
                 end: location.end,
+                fixable: false,
             },
             Fix::AddedOccurrencesSection { location } => Message {
                 text: "added occurrences section".into(),
@@ -42,6 +44,7 @@ impl Message {
                 line: location.line,
                 start: location.start,
                 end: location.end,
+                fixable: false,
             },
             Fix::RemovedObsoleteOccurrencesSection { location } => Message {
                 text: "removed obsolete occurrences section".into(),
@@ -49,6 +52,7 @@ impl Message {
                 line: location.line,
                 start: location.start,
                 end: location.end,
+                fixable: false,
             },
             Fix::SortedSections { location } => Message {
                 text: "fixed section order".into(),
@@ -56,6 +60,7 @@ impl Message {
                 line: location.line,
                 start: location.start,
                 end: location.end,
+                fixable: false,
             },
         }
     }
@@ -69,6 +74,7 @@ impl Message {
                 line: location.line,
                 start: location.start,
                 end: location.end,
+                fixable: false,
             },
             Issue::CannotReadConfigurationFile { location, message } => Message {
                 text: format!(
@@ -80,6 +86,7 @@ impl Message {
                 line: location.line,
                 start: location.start,
                 end: location.end,
+                fixable: false,
             },
             Issue::DocumentWithoutLinks { location } => Message {
                 text: "document is not connected to any other documents".into(),
@@ -87,6 +94,7 @@ impl Message {
                 line: location.line,
                 start: location.start,
                 end: location.end,
+                fixable: false,
             },
             Issue::DuplicateSection { location, title } => Message {
                 text: format!("document contains multiple \"{}\" sections", title),
@@ -94,6 +102,7 @@ impl Message {
                 line: location.line,
                 start: location.start,
                 end: location.end,
+                fixable: false,
             },
             Issue::EmptySection { location, title } => Message {
                 text: format!("section \"{}\" has no content", title),
@@ -101,6 +110,7 @@ impl Message {
                 line: location.line,
                 start: location.start,
                 end: location.end,
+                fixable: true,
             },
             Issue::InvalidConfigurationFile { location, message } => Message {
                 text: format!("invalid configuration file structure: {}", message),
@@ -108,6 +118,7 @@ impl Message {
                 line: location.line,
                 start: location.start,
                 end: location.end,
+                fixable: false,
             },
             Issue::LinkToNonExistingAnchorInCurrentDocument { location, anchor } => Message {
                 text: format!(
@@ -118,6 +129,7 @@ impl Message {
                 line: location.line,
                 start: location.start,
                 end: location.end,
+                fixable: false,
             },
             Issue::LinkToNonExistingAnchorInExistingDocument {
                 location,
@@ -132,6 +144,7 @@ impl Message {
                 line: location.line,
                 start: location.start,
                 end: location.end,
+                fixable: false,
             },
             Issue::LinkToNonExistingFile { location, target } => Message {
                 text: format!("link to non-existing file \"{}\"", target),
@@ -139,6 +152,7 @@ impl Message {
                 line: location.line,
                 start: location.start,
                 end: location.end,
+                fixable: false,
             },
             Issue::LinkToSameDocument { location } => Message {
                 text: "document contains link to itself".into(),
@@ -146,6 +160,7 @@ impl Message {
                 line: location.line,
                 start: location.start,
                 end: location.end,
+                fixable: false,
             },
             Issue::LinkWithoutTarget { location } => Message {
                 text: "link without target".into(),
@@ -153,6 +168,7 @@ impl Message {
                 line: location.line,
                 start: location.start,
                 end: location.end,
+                fixable: false,
             },
             Issue::MissingLinks { location, links } => {
                 let links: Vec<Cow<str>> =
@@ -163,6 +179,7 @@ impl Message {
                     line: location.line,
                     start: location.start,
                     end: location.end,
+                    fixable: true,
                 }
             }
             Issue::MissingFootnote {
@@ -174,6 +191,7 @@ impl Message {
                 line: location.line,
                 start: location.start,
                 end: location.end,
+                fixable: false,
             },
             Issue::MixCapSection { location, variants } => Message {
                 text: format!(
@@ -184,6 +202,7 @@ impl Message {
                 line: location.line,
                 start: location.start,
                 end: location.end,
+                fixable: false,
             },
             Issue::NoTitleSection { location } => Message {
                 text: "no title section".into(),
@@ -191,6 +210,7 @@ impl Message {
                 line: location.line,
                 start: location.start,
                 end: location.end,
+                fixable: false,
             },
             Issue::ObsoleteOccurrencesSection { location } => Message {
                 text: "obsolete \"occurrences\" section".into(),
@@ -198,6 +218,7 @@ impl Message {
                 line: location.line,
                 start: location.start,
                 end: location.end,
+                fixable: true,
             },
             Issue::OrphanedResource { location } => Message {
                 text: "file isn't linked to".into(),
@@ -205,6 +226,7 @@ impl Message {
                 line: location.line,
                 start: location.start,
                 end: location.end,
+                fixable: false,
             },
             Issue::SectionWithoutHeader { location } => Message {
                 text: "section with empty title".into(),
@@ -212,6 +234,7 @@ impl Message {
                 line: location.line,
                 start: location.start,
                 end: location.end,
+                fixable: false,
             },
             Issue::UnclosedBacktick { location } => Message {
                 text: "unclosed backtick".into(),
@@ -219,6 +242,7 @@ impl Message {
                 line: location.line,
                 start: location.start,
                 end: location.end,
+                fixable: false,
             },
             Issue::UnclosedFence { location } => Message {
                 text: "unclosed fence".into(),
@@ -226,6 +250,7 @@ impl Message {
                 line: location.line,
                 start: location.start,
                 end: location.end,
+                fixable: false,
             },
             Issue::UnknownSection {
                 location,
@@ -246,6 +271,7 @@ impl Message {
                     line: location.line,
                     start: location.start,
                     end: location.end,
+                    fixable: false,
                 }
             }
             Issue::UnorderedSections { location } => Message {
@@ -254,6 +280,7 @@ impl Message {
                 line: location.line,
                 start: location.start,
                 end: location.end,
+                fixable: true,
             },
             Issue::UnusedFootnote {
                 location,
@@ -264,6 +291,7 @@ impl Message {
                 line: location.line,
                 start: location.start,
                 end: location.end,
+                fixable: false,
             },
         }
     }
