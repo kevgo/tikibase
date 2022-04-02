@@ -365,25 +365,27 @@ mod tests {
 
         #[test]
         fn with_content() {
-            let issue1 = Message {
-                text: "issue 1".into(),
-                ..Message::default()
-            };
-            let issue2 = Message {
-                text: "issue 2".into(),
-                ..Message::default()
-            };
-            let fix1 = Message {
-                text: "fix 1".into(),
-                ..Message::default()
-            };
-            let fix2 = Message {
-                text: "fix 2".into(),
-                ..Message::default()
-            };
             let give = Messages {
-                issues: vec![issue1, issue2],
-                fixes: vec![fix1, fix2],
+                issues: vec![
+                    Message {
+                        text: "issue 1".into(),
+                        ..Message::default()
+                    },
+                    Message {
+                        text: "issue 2".into(),
+                        ..Message::default()
+                    },
+                ],
+                fixes: vec![
+                    Message {
+                        text: "fix 1".into(),
+                        ..Message::default()
+                    },
+                    Message {
+                        text: "fix 2".into(),
+                        ..Message::default()
+                    },
+                ],
                 ..Messages::default()
             };
             let result = give.all();
