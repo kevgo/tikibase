@@ -360,7 +360,7 @@ mod tests {
             let give = Messages::default();
             let want: Vec<Message> = vec![];
             let have = give.all();
-            assert_eq!(have, want)
+            assert_eq!(have, want);
         }
 
         #[test]
@@ -391,7 +391,7 @@ mod tests {
             let result = give.all();
             let have: Vec<String> = result.into_iter().map(|message| message.text).collect();
             let want = vec!["issue 1", "issue 2", "fix 1", "fix 2"];
-            assert_eq!(have, want)
+            assert_eq!(have, want);
         }
     }
 
@@ -401,7 +401,7 @@ mod tests {
         #[test]
         fn empty() {
             let give = Messages::default();
-            assert!(give.is_empty())
+            assert!(give.is_empty());
         }
 
         #[test]
@@ -410,7 +410,7 @@ mod tests {
                 issues: vec![Message::default()],
                 ..Messages::default()
             };
-            assert!(!give.is_empty())
+            assert!(!give.is_empty());
         }
 
         #[test]
@@ -419,7 +419,7 @@ mod tests {
                 fixes: vec![Message::default()],
                 ..Messages::default()
             };
-            assert!(!give.is_empty())
+            assert!(!give.is_empty());
         }
     }
 }
