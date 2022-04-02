@@ -352,31 +352,72 @@ impl Messages {
 #[cfg(test)]
 mod tests {
 
+    mod all {
+        use crate::{Message, Messages};
+
+        #[test]
+        fn empty() {
+            let give = Messages::default();
+            let want: Vec<Message> = vec![];
+            let have = give.all();
+            assert_eq!(have, want)
+        }
+
+        #[test]
+        fn with_content() {
+            let issue1 = Message {
+                text: "issue 1".into(),
+                ..Message::default()
+            };
+            let issue2 = Message {
+                text: "issue 2".into(),
+                ..Message::default()
+            };
+            let fix1 = Message {
+                text: "fix 1".into(),
+                ..Message::default()
+            };
+            let fix2 = Message {
+                text: "fix 2".into(),
+                ..Message::default()
+            };
+            let give = Messages {
+                issues: vec![issue1, issue2],
+                fixes: vec![fix1, fix2],
+                ..Messages::default()
+            };
+            let result = give.all();
+            let have: Vec<String> = result.into_iter().map(|message| message.text).collect();
+            let want = vec!["issue 1", "issue 2", "fix 1", "fix 2"];
+            assert_eq!(have, want)
+        }
+    }
+
     mod is_empty {
         use crate::{Message, Messages};
 
         #[test]
         fn empty() {
-            let have = Messages::default();
-            assert!(have.is_empty())
+            let give = Messages::default();
+            assert!(give.is_empty())
         }
 
         #[test]
         fn with_issues() {
-            let have = Messages {
+            let give = Messages {
                 issues: vec![Message::default()],
                 ..Messages::default()
             };
-            assert!(!have.is_empty())
+            assert!(!give.is_empty())
         }
 
         #[test]
         fn with_fixes() {
-            let have = Messages {
+            let give = Messages {
                 fixes: vec![Message::default()],
                 ..Messages::default()
             };
-            assert!(!have.is_empty())
+            assert!(!give.is_empty())
         }
     }
 }
