@@ -2,25 +2,25 @@
 
 # Tikibase
 
-![build status](https://github.com/kevgo/tikibase/actions/workflows/ci.yml/badge.svg)
-
 _the un-database_
 
-Whatever note taking or knowledge base application you use and love today, it
-will be outdated in 5 years and unsupported/unavailable in 10 years. All your
-data will be gone with it.
+Whatever note taking or knowledge base application you love and use today, it
+will be dated in 5 years and unsupported/unavailable in 10 years. All your data
+will be gone with it.
 
-Tikibase solves this problem. It is a knowledge base available on all current
-and future compute platforms. Tikibase works without any particular database
-server or viewer application. If your computer can display/edit text files, you
-can use it to work on your Tikibase.
+Tikibase is a knowledge base available on all current and future computers
+because it isn't based on a dedicated server or viewer application that might be
+unavailable on future devices. A Tikibase is pure human readable and machine
+parsable data, a collection of Markdown files in a folder. You view, change, and
+organize these files using the text or Markdown editor of your choice. If your
+computer can display and edit text files, you can use your Tikibase on it. A
+powerful option for efficiently working on large Tikibases in the 2020s is
+[VSCode Markdown IDE](https://github.com/kevgo/vscode-markdown-ide).
 
-A Tikibase is just a set of normal Markdown files in a folder. You view, change,
-and organize these files using the text or Markdown editor of your choice. You
-manage changes to the files in your knowledge base using a version control
-system like Git or Mercurial. The CLI application in this repository is an
-optional linter that helps maintain a Tikibase by finding and fixing a number of
-issues:
+You manage changes to your knowledge base using a version control system like
+Git, Mercurial, or whatever they use in the future. The open-source CLI
+application in this repository is an optional linter that helps keep a Tikibase
+consistent by finding and fixing these issues:
 
 - **broken links/images:** links pointing to non-existing local files
 - **orphaned resources:** non-Markdown files not referenced by a Markdown
@@ -29,16 +29,19 @@ issues:
   link to document A
 - **links to the same document:** document A should not contain links to
   document A
-- **inconsistent section capitalization**
-- **duplicate sections**
+- **inconsistent heading capitalization:** when you use `## FooBar` and
+  `## Foobar` in different documents
+- **duplicate headings in a file**
 - **empty sections**
 - **missing footnote definitions and references**
 
 When the config file defines the allowed section names, Tikibase verifies these
 additional properties:
 
-- **unknown sections**
-- **section order**
+- **unknown headings**
+- **heading order**
+
+![build status](https://github.com/kevgo/tikibase/actions/workflows/ci.yml/badge.svg)
 
 ### installation
 
@@ -51,7 +54,7 @@ your platform or install from source:
 
 ### usage
 
-- while working on Markdown files, run `tikibase ps` ("pitstop"). The pitstop
+- while working on Markdown files, run `tikibase p` ("pitstop"). The pitstop
   command fixes all auto-fixable issues and lists the remaining ones.
 - in your tests/CI: run `tikibase check` (lists all issues)
 - to see all available commands: `tikibase help`
