@@ -6,7 +6,7 @@ use std::borrow::Cow;
 use std::path::PathBuf;
 
 /// human-readable summary of running a single command
-#[derive(Debug, PartialEq, Serialize)]
+#[derive(Debug, Default, PartialEq, Serialize)]
 pub struct Message {
     pub text: String,
     pub file: PathBuf,
@@ -299,32 +299,127 @@ impl Message {
 
 #[derive(Debug, Default, PartialEq)]
 pub struct Messages {
-    pub messages: Vec<Message>,
+    /// messages for identified issues
+    pub issues: Vec<Message>,
+    /// messages for fixed issues
+    pub fixes: Vec<Message>,
     pub exit_code: i32,
 }
 
 impl Messages {
+    /// provides the combined set of issues and fixes
+    pub fn all(mut self) -> Vec<Message> {
+        let mut result = vec![];
+        result.append(&mut self.issues);
+        result.append(&mut self.fixes);
+        result
+    }
     pub fn from_issue(issue: Issue) -> Messages {
         Messages {
-            messages: vec![Message::from_issue(issue)],
+            issues: vec![Message::from_issue(issue)],
+            fixes: vec![],
             exit_code: 1,
         }
     }
     pub fn from_issues(issues: Vec<Issue>) -> Messages {
+        let exit_code = issues.len() as i32;
         Messages {
-            exit_code: issues.len() as i32,
-            messages: issues.into_iter().map(Message::from_issue).collect(),
+            issues: issues.into_iter().map(Message::from_issue).collect(),
+            fixes: vec![],
+            exit_code,
         }
     }
 
     pub fn from_outcome(outcome: Outcome) -> Messages {
         let exit_code = outcome.issues.len() as i32;
-        let mut messages = vec![];
-        messages.extend(outcome.fixes.into_iter().map(Message::from_fix));
-        messages.extend(outcome.issues.into_iter().map(Message::from_issue));
         Messages {
-            messages,
+            issues: outcome
+                .issues
+                .into_iter()
+                .map(Message::from_issue)
+                .collect(),
+            fixes: outcome.fixes.into_iter().map(Message::from_fix).collect(),
             exit_code,
+        }
+    }
+
+    /// indicates whether there are any messages
+    pub fn is_empty(&self) -> bool {
+        self.issues.is_empty() && self.fixes.is_empty()
+    }
+}
+
+#[cfg(test)]
+mod tests {
+
+    mod all {
+        use crate::{Message, Messages};
+
+        #[test]
+        fn empty() {
+            let give = Messages::default();
+            let want: Vec<Message> = vec![];
+            let have = give.all();
+            assert_eq!(have, want);
+        }
+
+        #[test]
+        fn with_content() {
+            let give = Messages {
+                issues: vec![
+                    Message {
+                        text: "issue 1".into(),
+                        ..Message::default()
+                    },
+                    Message {
+                        text: "issue 2".into(),
+                        ..Message::default()
+                    },
+                ],
+                fixes: vec![
+                    Message {
+                        text: "fix 1".into(),
+                        ..Message::default()
+                    },
+                    Message {
+                        text: "fix 2".into(),
+                        ..Message::default()
+                    },
+                ],
+                ..Messages::default()
+            };
+            let result = give.all();
+            let have: Vec<String> = result.into_iter().map(|message| message.text).collect();
+            let want = vec!["issue 1", "issue 2", "fix 1", "fix 2"];
+            assert_eq!(have, want);
+        }
+    }
+
+    mod is_empty {
+        use crate::{Message, Messages};
+
+        #[test]
+        fn empty() {
+            let give = Messages::default();
+            assert!(give.is_empty());
+        }
+
+        #[test]
+        fn with_issues() {
+            let give = Messages {
+                issues: vec![Message::default()],
+                ..Messages::default()
+            };
+            assert!(!give.is_empty());
+        }
+
+        #[test]
+        fn with_fixes() {
+            let give = Messages {
+                fixes: vec![Message::default()],
+                ..Messages::default()
+            };
+            assert!(!give.is_empty());
         }
     }
 }

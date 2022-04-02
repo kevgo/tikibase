@@ -4,21 +4,31 @@ use clap::StructOpt;
 use input::Format::{Json, Text};
 use std::io;
 use std::path::PathBuf;
-use tikibase::{input, run, Message};
+use tikibase::{input, run, Message, Messages};
 
 fn main() {
     let args = input::Arguments::parse();
-    let result = run(&args.command, PathBuf::from("."));
+    let messages = run(&args.command, PathBuf::from("."));
+    let exit_code = messages.exit_code;
     match args.format {
-        Text => print_text(&result.messages),
-        Json => print_json(&result.messages),
+        Text => print_text(&messages),
+        Json => print_json(&messages.all()),
     };
-    std::process::exit(result.exit_code);
+    std::process::exit(exit_code);
 }
 
-fn print_text(messages: &[Message]) {
-    for message in messages {
-        println!("{}", message.to_text());
+fn print_text(messages: &Messages) {
+    if !messages.is_empty() {
+        println!("Issues:");
+    }
+    for issue in &messages.issues {
+        println!("{}", issue.to_text());
+    }
+    if !messages.is_empty() {
+        println!("\nFixed:");
+    }
+    for fix in &messages.fixes {
+        println!("{}", fix.to_text());
     }
 }
 

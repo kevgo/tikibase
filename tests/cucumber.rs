@@ -88,7 +88,11 @@ fn file_should_contain(world: &mut MyWorld, step: &Step, filename: String) {
 #[then("it prints:")]
 fn it_prints(world: &mut MyWorld, step: &Step) {
     let mut have = String::new();
-    for message in &world.output.messages {
+    for message in &world.output.issues {
+        have.push_str(message.to_text().trim());
+        have.push_str("\n");
+    }
+    for message in &world.output.fixes {
         have.push_str(message.to_text().trim());
         have.push_str("\n");
     }
@@ -98,12 +102,12 @@ fn it_prints(world: &mut MyWorld, step: &Step) {
 
 #[then("it prints nothing")]
 fn it_prints_nothing(world: &mut MyWorld) {
-    assert_eq!(world.output.messages, vec![]);
+    assert!(world.output.is_empty())
 }
 
 #[then("it finds no issues")]
 fn it_finds_no_issues(world: &mut MyWorld) {
-    assert_eq!(world.output.messages, vec![]);
+    assert!(world.output.is_empty());
     assert_eq!(world.output.exit_code, 0);
 }
 
