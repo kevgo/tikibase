@@ -102,12 +102,12 @@ fn it_prints(world: &mut MyWorld, step: &Step) {
 
 #[then("it prints nothing")]
 fn it_prints_nothing(world: &mut MyWorld) {
-    assert_eq!(world.output.issues.len() + world.output.fixes.len(), 0);
+    assert!(world.output.is_empty())
 }
 
 #[then("it finds no issues")]
 fn it_finds_no_issues(world: &mut MyWorld) {
-    assert_eq!(world.output.issues.len() + world.output.fixes.len(), 0);
+    assert!(world.output.is_empty());
     assert_eq!(world.output.exit_code, 0);
 }
 
