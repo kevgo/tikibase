@@ -17,13 +17,13 @@ fn main() {
 }
 
 fn print_text(messages: &Messages) {
-    if messages.issues.len() > 0 && messages.fixes.len() > 0 {
+    if !messages.issues.is_empty() && !messages.fixes.is_empty() {
         println!("Issues:");
     }
     for issue in &messages.issues {
         println!("{}", issue.to_text());
     }
-    if messages.issues.len() > 0 && messages.fixes.len() > 0 {
+    if !messages.issues.is_empty() && !messages.fixes.is_empty() {
         println!("\nFixed:");
     }
     for fix in &messages.fixes {
