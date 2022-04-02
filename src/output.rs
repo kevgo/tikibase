@@ -6,7 +6,7 @@ use std::borrow::Cow;
 use std::path::PathBuf;
 
 /// human-readable summary of running a single command
-#[derive(Debug, PartialEq, Serialize)]
+#[derive(Debug, Default, PartialEq, Serialize)]
 pub struct Message {
     pub text: String,
     pub file: PathBuf,
@@ -307,6 +307,13 @@ pub struct Messages {
 }
 
 impl Messages {
+    /// provides the combined set of issues and fixes
+    pub fn all(mut self) -> Vec<Message> {
+        let mut result = vec![];
+        result.append(&mut self.issues);
+        result.append(&mut self.fixes);
+        result
+    }
     pub fn from_issue(issue: Issue) -> Messages {
         Messages {
             issues: vec![Message::from_issue(issue)],
@@ -333,6 +340,43 @@ impl Messages {
                 .collect(),
             fixes: outcome.fixes.into_iter().map(Message::from_fix).collect(),
             exit_code,
+        }
+    }
+
+    /// indicates whether there are any messages
+    pub fn is_empty(&self) -> bool {
+        self.issues.is_empty() && self.fixes.is_empty()
+    }
+}
+
+#[cfg(test)]
+mod tests {
+
+    mod is_empty {
+        use crate::{Message, Messages};
+
+        #[test]
+        fn empty() {
+            let have = Messages::default();
+            assert!(have.is_empty())
+        }
+
+        #[test]
+        fn with_issues() {
+            let have = Messages {
+                issues: vec![Message::default()],
+                ..Messages::default()
+            };
+            assert!(!have.is_empty())
+        }
+
+        #[test]
+        fn with_fixes() {
+            let have = Messages {
+                fixes: vec![Message::default()],
+                ..Messages::default()
+            };
+            assert!(!have.is_empty())
         }
     }
 }

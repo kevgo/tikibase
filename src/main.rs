@@ -9,21 +9,22 @@ use tikibase::{input, run, Message, Messages};
 fn main() {
     let args = input::Arguments::parse();
     let messages = run(&args.command, PathBuf::from("."));
+    let exit_code = messages.exit_code;
     match args.format {
         Text => print_text(&messages),
-        Json => print_json(&messages.issues),
+        Json => print_json(&messages.all()),
     };
-    std::process::exit(messages.exit_code);
+    std::process::exit(exit_code);
 }
 
 fn print_text(messages: &Messages) {
-    if !messages.issues.is_empty() && !messages.fixes.is_empty() {
+    if !messages.is_empty() {
         println!("Issues:");
     }
     for issue in &messages.issues {
         println!("{}", issue.to_text());
     }
-    if !messages.issues.is_empty() && !messages.fixes.is_empty() {
+    if !messages.is_empty() {
         println!("\nFixed:");
     }
     for fix in &messages.fixes {
@@ -33,7 +34,7 @@ fn print_text(messages: &Messages) {
 
 fn print_json(messages: &[Message]) {
     // NOTE: using a buffered writer doesn't seem to improve performance here
-    if let Err(err) = serde_json::to_writer_pretty(io::stdout(), messages) {
+    if let Err(err) = serde_json::to_writer_pretty(io::stdout(), &messages) {
         println!("Error serializing JSON: {}", err);
     }
 }
