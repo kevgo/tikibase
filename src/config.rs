@@ -17,11 +17,12 @@ pub struct Config {
 impl Config {
     /// indicates whether the given file should be ignored
     pub fn ignore<P: AsRef<Path>>(&self, file_path: P) -> bool {
-        if let Some(ignore) = &self.ignore {
-            let file_path = file_path.as_ref().as_os_str().to_string_lossy();
-            ignore.iter().any(|i| i == &file_path)
-        } else {
-            false
+        match &self.ignore {
+            Some(ignores) => {
+                let file_path = file_path.as_ref().as_os_str().to_string_lossy();
+                ignores.iter().any(|ignore| ignore == &file_path)
+            }
+            None => false,
         }
     }
 }
