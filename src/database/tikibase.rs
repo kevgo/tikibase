@@ -51,11 +51,11 @@ impl Tikibase {
         let mut resources = Vec::new();
         let mut errors = Vec::new();
         let mut override_builder = OverrideBuilder::new(&dir);
-        if let Some(ignores) = &config.ignore {
-            for ignore in ignores {
-                if let Err(err) = override_builder.add(ignore) {
+        if let Some(globs) = &config.globs {
+            for glob in globs {
+                if let Err(err) = override_builder.add(glob) {
                     return Err(vec![Issue::InvalidGlob {
-                        glob: ignore.into(),
+                        glob: glob.into(),
                         location: Location {
                             file: PathBuf::from("tikibase.json"),
                             line: 0,
@@ -81,7 +81,7 @@ impl Tikibase {
                 continue;
             }
             // TODO: make method on Config object
-            if let Some(ignore) = &config.ignore {
+            if let Some(ignore) = &config.globs {
                 if ignore.iter().any(|i| i == &filename) {
                     continue;
                 }

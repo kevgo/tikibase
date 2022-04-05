@@ -10,14 +10,14 @@ pub struct Config {
     /// the allowed section titles
     pub sections: Option<Vec<String>>,
 
-    /// files to ignore
-    pub ignore: Option<Vec<String>>,
+    /// glob overrides
+    pub globs: Option<Vec<String>>,
 }
 
 impl Config {
     /// indicates whether the given file should be ignored
     pub fn ignore<P: AsRef<Path>>(&self, file_path: P) -> bool {
-        match &self.ignore {
+        match &self.globs {
             Some(ignores) => {
                 let file_path = file_path.as_ref().as_os_str().to_string_lossy();
                 ignores.iter().any(|ignore| ignore == &file_path)
@@ -68,7 +68,7 @@ mod tests {
         #[test]
         fn direct_match() {
             let config = Config {
-                ignore: Some(vec!["Makefile".into()]),
+                globs: Some(vec!["Makefile".into()]),
                 ..Config::default()
             };
             let have = config.ignore(PathBuf::from("Makefile"));
@@ -78,7 +78,7 @@ mod tests {
         #[test]
         fn no_match() {
             let config = Config {
-                ignore: Some(vec!["Makefile".into()]),
+                globs: Some(vec!["Makefile".into()]),
                 ..Config::default()
             };
             let have = config.ignore(PathBuf::from("other"));
@@ -88,7 +88,7 @@ mod tests {
         #[test]
         fn no_ignores() {
             let config = Config {
-                ignore: None,
+                globs: None,
                 ..Config::default()
             };
             let have = config.ignore(PathBuf::from("file"));
@@ -106,7 +106,7 @@ mod tests {
             let have = load(test::tmp_dir()).unwrap();
             let want = Config {
                 sections: None,
-                ignore: None,
+                globs: None,
             };
             pretty::assert_eq!(have, want);
         }
@@ -118,7 +118,7 @@ mod tests {
             let have = load(&dir).unwrap();
             let want = Config {
                 sections: None,
-                ignore: None,
+                globs: None,
             };
             pretty::assert_eq!(have, want);
         }
@@ -135,7 +135,7 @@ mod tests {
             let have = load(&dir).unwrap();
             let want = Config {
                 sections: Some(vec!["one".into(), "two".into()]),
-                ignore: None,
+                globs: None,
             };
             pretty::assert_eq!(have, want);
         }

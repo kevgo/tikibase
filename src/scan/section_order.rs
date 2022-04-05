@@ -122,7 +122,7 @@ mod tests {
         test::create_file("2.md", content2, &dir);
         let config = Config {
             sections: Some(vec!["one".into(), "two".into(), "three".into()]),
-            ignore: None,
+            globs: None,
         };
         let base = Tikibase::load(dir, &Config::default()).unwrap();
         let have = super::scan(&base, &config);
