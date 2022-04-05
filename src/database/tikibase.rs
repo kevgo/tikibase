@@ -1,9 +1,9 @@
 use super::{Document, Resource};
 use crate::{Config, Issue};
+use ignore::WalkBuilder;
 use std::fs::File;
 use std::io::BufReader;
 use std::path::{Path, PathBuf};
-use walkdir::WalkDir;
 
 pub struct Tikibase {
     pub dir: PathBuf,
@@ -49,7 +49,8 @@ impl Tikibase {
         let mut docs = Vec::new();
         let mut resources = Vec::new();
         let mut errors = Vec::new();
-        for entry in WalkDir::new(&dir) {
+        let wb = WalkBuilder::new(&dir).build();
+        for entry in wb {
             let entry = entry.unwrap();
             if entry.path() == dir {
                 continue;
