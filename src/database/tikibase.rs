@@ -52,7 +52,9 @@ impl Tikibase {
         let mut errors = Vec::new();
         let mut ob = OverrideBuilder::new(&dir);
         if let Some(ignores) = &config.ignore {
+            println!("found {} ignores", ignores.len());
             for ignore in ignores {
+                println!("using ignore: {}", ignore);
                 if let Err(err) = ob.add(ignore) {
                     return Err(vec![Issue::InvalidGlob {
                         glob: ignore.into(),
@@ -67,7 +69,12 @@ impl Tikibase {
                 }
             }
         }
-        let wb = WalkBuilder::new(&dir);
+        let mut wb = WalkBuilder::new(&dir);
+        let o = match ob.build() {
+            Ok(o) => o,
+            Err(err) => panic!("Error: {}", err),
+        };
+        wb.overrides(o);
         for entry in wb.build() {
             let entry = entry.unwrap();
             if entry.path() == dir {
