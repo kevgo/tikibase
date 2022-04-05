@@ -1,5 +1,6 @@
 use super::{Document, Resource};
-use crate::{Config, Issue};
+use crate::{Config, Issue, Location};
+use ignore::overrides::OverrideBuilder;
 use ignore::WalkBuilder;
 use std::fs::File;
 use std::io::BufReader;
@@ -49,8 +50,25 @@ impl Tikibase {
         let mut docs = Vec::new();
         let mut resources = Vec::new();
         let mut errors = Vec::new();
-        let wb = WalkBuilder::new(&dir).build();
-        for entry in wb {
+        let mut ob = OverrideBuilder::new(&dir);
+        if let Some(ignores) = &config.ignore {
+            for ignore in ignores {
+                if let Err(err) = ob.add(ignore) {
+                    return Err(vec![Issue::InvalidGlob {
+                        glob: ignore.into(),
+                        location: Location {
+                            file: PathBuf::from("tikibase.json"),
+                            line: 0,
+                            start: 0,
+                            end: 0,
+                        },
+                        message: err.to_string(),
+                    }]);
+                }
+            }
+        }
+        let wb = WalkBuilder::new(&dir);
+        for entry in wb.build() {
             let entry = entry.unwrap();
             if entry.path() == dir {
                 continue;
