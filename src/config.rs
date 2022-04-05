@@ -14,6 +14,18 @@ pub struct Config {
     pub ignore: Option<Vec<String>>,
 }
 
+impl Config {
+    /// indicates whether the given file should be ignored
+    pub fn ignore<P: AsRef<Path>>(&self, file_path: P) -> bool {
+        if let Some(ignore) = &self.ignore {
+            let file_path = file_path.as_ref().as_os_str().to_string_lossy();
+            ignore.iter().any(|i| i == &file_path)
+        } else {
+            false
+        }
+    }
+}
+
 /// reads the config file
 pub fn load<P: AsRef<Path>>(dir: P) -> Result<Config, Issue> {
     let config_path = dir.as_ref().join("tikibase.json");
@@ -47,6 +59,41 @@ pub fn load<P: AsRef<Path>>(dir: P) -> Result<Config, Issue> {
 
 #[cfg(test)]
 mod tests {
+
+    mod ignore {
+        use crate::Config;
+        use std::path::PathBuf;
+
+        #[test]
+        fn direct_match() {
+            let config = Config {
+                ignore: Some(vec!["Makefile".into()]),
+                ..Config::default()
+            };
+            let have = config.ignore(PathBuf::from("Makefile"));
+            assert!(have);
+        }
+
+        #[test]
+        fn no_match() {
+            let config = Config {
+                ignore: Some(vec!["Makefile".into()]),
+                ..Config::default()
+            };
+            let have = config.ignore(PathBuf::from("other"));
+            assert!(!have);
+        }
+
+        #[test]
+        fn no_ignores() {
+            let config = Config {
+                ignore: None,
+                ..Config::default()
+            };
+            let have = config.ignore(PathBuf::from("file"));
+            assert!(!have);
+        }
+    }
 
     mod load {
         use super::super::{load, Config};
