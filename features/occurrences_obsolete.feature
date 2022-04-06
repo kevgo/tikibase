@@ -16,6 +16,12 @@ Feature: obsolete occurrence sections
       # Other
       [One](1.md)
       """
+    And file "tikibase.json" with content:
+      """
+      {
+        "bidiLinks": true
+      }
+      """
 
   Scenario: check
     When checking
