@@ -4,6 +4,13 @@
   "description": "Tikibase configuration data",
   "type": "object",
   "properties": {
+    "bidiLinks": {
+      "description": "enables bi-directional links",
+      "type": [
+        "boolean",
+        "null"
+      ]
+    },
     "globs": {
       "description": "glob overrides",
       "type": [
@@ -24,5 +31,6 @@
         "type": "string"
       }
     }
-  }
+  },
+  "additionalProperties": false
 }
