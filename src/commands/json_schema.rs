@@ -1,4 +1,5 @@
 use crate::{config, Issue, Location, Outcome};
+use colored::Colorize;
 use schemars::schema_for;
 use std::fs::File;
 
@@ -22,5 +23,6 @@ pub fn json_schema() -> Outcome {
         }
     };
     serde_json::to_writer_pretty(file, &schema).unwrap();
+    println!("{}", "ok".green());
     Outcome::default()
 }
