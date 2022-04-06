@@ -7,6 +7,8 @@ use std::path::{Path, PathBuf};
 
 /// Tikibase configuration data
 #[derive(Deserialize, Debug, Default, JsonSchema, PartialEq)]
+#[serde(deny_unknown_fields)]
+#[serde(rename_all = "camelCase")]
 pub struct Config {
     /// enables bi-directional links
     pub bidi_links: Option<bool>,
