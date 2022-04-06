@@ -1,11 +1,12 @@
 use crate::{Issue, Location};
+use schemars::JsonSchema;
 use serde::Deserialize;
 use std::fs::File;
 use std::io::ErrorKind;
 use std::path::{Path, PathBuf};
 
 /// Tikibase configuration data
-#[derive(Deserialize, Default, PartialEq, Debug)]
+#[derive(Deserialize, Debug, Default, JsonSchema, PartialEq)]
 pub struct Config {
     /// enables bi-directional links
     bidi_links: bool,
