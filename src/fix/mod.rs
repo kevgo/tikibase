@@ -47,6 +47,11 @@ pub fn fix(issue: Issue, base: &mut Tikibase, config: &Config) -> Option<Fix> {
             message: _,
             location: _,
         }
+        | Issue::InvalidGlob {
+            glob: _,
+            location: _,
+            message: _,
+        }
         | Issue::LinkToNonExistingAnchorInCurrentDocument {
             location: _,
             anchor: _,

@@ -65,12 +65,14 @@ Create a file `tikibase.json` in your Tikibase directory. Here is an example:
 
 ```json
 {
-  "ignore": ["Makefile"],
+  "globs": ["!Makefile"],
   "sections": ["foo", "bar"]
 }
 ```
 
-- **ignore:** list of files to ignore
+- **globs:** by default Tikibase looks at all files that aren't `.gitignore`d.
+  With this section you can fine-tune the files Tikibase looks at using glob
+  expressions. To exclude files, precede the glob with a `!`.
 - **sections:** if provided, accepts only sections with the given names, in the
   given order
 

@@ -10,8 +10,21 @@ pub struct Config {
     /// the allowed section titles
     pub sections: Option<Vec<String>>,
 
-    /// files to ignore
-    pub ignore: Option<Vec<String>>,
+    /// glob overrides
+    pub globs: Option<Vec<String>>,
+}
+
+impl Config {
+    /// indicates whether the given file should be ignored
+    pub fn ignore<P: AsRef<Path>>(&self, file_path: P) -> bool {
+        match &self.globs {
+            Some(ignores) => {
+                let file_path = file_path.as_ref().as_os_str().to_string_lossy();
+                ignores.iter().any(|ignore| ignore == &file_path)
+            }
+            None => false,
+        }
+    }
 }
 
 /// reads the config file
@@ -48,6 +61,51 @@ pub fn load<P: AsRef<Path>>(dir: P) -> Result<Config, Issue> {
 #[cfg(test)]
 mod tests {
 
+    mod ignore {
+        use crate::Config;
+        use std::path::PathBuf;
+
+        #[test]
+        fn direct_match() {
+            let config = Config {
+                globs: Some(vec!["!Makefile".into()]),
+                ..Config::default()
+            };
+            let have = config.ignore(PathBuf::from("Makefile"));
+            assert!(!have);
+        }
+
+        #[test]
+        fn glob_match() {
+            let config = Config {
+                globs: Some(vec!["!**/Makefile".into()]),
+                ..Config::default()
+            };
+            let have = config.ignore(PathBuf::from("foo/bar/Makefile"));
+            assert!(!have);
+        }
+
+        #[test]
+        fn no_match() {
+            let config = Config {
+                globs: Some(vec!["Makefile".into()]),
+                ..Config::default()
+            };
+            let have = config.ignore(PathBuf::from("other"));
+            assert!(!have);
+        }
+
+        #[test]
+        fn no_ignores() {
+            let config = Config {
+                globs: None,
+                ..Config::default()
+            };
+            let have = config.ignore(PathBuf::from("file"));
+            assert!(!have);
+        }
+    }
+
     mod load {
         use super::super::{load, Config};
         use crate::{test, Issue, Location};
@@ -58,7 +116,7 @@ mod tests {
             let have = load(test::tmp_dir()).unwrap();
             let want = Config {
                 sections: None,
-                ignore: None,
+                globs: None,
             };
             pretty::assert_eq!(have, want);
         }
@@ -70,7 +128,7 @@ mod tests {
             let have = load(&dir).unwrap();
             let want = Config {
                 sections: None,
-                ignore: None,
+                globs: None,
             };
             pretty::assert_eq!(have, want);
         }
@@ -87,7 +145,7 @@ mod tests {
             let have = load(&dir).unwrap();
             let want = Config {
                 sections: Some(vec!["one".into(), "two".into()]),
-                ignore: None,
+                globs: None,
             };
             pretty::assert_eq!(have, want);
         }

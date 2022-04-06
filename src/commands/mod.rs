@@ -55,6 +55,11 @@ pub enum Issue {
         location: Location,
         message: String,
     },
+    InvalidGlob {
+        glob: String,
+        message: String,
+        location: Location,
+    },
     LinkToNonExistingAnchorInCurrentDocument {
         location: Location,
         /// the non-existing anchor in the current
