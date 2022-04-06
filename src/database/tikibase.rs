@@ -1,9 +1,10 @@
 use super::{Document, Resource};
-use crate::{Config, Issue};
+use crate::{Config, Issue, Location};
+use ignore::overrides::OverrideBuilder;
+use ignore::WalkBuilder;
 use std::fs::File;
 use std::io::BufReader;
 use std::path::{Path, PathBuf};
-use walkdir::WalkDir;
 
 pub struct Tikibase {
     pub dir: PathBuf,
@@ -49,7 +50,32 @@ impl Tikibase {
         let mut docs = Vec::new();
         let mut resources = Vec::new();
         let mut errors = Vec::new();
-        for entry in WalkDir::new(&dir) {
+        let mut override_builder = OverrideBuilder::new(&dir);
+        if let Some(globs) = &config.globs {
+            for glob in globs {
+                if let Err(err) = override_builder.add(glob) {
+                    return Err(vec![Issue::InvalidGlob {
+                        glob: glob.into(),
+                        location: Location {
+                            file: PathBuf::from("tikibase.json"),
+                            line: 0,
+                            start: 0,
+                            end: 0,
+                        },
+                        message: err.to_string(),
+                    }]);
+                }
+            }
+        }
+        let over_ride = match override_builder.build() {
+            Ok(o) => o,
+            Err(err) => panic!("Cannot build glob overrides: {}", err),
+        };
+        let walker = WalkBuilder::new(&dir)
+            .overrides(over_ride)
+            .sort_by_file_path(Ord::cmp)
+            .build();
+        for entry in walker {
             let entry = entry.unwrap();
             if entry.path() == dir {
                 continue;
@@ -59,7 +85,7 @@ impl Tikibase {
                 continue;
             }
             // TODO: make method on Config object
-            if let Some(ignore) = &config.ignore {
+            if let Some(ignore) = &config.globs {
                 if ignore.iter().any(|i| i == &filename) {
                     continue;
                 }

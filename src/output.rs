@@ -120,6 +120,18 @@ impl Message {
                 end: location.end,
                 fixable: false,
             },
+            Issue::InvalidGlob {
+                location,
+                glob,
+                message,
+            } => Message {
+                text: format!("invalid glob expression \"{}\": {}", glob, message),
+                file: location.file,
+                line: location.line,
+                start: location.start,
+                end: location.end,
+                fixable: false,
+            },
             Issue::LinkToNonExistingAnchorInCurrentDocument { location, anchor } => Message {
                 text: format!(
                     "link to non-existing anchor \"#{}\" in current file",
