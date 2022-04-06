@@ -37,6 +37,7 @@ unit:  # runs the unit tests
 update-json-schema:  # updates the public JSON Schema for the config file
 	cargo run -- json-schema
 	mv tikibase.schema.json doc
+	dprint fmt
 
 setup: setup-ci  # prepares this codebase
 	cargo install cargo-edit cargo-upgrades --locked
