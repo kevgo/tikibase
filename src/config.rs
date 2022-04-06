@@ -144,7 +144,7 @@ mod tests {
             let dir = test::tmp_dir();
             let give = r#"
             {
-              "bidi_links": true,
+              "bidiLinks": true,
               "sections": [ "one", "two" ],
               "globs": [ "**/foo" ]
             }
