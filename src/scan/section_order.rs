@@ -121,6 +121,7 @@ mod tests {
             [1](1.md) content"};
         test::create_file("2.md", content2, &dir);
         let config = Config {
+            bidi_links: None,
             sections: Some(vec!["one".into(), "two".into(), "three".into()]),
             globs: None,
         };

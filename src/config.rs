@@ -7,12 +7,17 @@ use std::path::{Path, PathBuf};
 
 /// Tikibase configuration data
 #[derive(Deserialize, Debug, Default, JsonSchema, PartialEq)]
+#[serde(deny_unknown_fields)]
+#[serde(rename_all = "camelCase")]
 pub struct Config {
-    /// the allowed section titles
-    pub sections: Option<Vec<String>>,
+    /// enables bi-directional links
+    pub bidi_links: Option<bool>,
 
     /// glob overrides
     pub globs: Option<Vec<String>>,
+
+    /// the allowed section titles
+    pub sections: Option<Vec<String>>,
 }
 
 impl Config {
@@ -116,6 +121,7 @@ mod tests {
         fn no_config_file() {
             let have = load(test::tmp_dir()).unwrap();
             let want = Config {
+                bidi_links: None,
                 sections: None,
                 globs: None,
             };
@@ -128,6 +134,7 @@ mod tests {
             test::create_file("tikibase.json", "{}", &dir);
             let have = load(&dir).unwrap();
             let want = Config {
+                bidi_links: None,
                 sections: None,
                 globs: None,
             };
@@ -139,15 +146,40 @@ mod tests {
             let dir = test::tmp_dir();
             let give = r#"
             {
-              "sections": [ "one", "two" ]
+              "bidiLinks": true,
+              "sections": [ "one", "two" ],
+              "globs": [ "**/foo" ]
             }
             "#;
             test::create_file("tikibase.json", give, &dir);
             let have = load(&dir).unwrap();
             let want = Config {
+                bidi_links: Some(true),
                 sections: Some(vec!["one".into(), "two".into()]),
-                globs: None,
+                globs: Some(vec!["**/foo".into()]),
             };
+            pretty::assert_eq!(have, want);
+        }
+
+        #[test]
+        fn unknown_field() {
+            let dir = test::tmp_dir();
+            let give = r#"
+            {
+              "foo": true,
+            }
+            "#;
+            test::create_file("tikibase.json", give, &dir);
+            let have = load(&dir);
+            let want = Err(Issue::InvalidConfigurationFile {
+                message: "unknown field `foo`, expected one of `bidiLinks`, `globs`, `sections` at line 3 column 20".into(),
+                location: Location {
+                    file: PathBuf::from("tikibase.json"),
+                    line: 3,
+                    start: 20,
+                    end: 20,
+                },
+            });
             pretty::assert_eq!(have, want);
         }
 
