@@ -9,7 +9,7 @@ use std::path::{Path, PathBuf};
 #[derive(Deserialize, Debug, Default, JsonSchema, PartialEq)]
 pub struct Config {
     /// enables bi-directional links
-    bidi_links: bool,
+    pub bidi_links: bool,
 
     /// glob overrides
     pub globs: Option<Vec<String>>,
@@ -119,6 +119,7 @@ mod tests {
         fn no_config_file() {
             let have = load(test::tmp_dir()).unwrap();
             let want = Config {
+                bidi_links: false,
                 sections: None,
                 globs: None,
             };
@@ -131,6 +132,7 @@ mod tests {
             test::create_file("tikibase.json", "{}", &dir);
             let have = load(&dir).unwrap();
             let want = Config {
+                bidi_links: false,
                 sections: None,
                 globs: None,
             };
@@ -148,6 +150,7 @@ mod tests {
             test::create_file("tikibase.json", give, &dir);
             let have = load(&dir).unwrap();
             let want = Config {
+                bidi_links: false,
                 sections: Some(vec!["one".into(), "two".into()]),
                 globs: None,
             };

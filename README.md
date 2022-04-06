@@ -71,7 +71,7 @@ Create a file `tikibase.json` in your Tikibase directory. Here is an example:
 }
 ```
 
-- **bibiLinks:** enables the bi-directional links feature
+- **bidiLinks:** enables the bi-directional links feature
 - **globs:** by default Tikibase looks at all files that aren't `.gitignore`d.
   With this section you can fine-tune the files Tikibase looks at using glob
   expressions. To exclude files, precede the glob with a `!`.

@@ -19,11 +19,13 @@ pub fn check(base: &mut Tikibase, config: &Config) -> Outcome {
         base,
         &links_result.outgoing_resource_links,
     ));
-    issues.extend(occurrences::scan(
-        base,
-        &links_result.incoming_doc_links,
-        &links_result.outgoing_doc_links,
-    ));
+    if config.bidi_links {
+        issues.extend(occurrences::scan(
+            base,
+            &links_result.incoming_doc_links,
+            &links_result.outgoing_doc_links,
+        ));
+    }
     Outcome {
         issues,
         fixes: vec![],
