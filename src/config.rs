@@ -68,11 +68,21 @@ mod tests {
         #[test]
         fn direct_match() {
             let config = Config {
-                globs: Some(vec!["Makefile".into()]),
+                globs: Some(vec!["!Makefile".into()]),
                 ..Config::default()
             };
             let have = config.ignore(PathBuf::from("Makefile"));
-            assert!(have);
+            assert!(!have);
+        }
+
+        #[test]
+        fn glob_match() {
+            let config = Config {
+                globs: Some(vec!["!**/Makefile".into()]),
+                ..Config::default()
+            };
+            let have = config.ignore(PathBuf::from("foo/bar/Makefile"));
+            assert!(!have);
         }
 
         #[test]
