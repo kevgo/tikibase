@@ -5,9 +5,8 @@ use std::fs::File;
 
 /// exports the JSON Schema for the configuration file
 pub fn json_schema() -> Outcome {
-    let schema = schema_for!(config::Config);
     let filename = "tikibase.schema.json";
-    print!("saving {} ... ", filename);
+    print!("exporting {} ... ", filename);
     let file = match File::create(filename) {
         Ok(file) => file,
         Err(err) => {
@@ -22,6 +21,7 @@ pub fn json_schema() -> Outcome {
             })
         }
     };
+    let schema = schema_for!(config::Config);
     serde_json::to_writer_pretty(file, &schema).unwrap();
     println!("{}", "ok".green());
     Outcome::default()
