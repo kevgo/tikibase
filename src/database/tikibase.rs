@@ -2,7 +2,6 @@ use super::{Document, Resource};
 use crate::{Config, Issue, Location};
 use ignore::overrides::OverrideBuilder;
 use ignore::WalkBuilder;
-use std::cmp;
 use std::fs::File;
 use std::io::BufReader;
 use std::path::{Path, PathBuf};
@@ -74,7 +73,7 @@ impl Tikibase {
         };
         for entry in WalkBuilder::new(&dir)
             .overrides(over_ride)
-            .sort_by_file_path(compare)
+            .sort_by_file_path(Ord::cmp)
             .build()
         {
             let entry = entry.unwrap();
@@ -116,10 +115,6 @@ impl Tikibase {
             Err(errors)
         }
     }
-}
-
-fn compare(left: &Path, right: &Path) -> cmp::Ordering {
-    left.cmp(right)
 }
 
 enum FileType {
