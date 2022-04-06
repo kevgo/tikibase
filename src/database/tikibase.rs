@@ -71,11 +71,11 @@ impl Tikibase {
             Ok(o) => o,
             Err(err) => panic!("Cannot build glob overrides: {}", err),
         };
-        for entry in WalkBuilder::new(&dir)
+        let walker = WalkBuilder::new(&dir)
             .overrides(over_ride)
             .sort_by_file_path(Ord::cmp)
-            .build()
-        {
+            .build();
+        for entry in walker {
             let entry = entry.unwrap();
             if entry.path() == dir {
                 continue;
