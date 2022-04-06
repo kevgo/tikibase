@@ -29,10 +29,14 @@ lint:  # checks formatting
 	git diff --check
 	tools/actionlint
 
-test: unit cuke lint  # runs all tests
+test: unit cuke lint update-json-schema  # runs all tests
 
 unit:  # runs the unit tests
 	cargo test
+
+update-json-schema:  # updates the public JSON Schema for the config file
+	cargo run -- json-schema
+	mv tikibase.schema.json doc
 
 setup: setup-ci  # prepares this codebase
 	cargo install cargo-edit cargo-upgrades --locked

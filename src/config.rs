@@ -7,11 +7,14 @@ use std::path::{Path, PathBuf};
 /// Tikibase configuration data
 #[derive(Deserialize, Default, PartialEq, Debug)]
 pub struct Config {
-    /// the allowed section titles
-    pub sections: Option<Vec<String>>,
+    /// enables bi-directional links
+    bidi_links: bool,
 
     /// glob overrides
     pub globs: Option<Vec<String>>,
+
+    /// the allowed section titles
+    pub sections: Option<Vec<String>>,
 }
 
 impl Config {
