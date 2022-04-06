@@ -2,12 +2,14 @@
 
 mod check;
 mod fix;
+mod json_schema;
 mod pitstop;
 mod stats;
 
 use crate::fix::Fix;
 pub use check::check;
 pub use fix::fix;
+pub use json_schema::json_schema;
 pub use pitstop::pitstop;
 use serde::Serialize;
 pub use stats::stats;
@@ -25,6 +27,16 @@ pub struct Outcome {
     pub fixes: Vec<Fix>,
 }
 
+impl Outcome {
+    /// provides an `Outcome` containing the given `Issue`
+    pub fn from_issue(issue: Issue) -> Outcome {
+        Outcome {
+            issues: vec![issue],
+            fixes: vec![],
+        }
+    }
+}
+
 /// the issues that this linter can find
 #[derive(Clone, Debug, PartialEq)]
 pub enum Issue {
@@ -37,6 +49,10 @@ pub enum Issue {
         target: String,
     },
     CannotReadConfigurationFile {
+        location: Location,
+        message: String,
+    },
+    CannotWriteJsonSchemaFile {
         location: Location,
         message: String,
     },

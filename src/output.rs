@@ -88,6 +88,14 @@ impl Message {
                 end: location.end,
                 fixable: false,
             },
+            Issue::CannotWriteJsonSchemaFile { location, message } => Message {
+                text: format!("cannot write JSON Schema file: {}", message),
+                file: location.file,
+                line: location.line,
+                start: location.start,
+                end: location.end,
+                fixable: false,
+            },
             Issue::DocumentWithoutLinks { location } => Message {
                 text: "document is not connected to any other documents".into(),
                 file: location.file,

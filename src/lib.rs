@@ -28,6 +28,7 @@ pub fn run(command: &input::Command, dir: PathBuf) -> Messages {
     let outcome = match command {
         Command::Check => commands::check(&mut base, &config),
         Command::Stats => commands::stats(&base),
+        Command::JsonSchema => commands::json_schema(),
         Command::Fix => commands::fix(&mut base, &config),
         Command::P => commands::pitstop(&mut base, &config),
     };
