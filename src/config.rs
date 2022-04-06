@@ -162,6 +162,28 @@ mod tests {
         }
 
         #[test]
+        fn unknown_field() {
+            let dir = test::tmp_dir();
+            let give = r#"
+            {
+              "foo": true,
+            }
+            "#;
+            test::create_file("tikibase.json", give, &dir);
+            let have = load(&dir);
+            let want = Err(Issue::InvalidConfigurationFile {
+                message: "unknown field `foo`, expected one of `bidiLinks`, `globs`, `sections` at line 3 column 20".into(),
+                location: Location {
+                    file: PathBuf::from("tikibase.json"),
+                    line: 3,
+                    start: 20,
+                    end: 20,
+                },
+            });
+            pretty::assert_eq!(have, want);
+        }
+
+        #[test]
         fn invalid_config_file() {
             let dir = test::tmp_dir();
             let give = r#"{
