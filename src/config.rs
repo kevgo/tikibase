@@ -9,7 +9,7 @@ use std::path::{Path, PathBuf};
 #[derive(Deserialize, Debug, Default, JsonSchema, PartialEq)]
 pub struct Config {
     /// enables bi-directional links
-    pub bidi_links: bool,
+    pub bidi_links: Option<bool>,
 
     /// glob overrides
     pub globs: Option<Vec<String>>,
@@ -119,7 +119,7 @@ mod tests {
         fn no_config_file() {
             let have = load(test::tmp_dir()).unwrap();
             let want = Config {
-                bidi_links: false,
+                bidi_links: None,
                 sections: None,
                 globs: None,
             };
@@ -132,7 +132,7 @@ mod tests {
             test::create_file("tikibase.json", "{}", &dir);
             let have = load(&dir).unwrap();
             let want = Config {
-                bidi_links: false,
+                bidi_links: None,
                 sections: None,
                 globs: None,
             };
@@ -144,15 +144,17 @@ mod tests {
             let dir = test::tmp_dir();
             let give = r#"
             {
-              "sections": [ "one", "two" ]
+              "bidi_links": true,
+              "sections": [ "one", "two" ],
+              "globs": [ "**/foo" ]
             }
             "#;
             test::create_file("tikibase.json", give, &dir);
             let have = load(&dir).unwrap();
             let want = Config {
-                bidi_links: false,
+                bidi_links: Some(true),
                 sections: Some(vec!["one".into(), "two".into()]),
-                globs: None,
+                globs: Some(vec!["**/foo".into()]),
             };
             pretty::assert_eq!(have, want);
         }
