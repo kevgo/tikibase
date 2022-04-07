@@ -60,6 +60,11 @@ fn fixing(world: &mut MyWorld) {
     world.output = tikibase::run(&Command::Fix, world.dir.clone());
 }
 
+#[when("initializing")]
+fn initializing(world: &mut MyWorld) {
+    world.output = tikibase::run(&Command::Init, world.dir.clone());
+}
+
 #[then("all files are unchanged")]
 fn all_files_unchanged(world: &mut MyWorld) {
     for (filename, original_content) in &world.original_contents {

@@ -124,6 +124,7 @@ mod tests {
             bidi_links: None,
             sections: Some(vec!["one".into(), "two".into(), "three".into()]),
             globs: None,
+            schema: None,
         };
         let base = Tikibase::load(dir, &Config::default()).unwrap();
         let have = super::scan(&base, &config);

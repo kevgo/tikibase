@@ -61,10 +61,13 @@ your platform or install from source:
 
 ### configuration
 
-Create a file `tikibase.json` in your Tikibase directory. Here is an example:
+Create a file `tikibase.json` in your Tikibase directory. Use the linked JSON
+Schema for documentation and auto-completion of the various options. Here is an
+example:
 
 ```json
 {
+  "$schema": "https://raw.githubusercontent.com/kevgo/tikibase/main/doc/tikibase.schema.json",
   "bidiLinks": true,
   "globs": ["!Makefile"],
   "sections": ["foo", "bar"]

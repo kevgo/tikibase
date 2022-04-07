@@ -30,8 +30,12 @@ pub fn fix(issue: Issue, base: &mut Tikibase, config: &Config) -> Option<Fix> {
             location: _,
             target: _,
         }
+        | Issue::CannotWriteConfigFile {
+            file: _,
+            message: _,
+        }
         | Issue::CannotWriteJsonSchemaFile {
-            location: _,
+            file: _,
             message: _,
         }
         | Issue::LinkToNonExistingFile {

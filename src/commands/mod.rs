@@ -2,6 +2,7 @@
 
 mod check;
 mod fix;
+mod init;
 mod json_schema;
 mod pitstop;
 mod stats;
@@ -9,6 +10,7 @@ mod stats;
 use crate::fix::Fix;
 pub use check::check;
 pub use fix::fix;
+pub use init::init;
 pub use json_schema::json_schema;
 pub use pitstop::pitstop;
 use serde::Serialize;
@@ -52,8 +54,12 @@ pub enum Issue {
         location: Location,
         message: String,
     },
+    CannotWriteConfigFile {
+        message: String,
+        file: PathBuf,
+    },
     CannotWriteJsonSchemaFile {
-        location: Location,
+        file: PathBuf,
         message: String,
     },
     DocumentWithoutLinks {

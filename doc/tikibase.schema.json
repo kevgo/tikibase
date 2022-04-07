@@ -4,6 +4,12 @@
   "description": "Tikibase configuration data",
   "type": "object",
   "properties": {
+    "$schema": {
+      "type": [
+        "string",
+        "null"
+      ]
+    },
     "bidiLinks": {
       "description": "enables bi-directional links",
       "type": [
@@ -12,7 +18,7 @@
       ]
     },
     "globs": {
-      "description": "glob overrides",
+      "description": "Glob overrides. Tikibase looks at all files that aren't git-ignored. With this setting you can fine-tune the files Tikibase looks at using glob expressions. To exclude files, precede the glob with a `!`.",
       "type": [
         "array",
         "null"
