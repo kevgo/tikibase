@@ -1,7 +1,13 @@
-Feature: add occurrence sections
+Feature: add occurrence sections without a title regex
 
   Background:
-    Given file "1.md" with content:
+    Given file "tikibase.json" with content:
+      """
+      {
+        "bidiLinks": true
+      }
+      """
+    And file "1.md" with content:
       """
       # One
 
@@ -26,12 +32,6 @@ Feature: add occurrence sections
       """
       # Four
       [One](1.md)
-      """
-    And file "tikibase.json" with content:
-      """
-      {
-        "bidiLinks": true
-      }
       """
 
   Scenario: check
