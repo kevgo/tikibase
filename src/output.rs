@@ -19,14 +19,15 @@ pub struct Message {
 impl Message {
     /// provides the CLI text format for this Message
     pub fn to_text(&self) -> String {
-        match self.line {
-            Some(line) => format!(
+        if let Some(line) = self.line {
+            format!(
                 "{}:{}  {}",
                 self.file.to_string_lossy(),
                 line + 1,
                 self.text
-            ),
-            None => format!("{}  {}", self.file.to_string_lossy(), self.text),
+            )
+        } else {
+            format!("{}  {}", self.file.to_string_lossy(), self.text)
         }
     }
 
