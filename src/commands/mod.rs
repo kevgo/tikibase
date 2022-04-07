@@ -56,10 +56,10 @@ pub enum Issue {
     },
     CannotWriteConfigFile {
         message: String,
-        location: Location,
+        file: PathBuf,
     },
     CannotWriteJsonSchemaFile {
-        location: Location,
+        file: PathBuf,
         message: String,
     },
     DocumentWithoutLinks {

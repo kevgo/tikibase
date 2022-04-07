@@ -1,4 +1,4 @@
-use crate::{Issue, Location, Outcome};
+use crate::{Issue, Outcome};
 use indoc::indoc;
 use std::fs;
 use std::path::{Path, PathBuf};
@@ -7,13 +7,8 @@ pub fn init(dir: &Path) -> Outcome {
     match fs::write(dir.join("tikibase.json"), template()) {
         Ok(_) => Outcome::default(),
         Err(err) => Outcome::from_issue(Issue::CannotWriteConfigFile {
+            file: PathBuf::from("tikibase.json"),
             message: err.to_string(),
-            location: Location {
-                file: PathBuf::from("tikibase.json"),
-                line: 0,
-                start: 0,
-                end: 0,
-            },
         }),
     }
 }
