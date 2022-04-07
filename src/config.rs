@@ -18,6 +18,9 @@ pub struct Config {
 
     /// the allowed section titles
     pub sections: Option<Vec<String>>,
+
+    #[serde(rename(deserialize = "$schema"))]
+    pub schema: Option<String>,
 }
 
 impl Config {
@@ -124,6 +127,7 @@ mod tests {
                 bidi_links: None,
                 sections: None,
                 globs: None,
+                schema: None,
             };
             pretty::assert_eq!(have, want);
         }
@@ -137,6 +141,7 @@ mod tests {
                 bidi_links: None,
                 sections: None,
                 globs: None,
+                schema: None,
             };
             pretty::assert_eq!(have, want);
         }
@@ -157,6 +162,7 @@ mod tests {
                 bidi_links: Some(true),
                 sections: Some(vec!["one".into(), "two".into()]),
                 globs: Some(vec!["**/foo".into()]),
+                schema: None,
             };
             pretty::assert_eq!(have, want);
         }
@@ -172,7 +178,7 @@ mod tests {
             test::create_file("tikibase.json", give, &dir);
             let have = load(&dir);
             let want = Err(Issue::InvalidConfigurationFile {
-                message: "unknown field `foo`, expected one of `bidiLinks`, `globs`, `sections` at line 3 column 20".into(),
+                message: "unknown field `foo`, expected one of `bidiLinks`, `globs`, `sections`, `$schema` at line 3 column 20".into(),
                 location: Location {
                     file: PathBuf::from("tikibase.json"),
                     line: 3,

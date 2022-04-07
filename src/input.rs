@@ -36,6 +36,8 @@ pub enum Command {
     Check,
     /// Corrects all auto-fixable issues
     Fix,
+    /// Creates an empty configuration file with the default values
+    Init,
     /// Export the JSON Schema for the configuration file
     JsonSchema,
     /// Corrects all auto-fixable issues and prints the remaining ("pitstop")

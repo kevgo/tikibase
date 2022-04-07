@@ -88,6 +88,14 @@ impl Message {
                 end: location.end,
                 fixable: false,
             },
+            Issue::CannotWriteConfigFile { message, location } => Message {
+                text: format!("cannot write the example configuration file: {}", message),
+                file: location.file,
+                line: location.line,
+                start: location.start,
+                end: location.end,
+                fixable: false,
+            },
             Issue::CannotWriteJsonSchemaFile { location, message } => Message {
                 text: format!("cannot write JSON Schema file: {}", message),
                 file: location.file,
