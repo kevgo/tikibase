@@ -13,7 +13,9 @@ pub struct Config {
     /// enables bi-directional links
     pub bidi_links: Option<bool>,
 
-    /// glob overrides
+    /// Glob overrides. Tikibase looks at all files that aren't git-ignored.
+    /// With this setting you can fine-tune the files Tikibase looks at
+    /// using glob expressions. To exclude files, precede the glob with a `!`.
     pub globs: Option<Vec<String>>,
 
     /// the allowed section titles
