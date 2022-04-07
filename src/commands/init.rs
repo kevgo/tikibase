@@ -13,6 +13,7 @@ pub fn init(dir: &Path) -> Outcome {
     }
 }
 
+/// provides the content of the initial config file
 fn template() -> &'static str {
     indoc! {"
     {
@@ -28,6 +29,7 @@ mod tests {
 
     #[test]
     fn init() {
+        // verify that the template can be parsed into a valid Config struct without errors
         let _have: Config = serde_json::from_str(template()).unwrap();
     }
 }
