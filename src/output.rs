@@ -93,7 +93,7 @@ impl Message {
                 fixable: false,
             },
             Issue::CannotWriteConfigFile { file, message } => Message {
-                text: format!("cannot write the example configuration file: {}", message),
+                text: format!("cannot create configuration file: {}", message),
                 file,
                 line: None,
                 start: None,
