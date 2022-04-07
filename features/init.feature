@@ -10,7 +10,6 @@ Feature: "init" command
       }
       """
 
-
   Scenario: existing config file
     Given file "tikibase.json" with content:
       """

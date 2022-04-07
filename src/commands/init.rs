@@ -1,10 +1,10 @@
 use crate::{Issue, Location, Outcome};
 use indoc::indoc;
 use std::fs;
-use std::path::PathBuf;
+use std::path::{Path, PathBuf};
 
-pub fn init() -> Outcome {
-    match fs::write("tikibase.json", template()) {
+pub fn init(dir: &Path) -> Outcome {
+    match fs::write(dir.join("tikibase.json"), template()) {
         Ok(_) => Outcome::default(),
         Err(err) => Outcome::from_issue(Issue::CannotWriteConfigFile {
             message: err.to_string(),
@@ -21,7 +21,7 @@ pub fn init() -> Outcome {
 fn template() -> &'static str {
     indoc! {"
     {
-        \"$schema\": \"https://raw.githubusercontent.com/kevgo/tikibase/main/doc/tikibase.schema.json\"
+      \"$schema\": \"https://raw.githubusercontent.com/kevgo/tikibase/main/doc/tikibase.schema.json\"
     }
     "}
 }

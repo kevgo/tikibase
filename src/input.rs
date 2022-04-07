@@ -36,7 +36,7 @@ pub enum Command {
     Check,
     /// Corrects all auto-fixable issues
     Fix,
-    /// Creates an empty configuration file as a starting point for configuring Tikibase
+    /// Scaffolds a configuration file
     Init,
     /// Export the JSON Schema for the configuration file
     JsonSchema,

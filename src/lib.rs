@@ -17,6 +17,9 @@ use std::path::PathBuf;
 
 /// runs the given Command in the given directory, returns structured data
 pub fn run(command: &input::Command, dir: PathBuf) -> Messages {
+    if command == &Command::Init {
+        return Messages::from_outcome(commands::init(&dir));
+    }
     if command == &Command::JsonSchema {
         return Messages::from_outcome(commands::json_schema());
     }
@@ -31,7 +34,7 @@ pub fn run(command: &input::Command, dir: PathBuf) -> Messages {
     let outcome = match command {
         Command::Check => commands::check(&mut base, &config),
         Command::Stats => commands::stats(&base),
-        Command::Init => commands::init(),
+        Command::Init => panic!(),       // handled above
         Command::JsonSchema => panic!(), // handled above
         Command::Fix => commands::fix(&mut base, &config),
         Command::P => commands::pitstop(&mut base, &config),
