@@ -21,6 +21,7 @@ pub struct Config {
     /// the allowed section titles
     pub sections: Option<Vec<String>>,
 
+    /// link to the JSON-Schema definition for this file
     #[serde(rename(deserialize = "$schema"))]
     pub schema: Option<String>,
 }
