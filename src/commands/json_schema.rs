@@ -11,8 +11,8 @@ pub fn json_schema() -> Outcome {
         Ok(file) => file,
         Err(err) => {
             return Outcome::from_issue(Issue::CannotWriteJsonSchemaFile {
-                message: err.to_string(),
                 file: filename.into(),
+                message: err.to_string(),
             })
         }
     };
