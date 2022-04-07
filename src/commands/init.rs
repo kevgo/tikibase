@@ -33,6 +33,6 @@ mod tests {
 
     #[test]
     fn init() {
-        let _: Config = serde_json::from_str(template()).unwrap();
+        let _have: Config = serde_json::from_str(template()).unwrap();
     }
 }

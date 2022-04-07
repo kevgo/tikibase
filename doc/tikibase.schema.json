@@ -4,6 +4,12 @@
   "description": "Tikibase configuration data",
   "type": "object",
   "properties": {
+    "$schema": {
+      "type": [
+        "string",
+        "null"
+      ]
+    },
     "bidiLinks": {
       "description": "enables bi-directional links",
       "type": [
