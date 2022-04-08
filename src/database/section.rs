@@ -171,12 +171,7 @@ mod tests {
             ("A Complex Section", "#a-complex-section"),
         ];
         for (give, want) in tests {
-            let section = Section {
-                title_line: Line {
-                    text: format!("# {}", give),
-                },
-                ..Section::default()
-            };
+            let section = Section::with_title(give);
             assert_eq!(section.anchor(), want);
         }
     }
