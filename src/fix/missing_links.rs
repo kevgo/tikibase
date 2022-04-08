@@ -68,13 +68,7 @@ fn extract_shortcut<'a>(title: &'a str, regex: &Regex) -> ExtractShortcutResult<
         }
     }
     match regex.captures(title) {
-        Some(captures) => match captures.len() {
-            2 => ExtractShortcutResult::ShortcutFound(captures.get(1).unwrap().as_str()),
-            other => ExtractShortcutResult::Failed(Issue::TitleRegexTooManyCaptures {
-                regex: regex.to_string(),
-                captures: other - 1,
-            }),
-        },
+        Some(captures) => ExtractShortcutResult::ShortcutFound(captures.get(1).unwrap().as_str()),
         None => ExtractShortcutResult::NoShortcutFound,
     }
 }
