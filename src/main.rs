@@ -18,14 +18,11 @@ fn main() {
 }
 
 fn print_text(messages: &Messages) {
-    if !messages.is_empty() {
-        println!("Issues:");
-    }
     for issue in &messages.issues {
         println!("{}", issue.to_text());
     }
-    if !messages.is_empty() {
-        println!("\nFixed:");
+    if messages.has_issues_and_fixes() {
+        println!();
     }
     for fix in &messages.fixes {
         println!("{}", fix.to_text());

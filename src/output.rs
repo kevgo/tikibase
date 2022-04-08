@@ -370,6 +370,12 @@ impl Messages {
         result.append(&mut self.fixes);
         result
     }
+
+    /// indicates whether there are any messages
+    pub fn is_empty(&self) -> bool {
+        self.issues.is_empty() && self.fixes.is_empty()
+    }
+
     pub fn from_issue(issue: Issue) -> Messages {
         Messages {
             issues: vec![Message::from_issue(issue)],
@@ -399,9 +405,9 @@ impl Messages {
         }
     }
 
-    /// indicates whether there are any messages
-    pub fn is_empty(&self) -> bool {
-        self.issues.is_empty() && self.fixes.is_empty()
+    /// indicates whether there are both issues and fixes
+    pub fn has_issues_and_fixes(&self) -> bool {
+        !self.issues.is_empty() && !self.fixes.is_empty()
     }
 }
 
@@ -476,6 +482,54 @@ mod tests {
                 ..Messages::default()
             };
             assert!(!give.is_empty());
+        }
+
+        #[test]
+        fn with_issues_and_fixes() {
+            let give = Messages {
+                fixes: vec![Message::default()],
+                issues: vec![Message::default()],
+                ..Messages::default()
+            };
+            assert!(!give.is_empty());
+        }
+    }
+
+    mod has_issues_and_fixes {
+        use crate::{Message, Messages};
+
+        #[test]
+        fn empty() {
+            let give = Messages::default();
+            assert!(!give.has_issues_and_fixes());
+        }
+
+        #[test]
+        fn issues_only() {
+            let give = Messages {
+                issues: vec![Message::default()],
+                ..Messages::default()
+            };
+            assert!(!give.has_issues_and_fixes());
+        }
+
+        #[test]
+        fn fixes_only() {
+            let give = Messages {
+                fixes: vec![Message::default()],
+                ..Messages::default()
+            };
+            assert!(!give.has_issues_and_fixes());
+        }
+
+        #[test]
+        fn issues_and_fixes() {
+            let give = Messages {
+                fixes: vec![Message::default()],
+                issues: vec![Message::default()],
+                ..Messages::default()
+            };
+            assert!(give.has_issues_and_fixes());
         }
     }
 }
