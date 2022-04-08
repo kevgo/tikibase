@@ -19,9 +19,6 @@ Feature: add occurrence sections with a title regex
     And file "2.md" with content:
       """
       # [One](1.md) times two (multiplication)
-
-      ### Foo
-      [One](1.md)
       """
     And file "3.md" with content:
       """
