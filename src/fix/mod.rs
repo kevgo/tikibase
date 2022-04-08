@@ -8,23 +8,21 @@ mod unordered_sections;
 use crate::{Config, Issue, Location, Tikibase};
 
 /// fixes the given Issue
-pub fn fix(issue: Issue, base: &mut Tikibase, config: &Config) -> Option<Fix> {
+pub fn fix(issue: Issue, base: &mut Tikibase, config: &Config) -> Result {
     match issue {
         // actual fixes
         Issue::EmptySection { location, title } => {
-            Some(empty_section::remove_section(base, title, location))
+            empty_section::remove_section(base, title, location)
         }
         Issue::MissingLinks { location, links } => {
-            Some(missing_links::add_occurrences(base, location, links))
+            missing_links::add_occurrences(base, location, links, config)
         }
-        Issue::ObsoleteOccurrencesSection { location } => Some(
-            obsolete_occurrences_section::remove_occurrences_section(base, location),
-        ),
-        Issue::UnorderedSections { location } => Some(unordered_sections::sort_sections(
-            base,
-            location,
-            config.sections.as_ref().unwrap(),
-        )),
+        Issue::ObsoleteOccurrencesSection { location } => {
+            obsolete_occurrences_section::remove_occurrences_section(base, location)
+        }
+        Issue::UnorderedSections { location } => {
+            unordered_sections::sort_sections(base, location, config.sections.as_ref().unwrap())
+        }
         // no-ops
         Issue::BrokenImage {
             location: _,
@@ -60,6 +58,11 @@ pub fn fix(issue: Issue, base: &mut Tikibase, config: &Config) -> Option<Fix> {
             location: _,
             message: _,
         }
+        | Issue::InvalidTitleRegex {
+            regex: _,
+            problem: _,
+            file: _,
+        }
         | Issue::LinkToNonExistingAnchorInCurrentDocument {
             location: _,
             anchor: _,
@@ -82,6 +85,11 @@ pub fn fix(issue: Issue, base: &mut Tikibase, config: &Config) -> Option<Fix> {
         | Issue::NoTitleSection { location: _ }
         | Issue::OrphanedResource { location: _ }
         | Issue::SectionWithoutHeader { location: _ }
+        | Issue::TitleRegexNoCaptures { regex: _ }
+        | Issue::TitleRegexTooManyCaptures {
+            regex: _,
+            captures: _,
+        }
         | Issue::UnclosedBacktick { location: _ }
         | Issue::UnclosedFence { location: _ }
         | Issue::UnknownSection {
@@ -92,7 +100,7 @@ pub fn fix(issue: Issue, base: &mut Tikibase, config: &Config) -> Option<Fix> {
         | Issue::UnusedFootnote {
             location: _,
             identifier: _,
-        } => None,
+        } => Result::Unfixable,
     }
 }
 
@@ -102,4 +110,14 @@ pub enum Fix {
     RemovedEmptySection { title: String, location: Location },
     RemovedObsoleteOccurrencesSection { location: Location },
     SortedSections { location: Location },
+}
+
+/// result of a fix operation
+pub enum Result {
+    /// the issue was fixed
+    Fixed(Fix),
+    /// the given Issue occurred while trying to fix this issue
+    Failed(Issue),
+    /// this issue is not fixable
+    Unfixable,
 }

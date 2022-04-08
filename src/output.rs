@@ -152,6 +152,14 @@ impl Message {
                 end: Some(location.end),
                 fixable: false,
             },
+            Issue::InvalidTitleRegex { regex, problem, file } => Message{
+                text: format!("Invalid regular expression in the \"titleRegEx\" entry ({}): {}", regex, problem),
+                file,
+                line: None,
+                start: None,
+                end: None,
+                fixable: false
+            },
             Issue::LinkToNonExistingAnchorInCurrentDocument { location, anchor } => Message {
                 text: format!(
                     "link to non-existing anchor \"#{}\" in current file",
@@ -266,6 +274,22 @@ impl Message {
                 line: Some(location.line),
                 start: Some(location.start),
                 end: Some(location.end),
+                fixable: false,
+            },
+            Issue::TitleRegexNoCaptures { regex } => Message {
+                text: format!("The regular expression in the \"titleRegEx\" entry ({}) doesn't contain a capture group", regex),
+                file: PathBuf::from("tikibase.json"),
+                line: None,
+                start: None,
+                end: None,
+                fixable: false,
+            },
+            Issue::TitleRegexTooManyCaptures { regex, captures } => Message{
+                text: format!("The regular expression in the \"titleRegEx\" entry ({}) should have only one capture group but has {}", regex, captures),
+                file: PathBuf::from("tikibase.json"),
+                line: None,
+                start: None,
+                end: None,
                 fixable: false,
             },
             Issue::UnclosedBacktick { location } => Message {

@@ -1,7 +1,14 @@
-Feature: add occurrence sections
+Feature: add occurrence sections with a title regex
 
   Background:
-    Given file "1.md" with content:
+    Given file "tikibase.json" with content:
+      """
+      {
+        "bidiLinks": true,
+        "titleRegEx": "\\((\\w+)\\)$"
+      }
+      """
+    And file "1.md" with content:
       """
       # One
 
@@ -10,10 +17,7 @@ Feature: add occurrence sections
       """
     And file "2.md" with content:
       """
-      # [One](1.md) times two
-
-      ### Foo
-      [One](1.md)
+      # [One](1.md) times two (multiplication)
       """
     And file "3.md" with content:
       """
@@ -26,12 +30,6 @@ Feature: add occurrence sections
       """
       # Four
       [One](1.md)
-      """
-    And file "tikibase.json" with content:
-      """
-      {
-        "bidiLinks": true
-      }
       """
 
   Scenario: check
@@ -57,7 +55,7 @@ Feature: add occurrence sections
 
       ### occurrences
 
-      - [One times two](2.md)
+      - [multiplication](2.md)
       - [Three](3.md)
       """
     And file "2.md" is unchanged
@@ -79,7 +77,7 @@ Feature: add occurrence sections
 
       ### occurrences
 
-      - [One times two](2.md)
+      - [multiplication](2.md)
       - [Three](3.md)
       """
     And the exit code is 0

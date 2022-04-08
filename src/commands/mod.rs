@@ -46,6 +46,7 @@ pub enum Issue {
         location: Location,
         target: String,
     },
+    // TODO: sort
     LinkToNonExistingFile {
         location: Location,
         target: String,
@@ -81,6 +82,11 @@ pub enum Issue {
         glob: String,
         message: String,
         location: Location,
+    },
+    InvalidTitleRegex {
+        regex: String,
+        problem: String,
+        file: PathBuf,
     },
     LinkToNonExistingAnchorInCurrentDocument {
         location: Location,
@@ -126,6 +132,13 @@ pub enum Issue {
     },
     SectionWithoutHeader {
         location: Location,
+    },
+    TitleRegexNoCaptures {
+        regex: String,
+    },
+    TitleRegexTooManyCaptures {
+        regex: String,
+        captures: usize,
     },
     UnclosedBacktick {
         location: Location,

@@ -1,4 +1,5 @@
 use crate::{Issue, Location};
+use regex::Regex;
 use schemars::JsonSchema;
 use serde::Deserialize;
 use std::fs::File;
@@ -21,6 +22,9 @@ pub struct Config {
     /// the allowed section titles
     pub sections: Option<Vec<String>>,
 
+    /// regex with a single capture group to extract a shorter title for links to notes
+    pub title_reg_ex: Option<String>,
+
     /// link to the JSON-Schema definition for this file
     #[serde(rename(deserialize = "$schema"))]
     pub schema: Option<String>,
@@ -35,6 +39,21 @@ impl Config {
                 ignores.iter().any(|ignore| ignore == &file_path)
             }
             None => false,
+        }
+    }
+
+    /// provides the regular expression as a proper Regex instance
+    pub fn title_regex(&self) -> Result<Option<Regex>, Issue> {
+        match &self.title_reg_ex {
+            Some(text) => match Regex::new(text) {
+                Ok(regex) => Ok(Some(regex)),
+                Err(err) => Err(Issue::InvalidTitleRegex {
+                    regex: text.into(),
+                    problem: err.to_string(),
+                    file: PathBuf::from("tikibase.json"),
+                }),
+            },
+            None => Ok(None),
         }
     }
 }
@@ -131,6 +150,7 @@ mod tests {
                 sections: None,
                 globs: None,
                 schema: None,
+                title_reg_ex: None,
             };
             pretty::assert_eq!(have, want);
         }
@@ -145,6 +165,7 @@ mod tests {
                 sections: None,
                 globs: None,
                 schema: None,
+                title_reg_ex: None,
             };
             pretty::assert_eq!(have, want);
         }
@@ -166,6 +187,7 @@ mod tests {
                 sections: Some(vec!["one".into(), "two".into()]),
                 globs: Some(vec!["**/foo".into()]),
                 schema: None,
+                title_reg_ex: None,
             };
             pretty::assert_eq!(have, want);
         }
@@ -181,7 +203,7 @@ mod tests {
             test::create_file("tikibase.json", give, &dir);
             let have = load(&dir);
             let want = Err(Issue::InvalidConfigurationFile {
-                message: "unknown field `foo`, expected one of `bidiLinks`, `globs`, `sections`, `$schema` at line 3 column 20".into(),
+                message: "unknown field `foo`, expected one of `bidiLinks`, `globs`, `sections`, `titleRegEx`, `$schema` at line 3 column 20".into(),
                 location: Location {
                     file: PathBuf::from("tikibase.json"),
                     line: 3,

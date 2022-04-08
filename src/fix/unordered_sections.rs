@@ -1,13 +1,15 @@
-use super::Fix;
+use super::Result::Fixed;
 use crate::database::Section;
+use crate::fix;
+use crate::fix::Fix::SortedSections;
 use crate::{Location, Tikibase};
 
-pub fn sort_sections(base: &mut Tikibase, location: Location, sections: &[String]) -> Fix {
+pub fn sort_sections(base: &mut Tikibase, location: Location, sections: &[String]) -> fix::Result {
     let base_dir = base.dir.clone();
     let mut doc = base.get_doc_mut(&location.file).unwrap();
     doc.content_sections = reorder(&mut doc.content_sections, sections);
     doc.save(&base_dir);
-    Fix::SortedSections { location }
+    Fixed(SortedSections { location })
 }
 
 /// drains the given sections vector and provides a new Vector that contains the elements ordered according to schema
