@@ -41,6 +41,8 @@ impl Config {
             None => false,
         }
     }
+
+    /// provides the regular expression as a proper Regex instance
     pub fn title_regex(&self) -> Result<Option<Regex>, Issue> {
         match &self.title_reg_ex {
             Some(text) => match Regex::new(text) {
