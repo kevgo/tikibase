@@ -54,6 +54,7 @@ pub fn add_occurrences(
     })
 }
 
+/// tries to extract a shortcut defined by the given regex from the given title
 fn extract_shortcut<'a>(title: &'a str, regex: &Regex) -> ExtractShortcutResult<'a> {
     match regex.captures_len() {
         0 | 1 => {
@@ -79,9 +80,9 @@ fn extract_shortcut<'a>(title: &'a str, regex: &Regex) -> ExtractShortcutResult<
 enum ExtractShortcutResult<'a> {
     /// found a shortcut
     ShortcutFound(&'a str),
-    /// the regex worked but the given title doesn't define a shortcut
+    /// the given title doesn't contain a shortcut
     NoShortcutFound,
-    /// a problem with the given Regex occurred
+    /// problem with the given Regex
     Failed(Issue),
 }
 
