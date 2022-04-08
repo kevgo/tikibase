@@ -268,6 +268,22 @@ impl Message {
                 end: Some(location.end),
                 fixable: false,
             },
+            Issue::TitleRegexNoCaptures { regex } => Message {
+                text: format!("The regular expression in the \"titleRegEx\" entry ({}) hasn't captured anything", regex),
+                file: PathBuf::from("tikibase.json"),
+                line: None,
+                start: None,
+                end: None,
+                fixable: false,
+            },
+            Issue::TitleRegexTooManyCaptures { regex, captures } => Message{
+                text: format!("The regular expression in the \"titleRegEx\" entry ({}) should have only one  capture group but has {}", regex, captures),
+                file: PathBuf::from("tikibase.json"),
+                line: None,
+                start: None,
+                end: None,
+                fixable: false,
+            },
             Issue::UnclosedBacktick { location } => Message {
                 text: "unclosed backtick".into(),
                 file: location.file,

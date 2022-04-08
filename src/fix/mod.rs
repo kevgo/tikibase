@@ -58,7 +58,11 @@ pub fn fix(issue: Issue, base: &mut Tikibase, config: &Config) -> FixResult {
             location: _,
             message: _,
         }
-        | Issue::InvalidTitleRegex { regex: _, file: _ }
+        | Issue::InvalidTitleRegex {
+            regex: _,
+            problem: _,
+            file: _,
+        }
         | Issue::LinkToNonExistingAnchorInCurrentDocument {
             location: _,
             anchor: _,
@@ -81,6 +85,11 @@ pub fn fix(issue: Issue, base: &mut Tikibase, config: &Config) -> FixResult {
         | Issue::NoTitleSection { location: _ }
         | Issue::OrphanedResource { location: _ }
         | Issue::SectionWithoutHeader { location: _ }
+        | Issue::TitleRegexNoCaptures { regex: _ }
+        | Issue::TitleRegexTooManyCaptures {
+            regex: _,
+            captures: _,
+        }
         | Issue::UnclosedBacktick { location: _ }
         | Issue::UnclosedFence { location: _ }
         | Issue::UnknownSection {
