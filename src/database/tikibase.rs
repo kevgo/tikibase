@@ -84,12 +84,6 @@ impl Tikibase {
             if filename.starts_with('.') || filename == "tikibase.json" {
                 continue;
             }
-            // TODO: make method on Config object
-            if let Some(ignore) = &config.globs {
-                if ignore.iter().any(|i| i == &filename) {
-                    continue;
-                }
-            }
             let path = entry.path();
             let filepath = path.strip_prefix(&dir).unwrap();
             match FileType::from_ext(path.extension()) {
