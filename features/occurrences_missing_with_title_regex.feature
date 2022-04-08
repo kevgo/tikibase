@@ -1,4 +1,3 @@
-@this
 Feature: add occurrence sections with a title regex
 
   Background:
