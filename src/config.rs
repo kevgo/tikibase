@@ -5,7 +5,6 @@ use serde::Deserialize;
 use std::fs::File;
 use std::io::ErrorKind;
 use std::path::{Path, PathBuf};
-use std::str::FromStr;
 
 /// Tikibase configuration data
 #[derive(Deserialize, Debug, Default, JsonSchema, PartialEq)]
@@ -44,7 +43,7 @@ impl Config {
     }
     pub fn title_regex(&self) -> Result<Option<Regex>, Issue> {
         match &self.title_reg_ex {
-            Some(text) => match Regex::from_str(text) {
+            Some(text) => match Regex::new(text) {
                 Ok(regex) => Ok(Some(regex)),
                 Err(err) => Err(Issue::InvalidTitleRegex {
                     regex: text.into(),
