@@ -8,7 +8,7 @@ mod unordered_sections;
 use crate::{Config, Issue, Location, Tikibase};
 
 /// fixes the given Issue
-pub fn fix(issue: Issue, base: &mut Tikibase, config: &Config) -> FixResult {
+pub fn fix(issue: Issue, base: &mut Tikibase, config: &Config) -> Result {
     match issue {
         // actual fixes
         Issue::EmptySection { location, title } => {
@@ -100,7 +100,7 @@ pub fn fix(issue: Issue, base: &mut Tikibase, config: &Config) -> FixResult {
         | Issue::UnusedFootnote {
             location: _,
             identifier: _,
-        } => FixResult::Unfixable,
+        } => Result::Unfixable,
     }
 }
 
@@ -113,7 +113,7 @@ pub enum Fix {
 }
 
 /// result of a fix operation
-pub enum FixResult {
+pub enum Result {
     /// the issue was fixed
     Fixed(Fix),
     /// the given Issue occurred while trying to fix this issue

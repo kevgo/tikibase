@@ -1,4 +1,4 @@
-use crate::fix::FixResult::{Failed, Fixed, Unfixable};
+use crate::fix::Result::{Failed, Fixed, Unfixable};
 use crate::{commands, fix, Config, Outcome, Tikibase};
 
 pub fn fix(base: &mut Tikibase, config: &Config) -> Outcome {

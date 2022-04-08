@@ -1,6 +1,8 @@
-use super::{Fix, FixResult};
+use super::Fix::AddedOccurrencesSection;
 use crate::commands::MissingLink;
 use crate::database::{section, Tikibase};
+use crate::fix;
+use crate::fix::Result::{Failed, Fixed};
 use crate::{Config, Issue, Location};
 use once_cell::sync::Lazy;
 use regex::{Captures, Regex};
@@ -11,7 +13,7 @@ pub fn add_occurrences(
     location: Location,
     links: Vec<MissingLink>,
     config: &Config,
-) -> FixResult {
+) -> fix::Result {
     let base_dir = base.dir.clone();
     let doc = base.get_doc_mut(&location.file).unwrap();
 
@@ -23,14 +25,14 @@ pub fn add_occurrences(
     section_builder.add_line("");
     let regex = match config.title_regex() {
         Ok(regex) => regex,
-        Err(issue) => return FixResult::Failed(issue),
+        Err(issue) => return Failed(issue),
     };
     for link in links {
         let stripped_title = &strip_links(&link.title);
         let title = match &regex {
             Some(regex) => match extract_shortcut(stripped_title, regex) {
                 ExtractShortcutResult::ShortcutFound(shortcut) => shortcut,
-                ExtractShortcutResult::Failed(issue) => return FixResult::Failed(issue),
+                ExtractShortcutResult::Failed(issue) => return Failed(issue),
                 ExtractShortcutResult::NoShortcutFound => stripped_title,
             },
             None => stripped_title,
@@ -42,7 +44,7 @@ pub fn add_occurrences(
     let end = occurrences_section.title_line.text.len() as u32;
     doc.content_sections.push(occurrences_section);
     doc.save(&base_dir);
-    FixResult::Fixed(Fix::AddedOccurrencesSection {
+    Fixed(AddedOccurrencesSection {
         location: Location {
             file: location.file,
             line,

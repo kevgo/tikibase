@@ -1,4 +1,4 @@
-use crate::fix::FixResult::{Failed, Fixed, Unfixable};
+use crate::fix::Result::{Failed, Fixed, Unfixable};
 use crate::Outcome;
 use crate::{commands, fix::fix, Config, Tikibase};
 
