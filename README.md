@@ -20,13 +20,11 @@ powerful option for efficiently working on large Tikibases in the 2020s is
 You manage changes to your knowledge base using a version control system like
 Git, Mercurial, or whatever they use in the future. The open-source CLI
 application in this repository is an optional linter that helps keep a Tikibase
-consistent by finding and fixing these issues:
+consistent by finding and fixing:
 
 - **broken links/images:** links pointing to non-existing local files
 - **orphaned resources:** non-Markdown files not referenced by a Markdown
   document
-- **missing backlinks:** if document A links to document B, document B must also
-  link to document A
 - **links to the same document:** document A should not contain links to
   document A
 - **inconsistent heading capitalization:** when you use `## FooBar` and
@@ -34,12 +32,10 @@ consistent by finding and fixing these issues:
 - **duplicate headings in a file**
 - **empty sections**
 - **missing footnote definitions and references**
-
-When the config file defines the allowed section names, Tikibase verifies these
-additional properties:
-
-- **unknown headings**
-- **heading order**
+- optional: **missing backlinks:** if document A links to document B, document B
+  must also link to document A
+- optional: **unknown headings**
+- optional: **heading order**
 
 ![build status](https://github.com/kevgo/tikibase/actions/workflows/ci.yml/badge.svg)
 
