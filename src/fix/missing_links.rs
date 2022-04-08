@@ -32,8 +32,8 @@ pub fn add_occurrences(
         let title = match &regex {
             Some(regex) => match extract_shortcut(stripped_title, regex) {
                 ExtractShortcutResult::ShortcutFound(shortcut) => shortcut,
-                ExtractShortcutResult::Failed(issue) => return Failed(issue),
                 ExtractShortcutResult::NoShortcutFound => stripped_title,
+                ExtractShortcutResult::Failed(issue) => return Failed(issue),
             },
             None => stripped_title,
         };
