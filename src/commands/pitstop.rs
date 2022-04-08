@@ -1,3 +1,4 @@
+use crate::fix::FixResult::{Failed, Fixed, Unfixable};
 use crate::Outcome;
 use crate::{commands, fix::fix, Config, Tikibase};
 
@@ -6,8 +7,9 @@ pub fn pitstop(base: &mut Tikibase, config: &Config) -> Outcome {
     let mut pitstop_result = Outcome::default();
     for issue in check_result.issues {
         match fix(issue.clone(), base, config) {
-            Some(fix) => pitstop_result.fixes.push(fix),
-            None => pitstop_result.issues.push(issue),
+            Fixed(fix) => pitstop_result.fixes.push(fix),
+            Failed(problem) => pitstop_result.issues.push(problem),
+            Unfixable => pitstop_result.issues.push(issue),
         }
     }
     pitstop_result

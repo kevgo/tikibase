@@ -1,9 +1,11 @@
 use crate::{Issue, Location};
+use regex::Regex;
 use schemars::JsonSchema;
 use serde::Deserialize;
 use std::fs::File;
 use std::io::ErrorKind;
 use std::path::{Path, PathBuf};
+use std::str::FromStr;
 
 /// Tikibase configuration data
 #[derive(Deserialize, Debug, Default, JsonSchema, PartialEq)]
@@ -21,6 +23,9 @@ pub struct Config {
     /// the allowed section titles
     pub sections: Option<Vec<String>>,
 
+    /// regex with a single capture group to extract a shorter title for links to notes
+    pub title_reg_ex: Option<String>,
+
     /// link to the JSON-Schema definition for this file
     #[serde(rename(deserialize = "$schema"))]
     pub schema: Option<String>,
@@ -35,6 +40,18 @@ impl Config {
                 ignores.iter().any(|ignore| ignore == &file_path)
             }
             None => false,
+        }
+    }
+    pub fn title_regex(&self) -> Result<Option<Regex>, Issue> {
+        match self.title_reg_ex {
+            Some(text) => match Regex::from_str(&text) {
+                Ok(regex) => Ok(Some(regex)),
+                Err(err) => Err(Issue::InvalidTitleRegex {
+                    regex: text.into(),
+                    file: PathBuf::from("tikibase.json"),
+                }),
+            },
+            None => Ok(None),
         }
     }
 }
@@ -131,6 +148,7 @@ mod tests {
                 sections: None,
                 globs: None,
                 schema: None,
+                title_reg_ex: None,
             };
             pretty::assert_eq!(have, want);
         }
@@ -145,6 +163,7 @@ mod tests {
                 sections: None,
                 globs: None,
                 schema: None,
+                title_reg_ex: None,
             };
             pretty::assert_eq!(have, want);
         }
@@ -166,6 +185,7 @@ mod tests {
                 sections: Some(vec!["one".into(), "two".into()]),
                 globs: Some(vec!["**/foo".into()]),
                 schema: None,
+                title_reg_ex: None,
             };
             pretty::assert_eq!(have, want);
         }

@@ -125,6 +125,7 @@ mod tests {
             sections: Some(vec!["one".into(), "two".into(), "three".into()]),
             globs: None,
             schema: None,
+            title_reg_ex: None,
         };
         let base = Tikibase::load(dir, &Config::default()).unwrap();
         let have = super::scan(&base, &config);
