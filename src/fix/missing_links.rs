@@ -1,4 +1,5 @@
 use super::Fix::AddedOccurrencesSection;
+use crate::commands::Issue::{TitleRegexNoCaptures, TitleRegexTooManyCaptures};
 use crate::commands::MissingLink;
 use crate::database::{section, Tikibase};
 use crate::fix;
@@ -57,7 +58,7 @@ pub fn add_occurrences(
 /// tries to extract a shortcut defined by the given regex from the given title
 fn extract_shortcut<'a>(title: &'a str, regex: &Regex) -> ExtractShortcutResult<'a> {
     match regex.captures_len() {
-        0 | 1 => ExtractShortcutResult::Failed(Issue::TitleRegexNoCaptures {
+        0 | 1 => ExtractShortcutResult::Failed(TitleRegexNoCaptures {
             regex: regex.to_string(),
         }),
         2 => match regex.captures(title) {
@@ -66,7 +67,7 @@ fn extract_shortcut<'a>(title: &'a str, regex: &Regex) -> ExtractShortcutResult<
                 ExtractShortcutResult::ShortcutFound(captures.get(1).unwrap().as_str())
             }
         },
-        other => ExtractShortcutResult::Failed(Issue::TitleRegexTooManyCaptures {
+        other => ExtractShortcutResult::Failed(TitleRegexTooManyCaptures {
             regex: regex.to_string(),
             captures: other - 1,
         }),
