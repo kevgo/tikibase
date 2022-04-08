@@ -81,12 +81,10 @@ impl Section {
 
     /// provides a section with the given title
     #[cfg(test)]
-    /// TODO: remove test builders like this and replace with scaffold / default
     pub fn with_title(title: &str) -> Section {
         Section {
-            line_number: 0,
             title_line: Line::from(title),
-            body: Vec::new(),
+            ..Section::default()
         }
     }
 }
@@ -173,7 +171,12 @@ mod tests {
             ("A Complex Section", "#a-complex-section"),
         ];
         for (give, want) in tests {
-            let section = Section::with_title(give);
+            let section = Section {
+                title_line: Line {
+                    text: format!("# {}", give),
+                },
+                ..Section::default()
+            };
             assert_eq!(section.anchor(), want);
         }
     }
