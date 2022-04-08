@@ -49,6 +49,7 @@ pub fn fix(issue: Issue, base: &mut Tikibase, config: &Config) -> Result {
             location: _,
             title: _,
         }
+        | Issue::EmptyDocument { path: _ }
         | Issue::InvalidConfigurationFile {
             message: _,
             location: _,

@@ -65,6 +65,9 @@ pub enum Issue {
         location: Location,
         title: String,
     },
+    EmptyDocument {
+        path: PathBuf,
+    },
     EmptySection {
         location: Location,
         title: String,
