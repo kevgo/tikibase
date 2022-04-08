@@ -152,6 +152,14 @@ impl Message {
                 end: Some(location.end),
                 fixable: false,
             },
+            Issue::InvalidTitleRegex { regex, problem, file } => Message{
+                text: format!("Invalid regular expression in the \"titleRegEx\" entry ({}): {}", regex, problem),
+                file,
+                line: None,
+                start: None,
+                end: None,
+                fixable: false
+            },
             Issue::LinkToNonExistingAnchorInCurrentDocument { location, anchor } => Message {
                 text: format!(
                     "link to non-existing anchor \"#{}\" in current file",

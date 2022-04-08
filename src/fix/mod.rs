@@ -121,9 +121,3 @@ pub enum FixResult {
     /// this issue is not fixable
     Unfixable,
 }
-
-impl FixResult {
-    pub fn fixed(fix: Fix) -> FixResult {
-        FixResult::Fixed(fix)
-    }
-}
