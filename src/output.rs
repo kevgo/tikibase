@@ -277,7 +277,7 @@ impl Message {
                 fixable: false,
             },
             Issue::TitleRegexNoCaptures { regex } => Message {
-                text: format!("The regular expression in the \"titleRegEx\" entry ({}) hasn't captured anything", regex),
+                text: format!("The regular expression in the \"titleRegEx\" entry ({}) doesn't contain a capture group", regex),
                 file: PathBuf::from("tikibase.json"),
                 line: None,
                 start: None,
@@ -285,7 +285,7 @@ impl Message {
                 fixable: false,
             },
             Issue::TitleRegexTooManyCaptures { regex, captures } => Message{
-                text: format!("The regular expression in the \"titleRegEx\" entry ({}) should have only one  capture group but has {}", regex, captures),
+                text: format!("The regular expression in the \"titleRegEx\" entry ({}) should have only one capture group but has {}", regex, captures),
                 file: PathBuf::from("tikibase.json"),
                 line: None,
                 start: None,
