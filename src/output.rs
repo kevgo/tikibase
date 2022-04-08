@@ -405,7 +405,7 @@ impl Messages {
         }
     }
 
-    /// indicates whether there are issues AND fixes
+    /// indicates whether there are both issues and fixes
     pub fn has_issues_and_fixes(&self) -> bool {
         !self.issues.is_empty() && !self.fixes.is_empty()
     }
