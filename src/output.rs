@@ -124,6 +124,14 @@ impl Message {
                 end: Some(location.end),
                 fixable: false,
             },
+            Issue::EmptyDocument { path} => Message{
+                text: "no content".into(),
+                file: path,
+                line: None,
+                start: None,
+                end: None,
+                fixable: false
+            },
             Issue::EmptySection { location, title } => Message {
                 text: format!("section \"{}\" has no content", title),
                 file: location.file,

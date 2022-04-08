@@ -57,13 +57,16 @@ impl Document {
                 }
             }
         }
-        if let Some(section_builder) = section_builder {
-            let section = section_builder.result();
-            if section.title().text == "occurrences" {
-                old_occurrences_section = Some(section);
-            } else {
-                sections.push(section);
+        match section_builder {
+            Some(section_builder) => {
+                let section = section_builder.result();
+                if section.title().text == "occurrences" {
+                    old_occurrences_section = Some(section);
+                } else {
+                    sections.push(section);
+                }
             }
+            None => return Err(Issue::EmptyDocument { path }),
         }
         if inside_fence {
             return Err(Issue::UnclosedFence {
