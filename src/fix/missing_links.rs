@@ -30,12 +30,12 @@ pub fn add_occurrences(
     for link in links {
         let stripped_title = &strip_links(&link.title);
         let title = match &regex {
+            None => stripped_title,
             Some(regex) => match extract_shortcut(stripped_title, regex) {
                 ExtractShortcutResult::ShortcutFound(shortcut) => shortcut,
                 ExtractShortcutResult::NoShortcutFound => stripped_title,
                 ExtractShortcutResult::Failed(issue) => return Failed(issue),
             },
-            None => stripped_title,
         };
         section_builder.add_line(format!("- [{}]({})", title, link.path.to_string_lossy()));
     }
@@ -61,10 +61,10 @@ fn extract_shortcut<'a>(title: &'a str, regex: &Regex) -> ExtractShortcutResult<
             regex: regex.to_string(),
         }),
         2 => match regex.captures(title) {
+            None => ExtractShortcutResult::NoShortcutFound,
             Some(captures) => {
                 ExtractShortcutResult::ShortcutFound(captures.get(1).unwrap().as_str())
             }
-            None => ExtractShortcutResult::NoShortcutFound,
         },
         other => ExtractShortcutResult::Failed(Issue::TitleRegexTooManyCaptures {
             regex: regex.to_string(),
