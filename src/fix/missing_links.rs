@@ -57,22 +57,19 @@ pub fn add_occurrences(
 /// tries to extract a shortcut defined by the given regex from the given title
 fn extract_shortcut<'a>(title: &'a str, regex: &Regex) -> ExtractShortcutResult<'a> {
     match regex.captures_len() {
-        0 | 1 => {
-            return ExtractShortcutResult::Failed(Issue::TitleRegexNoCaptures {
-                regex: regex.to_string(),
-            })
-        }
-        2 => {}
-        other => {
-            return ExtractShortcutResult::Failed(Issue::TitleRegexTooManyCaptures {
-                regex: regex.to_string(),
-                captures: other - 1,
-            })
-        }
-    }
-    match regex.captures(title) {
-        Some(captures) => ExtractShortcutResult::ShortcutFound(captures.get(1).unwrap().as_str()),
-        None => ExtractShortcutResult::NoShortcutFound,
+        0 | 1 => ExtractShortcutResult::Failed(Issue::TitleRegexNoCaptures {
+            regex: regex.to_string(),
+        }),
+        2 => match regex.captures(title) {
+            Some(captures) => {
+                ExtractShortcutResult::ShortcutFound(captures.get(1).unwrap().as_str())
+            }
+            None => ExtractShortcutResult::NoShortcutFound,
+        },
+        other => ExtractShortcutResult::Failed(Issue::TitleRegexTooManyCaptures {
+            regex: regex.to_string(),
+            captures: other - 1,
+        }),
     }
 }
 
