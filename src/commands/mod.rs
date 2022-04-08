@@ -46,11 +46,6 @@ pub enum Issue {
         location: Location,
         target: String,
     },
-    // TODO: sort
-    LinkToNonExistingFile {
-        location: Location,
-        target: String,
-    },
     CannotReadConfigurationFile {
         location: Location,
         message: String,
@@ -100,19 +95,23 @@ pub enum Issue {
         /// the non-existing anchor in that file
         anchor: String,
     },
+    LinkToNonExistingFile {
+        location: Location,
+        target: String,
+    },
     LinkToSameDocument {
         location: Location,
     },
     LinkWithoutTarget {
         location: Location,
     },
-    MissingLinks {
-        location: Location,
-        links: Vec<MissingLink>,
-    },
     MissingFootnote {
         location: Location,
         identifier: String,
+    },
+    MissingLinks {
+        location: Location,
+        links: Vec<MissingLink>,
     },
     MixCapSection {
         location: Location,
