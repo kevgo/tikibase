@@ -70,7 +70,8 @@ example:
   "$schema": "https://raw.githubusercontent.com/kevgo/tikibase/main/doc/tikibase.schema.json",
   "bidiLinks": true,
   "globs": ["!Makefile"],
-  "sections": ["foo", "bar"]
+  "sections": ["foo", "bar"],
+  "titleRegEx": "\\((\\w+)\\)$"
 }
 ```
 
@@ -80,6 +81,9 @@ example:
   expressions. To exclude files, precede the glob with a `!`.
 - **sections:** if provided, accepts only sections with the given names, in the
   given order
+- **titleRegEx:** allows shortening links to other notes. If provided, titles of
+  links in occurrences sections contain the value captured by the given regular
+  expression from the note title instead of the full note title
 
 ### related
 
