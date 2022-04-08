@@ -371,6 +371,7 @@ impl Messages {
         result
     }
 
+    /// indicates whether there are any messages
     pub fn is_empty(&self) -> bool {
         self.issues.is_empty() && self.fixes.is_empty()
     }
@@ -404,7 +405,7 @@ impl Messages {
         }
     }
 
-    /// indicates whether there are any messages
+    /// indicates whether there are issues AND fixes
     pub fn has_issues_and_fixes(&self) -> bool {
         !self.issues.is_empty() && !self.fixes.is_empty()
     }
