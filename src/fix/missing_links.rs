@@ -1,5 +1,4 @@
-use super::Fix;
-use super::FixResult::{self, Failed, Fixed};
+use super::{Fix, FixResult};
 use crate::commands::MissingLink;
 use crate::database::{section, Tikibase};
 use crate::{Config, Issue, Location};
@@ -24,16 +23,17 @@ pub fn add_occurrences(
     section_builder.add_line("");
     let regex = match config.title_regex() {
         Ok(regex) => regex,
-        Err(issue) => return Failed(issue),
+        Err(issue) => return FixResult::Failed(issue),
     };
     for link in links {
-        let stripped = &strip_links(&link.title);
+        let stripped_title = &strip_links(&link.title);
         let title = match &regex {
-            Some(regex) => match extract_shortcut(stripped, regex) {
-                Ok(title) => title,
-                Err(issue) => return Failed(issue),
+            Some(regex) => match extract_shortcut(stripped_title, regex) {
+                ExtractShortcutResult::ShortcutFound(shortcut) => shortcut,
+                ExtractShortcutResult::Failed(issue) => return FixResult::Failed(issue),
+                ExtractShortcutResult::NoShortcutFound => stripped_title,
             },
-            None => stripped,
+            None => stripped_title,
         };
         section_builder.add_line(format!("- [{}]({})", title, link.path.to_string_lossy()));
     }
@@ -42,7 +42,7 @@ pub fn add_occurrences(
     let end = occurrences_section.title_line.text.len() as u32;
     doc.content_sections.push(occurrences_section);
     doc.save(&base_dir);
-    Fixed(Fix::AddedOccurrencesSection {
+    FixResult::Fixed(Fix::AddedOccurrencesSection {
         location: Location {
             file: location.file,
             line,
@@ -52,22 +52,31 @@ pub fn add_occurrences(
     })
 }
 
-fn extract_shortcut<'a>(title: &'a str, regex: &Regex) -> Result<&'a str, Issue> {
+fn extract_shortcut<'a>(title: &'a str, regex: &Regex) -> ExtractShortcutResult<'a> {
     match regex.captures(title) {
         Some(captures) => match captures.len() {
-            0 => Err(Issue::TitleRegexNoCaptures {
+            0 => ExtractShortcutResult::Failed(Issue::TitleRegexNoCaptures {
                 regex: regex.to_string(),
             }),
-            1 => Ok(captures.get(0).unwrap().as_str()),
-            other => Err(Issue::TitleRegexTooManyCaptures {
+            // 1 => ExtractShortcutResult::NoShortcutFound,
+            2 => ExtractShortcutResult::ShortcutFound(captures.get(1).unwrap().as_str()),
+            other => ExtractShortcutResult::Failed(Issue::TitleRegexTooManyCaptures {
                 regex: regex.to_string(),
-                captures: other,
+                captures: other - 1,
             }),
         },
-        None => Err(Issue::TitleRegexNoCaptures {
-            regex: regex.to_string(),
-        }),
+        None => ExtractShortcutResult::NoShortcutFound,
     }
+}
+
+#[derive(Debug, PartialEq)]
+enum ExtractShortcutResult<'a> {
+    /// found a shortcut
+    ShortcutFound(&'a str),
+    /// the regex worked but the given title doesn't define a shortcut
+    NoShortcutFound,
+    /// a problem with the given Regex occurred
+    Failed(Issue),
 }
 
 /// removes all links from the given string
@@ -86,6 +95,53 @@ static SOURCE_RE: Lazy<Regex> = Lazy::new(|| Regex::new(r#"\[([^]]*)\]\([^)]*\)"
 
 #[cfg(test)]
 mod tests {
+
+    mod extract_shortcut {
+        use crate::fix::missing_links::{extract_shortcut, ExtractShortcutResult};
+        use crate::Issue;
+        use regex::Regex;
+
+        #[test]
+        fn works() {
+            let regex = Regex::new("\\((\\w+)\\)").unwrap();
+            let give = "# Example Title (ET)";
+            let want = ExtractShortcutResult::ShortcutFound("ET");
+            let have = extract_shortcut(give, &regex);
+            assert_eq!(have, want);
+        }
+
+        #[test]
+        fn title_without_shortcut() {
+            let regex = Regex::new("\\((\\w+)\\)").unwrap();
+            let give = "# Example Title";
+            let want = ExtractShortcutResult::NoShortcutFound;
+            let have = extract_shortcut(give, &regex);
+            assert_eq!(have, want);
+        }
+
+        #[test]
+        fn regex_without_capture() {
+            let regex = Regex::new("123").unwrap();
+            let give = "# Example Title (ET)";
+            let want = ExtractShortcutResult::Failed(Issue::TitleRegexNoCaptures {
+                regex: "123".into(),
+            });
+            let have = extract_shortcut(give, &regex);
+            assert_eq!(have, want);
+        }
+
+        #[test]
+        fn regex_two_captures() {
+            let regex = Regex::new("(\\w) (\\w)").unwrap();
+            let give = "# Example Title";
+            let want = ExtractShortcutResult::Failed(Issue::TitleRegexTooManyCaptures {
+                regex: "(\\w) (\\w)".into(),
+                captures: 2,
+            });
+            let have = extract_shortcut(give, &regex);
+            assert_eq!(have, want);
+        }
+    }
 
     mod strip_links {
         use super::super::strip_links;

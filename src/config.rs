@@ -202,7 +202,7 @@ mod tests {
             test::create_file("tikibase.json", give, &dir);
             let have = load(&dir);
             let want = Err(Issue::InvalidConfigurationFile {
-                message: "unknown field `foo`, expected one of `bidiLinks`, `globs`, `sections`, `$schema` at line 3 column 20".into(),
+                message: "unknown field `foo`, expected one of `bidiLinks`, `globs`, `sections`, `titleRegEx`, `$schema` at line 3 column 20".into(),
                 location: Location {
                     file: PathBuf::from("tikibase.json"),
                     line: 3,
