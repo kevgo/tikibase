@@ -4,6 +4,7 @@ use clap::StructOpt;
 use input::Format::{Json, Text};
 use std::io;
 use std::path::PathBuf;
+use tikibase::input::Command;
 use tikibase::{input, run, Message, Messages};
 
 fn main() {
@@ -11,15 +12,17 @@ fn main() {
     let messages = run(&args.command, PathBuf::from("."));
     let exit_code = messages.exit_code;
     match args.format {
-        Text => print_text(&messages),
+        Text => print_text(&messages, &args.command),
         Json => print_json(&messages.all()),
     };
     std::process::exit(exit_code);
 }
 
-fn print_text(messages: &Messages) {
-    for issue in &messages.issues {
-        println!("{}", issue.to_text());
+fn print_text(messages: &Messages, command: &Command) {
+    if command != &Command::Fix {
+        for issue in &messages.issues {
+            println!("{}", issue.to_text());
+        }
     }
     if messages.has_issues_and_fixes() {
         println!();
