@@ -43,11 +43,12 @@ impl Config {
         }
     }
     pub fn title_regex(&self) -> Result<Option<Regex>, Issue> {
-        match self.title_reg_ex {
+        match &self.title_reg_ex {
             Some(text) => match Regex::from_str(&text) {
                 Ok(regex) => Ok(Some(regex)),
                 Err(err) => Err(Issue::InvalidTitleRegex {
                     regex: text.into(),
+                    problem: err.to_string(),
                     file: PathBuf::from("tikibase.json"),
                 }),
             },

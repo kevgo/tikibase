@@ -85,6 +85,7 @@ pub enum Issue {
     },
     InvalidTitleRegex {
         regex: String,
+        problem: String,
         file: PathBuf,
     },
     LinkToNonExistingAnchorInCurrentDocument {
