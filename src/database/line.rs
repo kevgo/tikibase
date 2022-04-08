@@ -53,7 +53,6 @@ impl Line {
     }
 
     /// provides all links and images in this line
-    // TODO: reuse shared global Vec here
     pub fn references(&self, line: u32) -> Vec<Reference> {
         let mut result = Vec::new();
         for cap in MD_RE.captures_iter(&self.text) {
