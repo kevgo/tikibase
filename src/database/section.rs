@@ -103,10 +103,10 @@ impl SectionTitle<'_> {
     }
 
     /// provides the heading level (<h1>-<h6>) of this section
-    pub fn level(&self) -> u32 {
+    pub fn level(&self) -> usize {
         for (i, c) in self.text.char_indices() {
             if c != '#' {
-                return i as u32;
+                return i;
             }
         }
         panic!("cannot determine the level of section \"{}\"", self.text)

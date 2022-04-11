@@ -74,7 +74,9 @@ pub enum Issue {
     },
     InconsistentHeadingLevel {
         location: Location,
-        variants: Vec<String>,
+        /// the most commonly observed variant
+        common_variant: u8,
+        this_variant: u8,
     },
     InvalidConfigurationFile {
         location: Location,
