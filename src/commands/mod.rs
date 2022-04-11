@@ -72,6 +72,10 @@ pub enum Issue {
         location: Location,
         title: String,
     },
+    InconsistentHeadingLevel {
+        location: Location,
+        variants: Vec<String>,
+    },
     InvalidConfigurationFile {
         location: Location,
         message: String,

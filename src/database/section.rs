@@ -101,6 +101,16 @@ impl SectionTitle<'_> {
     pub fn end(&self) -> u32 {
         self.start + self.text.len() as u32
     }
+
+    /// provides the heading level (<h1>-<h6>) of this section
+    pub fn level(&self) -> u32 {
+        for (i, c) in self.text.char_indices() {
+            if c != '#' {
+                return i as u32;
+            }
+        }
+        panic!("cannot determine the level of section \"{}\"", self.text)
+    }
 }
 
 /// an iterator for Lines
@@ -223,6 +233,26 @@ mod tests {
                 ..Section::scaffold()
             };
             assert_eq!(section.last_line_abs(), 13);
+        }
+    }
+
+    mod level {
+        use crate::database::Section;
+
+        #[test]
+        fn h1() {
+            let section = Section::with_title("# title");
+            let want = 1u32;
+            let have = section.level();
+            assert_eq!(have, want);
+        }
+
+        #[test]
+        fn h6() {
+            let section = Section::with_title("###### title");
+            let want = 6u32;
+            let have = section.level();
+            assert_eq!(have, want);
         }
     }
 
