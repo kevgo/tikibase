@@ -5,13 +5,13 @@ pub(crate) fn scan(base: &Tikibase) -> Vec<Issue> {
     for doc in &base.docs {
         for section in doc.sections() {
             let section_title = section.title();
-            if section_title.text.is_empty() {
+            if section_title.is_empty() {
                 issues.push(Issue::SectionWithoutHeader {
                     location: Location {
                         file: doc.path.clone(),
                         line: section.line_number,
                         start: 0,
-                        end: section_title.start,
+                        end: section.end(),
                     },
                 });
             }

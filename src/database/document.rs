@@ -30,7 +30,7 @@ impl Document {
             if line.starts_with('#') && !inside_fence {
                 if let Some(section_builder) = section_builder {
                     let section = section_builder.result();
-                    if section.title().text == "occurrences" {
+                    if section.title() == "occurrences" {
                         old_occurrences_section = Some(section);
                     } else {
                         sections.push(section);
@@ -60,7 +60,7 @@ impl Document {
         match section_builder {
             Some(section_builder) => {
                 let section = section_builder.result();
-                if section.title().text == "occurrences" {
+                if section.title() == "occurrences" {
                     old_occurrences_section = Some(section);
                 } else {
                     sections.push(section);
@@ -202,7 +202,7 @@ impl Document {
     pub fn section_titles(&self) -> Vec<&str> {
         self.content_sections
             .iter()
-            .map(|section| section.title().text)
+            .map(|section| section.title())
             .collect()
     }
 
@@ -210,7 +210,7 @@ impl Document {
     pub fn section_with_title(&self, title: &str) -> Option<&Section> {
         self.content_sections
             .iter()
-            .find(|section| section.title().text == title)
+            .find(|section| section.title() == title)
     }
 
     /// provides the complete textual content of this document
@@ -224,7 +224,7 @@ impl Document {
 
     /// provides the human-readable title of this document
     pub fn title(&self) -> &str {
-        self.title_section.title().text
+        self.title_section.title()
     }
 }
 
@@ -390,16 +390,12 @@ mod tests {
             let have = Document::from_str("one.md", give);
             let want = Ok(Document {
                 path: PathBuf::from("one.md"),
-                title_section: Section {
-                    line_number: 0,
-                    title_line: Line::from("# test"),
-                    body: vec![],
-                },
-                content_sections: vec![Section {
-                    line_number: 1,
-                    title_line: Line::from("### section 1"),
-                    body: vec![Line::from("content")],
-                }],
+                title_section: Section::new(0, Line::from("# test"), vec![]),
+                content_sections: vec![Section::new(
+                    1,
+                    Line::from("### section 1"),
+                    vec![Line::from("content")],
+                )],
                 old_occurrences_section: None,
             });
             pretty::assert_eq!(have, want);
@@ -431,16 +427,16 @@ mod tests {
             let have = Document::from_str("test.md", give);
             let want = Ok(Document {
                 path: PathBuf::from("test.md"),
-                title_section: Section {
-                    line_number: 0,
-                    title_line: Line::from("# test"),
-                    body: vec![
+                title_section: Section::new(
+                    0,
+                    Line::from("# test"),
+                    vec![
                         Line::from("```md"),
                         Line::from("### not a document section"),
                         Line::from("text"),
                         Line::from("```"),
                     ],
-                },
+                ),
                 content_sections: vec![],
                 old_occurrences_section: None,
             });
@@ -480,28 +476,16 @@ mod tests {
             let have = Document::from_str("one.md", give);
             let want = Ok(Document {
                 path: PathBuf::from("one.md"),
-                title_section: Section {
-                    line_number: 0,
-                    title_line: Line::from("# test"),
-                    body: vec![],
-                },
+                title_section: Section::new(0, Line::from("# test"), vec![]),
                 content_sections: vec![
-                    Section {
-                        line_number: 1,
-                        title_line: Line::from("### section 1"),
-                        body: vec![Line::from("content")],
-                    },
-                    Section {
-                        line_number: 5,
-                        title_line: Line::from("### links"),
-                        body: vec![Line::from("- link 1")],
-                    },
+                    Section::new(1, Line::from("### section 1"), vec![Line::from("content")]),
+                    Section::new(5, Line::from("### links"), vec![Line::from("- link 1")]),
                 ],
-                old_occurrences_section: Some(Section {
-                    line_number: 3,
-                    title_line: Line::from("### occurrences"),
-                    body: vec![Line::from("- occurrence 1")],
-                }),
+                old_occurrences_section: Some(Section::new(
+                    3,
+                    Line::from("### occurrences"),
+                    vec![Line::from("- occurrence 1")],
+                )),
             });
             pretty::assert_eq!(have, want);
         }
@@ -583,11 +567,11 @@ mod tests {
                 "};
             let mut doc = Document::from_str("test.md", give).unwrap();
             let have = doc.last_section_mut();
-            let mut want = Section {
-                line_number: 3,
-                title_line: Line::from("### s1"),
-                body: vec![Line::from(""), Line::from("text")],
-            };
+            let mut want = Section::new(
+                3,
+                Line::from("### s1"),
+                vec![Line::from(""), Line::from("text")],
+            );
             pretty::assert_eq!(have, &mut want);
         }
 
@@ -599,11 +583,7 @@ mod tests {
                 "};
             let mut doc = Document::from_str("test.md", give).unwrap();
             let have = doc.last_section_mut();
-            let mut want = Section {
-                line_number: 0,
-                title_line: Line::from("# Title"),
-                body: vec![Line::from("title text")],
-            };
+            let mut want = Section::new(0, Line::from("# Title"), vec![Line::from("title text")]);
             pretty::assert_eq!(have, &mut want);
         }
     }

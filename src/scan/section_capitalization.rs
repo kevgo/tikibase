@@ -9,13 +9,13 @@ pub(crate) fn scan(base: &Tikibase) -> Vec<Issue> {
         for section in doc.sections() {
             let section_title = section.title();
             title_variants
-                .entry(normalize(section_title.text))
+                .entry(normalize(section_title))
                 .or_insert_with(Vec::new)
                 .push(FileSection {
-                    title: section_title.text,
+                    title: section_title,
                     file: &doc.path,
                     line: section.line_number,
-                    start: section_title.start,
+                    start: section.start as u32,
                 });
         }
     }
