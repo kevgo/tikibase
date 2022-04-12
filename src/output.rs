@@ -50,6 +50,14 @@ impl Message {
                 end: Some(location.end),
                 fixable: false,
             },
+            Fix::NormalizedSectionLevel { location } => Message {
+                text: "normalized section heaving to <hXXX>".into(),
+                file: location.file,
+                line: Some(location.line),
+                start: Some(location.start),
+                end: Some(location.end),
+                fixable: false,
+            },
             Fix::RemovedObsoleteOccurrencesSection { location } => Message {
                 text: "removed obsolete occurrences section".into(),
                 file: location.file,
@@ -134,6 +142,14 @@ impl Message {
             },
             Issue::EmptySection { location, title } => Message {
                 text: format!("section \"{}\" has no content", title),
+                file: location.file,
+                line: Some(location.line),
+                start: Some(location.start),
+                end: Some(location.end),
+                fixable: true,
+            },
+            Issue::InconsistentHeadingLevel { location, common_variant, this_variant} => Message{
+                text: format!("level of this section ({}) is inconsistent with the usual level of {}", this_variant, common_variant),
                 file: location.file,
                 line: Some(location.line),
                 start: Some(location.start),

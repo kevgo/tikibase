@@ -4,15 +4,14 @@ use std::path::Path;
 
 pub(crate) fn scan(base: &Tikibase) -> Vec<Issue> {
     // title --> level --> FileSections with this level and title
-    let mut level_variants: AHashMap<&str, AHashMap<usize, Vec<FileSection>>> = AHashMap::new();
+    let mut level_variants: AHashMap<&str, AHashMap<u8, Vec<FileSection>>> = AHashMap::new();
     for doc in &base.docs {
         for section in doc.sections() {
             let section_title = section.title();
-            let section_level = section_title.level();
             level_variants
                 .entry(section_title.text)
                 .or_insert_with(AHashMap::new)
-                .entry(section_level)
+                .entry(section_title.level)
                 .or_insert_with(Vec::new)
                 .push(FileSection {
                     file: &doc.path,
@@ -71,7 +70,7 @@ impl Default for FileSection<'_> {
     }
 }
 
-fn find_most_common_level(level_counts: &AHashMap<usize, Vec<FileSection>>) -> usize {
+fn find_most_common_level(level_counts: &AHashMap<u8, Vec<FileSection>>) -> u8 {
     level_counts.keys().max().unwrap().to_owned()
 }
 
@@ -101,7 +100,7 @@ mod tests {
 
             ### section
             content"};
-        test::create_file("3.md", content2, &dir);
+        test::create_file("3.md", content3, &dir);
         let base = Tikibase::load(dir, &Config::default()).unwrap();
         let have = super::scan(&base);
         let want = vec![Issue::InconsistentHeadingLevel {

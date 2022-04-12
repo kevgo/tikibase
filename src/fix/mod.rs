@@ -1,6 +1,7 @@
 //! Auto-fixing functionality
 
 mod empty_section;
+mod inconsistent_levels;
 mod missing_links;
 mod obsolete_occurrences_section;
 mod unordered_sections;
@@ -14,6 +15,11 @@ pub fn fix(issue: Issue, base: &mut Tikibase, config: &Config) -> Result {
         Issue::EmptySection { location, title } => {
             empty_section::remove_section(base, title, location)
         }
+        Issue::InconsistentHeadingLevel {
+            location,
+            common_variant,
+            this_variant,
+        } => inconsistent_levels::normalize_outliers(base),
         Issue::MissingLinks { location, links } => {
             missing_links::add_occurrences(base, location, links, config)
         }
@@ -108,6 +114,7 @@ pub fn fix(issue: Issue, base: &mut Tikibase, config: &Config) -> Result {
 /// documents the fixes that this linter performs
 pub enum Fix {
     AddedOccurrencesSection { location: Location },
+    NormalizedSectionLevel { location: Location },
     RemovedEmptySection { title: String, location: Location },
     RemovedObsoleteOccurrencesSection { location: Location },
     SortedSections { location: Location },

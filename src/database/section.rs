@@ -68,15 +68,29 @@ impl Section {
     /// provides a human-readable description of this section, e.g. "Hello" for a section with the title "# Hello"
     /// as well as the column at which this description stars on the line
     pub fn title(&self) -> SectionTitle {
-        for (i, c) in self.title_line.text.char_indices() {
-            if c != '#' && c != ' ' {
-                return SectionTitle {
-                    text: &self.title_line.text[i..],
-                    start: i as u32,
-                };
+        let mut chars = self.title_line.text.char_indices();
+        let mut level = 0;
+        while let Some((i, c)) = chars.next() {
+            if c != '#' {
+                level = i;
+                break;
             }
         }
-        SectionTitle { text: "", start: 0 }
+        let mut start = 0;
+        while let Some((i, c)) = chars.next() {
+            if c != ' ' {
+                start = i;
+                break;
+            }
+        }
+        if level == 0 {
+            panic!("section has no level")
+        }
+        SectionTitle {
+            text: &self.title_line.text[start..],
+            start: start as u32,
+            level: level as u8,
+        }
     }
 
     /// provides a section with the given title
@@ -93,23 +107,17 @@ impl Section {
 #[derive(Debug, PartialEq)]
 #[allow(clippy::module_name_repetitions)]
 pub struct SectionTitle<'a> {
+    /// text of the section title without the heading prefix ("###")
     pub text: &'a str,
+    /// index of where the title text starts on the title line
     pub start: u32,
+    /// the level (h1-h6) of the section
+    pub level: u8,
 }
 
 impl SectionTitle<'_> {
     pub fn end(&self) -> u32 {
         self.start + self.text.len() as u32
-    }
-
-    /// provides the heading level (<h1>-<h6>) of this section
-    pub fn level(&self) -> usize {
-        for (i, c) in self.text.char_indices() {
-            if c != '#' {
-                return i;
-            }
-        }
-        panic!("cannot determine the level of section \"{}\"", self.text)
     }
 }
 
@@ -236,26 +244,6 @@ mod tests {
         }
     }
 
-    mod level {
-        use crate::database::Section;
-
-        #[test]
-        fn h1() {
-            let section = Section::with_title("# title");
-            let want = 1u32;
-            let have = section.level();
-            assert_eq!(have, want);
-        }
-
-        #[test]
-        fn h6() {
-            let section = Section::with_title("###### title");
-            let want = 6u32;
-            let have = section.level();
-            assert_eq!(have, want);
-        }
-    }
-
     #[test]
     fn lines() {
         let give = indoc! {"
@@ -300,6 +288,47 @@ mod tests {
         }
     }
 
+    mod section_title {
+        use crate::database::section::SectionTitle;
+        use crate::database::Section;
+
+        #[test]
+        fn h1() {
+            let section = Section::with_title("# title");
+            let have = section.title();
+            let want = SectionTitle {
+                text: "title".into(),
+                start: 2,
+                level: 1,
+            };
+            assert_eq!(have, want);
+        }
+
+        #[test]
+        fn h6() {
+            let section = Section::with_title("###### title");
+            let have = section.title();
+            let want = SectionTitle {
+                text: "title".into(),
+                start: 7,
+                level: 6,
+            };
+            assert_eq!(have, want);
+        }
+
+        #[test]
+        fn no_text() {
+            let section = Section::with_title("###");
+            let have = section.title();
+            let want = SectionTitle {
+                text: "".into(),
+                start: 4,
+                level: 3,
+            };
+            assert_eq!(have, want);
+        }
+    }
+
     #[test]
     fn text() {
         let section = Section {
@@ -308,52 +337,5 @@ mod tests {
             ..Section::scaffold()
         };
         assert_eq!(section.text(), "### welcome\n\ncontent\n");
-    }
-
-    mod title {
-        use super::SectionTitle;
-        use crate::database::Section;
-
-        #[test]
-        fn h1() {
-            let section = Section::with_title("# Title");
-            pretty::assert_eq!(
-                section.title(),
-                SectionTitle {
-                    text: "Title",
-                    start: 2
-                }
-            );
-        }
-
-        #[test]
-        fn h3() {
-            let section = Section::with_title("### Title");
-            assert_eq!(
-                section.title(),
-                SectionTitle {
-                    text: "Title",
-                    start: 4
-                }
-            );
-        }
-
-        #[test]
-        fn no_header() {
-            let section = Section::with_title("Title");
-            assert_eq!(
-                section.title(),
-                SectionTitle {
-                    text: "Title",
-                    start: 0
-                }
-            );
-        }
-
-        #[test]
-        fn no_text() {
-            let section = Section::with_title("###");
-            assert_eq!(section.title(), SectionTitle { text: "", start: 0 });
-        }
     }
 }
