@@ -11,13 +11,13 @@ pub(crate) fn scan(base: &Tikibase) -> Vec<Issue> {
             level_variants
                 .entry(section_title)
                 .or_insert_with(AHashMap::new)
-                .entry(section.level)
+                .entry(section.title_line.level)
                 .or_insert_with(Vec::new)
                 .push(FileSection {
                     file: &doc.path,
                     title: section_title,
                     line: section.line_number,
-                    start: section.start as u32,
+                    start: section.title_line.start as u32,
                 })
         }
     }

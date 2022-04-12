@@ -390,12 +390,8 @@ mod tests {
             let have = Document::from_str("one.md", give);
             let want = Ok(Document {
                 path: PathBuf::from("one.md"),
-                title_section: Section::new(0, Line::from("# test"), vec![]),
-                content_sections: vec![Section::new(
-                    1,
-                    Line::from("### section 1"),
-                    vec![Line::from("content")],
-                )],
+                title_section: Section::new(0, "# test", vec![]),
+                content_sections: vec![Section::new(1, "### section 1", vec!["content"])],
                 old_occurrences_section: None,
             });
             pretty::assert_eq!(have, want);
@@ -429,13 +425,8 @@ mod tests {
                 path: PathBuf::from("test.md"),
                 title_section: Section::new(
                     0,
-                    Line::from("# test"),
-                    vec![
-                        Line::from("```md"),
-                        Line::from("### not a document section"),
-                        Line::from("text"),
-                        Line::from("```"),
-                    ],
+                    "# test",
+                    vec!["```md", "### not a document section", "text", "```"],
                 ),
                 content_sections: vec![],
                 old_occurrences_section: None,
@@ -476,15 +467,15 @@ mod tests {
             let have = Document::from_str("one.md", give);
             let want = Ok(Document {
                 path: PathBuf::from("one.md"),
-                title_section: Section::new(0, Line::from("# test"), vec![]),
+                title_section: Section::new(0, "# test", vec![]),
                 content_sections: vec![
-                    Section::new(1, Line::from("### section 1"), vec![Line::from("content")]),
-                    Section::new(5, Line::from("### links"), vec![Line::from("- link 1")]),
+                    Section::new(1, "### section 1", vec!["content"]),
+                    Section::new(5, "### links", vec!["- link 1"]),
                 ],
                 old_occurrences_section: Some(Section::new(
                     3,
-                    Line::from("### occurrences"),
-                    vec![Line::from("- occurrence 1")],
+                    "### occurrences",
+                    vec!["- occurrence 1"],
                 )),
             });
             pretty::assert_eq!(have, want);
@@ -552,7 +543,7 @@ mod tests {
 
     mod last_section_mut {
         use super::super::Document;
-        use crate::database::{Line, Section};
+        use crate::database::Section;
         use indoc::indoc;
 
         #[test]
@@ -567,11 +558,7 @@ mod tests {
                 "};
             let mut doc = Document::from_str("test.md", give).unwrap();
             let have = doc.last_section_mut();
-            let mut want = Section::new(
-                3,
-                Line::from("### s1"),
-                vec![Line::from(""), Line::from("text")],
-            );
+            let mut want = Section::new(3, "### s1", vec!["", "text"]);
             pretty::assert_eq!(have, &mut want);
         }
 
@@ -583,7 +570,7 @@ mod tests {
                 "};
             let mut doc = Document::from_str("test.md", give).unwrap();
             let have = doc.last_section_mut();
-            let mut want = Section::new(0, Line::from("# Title"), vec![Line::from("title text")]);
+            let mut want = Section::new(0, "# Title", vec!["title text"]);
             pretty::assert_eq!(have, &mut want);
         }
     }

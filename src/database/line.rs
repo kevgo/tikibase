@@ -105,11 +105,8 @@ impl Line {
 //     }
 // }
 
-impl<T> From<T> for Line
-where
-    T: Into<String>,
-{
-    fn from(text: T) -> Self {
+impl<IS: Into<String>> From<IS> for Line {
+    fn from(text: IS) -> Self {
         Line { text: text.into() }
     }
 }

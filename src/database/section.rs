@@ -8,7 +8,7 @@ pub struct Section {
     pub line_number: u32,
 
     /// complete textual content of this section's title line, e.g. "# Title"
-    title_line: TitleLine,
+    pub title_line: TitleLine,
 
     /// optional content of this section
     pub body: Vec<Line>,
@@ -16,7 +16,7 @@ pub struct Section {
 
 /// the title line of a section
 #[derive(Debug, PartialEq)]
-struct TitleLine {
+pub struct TitleLine {
     pub line: Line,
 
     /// the cursor column at which the title text starts (derived value)
@@ -32,7 +32,13 @@ impl TitleLine {
         self.line.text.len() as u32
     }
 
+    // TODO: rename to text
+    pub fn full_text(&self) -> &str {
+        &self.line.text
+    }
+
     /// provides a human-readable description of this section, e.g. "Hello" for a section with the title "# Hello"
+    // TODO: rename to human_text
     pub fn text(&self) -> &str {
         &self.line.text[self.start..]
     }
@@ -55,11 +61,6 @@ impl Section {
     /// provides the absolute line number of the last line in this section
     pub fn last_line_abs(&self) -> u32 {
         self.line_number + (self.body.len() as u32)
-    }
-
-    /// provides the heading level (h1-h6) of this section
-    pub fn level(&self) -> u8 {
-        self.title_line.level
     }
 
     /// provides a non-consuming iterator for all lines in this section
@@ -126,6 +127,12 @@ impl Section {
     /// provides a human-readable description of this section, e.g. "Hello" for a section with the title "# Hello"
     pub fn title(&self) -> &str {
         &self.title_line.line.text[self.title_line.start..]
+    }
+
+    /// provides a section with the given title
+    #[cfg(test)]
+    pub fn with_body(body: Vec<&str>) -> Section {
+        Section::new(0, "# title", body)
     }
 
     /// provides a section with the given title
@@ -208,18 +215,15 @@ mod tests {
         use crate::database::{Line, Section};
 
         #[test]
-        fn with_body() {
-            let section = Section {
-                body: vec![Line::from("one"), Line::from("two")],
-                ..Section::scaffold()
-            };
+        fn has_body() {
+            let section = Section::with_body(vec!["one", "two"]);
             let have = section.last_line();
             let want = Line::from("two");
             assert_eq!(have, &want);
         }
 
         #[test]
-        fn without_body() {
+        fn no_body() {
             let section = Section::new(0, "title", vec![]);
             let have = section.last_line();
             let want = Line::from("title");
@@ -255,7 +259,7 @@ mod tests {
         let tests = vec![("# title", 1), ("###### title", 6), ("###", 3)];
         for (give, want) in tests {
             let section = Section::with_title(give);
-            assert_eq!(section.level(), want);
+            assert_eq!(section.title_line.level, want);
         }
     }
 
@@ -314,11 +318,7 @@ mod tests {
 
     #[test]
     fn text() {
-        let section = Section::new(
-            0,
-            "### welcome",
-            vec![Line::from(""), Line::from("content")],
-        );
+        let section = Section::new(0, "### welcome", vec!["", "content"]);
         assert_eq!(section.text(), "### welcome\n\ncontent\n");
     }
 }
