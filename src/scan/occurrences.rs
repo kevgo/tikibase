@@ -31,7 +31,7 @@ pub(crate) fn scan(
                     location: Location {
                         file: doc.path.clone(),
                         line: old_occurrences_section.line_number,
-                        start: old_occurrences_section.title_line.start as u32,
+                        start: old_occurrences_section.title_line.text_start as u32,
                         end: old_occurrences_section.title_line.end(),
                     },
                 });

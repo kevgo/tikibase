@@ -20,8 +20,7 @@ pub struct TitleLine {
     pub line: Line,
 
     /// the cursor column at which the title text starts (derived value)
-    // TODO: rename to text_start
-    pub start: usize,
+    pub text_start: usize,
 
     /// cache for the heading level (h1-h6)
     pub level: u8,
@@ -32,15 +31,14 @@ impl TitleLine {
         self.line.text.len() as u32
     }
 
-    // TODO: rename to text
+    /// provides the full text of this line
     pub fn full_text(&self) -> &str {
         &self.line.text
     }
 
     /// provides a human-readable description of this section, e.g. "Hello" for a section with the title "# Hello"
-    // TODO: rename to human_text
-    pub fn text(&self) -> &str {
-        &self.line.text[self.start..]
+    pub fn human_text(&self) -> &str {
+        &self.line.text[self.text_start..]
     }
 }
 
@@ -96,7 +94,7 @@ impl Section {
             line_number,
             title_line: TitleLine {
                 line: Line::from(title),
-                start,
+                text_start: start,
                 level,
             },
             body: body.into_iter().map(Line::from).collect(),
@@ -126,7 +124,7 @@ impl Section {
 
     /// provides a human-readable description of this section, e.g. "Hello" for a section with the title "# Hello"
     pub fn title(&self) -> &str {
-        &self.title_line.line.text[self.title_line.start..]
+        &self.title_line.line.text[self.title_line.text_start..]
     }
 
     /// provides a section with the given title

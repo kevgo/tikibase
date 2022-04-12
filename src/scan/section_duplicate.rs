@@ -11,7 +11,7 @@ pub(crate) fn scan(base: &Tikibase) -> Vec<Issue> {
             sections_lines
                 .entry(section.title())
                 .or_insert_with(Vec::new)
-                .push((section.line_number, section.title_line.start as u32));
+                .push((section.line_number, section.title_line.text_start as u32));
         }
         for (title, lines) in sections_lines.drain() {
             if lines.len() > 1 {

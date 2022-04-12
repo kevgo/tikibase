@@ -15,7 +15,7 @@ pub(crate) fn scan(base: &Tikibase) -> Vec<Issue> {
                     title: section_title,
                     file: &doc.path,
                     line: section.line_number,
-                    start: section.title_line.start as u32,
+                    start: section.title_line.text_start as u32,
                 });
         }
     }

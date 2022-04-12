@@ -18,7 +18,7 @@ pub(crate) fn scan(base: &Tikibase, config: &Config) -> Vec<Issue> {
                     location: Location {
                         file: doc.path.clone(),
                         line: section.line_number,
-                        start: section.title_line.start as u32,
+                        start: section.title_line.text_start as u32,
                         end: section.title_line.end(),
                     },
                     title: section_title.into(),
