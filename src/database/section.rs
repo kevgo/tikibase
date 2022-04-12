@@ -8,18 +8,34 @@ pub struct Section {
     pub line_number: u32,
 
     /// complete textual content of this section's title line, e.g. "# Title"
-    pub title_line: Line,
+    title_line: TitleLine,
 
     /// optional content of this section
     pub body: Vec<Line>,
+}
 
-    /// the cursor column at which the title starts (derived value)
-    // TODO: move into dedicated TitleLine struct
-    // TODO: rename to title_start
+/// the title line of a section
+#[derive(Debug, PartialEq)]
+struct TitleLine {
+    pub line: Line,
+
+    /// the cursor column at which the title text starts (derived value)
+    // TODO: rename to text_start
     pub start: usize,
 
     /// cache for the heading level (h1-h6)
     pub level: u8,
+}
+
+impl TitleLine {
+    pub fn end(&self) -> u32 {
+        self.line.text.len() as u32
+    }
+
+    /// provides a human-readable description of this section, e.g. "Hello" for a section with the title "# Hello"
+    pub fn text(&self) -> &str {
+        &self.line.text[self.start..]
+    }
 }
 
 impl Section {
@@ -28,15 +44,11 @@ impl Section {
         format!("#{}", self.title().to_kebab_case())
     }
 
-    pub fn end(&self) -> u32 {
-        self.title_line.text.len() as u32
-    }
-
     /// returns the last line of this section
     pub fn last_line(&self) -> &Line {
         match self.body.last() {
             Some(last_body_line) => last_body_line,
-            None => &self.title_line,
+            None => &self.title_line.line,
         }
     }
 
@@ -45,17 +57,23 @@ impl Section {
         self.line_number + (self.body.len() as u32)
     }
 
+    /// provides the heading level (h1-h6) of this section
+    pub fn level(&self) -> u8 {
+        self.title_line.level
+    }
+
     /// provides a non-consuming iterator for all lines in this section
     pub fn lines(&self) -> LinesIterator {
         LinesIterator {
-            title_line: &self.title_line,
+            title_line: &self.title_line.line,
             body_iter: self.body.iter(),
             emitted_title: false,
         }
     }
 
-    pub fn new(line_number: u32, title_line: Line, body: Vec<Line>) -> Section {
-        let mut chars = title_line.text.char_indices();
+    pub fn new<IS: Into<String>>(line_number: u32, title: IS, body: Vec<IS>) -> Section {
+        let title: String = title.into();
+        let mut chars = title.char_indices();
         let mut level = 0;
         while let Some((i, c)) = chars.next() {
             if c != '#' {
@@ -75,10 +93,12 @@ impl Section {
         }
         Section {
             line_number,
-            title_line,
-            body,
-            start,
-            level,
+            title_line: TitleLine {
+                line: Line::from(title),
+                start,
+                level,
+            },
+            body: body.into_iter().map(Line::from).collect(),
         }
     }
 
@@ -89,18 +109,12 @@ impl Section {
 
     #[cfg(test)]
     fn scaffold() -> Self {
-        Section {
-            title_line: Line::from("### section"),
-            line_number: 0,
-            body: vec![],
-            start: 0,
-            level: 3,
-        }
+        Section::new(0, "### section", vec![])
     }
 
     /// provides the complete text of this section
     pub fn text(&self) -> String {
-        let mut result = self.title_line.text.to_string();
+        let mut result = self.title_line.line.text.to_string();
         result.push('\n');
         for line in &self.body {
             result.push_str(&line.text);
@@ -111,13 +125,13 @@ impl Section {
 
     /// provides a human-readable description of this section, e.g. "Hello" for a section with the title "# Hello"
     pub fn title(&self) -> &str {
-        &self.title_line.text[self.start..]
+        &self.title_line.line.text[self.title_line.start..]
     }
 
     /// provides a section with the given title
     #[cfg(test)]
     pub fn with_title(title: &str) -> Section {
-        Section::new(0, Line::from(title), vec![])
+        Section::new(0, title, vec![])
     }
 }
 
@@ -148,7 +162,7 @@ impl<'a> Iterator for LinesIterator<'a> {
 pub struct Builder {
     pub line_number: u32,
     title_line: String,
-    body: Vec<Line>,
+    body: Vec<String>,
 }
 
 impl Builder {
@@ -161,13 +175,13 @@ impl Builder {
         }
     }
 
-    pub fn add_line<S: Into<String>>(&mut self, text: S) {
-        self.body.push(Line::from(text));
+    pub fn add_line<IS: Into<String>>(&mut self, text: IS) {
+        self.body.push(text.into());
     }
 
     /// Provides the content this builder has accumulated.
     pub fn result(self) -> Section {
-        Section::new(self.line_number, Line::from(self.title_line), self.body)
+        Section::new(self.line_number, self.title_line, self.body)
     }
 }
 
@@ -206,11 +220,7 @@ mod tests {
 
         #[test]
         fn without_body() {
-            let section = Section {
-                body: vec![],
-                title_line: Line::from("title"),
-                ..Section::scaffold()
-            };
+            let section = Section::new(0, "title", vec![]);
             let have = section.last_line();
             let want = Line::from("title");
             assert_eq!(have, &want);
@@ -245,7 +255,7 @@ mod tests {
         let tests = vec![("# title", 1), ("###### title", 6), ("###", 3)];
         for (give, want) in tests {
             let section = Section::with_title(give);
-            assert_eq!(section.level, want);
+            assert_eq!(section.level(), want);
         }
     }
 
@@ -304,11 +314,11 @@ mod tests {
 
     #[test]
     fn text() {
-        let section = Section {
-            title_line: Line::from("### welcome"),
-            body: vec![Line::from(""), Line::from("content")],
-            ..Section::scaffold()
-        };
+        let section = Section::new(
+            0,
+            "### welcome",
+            vec![Line::from(""), Line::from("content")],
+        );
         assert_eq!(section.text(), "### welcome\n\ncontent\n");
     }
 }
