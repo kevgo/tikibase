@@ -29,6 +29,8 @@ consistent by finding and fixing:
   document A
 - **inconsistent heading capitalization:** when you use `## FooBar` and
   `## Foobar` in different documents
+- **inconsistent heading levels:** when some sections look like `## foo` and
+  others like `#### foo`
 - **duplicate headings in a file**
 - **empty sections**
 - **missing footnote definitions and references**
