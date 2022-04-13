@@ -8,7 +8,7 @@ pub(crate) fn scan(base: &Tikibase, config: &Config) -> Vec<Issue> {
     };
     for doc in &base.docs {
         for section in &doc.content_sections {
-            let section_title = section.title();
+            let section_title = section.human_title();
             // HACK: see https://github.com/rust-lang/rust/issues/42671
             if !config_sections
                 .iter()
@@ -18,8 +18,8 @@ pub(crate) fn scan(base: &Tikibase, config: &Config) -> Vec<Issue> {
                     location: Location {
                         file: doc.path.clone(),
                         line: section.line_number,
-                        start: section.title_line.text_start as u32,
-                        end: section.title_line.end(),
+                        start: section.title_text_start as u32,
+                        end: section.title_text_end(),
                     },
                     title: section_title.into(),
                     allowed_titles: config.sections.clone().unwrap(),

@@ -18,7 +18,7 @@ fn reorder(sections: &mut Vec<Section>, schema: &[String]) -> Vec<Section> {
     for schema_element in schema.iter() {
         let pos = sections
             .iter()
-            .position(|section| section.title() == schema_element);
+            .position(|section| section.human_title() == schema_element);
         match pos {
             None => continue,
             Some(pos) => result.push(sections.remove(pos)),
@@ -40,7 +40,7 @@ mod tests {
             Section::with_title("### two"),
         ];
         let have = reorder(&mut give, &schema);
-        let have: Vec<&str> = have.iter().map(|section| section.title()).collect();
+        let have: Vec<&str> = have.iter().map(Section::human_title).collect();
         assert_eq!(have, vec!["one", "two"]);
     }
 
@@ -52,7 +52,7 @@ mod tests {
             Section::with_title("### three"),
         ];
         let have = reorder(&mut give, &schema);
-        let have: Vec<&str> = have.iter().map(|section| section.title()).collect();
+        let have: Vec<&str> = have.iter().map(Section::human_title).collect();
         assert_eq!(have, vec!["one", "three"]);
     }
 
@@ -65,7 +65,7 @@ mod tests {
             Section::with_title("### one"),
         ];
         let have = reorder(&mut give, &schema);
-        let have: Vec<&str> = have.iter().map(|section| section.title()).collect();
+        let have: Vec<&str> = have.iter().map(Section::human_title).collect();
         assert_eq!(have, vec!["one", "two", "three"]);
     }
 
@@ -74,7 +74,7 @@ mod tests {
         let schema = vec!["one".to_string(), "two".to_string(), "three".to_string()];
         let mut give: Vec<Section> = vec![Section::with_title("### three")];
         let have = reorder(&mut give, &schema);
-        let have: Vec<&str> = have.iter().map(|section| section.title()).collect();
+        let have: Vec<&str> = have.iter().map(Section::human_title).collect();
         assert_eq!(have, vec!["three"]);
     }
 }
