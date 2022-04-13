@@ -52,7 +52,7 @@ pub(crate) fn scan(
                 .map(|path| base.get_doc(&path).unwrap())
                 .map(|doc| MissingLink {
                     path: doc.path.clone(),
-                    title: doc.title().into(),
+                    title: doc.human_title().into(),
                 })
                 .collect(),
         });
