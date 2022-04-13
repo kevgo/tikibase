@@ -3,6 +3,7 @@
 mod empty_section;
 mod inconsistent_levels;
 mod missing_links;
+mod mix_cap_section;
 mod obsolete_occurrences_section;
 mod unordered_sections;
 
@@ -36,6 +37,25 @@ pub fn fix(issue: Issue, base: &mut Tikibase, config: &Config) -> Result {
         }
         Issue::MissingLinks { location, links } => {
             missing_links::add_occurrences(base, location, links, config)
+        }
+        Issue::MixCapSection {
+            location,
+            all_variants,
+            section_level,
+            this_variant,
+            common_variant,
+        } => {
+            if let Some(common_variant) = common_variant {
+                mix_cap_section::normalize_capitalization(
+                    base,
+                    location,
+                    section_level,
+                    this_variant,
+                    common_variant,
+                )
+            } else {
+                Result::Unfixable
+            }
         }
         Issue::ObsoleteOccurrencesSection { location } => {
             obsolete_occurrences_section::remove_occurrences_section(base, location)
@@ -97,10 +117,6 @@ pub fn fix(issue: Issue, base: &mut Tikibase, config: &Config) -> Result {
             location: _,
             identifier: _,
         }
-        | Issue::MixCapSection {
-            variants: _,
-            location: _,
-        }
         | Issue::LinkToSameDocument { location: _ }
         | Issue::LinkWithoutTarget { location: _ }
         | Issue::NoTitleSection { location: _ }
@@ -129,6 +145,11 @@ pub fn fix(issue: Issue, base: &mut Tikibase, config: &Config) -> Result {
 pub enum Fix {
     AddedOccurrencesSection {
         location: Location,
+    },
+    NormalizedSectionCapitalization {
+        location: Location,
+        old_capitalization: String,
+        new_capitalization: String,
     },
     NormalizedSectionLevel {
         location: Location,

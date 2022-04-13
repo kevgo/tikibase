@@ -102,113 +102,116 @@ fn find_common_level(level_counts: &AHashMap<u8, Vec<FileSection>>) -> Option<u8
 
 #[cfg(test)]
 mod tests {
-    use crate::{test, Config, Issue, Location, Tikibase};
-    use indoc::indoc;
-    use std::path::PathBuf;
 
-    #[test]
-    fn different_levels_different_counts() {
-        let dir = test::tmp_dir();
-        let content1 = indoc! {"
+    mod scan {
+        use crate::{test, Config, Issue, Location, Tikibase};
+        use indoc::indoc;
+        use std::path::PathBuf;
+
+        #[test]
+        fn outlier_level() {
+            let dir = test::tmp_dir();
+            let content1 = indoc! {"
             # one
 
             ### section
             content"};
-        test::create_file("1.md", content1, &dir);
-        let content2 = indoc! {"
+            test::create_file("1.md", content1, &dir);
+            let content2 = indoc! {"
             # two
 
             ##### section
             content"};
-        test::create_file("2.md", content2, &dir);
-        let content3 = indoc! {"
+            test::create_file("2.md", content2, &dir);
+            let content3 = indoc! {"
             # three
 
             ### section
             content"};
-        test::create_file("3.md", content3, &dir);
-        let base = Tikibase::load(dir, &Config::default()).unwrap();
-        let have = super::scan(&base);
-        let want = vec![Issue::InconsistentHeadingLevel {
-            location: Location {
-                file: PathBuf::from("2.md"),
-                line: 2,
-                start: 6,
-                end: 13,
-            },
-            common_level: Some(3),
-            this_level: 5u8,
-            all_levels: vec![3, 5],
-            section_title: "section".into(),
-        }];
-        pretty::assert_eq!(have, want);
-    }
-
-    #[test]
-    fn different_levels_same_counts() {
-        let dir = test::tmp_dir();
-        let content1 = indoc! {"
-            # one
-
-            ### section
-            content"};
-        test::create_file("1.md", content1, &dir);
-        let content2 = indoc! {"
-            # two
-
-            ##### section
-            content"};
-        test::create_file("2.md", content2, &dir);
-        let base = Tikibase::load(dir, &Config::default()).unwrap();
-        let have = super::scan(&base);
-        let want = vec![
-            Issue::InconsistentHeadingLevel {
-                location: Location {
-                    file: PathBuf::from("1.md"),
-                    line: 2,
-                    start: 4,
-                    end: 11,
-                },
-                common_level: None,
-                this_level: 3u8,
-                all_levels: vec![3, 5],
-                section_title: "section".into(),
-            },
-            Issue::InconsistentHeadingLevel {
+            test::create_file("3.md", content3, &dir);
+            let base = Tikibase::load(dir, &Config::default()).unwrap();
+            let have = super::super::scan(&base);
+            let want = vec![Issue::InconsistentHeadingLevel {
                 location: Location {
                     file: PathBuf::from("2.md"),
                     line: 2,
                     start: 6,
                     end: 13,
                 },
-                common_level: None,
+                common_level: Some(3),
                 this_level: 5u8,
                 all_levels: vec![3, 5],
                 section_title: "section".into(),
-            },
-        ];
-        pretty::assert_eq!(have, want);
-    }
+            }];
+            pretty::assert_eq!(have, want);
+        }
 
-    #[test]
-    fn matching_levels() {
-        let dir = test::tmp_dir();
-        let content1 = indoc! {"
+        #[test]
+        fn different_levels_same_counts() {
+            let dir = test::tmp_dir();
+            let content1 = indoc! {"
             # one
 
             ### section
             content"};
-        test::create_file("1.md", content1, &dir);
-        let content2 = indoc! {"
+            test::create_file("1.md", content1, &dir);
+            let content2 = indoc! {"
+            # two
+
+            ##### section
+            content"};
+            test::create_file("2.md", content2, &dir);
+            let base = Tikibase::load(dir, &Config::default()).unwrap();
+            let have = super::super::scan(&base);
+            let want = vec![
+                Issue::InconsistentHeadingLevel {
+                    location: Location {
+                        file: PathBuf::from("1.md"),
+                        line: 2,
+                        start: 4,
+                        end: 11,
+                    },
+                    common_level: None,
+                    this_level: 3u8,
+                    all_levels: vec![3, 5],
+                    section_title: "section".into(),
+                },
+                Issue::InconsistentHeadingLevel {
+                    location: Location {
+                        file: PathBuf::from("2.md"),
+                        line: 2,
+                        start: 6,
+                        end: 13,
+                    },
+                    common_level: None,
+                    this_level: 5u8,
+                    all_levels: vec![3, 5],
+                    section_title: "section".into(),
+                },
+            ];
+            pretty::assert_eq!(have, want);
+        }
+
+        #[test]
+        fn matching_levels() {
+            let dir = test::tmp_dir();
+            let content1 = indoc! {"
+            # one
+
+            ### section
+            content"};
+            test::create_file("1.md", content1, &dir);
+            let content2 = indoc! {"
             # two
 
             ### section
             content"};
-        test::create_file("2.md", content2, &dir);
-        let base = Tikibase::load(dir, &Config::default()).unwrap();
-        let have = super::scan(&base);
-        let want = vec![];
-        pretty::assert_eq!(have, want);
+            test::create_file("2.md", content2, &dir);
+            let base = Tikibase::load(dir, &Config::default()).unwrap();
+            let have = super::super::scan(&base);
+            let want = vec![];
+            pretty::assert_eq!(have, want);
+        }
     }
 
     mod file_section {

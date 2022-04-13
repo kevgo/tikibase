@@ -3,13 +3,15 @@ use ahash::{AHashMap, AHashSet};
 use std::path::Path;
 
 pub(crate) fn scan(base: &Tikibase) -> Vec<Issue> {
-    // registers variants of section titles: normalized title --> Vec<sections with a variation of this title>
-    let mut title_variants: AHashMap<String, Vec<FileSection>> = AHashMap::new();
+    // normalized title --> variant --> sections with this variant
+    let mut title_variants: AHashMap<String, AHashMap<&str, Vec<FileSection>>> = AHashMap::new();
     for doc in &base.docs {
         for section in doc.sections() {
             let section_title = section.human_title();
             title_variants
                 .entry(normalize(section_title))
+                .or_insert_with(AHashMap::new)
+                .entry(section_title)
                 .or_insert_with(Vec::new)
                 .push(FileSection {
                     title: section_title,
@@ -20,27 +22,34 @@ pub(crate) fn scan(base: &Tikibase) -> Vec<Issue> {
         }
     }
     let mut issues = Vec::new();
-    for (_, file_sections) in title_variants.drain() {
-        if variants_count(&file_sections) < 2 {
+    for (_, variants_sections) in title_variants.drain() {
+        if variants_sections.len() < 2 {
+            // one type of capitalization --> section is consistently formatted everywhere
             continue;
         }
-        // remove duplicates
-        let variants: AHashSet<String> = file_sections
-            .iter()
-            .map(|variant| variant.title.into())
-            .collect();
-        let mut variants: Vec<String> = Vec::from_iter(variants);
-        variants.sort();
-        for file_section in file_sections {
-            issues.push(Issue::MixCapSection {
-                variants: variants.clone(),
-                location: Location {
-                    file: file_section.file.into(),
-                    line: file_section.line,
-                    start: file_section.start,
-                    end: file_section.end(),
-                },
-            });
+        let common_variant = find_common_capitalization(&variants_sections);
+        let mut all_variants: Vec<String> =
+            variants_sections.keys().map(ToString::to_string).collect();
+        all_variants.sort_unstable();
+        for (variant, file_sections) in variants_sections {
+            if let Some(common_variant) = common_variant {
+                if variant == common_variant {
+                    continue;
+                }
+            }
+            for file_section in file_sections {
+                issues.push(Issue::MixCapSection {
+                    location: Location {
+                        file: file_section.file.into(),
+                        line: file_section.line,
+                        start: file_section.start,
+                        end: file_section.end(),
+                    },
+                    all_variants: all_variants,
+                    this_variant: variant.into(),
+                    common_variant: common_variant,
+                });
+            }
         }
     }
     issues
@@ -71,6 +80,25 @@ impl Default for FileSection<'_> {
     }
 }
 
+/// provides the most common key
+fn find_common_capitalization(level_counts: &AHashMap<&str, Vec<FileSection>>) -> Option<String> {
+    let mut result: Option<&str> = None;
+    let mut max = 0;
+    for (variant, file_sections) in level_counts {
+        match file_sections.len().cmp(&max) {
+            Greater => {
+                result = Some(*variant);
+                max = file_sections.len();
+            }
+            Equal => {
+                result = None;
+            }
+            Less => {}
+        }
+    }
+    result.map(ToString::to_string)
+}
+
 fn variants_count(file_sections: &[FileSection]) -> usize {
     let set: AHashSet<&str> = file_sections.iter().map(|fs| fs.title).collect();
     set.len()
@@ -84,72 +112,120 @@ fn normalize(section_title: &str) -> String {
 #[cfg(test)]
 mod tests {
     use super::FileSection;
-    use crate::{test, Config, Issue, Location, Tikibase};
+    use crate::{test, Config, Tikibase};
     use indoc::indoc;
-    use std::path::PathBuf;
 
-    #[test]
-    fn different_capitalization() {
-        let dir = test::tmp_dir();
-        let content1 = indoc! {"
-            # test document
+    mod scan {
+        use crate::{test, Config, Issue, Location, Tikibase};
+        use indoc::indoc;
+        use std::path::PathBuf;
 
-            ### ONE
-            content
+        #[test]
+        fn outlier_capitalization() {
+            let dir = test::tmp_dir();
+            // TODO: change test::create_file to take the content last, then inline the contentX variables
+            let content1 = indoc! {"
+            # One
 
-            ### One
-            content"};
-        test::create_file("1.md", content1, &dir);
-        let content2 = indoc! {"
-            # another document
+            ### alpha
+            [2](2.md)"};
+            test::create_file("1.md", content1, &dir);
+            let content2 = indoc! {"
+            # Two
 
-            ### one
-            content
+            ### Alpha
+            [3](3.md)"};
+            test::create_file("2.md", content2, &dir);
+            let content3 = indoc! {"
+            # Three
 
-            ### ONE
-            content"};
-        test::create_file("2.md", content2, &dir);
-        let base = Tikibase::load(dir, &Config::default()).unwrap();
-        let have = super::scan(&base);
-        let want = vec![
-            Issue::MixCapSection {
-                location: Location {
-                    file: PathBuf::from("1.md"),
-                    line: 2,
-                    start: 4,
-                    end: 7,
-                },
-                variants: vec!["ONE".into(), "One".into(), "one".into()],
-            },
-            Issue::MixCapSection {
-                location: Location {
-                    file: PathBuf::from("1.md"),
-                    line: 5,
-                    start: 4,
-                    end: 7,
-                },
-                variants: vec!["ONE".into(), "One".into(), "one".into()],
-            },
-            Issue::MixCapSection {
+            ### alpha
+            [1](1.md)"};
+            test::create_file("3.md", content3, &dir);
+            let base = Tikibase::load(dir, &Config::default()).unwrap();
+            let have = super::super::scan(&base);
+            let want = vec![Issue::MixCapSection {
                 location: Location {
                     file: PathBuf::from("2.md"),
                     line: 2,
                     start: 4,
                     end: 7,
                 },
-                variants: vec!["ONE".into(), "One".into(), "one".into()],
-            },
-            Issue::MixCapSection {
-                location: Location {
-                    file: PathBuf::from("2.md"),
-                    line: 5,
-                    start: 4,
-                    end: 7,
+                all_variants: vec!["Alpha".into(), "alpha".into()],
+                this_variant: "Alpha".into(),
+                common_variant: Some("alpha".into()),
+                section_level: 3,
+            }];
+            pretty::assert_eq!(have, want);
+        }
+
+        #[test]
+        fn mixed_capitalization_same_counts() {
+            let dir = test::tmp_dir();
+            // TODO: change test::create_file to take the content last, then inline the contentX variables
+            let content1 = indoc! {"
+            # One
+
+            ### alpha
+            [2](2.md)"};
+            test::create_file("1.md", content1, &dir);
+            let content2 = indoc! {"
+            # Two
+
+            ### Alpha
+            [1](1.md)"};
+            test::create_file("2.md", content2, &dir);
+            let base = Tikibase::load(dir, &Config::default()).unwrap();
+            let have = super::super::scan(&base);
+            let want = vec![
+                Issue::MixCapSection {
+                    location: Location {
+                        file: PathBuf::from("1.md"),
+                        line: 2,
+                        start: 4,
+                        end: 7,
+                    },
+                    all_variants: vec!["Alpha".into(), "alpha".into()],
+                    this_variant: "alpha".into(),
+                    common_variant: None,
+                    section_level: 3,
                 },
-                variants: vec!["ONE".into(), "One".into(), "one".into()],
-            },
-        ];
-        pretty::assert_eq!(have, want);
+                Issue::MixCapSection {
+                    location: Location {
+                        file: PathBuf::from("2.md"),
+                        line: 2,
+                        start: 4,
+                        end: 7,
+                    },
+                    all_variants: vec!["Alpha".into(), "alpha".into()],
+                    this_variant: "Alpha".into(),
+                    common_variant: None,
+                    section_level: 3,
+                },
+            ];
+            pretty::assert_eq!(have, want);
+        }
+
+        #[test]
+        fn same_capitalization() {
+            let dir = test::tmp_dir();
+            let content1 = indoc! {"
+            # One
+
+            ### alpha
+            [2](2.md)"};
+            test::create_file("1.md", content1, &dir);
+            let content2 = indoc! {"
+            # Two
+
+            ### alpha
+            [1](1.md)"};
+            test::create_file("2.md", content2, &dir);
+            let base = Tikibase::load(dir, &Config::default()).unwrap();
+            let have = super::super::scan(&base);
+            let want = vec![];
+            pretty::assert_eq!(have, want);
+        }
     }
 
     mod file_section {
