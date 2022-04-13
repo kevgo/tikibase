@@ -27,11 +27,11 @@ pub(crate) fn scan(base: &Tikibase) -> Vec<Issue> {
             // one type of level --> section is consistently formatted everywhere
             continue;
         }
-        let most_common_level = find_common_level(&level_counts);
+        let common_level = find_common_level(&level_counts);
         let mut all_variants: Vec<u8> = level_counts.keys().map(ToOwned::to_owned).collect();
         all_variants.sort_unstable();
         for (level, file_sections) in level_counts {
-            if let Some(most_common_level) = most_common_level {
+            if let Some(most_common_level) = common_level {
                 if level == most_common_level {
                     continue;
                 }
@@ -44,7 +44,7 @@ pub(crate) fn scan(base: &Tikibase) -> Vec<Issue> {
                         start: file_section.start,
                         end: file_section.end(),
                     },
-                    common_variant: most_common_level,
+                    common_variant: common_level,
                     this_variant: level as u8,
                     section_title: file_section.title.into(),
                     all_variants: all_variants.clone(),
