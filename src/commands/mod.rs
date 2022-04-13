@@ -75,7 +75,7 @@ pub enum Issue {
     InconsistentHeadingLevel {
         location: Location,
         /// the most commonly observed variant
-        common_variant: u8,
+        common_variants: Vec<u8>,
         this_variant: u8,
     },
     InvalidConfigurationFile {

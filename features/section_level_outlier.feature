@@ -7,6 +7,7 @@ Feature: recognize sections with inconsistent heading level
 
       ### alpha
       [Two](2.md)
+      [Three](3.md)
       """
     And file "2.md" with content:
       """
@@ -15,12 +16,19 @@ Feature: recognize sections with inconsistent heading level
       ##### alpha
       [One](1.md)
       """
+    And file "3.md" with content:
+      """
+      # Three
+
+      ### alpha
+      [One](1.md)
+      """
 
   Scenario: check
     When checking
     Then it prints:
       """
-      1.md:3  inconsistent heading level
+      2.md:3  inconsistent heading level
       """
     And the exit code is 1
 

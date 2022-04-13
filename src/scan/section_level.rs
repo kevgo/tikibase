@@ -26,9 +26,9 @@ pub(crate) fn scan(base: &Tikibase) -> Vec<Issue> {
         if level_counts.len() < 2 {
             continue;
         }
-        let most_common_level = find_most_common_level(&level_counts);
+        let most_common_levels = find_most_common_levels(&level_counts);
         for (level, file_sections) in level_counts {
-            if level == most_common_level {
+            if most_common_levels.contains(&level) {
                 continue;
             }
             for file_section in file_sections {
@@ -39,7 +39,7 @@ pub(crate) fn scan(base: &Tikibase) -> Vec<Issue> {
                         start: file_section.start,
                         end: file_section.end(),
                     },
-                    common_variant: most_common_level as u8,
+                    common_variants: most_common_levels,
                     this_variant: level as u8,
                 })
             }
@@ -73,14 +73,18 @@ impl Default for FileSection<'_> {
     }
 }
 
-fn find_most_common_level(level_counts: &AHashMap<u8, Vec<FileSection>>) -> u8 {
-    let mut result = 0;
+/// Provides the key with the most elements, if one can be determined.
+/// Returns None if there are multiple
+fn find_most_common_levels(level_counts: &AHashMap<u8, Vec<FileSection>>) -> Vec<u8> {
+    let mut result = vec![];
     let mut max = 0;
     for (name, elements) in level_counts {
         let count = elements.len();
         if count > max {
-            result = name.to_owned();
+            result = vec![name.to_owned()];
             max = count;
+        } else if count == max {
+            result.push(name.to_owned());
         }
     }
     result
@@ -93,7 +97,7 @@ mod tests {
     use std::path::PathBuf;
 
     #[test]
-    fn different_levels() {
+    fn different_levels_different_counts() {
         let dir = test::tmp_dir();
         let content1 = indoc! {"
             # one
@@ -122,9 +126,51 @@ mod tests {
                 start: 6,
                 end: 13,
             },
-            common_variant: 3u8,
+            common_variants: 3u8,
             this_variant: 5u8,
         }];
+        pretty::assert_eq!(have, want);
+    }
+
+    #[test]
+    fn different_levels_same_counts() {
+        let dir = test::tmp_dir();
+        let content1 = indoc! {"
+            # one
+
+            ### section
+            content"};
+        test::create_file("1.md", content1, &dir);
+        let content2 = indoc! {"
+            # two
+
+            ##### section
+            content"};
+        test::create_file("2.md", content2, &dir);
+        let base = Tikibase::load(dir, &Config::default()).unwrap();
+        let have = super::scan(&base);
+        let want = vec![
+            Issue::InconsistentHeadingLevel {
+                location: Location {
+                    file: PathBuf::from("1.md"),
+                    line: 2,
+                    start: 3,
+                    end: 10,
+                },
+                common_variants: 5u8,
+                this_variant: 3u8,
+            },
+            Issue::InconsistentHeadingLevel {
+                location: Location {
+                    file: PathBuf::from("2.md"),
+                    line: 2,
+                    start: 6,
+                    end: 13,
+                },
+                common_variants: 3u8,
+                this_variant: 5u8,
+            },
+        ];
         pretty::assert_eq!(have, want);
     }
 
@@ -164,11 +210,11 @@ mod tests {
     }
 
     mod find_most_common_level {
-        use super::super::{find_most_common_level, FileSection};
+        use super::super::{find_most_common_levels, FileSection};
         use ahash::AHashMap;
 
         #[test]
-        fn multiple() {
+        fn different_counts() {
             let mut give: AHashMap<u8, Vec<FileSection>> = AHashMap::new();
             give.entry(3).or_insert_with(Vec::new).push(FileSection {
                 title: "3A",
@@ -182,8 +228,24 @@ mod tests {
                 title: "5A",
                 ..FileSection::default()
             });
-            let have = find_most_common_level(&give);
-            let want = 3;
+            let have = find_most_common_levels(&give);
+            let want = vec![3];
+            assert_eq!(have, want);
+        }
+
+        #[test]
+        fn same_counts() {
+            let mut give: AHashMap<u8, Vec<FileSection>> = AHashMap::new();
+            give.entry(3).or_insert_with(Vec::new).push(FileSection {
+                title: "3A",
+                ..FileSection::default()
+            });
+            give.entry(5).or_insert_with(Vec::new).push(FileSection {
+                title: "5A",
+                ..FileSection::default()
+            });
+            let have = find_most_common_levels(&give);
+            let want = vec![3, 5];
             assert_eq!(have, want);
         }
     }

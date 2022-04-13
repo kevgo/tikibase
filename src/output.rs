@@ -148,13 +148,28 @@ impl Message {
                 end: Some(location.end),
                 fixable: true,
             },
-            Issue::InconsistentHeadingLevel { location, common_variant, this_variant} => Message{
-                text: format!("level of this section ({}) is inconsistent with the usual level of {}", this_variant, common_variant),
-                file: location.file,
-                line: Some(location.line),
-                start: Some(location.start),
-                end: Some(location.end),
-                fixable: true,
+            Issue::InconsistentHeadingLevel { location, common_variants, this_variant} => {
+                if common_variants.len() == 1 {
+                    Message {
+                        text: format!("level of this section ({}) is inconsistent with the usual level of {}", this_variant, common_variants[0]),
+                        file: location.file,
+                        line: Some(location.line),
+                        start: Some(location.start),
+                        end: Some(location.end),
+                        fixable: true,
+                    }
+                } else {
+                    let strings: Vec<String> = common_variants.into_iter().map(|e| e.to_string()).collect();
+                    let variants = strings.join(", ");
+                    Message {
+                        text: format!("inconsistent section levels ({})", variants),
+                        file: location.file,
+                        line: Some(location.line),
+                        start: Some(location.start),
+                        end: Some(location.end),
+                        fixable: true,
+                    }
+                }
             },
             Issue::InvalidConfigurationFile { location, message } => Message {
                 text: format!("invalid configuration file structure: {}", message),
