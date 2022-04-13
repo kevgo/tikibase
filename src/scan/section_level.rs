@@ -138,8 +138,8 @@ mod tests {
             },
             common_level: Some(3),
             this_level: 5u8,
-            section_title: "section".into(),
             all_levels: vec![3, 5],
+            section_title: "section".into(),
         }];
         pretty::assert_eq!(have, want);
     }
@@ -171,8 +171,8 @@ mod tests {
                 },
                 common_level: None,
                 this_level: 3u8,
-                section_title: "section".into(),
                 all_levels: vec![3, 5],
+                section_title: "section".into(),
             },
             Issue::InconsistentHeadingLevel {
                 location: Location {
@@ -183,8 +183,8 @@ mod tests {
                 },
                 common_level: None,
                 this_level: 5u8,
-                section_title: "section".into(),
                 all_levels: vec![3, 5],
+                section_title: "section".into(),
             },
         ];
         pretty::assert_eq!(have, want);
