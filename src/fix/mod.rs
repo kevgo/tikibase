@@ -1,6 +1,7 @@
 //! Auto-fixing functionality
 
 mod empty_section;
+mod inconsistent_levels;
 mod missing_links;
 mod obsolete_occurrences_section;
 mod unordered_sections;
@@ -13,6 +14,25 @@ pub fn fix(issue: Issue, base: &mut Tikibase, config: &Config) -> Result {
         // actual fixes
         Issue::EmptySection { location, title } => {
             empty_section::remove_section(base, title, location)
+        }
+        Issue::InconsistentHeadingLevel {
+            location,
+            common_level,
+            this_level,
+            section_title,
+            all_levels: _,
+        } => {
+            if let Some(common_level) = common_level {
+                inconsistent_levels::normalize_outliers(
+                    base,
+                    location,
+                    section_title,
+                    this_level,
+                    common_level,
+                )
+            } else {
+                Result::Unfixable
+            }
         }
         Issue::MissingLinks { location, links } => {
             missing_links::add_occurrences(base, location, links, config)
@@ -107,10 +127,25 @@ pub fn fix(issue: Issue, base: &mut Tikibase, config: &Config) -> Result {
 
 /// documents the fixes that this linter performs
 pub enum Fix {
-    AddedOccurrencesSection { location: Location },
-    RemovedEmptySection { title: String, location: Location },
-    RemovedObsoleteOccurrencesSection { location: Location },
-    SortedSections { location: Location },
+    AddedOccurrencesSection {
+        location: Location,
+    },
+    NormalizedSectionLevel {
+        location: Location,
+        section_title: String,
+        old_level: u8,
+        new_level: u8,
+    },
+    RemovedEmptySection {
+        title: String,
+        location: Location,
+    },
+    RemovedObsoleteOccurrencesSection {
+        location: Location,
+    },
+    SortedSections {
+        location: Location,
+    },
 }
 
 /// result of a fix operation

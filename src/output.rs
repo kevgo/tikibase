@@ -50,6 +50,22 @@ impl Message {
                 end: Some(location.end),
                 fixable: false,
             },
+            Fix::NormalizedSectionLevel {
+                location,
+                section_title,
+                old_level,
+                new_level,
+            } => Message {
+                text: format!(
+                    "normalized section \"{}\" from <h{}> to <h{}>",
+                    section_title, old_level, new_level
+                ),
+                file: location.file,
+                line: Some(location.line),
+                start: Some(location.start),
+                end: Some(location.end),
+                fixable: false,
+            },
             Fix::RemovedObsoleteOccurrencesSection { location } => Message {
                 text: "removed obsolete occurrences section".into(),
                 file: location.file,
@@ -139,6 +155,28 @@ impl Message {
                 start: Some(location.start),
                 end: Some(location.end),
                 fixable: true,
+            },
+            Issue::InconsistentHeadingLevel { location, section_title, common_level: common_variant, this_level: this_variant, all_levels: all_variants } => {
+                if let Some(common_variant) = common_variant {
+                    Message {
+                        text: format!("heading level (<h{}>) is inconsistent with the usual level for \"{}\" (<h{}>)", this_variant, section_title, common_variant),
+                        file: location.file,
+                        line: Some(location.line),
+                        start: Some(location.start),
+                        end: Some(location.end),
+                        fixable: true,
+                    }
+                } else {
+                    let variants = all_variants.into_iter().map(|e| format!("<h{}>", e)).collect::<Vec<String>>().join(" and ");
+                    Message {
+                        text: format!("inconsistent heading level - section \"{}\" exists as {}", section_title, variants),
+                        file: location.file,
+                        line: Some(location.line),
+                        start: Some(location.start),
+                        end: Some(location.end),
+                        fixable: true,
+                    }
+                }
             },
             Issue::InvalidConfigurationFile { location, message } => Message {
                 text: format!("invalid configuration file structure: {}", message),
