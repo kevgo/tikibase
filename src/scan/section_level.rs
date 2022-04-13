@@ -87,6 +87,7 @@ fn find_most_common_levels(level_counts: &AHashMap<u8, Vec<FileSection>>) -> Vec
             result.push(name.to_owned());
         }
     }
+    result.sort();
     result
 }
 
@@ -157,7 +158,7 @@ mod tests {
                     start: 3,
                     end: 10,
                 },
-                common_variants: vec![5],
+                common_variants: vec![3, 5],
                 this_variant: 3u8,
             },
             Issue::InconsistentHeadingLevel {
@@ -167,7 +168,7 @@ mod tests {
                     start: 6,
                     end: 13,
                 },
-                common_variants: vec![3],
+                common_variants: vec![3, 5],
                 this_variant: 5u8,
             },
         ];
@@ -175,7 +176,7 @@ mod tests {
     }
 
     #[test]
-    fn same_levels() {
+    fn matching_levels() {
         let dir = test::tmp_dir();
         let content1 = indoc! {"
             # one
