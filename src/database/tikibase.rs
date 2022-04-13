@@ -151,7 +151,7 @@ mod tests {
             test::create_file("one.md", "# test doc", &dir);
             let base = Tikibase::load(dir, &Config::default()).unwrap();
             let doc = base.get_doc("one.md").expect("document not found");
-            assert_eq!(doc.title(), "# test doc");
+            assert_eq!(doc.human_title(), "# test doc");
         }
 
         #[test]
