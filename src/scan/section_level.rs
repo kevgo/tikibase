@@ -27,7 +27,8 @@ pub(crate) fn scan(base: &Tikibase) -> Vec<Issue> {
             continue;
         }
         let most_common_level = find_most_common_levels(&level_counts);
-        let all_variants: Vec<u8> = level_counts.keys().map(|e| e.to_owned()).collect();
+        let mut all_variants: Vec<u8> = level_counts.keys().map(|e| e.to_owned()).collect();
+        all_variants.sort();
         for (level, file_sections) in level_counts {
             if let Some(most_common_level) = most_common_level {
                 if level == most_common_level {

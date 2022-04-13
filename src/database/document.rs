@@ -213,6 +213,13 @@ impl Document {
             .find(|section| section.human_title() == title)
     }
 
+    /// provides the section with the given title
+    pub fn section_with_title_mut(&mut self, title: &str) -> Option<&mut Section> {
+        self.content_sections
+            .iter_mut()
+            .find(|section| section.human_title() == title)
+    }
+
     /// provides the complete textual content of this document
     pub fn text(&self) -> String {
         let mut result = self.title_section.text();

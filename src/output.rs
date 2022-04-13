@@ -50,8 +50,16 @@ impl Message {
                 end: Some(location.end),
                 fixable: false,
             },
-            Fix::NormalizedSectionLevel { location } => Message {
-                text: "normalized section heaving to <hXXX>".into(),
+            Fix::NormalizedSectionLevel {
+                location,
+                section_title,
+                old_level,
+                new_level,
+            } => Message {
+                text: format!(
+                    "normalized section \"{}\" from <h{}> to <h{}>",
+                    section_title, old_level, new_level
+                ),
                 file: location.file,
                 line: Some(location.line),
                 start: Some(location.start),

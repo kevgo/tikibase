@@ -17,11 +17,23 @@ pub fn fix(issue: Issue, base: &mut Tikibase, config: &Config) -> Result {
         }
         Issue::InconsistentHeadingLevel {
             location,
-            common_variant: common_variants,
+            common_variant,
             this_variant,
             section_title,
-            all_variants,
-        } => inconsistent_levels::normalize_outliers(base),
+            all_variants: _,
+        } => {
+            if let Some(common_variant) = common_variant {
+                inconsistent_levels::normalize_outliers(
+                    base,
+                    location,
+                    section_title,
+                    this_variant,
+                    common_variant,
+                )
+            } else {
+                Result::Unfixable
+            }
+        }
         Issue::MissingLinks { location, links } => {
             missing_links::add_occurrences(base, location, links, config)
         }
@@ -115,11 +127,25 @@ pub fn fix(issue: Issue, base: &mut Tikibase, config: &Config) -> Result {
 
 /// documents the fixes that this linter performs
 pub enum Fix {
-    AddedOccurrencesSection { location: Location },
-    NormalizedSectionLevel { location: Location },
-    RemovedEmptySection { title: String, location: Location },
-    RemovedObsoleteOccurrencesSection { location: Location },
-    SortedSections { location: Location },
+    AddedOccurrencesSection {
+        location: Location,
+    },
+    NormalizedSectionLevel {
+        location: Location,
+        section_title: String,
+        old_level: u8,
+        new_level: u8,
+    },
+    RemovedEmptySection {
+        title: String,
+        location: Location,
+    },
+    RemovedObsoleteOccurrencesSection {
+        location: Location,
+    },
+    SortedSections {
+        location: Location,
+    },
 }
 
 /// result of a fix operation

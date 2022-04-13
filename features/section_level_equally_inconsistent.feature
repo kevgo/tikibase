@@ -38,4 +38,4 @@ Feature: recognize sections with equally inconsistent heading levels
       2.md:3  inconsistent heading level - section "alpha" exists as <h3> and <h5>
       """
     And all files are unchanged
-    And the exit code is 1
+    And the exit code is 2
