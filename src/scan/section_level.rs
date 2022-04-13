@@ -28,6 +28,9 @@ pub(crate) fn scan(base: &Tikibase) -> Vec<Issue> {
         }
         let most_common_level = find_most_common_level(&level_counts);
         for (level, file_sections) in level_counts {
+            if level == most_common_level {
+                continue;
+            }
             for file_section in file_sections {
                 issues.push(Issue::InconsistentHeadingLevel {
                     location: Location {
@@ -71,7 +74,16 @@ impl Default for FileSection<'_> {
 }
 
 fn find_most_common_level(level_counts: &AHashMap<u8, Vec<FileSection>>) -> u8 {
-    level_counts.keys().max().unwrap().to_owned()
+    let mut result = 0;
+    let mut max = 0;
+    for (name, elements) in level_counts {
+        let count = elements.len();
+        if count > max {
+            result = name.to_owned();
+            max = count;
+        }
+    }
+    result
 }
 
 #[cfg(test)]
@@ -148,6 +160,31 @@ mod tests {
                 ..FileSection::default()
             };
             assert_eq!(file_section.end(), 16);
+        }
+    }
+
+    mod find_most_common_level {
+        use super::super::{find_most_common_level, FileSection};
+        use ahash::AHashMap;
+
+        #[test]
+        fn multiple() {
+            let mut give: AHashMap<u8, Vec<FileSection>> = AHashMap::new();
+            give.entry(3).or_insert_with(Vec::new).push(FileSection {
+                title: "3A",
+                ..FileSection::default()
+            });
+            give.entry(3).or_insert_with(Vec::new).push(FileSection {
+                title: "3B",
+                ..FileSection::default()
+            });
+            give.entry(5).or_insert_with(Vec::new).push(FileSection {
+                title: "5A",
+                ..FileSection::default()
+            });
+            let have = find_most_common_level(&give);
+            let want = 3;
+            assert_eq!(have, want);
         }
     }
 }
