@@ -28,7 +28,7 @@ Feature: recognize sections with inconsistent heading level
     When checking
     Then it prints:
       """
-      2.md:3  inconsistent heading level
+      2.md:3  heading level (<h5>) is inconsistent with the usual level for "alpha" (<h3>)
       """
     And the exit code is 1
 

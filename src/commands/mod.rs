@@ -40,7 +40,7 @@ impl Outcome {
 }
 
 /// the issues that this linter can find
-#[derive(Clone, Debug, PartialEq)]
+#[derive(Clone, Debug, Eq, Ord, PartialEq, PartialOrd)]
 pub enum Issue {
     BrokenImage {
         location: Location,
@@ -74,8 +74,11 @@ pub enum Issue {
     },
     InconsistentHeadingLevel {
         location: Location,
-        /// the most commonly observed variant
+        /// human-readable section title
+        section_title: String,
+        /// the most commonly observed level
         common_variants: Vec<u8>,
+        /// the level used here
         this_variant: u8,
     },
     InvalidConfigurationFile {
@@ -169,7 +172,7 @@ pub enum Issue {
 }
 
 /// a missing link to a document
-#[derive(Clone, Debug, PartialEq)]
+#[derive(Clone, Debug, Eq, Ord, PartialEq, PartialOrd)]
 pub struct MissingLink {
     pub path: PathBuf,
     pub title: String,

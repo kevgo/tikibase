@@ -148,10 +148,10 @@ impl Message {
                 end: Some(location.end),
                 fixable: true,
             },
-            Issue::InconsistentHeadingLevel { location, common_variants, this_variant} => {
+            Issue::InconsistentHeadingLevel { location, section_title, common_variants, this_variant} => {
                 if common_variants.len() == 1 {
                     Message {
-                        text: format!("level of this section ({}) is inconsistent with the usual level of {}", this_variant, common_variants[0]),
+                        text: format!("heading level (<h{}>) is inconsistent with the usual level for \"{}\" (<h{}>)", this_variant, section_title, common_variants[0]),
                         file: location.file,
                         line: Some(location.line),
                         start: Some(location.start),

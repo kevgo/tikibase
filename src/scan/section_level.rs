@@ -41,10 +41,12 @@ pub(crate) fn scan(base: &Tikibase) -> Vec<Issue> {
                     },
                     common_variants: most_common_levels.clone(),
                     this_variant: level as u8,
+                    section_title: file_section.title.into(),
                 })
             }
         }
     }
+    issues.sort();
     issues
 }
 
@@ -127,6 +129,7 @@ mod tests {
             },
             common_variants: vec![3],
             this_variant: 5u8,
+            section_title: "section".into(),
         }];
         pretty::assert_eq!(have, want);
     }
@@ -153,11 +156,12 @@ mod tests {
                 location: Location {
                     file: PathBuf::from("1.md"),
                     line: 2,
-                    start: 3,
-                    end: 10,
+                    start: 4,
+                    end: 11,
                 },
-                common_variants: vec![3, 5],
+                common_variants: vec![],
                 this_variant: 3u8,
+                section_title: "section".into(),
             },
             Issue::InconsistentHeadingLevel {
                 location: Location {
@@ -166,8 +170,9 @@ mod tests {
                     start: 6,
                     end: 13,
                 },
-                common_variants: vec![3, 5],
+                common_variants: vec![],
                 this_variant: 5u8,
+                section_title: "section".into(),
             },
         ];
         pretty::assert_eq!(have, want);
