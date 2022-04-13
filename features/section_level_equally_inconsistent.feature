@@ -23,7 +23,7 @@ Feature: recognize sections with equally inconsistent heading levels
       1.md:3  inconsistent heading level - section "alpha" exists as <h3> and <h5>
       2.md:3  inconsistent heading level - section "alpha" exists as <h3> and <h5>
       """
-    And the exit code is 1
+    And the exit code is 2
 
   Scenario: fix
     When fixing

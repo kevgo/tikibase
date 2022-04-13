@@ -161,7 +161,7 @@ impl Message {
                 } else {
                     let variants = all_variants.into_iter().map(|e| format!("<h{}>", e)).collect::<Vec<String>>().join(" and ");
                     Message {
-                        text: format!("inconsistent heading level - section \"{}\" exists as ({})", section_title, variants),
+                        text: format!("inconsistent heading level - section \"{}\" exists as {}", section_title, variants),
                         file: location.file,
                         line: Some(location.line),
                         start: Some(location.start),
