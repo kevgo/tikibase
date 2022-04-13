@@ -30,7 +30,7 @@ impl Document {
             if line.starts_with('#') && !inside_fence {
                 if let Some(section_builder) = section_builder {
                     let section = section_builder.result();
-                    if section.title().text == "occurrences" {
+                    if section.human_title() == "occurrences" {
                         old_occurrences_section = Some(section);
                     } else {
                         sections.push(section);
@@ -60,7 +60,7 @@ impl Document {
         match section_builder {
             Some(section_builder) => {
                 let section = section_builder.result();
-                if section.title().text == "occurrences" {
+                if section.human_title() == "occurrences" {
                     old_occurrences_section = Some(section);
                 } else {
                     sections.push(section);
@@ -202,7 +202,7 @@ impl Document {
     pub fn section_titles(&self) -> Vec<&str> {
         self.content_sections
             .iter()
-            .map(|section| section.title().text)
+            .map(Section::human_title)
             .collect()
     }
 
@@ -210,7 +210,7 @@ impl Document {
     pub fn section_with_title(&self, title: &str) -> Option<&Section> {
         self.content_sections
             .iter()
-            .find(|section| section.title().text == title)
+            .find(|section| section.human_title() == title)
     }
 
     /// provides the complete textual content of this document
@@ -224,7 +224,7 @@ impl Document {
 
     /// provides the human-readable title of this document
     pub fn title(&self) -> &str {
-        self.title_section.title().text
+        self.title_section.human_title()
     }
 }
 
@@ -394,11 +394,15 @@ mod tests {
                     line_number: 0,
                     title_line: Line::from("# test"),
                     body: vec![],
+                    title_text_start: 2,
+                    level: 1,
                 },
                 content_sections: vec![Section {
                     line_number: 1,
                     title_line: Line::from("### section 1"),
                     body: vec![Line::from("content")],
+                    title_text_start: 4,
+                    level: 3,
                 }],
                 old_occurrences_section: None,
             });
@@ -440,6 +444,8 @@ mod tests {
                         Line::from("text"),
                         Line::from("```"),
                     ],
+                    title_text_start: 2,
+                    level: 1,
                 },
                 content_sections: vec![],
                 old_occurrences_section: None,
@@ -484,23 +490,31 @@ mod tests {
                     line_number: 0,
                     title_line: Line::from("# test"),
                     body: vec![],
+                    title_text_start: 2,
+                    level: 1,
                 },
                 content_sections: vec![
                     Section {
                         line_number: 1,
                         title_line: Line::from("### section 1"),
                         body: vec![Line::from("content")],
+                        title_text_start: 4,
+                        level: 3,
                     },
                     Section {
                         line_number: 5,
                         title_line: Line::from("### links"),
                         body: vec![Line::from("- link 1")],
+                        title_text_start: 4,
+                        level: 3,
                     },
                 ],
                 old_occurrences_section: Some(Section {
                     line_number: 3,
                     title_line: Line::from("### occurrences"),
                     body: vec![Line::from("- occurrence 1")],
+                    title_text_start: 4,
+                    level: 3,
                 }),
             });
             pretty::assert_eq!(have, want);
@@ -587,6 +601,8 @@ mod tests {
                 line_number: 3,
                 title_line: Line::from("### s1"),
                 body: vec![Line::from(""), Line::from("text")],
+                title_text_start: 4,
+                level: 3,
             };
             pretty::assert_eq!(have, &mut want);
         }
@@ -603,6 +619,8 @@ mod tests {
                 line_number: 0,
                 title_line: Line::from("# Title"),
                 body: vec![Line::from("title text")],
+                title_text_start: 2,
+                level: 1,
             };
             pretty::assert_eq!(have, &mut want);
         }
