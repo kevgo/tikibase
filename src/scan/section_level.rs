@@ -86,11 +86,10 @@ fn find_common_level(level_counts: &AHashMap<u8, Vec<FileSection>>) -> Option<u8
     let mut result = None;
     let mut max = 0;
     for (name, elements) in level_counts {
-        let count = elements.len();
-        match count.cmp(&max) {
+        match elements.len().cmp(&max) {
             Greater => {
                 result = Some(name.to_owned());
-                max = count;
+                max = elements.len();
             }
             Equal => {
                 result = None;
