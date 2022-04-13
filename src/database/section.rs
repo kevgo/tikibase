@@ -21,34 +21,6 @@ pub struct Section {
     pub level: u8,
 }
 
-/// the title line of a section
-#[derive(Debug, PartialEq)]
-pub struct TitleLine {
-    pub line: Line,
-
-    /// the cursor column at which the title text starts (derived value)
-    pub text_start: usize,
-
-    /// cache for the heading level (h1-h6)
-    pub level: u8,
-}
-
-impl TitleLine {
-    pub fn end(&self) -> u32 {
-        self.line.text.len() as u32
-    }
-
-    /// provides the full text of this line
-    pub fn full_text(&self) -> &str {
-        &self.line.text
-    }
-
-    /// provides a human-readable description of this section, e.g. "Hello" for a section with the title "# Hello"
-    pub fn human_text(&self) -> &str {
-        &self.line.text[self.text_start..]
-    }
-}
-
 impl Section {
     /// provides the link anchor for this section, in GitHub format
     pub fn anchor(&self) -> String {
@@ -70,7 +42,7 @@ impl Section {
     pub fn last_line(&self) -> &Line {
         match self.body.last() {
             Some(last_body_line) => last_body_line,
-            None => &self.title_line.line,
+            None => &self.title_line,
         }
     }
 
@@ -82,7 +54,7 @@ impl Section {
     /// provides a non-consuming iterator for all lines in this section
     pub fn lines(&self) -> LinesIterator {
         LinesIterator {
-            title_line: &self.title_line.line,
+            title_line: &self.title_line,
             body_iter: self.body.iter(),
             emitted_title: false,
         }
@@ -129,7 +101,7 @@ impl Section {
 
     /// provides the complete text of this section
     pub fn text(&self) -> String {
-        let mut result = self.title_line.line.text.to_string();
+        let mut result = self.title_line.text.to_string();
         result.push('\n');
         for line in &self.body {
             result.push_str(&line.text);
@@ -215,31 +187,12 @@ mod tests {
         }
     }
 
-    mod human_title {
-        use crate::database::Section;
-
-        #[test]
-        fn h1() {
-            let section = Section::with_title("# Title");
-            let have = section.human_title();
-            let want = "Title";
-            assert_eq!(have, want);
-        }
-
-        #[test]
-        fn h6() {
-            let section = Section::with_title("###### Title");
-            let have = section.human_title();
-            let want = "Title";
-            assert_eq!(have, want);
-        }
-
-        #[test]
-        fn no_text() {
-            let section = Section::with_title("###");
-            let have = section.human_title();
-            let want = "";
-            assert_eq!(have, want);
+    #[test]
+    fn human_title() {
+        let tests = vec![("# title", "title"), ("###### title", "title"), ("###", "")];
+        for (give, want) in tests {
+            let section = Section::with_title(give);
+            assert_eq!(section.human_title(), want);
         }
     }
 
@@ -291,7 +244,7 @@ mod tests {
         let tests = vec![("# title", 1), ("###### title", 6), ("###", 3)];
         for (give, want) in tests {
             let section = Section::with_title(give);
-            assert_eq!(section.title_line.level, want);
+            assert_eq!(section.level, want);
         }
     }
 
@@ -336,15 +289,6 @@ mod tests {
             let have = section.body;
             let want = vec![Line::from("l1"), Line::from("new line")];
             pretty::assert_eq!(have, want);
-        }
-    }
-
-    #[test]
-    fn title() {
-        let tests = vec![("# title", "title"), ("###### title", "title"), ("###", "")];
-        for (give, want) in tests {
-            let section = Section::with_title(give);
-            assert_eq!(section.title(), want);
         }
     }
 

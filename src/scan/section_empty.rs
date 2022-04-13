@@ -14,7 +14,7 @@ pub(crate) fn scan(base: &Tikibase) -> Vec<Issue> {
                         file: doc.path.clone(),
                         line: section.line_number,
                         start: 0,
-                        end: section.title_line.full_text().len() as u32,
+                        end: section.title_line.text.len() as u32,
                     },
                     title: section.human_title().into(),
                 });

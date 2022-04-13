@@ -7,17 +7,17 @@ pub(crate) fn scan(base: &Tikibase) -> Vec<Issue> {
     let mut level_variants: AHashMap<&str, AHashMap<u8, Vec<FileSection>>> = AHashMap::new();
     for doc in &base.docs {
         for section in doc.sections() {
-            let section_title = section.title();
+            let section_title = section.human_title();
             level_variants
                 .entry(section_title)
                 .or_insert_with(AHashMap::new)
-                .entry(section.title_line.level)
+                .entry(section.level)
                 .or_insert_with(Vec::new)
                 .push(FileSection {
                     file: &doc.path,
                     title: section_title,
                     line: section.line_number,
-                    start: section.title_line.text_start as u32,
+                    start: section.title_text_start as u32,
                 })
         }
     }

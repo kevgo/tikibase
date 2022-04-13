@@ -42,7 +42,7 @@ pub fn add_occurrences(
     }
     let occurrences_section = section_builder.result();
     let line = occurrences_section.line_number;
-    let end = occurrences_section.title_line.human_text().len() as u32;
+    let end = occurrences_section.human_title().len() as u32;
     doc.content_sections.push(occurrences_section);
     doc.save(&base_dir);
     Fixed(AddedOccurrencesSection {

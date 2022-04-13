@@ -582,7 +582,7 @@ mod tests {
 
     mod last_section_mut {
         use super::super::Document;
-        use crate::database::Section;
+        use crate::database::{Line, Section};
         use indoc::indoc;
 
         #[test]
