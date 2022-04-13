@@ -24,6 +24,7 @@ Feature: recognize and fix outlier capitalization of sections
       [One](1.md)
       """
 
+  @this
   Scenario: check
     When checking
     Then it prints:
