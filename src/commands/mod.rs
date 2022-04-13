@@ -129,7 +129,10 @@ pub enum Issue {
     },
     MixCapSection {
         location: Location,
-        variants: Vec<String>,
+        all_variants: Vec<String>,
+        this_variant: String,
+        common_variant: Option<String>,
+        section_level: u8,
     },
     NoTitleSection {
         location: Location,

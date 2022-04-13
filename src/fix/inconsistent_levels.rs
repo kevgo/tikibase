@@ -23,7 +23,7 @@ pub fn normalize_outliers(
     })
 }
 
-fn title_at_level(title: &str, level: usize) -> String {
+pub fn title_at_level(title: &str, level: usize) -> String {
     format!("{} {}", "#".repeat(level), title)
 }
 
