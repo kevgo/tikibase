@@ -156,7 +156,7 @@ impl Message {
                 end: Some(location.end),
                 fixable: true,
             },
-            Issue::InconsistentHeadingLevel { location, section_title, common_variant, this_variant, all_variants } => {
+            Issue::InconsistentHeadingLevel { location, section_title, common_level: common_variant, this_level: this_variant, all_levels: all_variants } => {
                 if let Some(common_variant) = common_variant {
                     Message {
                         text: format!("heading level (<h{}>) is inconsistent with the usual level for \"{}\" (<h{}>)", this_variant, section_title, common_variant),

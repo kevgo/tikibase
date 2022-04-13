@@ -17,18 +17,18 @@ pub fn fix(issue: Issue, base: &mut Tikibase, config: &Config) -> Result {
         }
         Issue::InconsistentHeadingLevel {
             location,
-            common_variant,
-            this_variant,
+            common_level,
+            this_level,
             section_title,
-            all_variants: _,
+            all_levels: _,
         } => {
-            if let Some(common_variant) = common_variant {
+            if let Some(common_level) = common_level {
                 inconsistent_levels::normalize_outliers(
                     base,
                     location,
                     section_title,
-                    this_variant,
-                    common_variant,
+                    this_level,
+                    common_level,
                 )
             } else {
                 Result::Unfixable
