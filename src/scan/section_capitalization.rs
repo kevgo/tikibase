@@ -55,6 +55,7 @@ pub(crate) fn scan(base: &Tikibase) -> Vec<Issue> {
             }
         }
     }
+    issues.sort();
     issues
 }
 

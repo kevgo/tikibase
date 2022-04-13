@@ -43,7 +43,7 @@ Feature: recognize and fix outlier capitalization of sections
       """
       # Two
 
-      ### Section
+      ### section
       [Three](3.md)
       """
 
@@ -51,6 +51,12 @@ Feature: recognize and fix outlier capitalization of sections
     When doing a pitstop
     Then it prints:
       """
-      2.md:3  section capitalization ("Section") is inconsistent with the usual form "section"
+      2.md:3  normalized capitalization of section "Section" to "section"
       """
-    And all files are unchanged
+    And file "2.md" should contain:
+      """
+      # Two
+
+      ### section
+      [Three](3.md)
+      """

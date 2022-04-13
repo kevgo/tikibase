@@ -56,7 +56,7 @@ impl Message {
                 new_capitalization,
             } => Message {
                 text: format!(
-                    r#"normalized section title capitalization from "{}" to "{}""#,
+                    r#"normalized capitalization of section "{}" to "{}""#,
                     old_capitalization, new_capitalization
                 ),
                 file: location.file,
@@ -294,16 +294,32 @@ impl Message {
                 end: Some(location.end),
                 fixable: false,
             },
-            Issue::MixCapSection { location, all_variants, this_variant: _, common_variant: _, section_level: _ } => Message {
-                text: format!(
-                    "section title occurs with inconsistent capitalization: {}",
-                    all_variants.join("|")
-                ),
-                file: location.file,
-                line: Some(location.line),
-                start: Some(location.start),
-                end: Some(location.end),
-                fixable: false,
+            Issue::MixCapSection { location, all_variants, this_variant, common_variant, section_level: _ } => {
+                if let Some(common_variant) = common_variant {
+                    Message {
+                        text: format!(
+                            r#"section capitalization ("{}") is inconsistent with the usual form "{}""#,
+                            this_variant, common_variant
+                        ),
+                        file: location.file,
+                        line: Some(location.line),
+                        start: Some(location.start),
+                        end: Some(location.end),
+                        fixable: false,
+                    }
+                } else {
+                    Message {
+                        text: format!(
+                            "section title occurs with inconsistent capitalization: {}",
+                            all_variants.join("|")
+                        ),
+                        file: location.file,
+                        line: Some(location.line),
+                        start: Some(location.start),
+                        end: Some(location.end),
+                        fixable: false,
+                    }
+                }
             },
             Issue::NoTitleSection { location } => Message {
                 text: "no title section".into(),
