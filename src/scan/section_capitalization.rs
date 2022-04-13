@@ -1,5 +1,6 @@
 use crate::{Issue, Location, Tikibase};
-use ahash::{AHashMap, AHashSet};
+use ahash::AHashMap;
+use std::cmp::Ordering::{Equal, Greater, Less};
 use std::path::Path;
 
 pub(crate) fn scan(base: &Tikibase) -> Vec<Issue> {
@@ -33,7 +34,7 @@ pub(crate) fn scan(base: &Tikibase) -> Vec<Issue> {
             variants_sections.keys().map(ToString::to_string).collect();
         all_variants.sort_unstable();
         for (variant, file_sections) in variants_sections {
-            if let Some(common_variant) = common_variant {
+            if let Some(common_variant) = &common_variant {
                 if variant == common_variant {
                     continue;
                 }
@@ -46,9 +47,9 @@ pub(crate) fn scan(base: &Tikibase) -> Vec<Issue> {
                         start: file_section.start,
                         end: file_section.end(),
                     },
-                    all_variants: all_variants,
+                    all_variants: all_variants.clone(),
                     this_variant: variant.into(),
-                    common_variant: common_variant,
+                    common_variant: common_variant.clone(),
                     section_level: file_section.level,
                 });
             }
@@ -102,11 +103,6 @@ fn find_common_capitalization(level_counts: &AHashMap<&str, Vec<FileSection>>) -
         }
     }
     result.map(ToString::to_string)
-}
-
-fn variants_count(file_sections: &[FileSection]) -> usize {
-    let set: AHashSet<&str> = file_sections.iter().map(|fs| fs.title).collect();
-    set.len()
 }
 
 /// normalizes the given section title

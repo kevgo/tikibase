@@ -40,7 +40,7 @@ pub fn fix(issue: Issue, base: &mut Tikibase, config: &Config) -> Result {
         }
         Issue::MixCapSection {
             location,
-            all_variants,
+            all_variants: _,
             section_level,
             this_variant,
             common_variant,

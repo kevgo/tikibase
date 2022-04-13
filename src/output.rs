@@ -56,7 +56,7 @@ impl Message {
                 new_capitalization,
             } => Message {
                 text: format!(
-                    "normalized section title capitalization from \"{}\" to \"{}\"",
+                    r#"normalized section title capitalization from "{}" to "{}""#,
                     old_capitalization, new_capitalization
                 ),
                 file: location.file,
@@ -72,7 +72,7 @@ impl Message {
                 new_level,
             } => Message {
                 text: format!(
-                    "normalized section \"{}\" from <h{}> to <h{}>",
+                    r#"normalized section "{}" from <h{}> to <h{}>"#,
                     section_title, old_level, new_level
                 ),
                 file: location.file,
@@ -294,10 +294,10 @@ impl Message {
                 end: Some(location.end),
                 fixable: false,
             },
-            Issue::MixCapSection { location, variants } => Message {
+            Issue::MixCapSection { location, all_variants, this_variant: _, common_variant: _, section_level: _ } => Message {
                 text: format!(
                     "section title occurs with inconsistent capitalization: {}",
-                    variants.join("|")
+                    all_variants.join("|")
                 ),
                 file: location.file,
                 line: Some(location.line),
