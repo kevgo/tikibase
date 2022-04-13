@@ -112,22 +112,22 @@ mod tests {
         fn outlier_level() {
             let dir = test::tmp_dir();
             let content1 = indoc! {"
-            # one
+                # one
 
-            ### section
-            content"};
+                ### section
+                content"};
             test::create_file("1.md", content1, &dir);
             let content2 = indoc! {"
-            # two
+                # two
 
-            ##### section
-            content"};
+                ##### section
+                content"};
             test::create_file("2.md", content2, &dir);
             let content3 = indoc! {"
-            # three
+                # three
 
-            ### section
-            content"};
+                ### section
+                content"};
             test::create_file("3.md", content3, &dir);
             let base = Tikibase::load(dir, &Config::default()).unwrap();
             let have = super::super::scan(&base);
@@ -150,16 +150,16 @@ mod tests {
         fn different_levels_same_counts() {
             let dir = test::tmp_dir();
             let content1 = indoc! {"
-            # one
+                # one
 
-            ### section
-            content"};
+                ### section
+                content"};
             test::create_file("1.md", content1, &dir);
             let content2 = indoc! {"
-            # two
+                # two
 
-            ##### section
-            content"};
+                ##### section
+                content"};
             test::create_file("2.md", content2, &dir);
             let base = Tikibase::load(dir, &Config::default()).unwrap();
             let have = super::super::scan(&base);
@@ -196,16 +196,16 @@ mod tests {
         fn matching_levels() {
             let dir = test::tmp_dir();
             let content1 = indoc! {"
-            # one
+                # one
 
-            ### section
-            content"};
+                ### section
+                content"};
             test::create_file("1.md", content1, &dir);
             let content2 = indoc! {"
-            # two
+                # two
 
-            ### section
-            content"};
+                ### section
+                content"};
             test::create_file("2.md", content2, &dir);
             let base = Tikibase::load(dir, &Config::default()).unwrap();
             let have = super::super::scan(&base);
