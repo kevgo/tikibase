@@ -187,31 +187,12 @@ mod tests {
         }
     }
 
-    mod human_title {
-        use crate::database::Section;
-
-        #[test]
-        fn h1() {
-            let section = Section::with_title("# Title");
-            let have = section.human_title();
-            let want = "Title";
-            assert_eq!(have, want);
-        }
-
-        #[test]
-        fn h6() {
-            let section = Section::with_title("###### Title");
-            let have = section.human_title();
-            let want = "Title";
-            assert_eq!(have, want);
-        }
-
-        #[test]
-        fn no_text() {
-            let section = Section::with_title("###");
-            let have = section.human_title();
-            let want = "";
-            assert_eq!(have, want);
+    #[test]
+    fn human_title() {
+        let tests = vec![("# title", "title"), ("###### title", "title"), ("###", "")];
+        for (give, want) in tests {
+            let section = Section::with_title(give);
+            assert_eq!(section.human_title(), want);
         }
     }
 
@@ -219,7 +200,7 @@ mod tests {
         use crate::database::{Line, Section};
 
         #[test]
-        fn with_body() {
+        fn has_body() {
             let section = Section::with_body(vec!["one", "two"]);
             let have = section.last_line();
             let want = Line::from("two");
@@ -227,8 +208,8 @@ mod tests {
         }
 
         #[test]
-        fn without_body() {
-            let section = Section::with_title("### title");
+        fn no_body() {
+            let section = Section::new(0, "### title", vec![]);
             let have = section.last_line();
             let want = Line::from("### title");
             assert_eq!(have, &want);
@@ -255,6 +236,15 @@ mod tests {
                 ..Section::scaffold()
             };
             assert_eq!(section.last_line_abs(), 13);
+        }
+    }
+
+    #[test]
+    fn level() {
+        let tests = vec![("# title", 1), ("###### title", 6), ("###", 3)];
+        for (give, want) in tests {
+            let section = Section::with_title(give);
+            assert_eq!(section.level, want);
         }
     }
 
@@ -304,11 +294,7 @@ mod tests {
 
     #[test]
     fn text() {
-        let section = Section {
-            title_line: Line::from("### welcome"),
-            body: vec![Line::from(""), Line::from("content")],
-            ..Section::scaffold()
-        };
+        let section = Section::new(0, "### welcome", vec!["", "content"]);
         assert_eq!(section.text(), "### welcome\n\ncontent\n");
     }
 }
