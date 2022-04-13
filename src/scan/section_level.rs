@@ -19,7 +19,7 @@ pub(crate) fn scan(base: &Tikibase) -> Vec<Issue> {
                     title: section_title,
                     line: section.line_number,
                     start: section.title_text_start as u32,
-                })
+                });
         }
     }
     let mut issues = vec![];
