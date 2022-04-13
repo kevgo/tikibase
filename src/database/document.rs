@@ -223,7 +223,7 @@ impl Document {
     }
 
     /// provides the human-readable title of this document
-    pub fn title(&self) -> &str {
+    pub fn human_title(&self) -> &str {
         self.title_section.human_title()
     }
 }
@@ -770,7 +770,7 @@ mod tests {
             one
             "};
         let doc = Document::from_str("test.md", give).unwrap();
-        let have = doc.title();
+        let have = doc.human_title();
         assert_eq!(have, "Title");
     }
 }
