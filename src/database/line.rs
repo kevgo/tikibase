@@ -93,18 +93,6 @@ impl Line {
     }
 }
 
-// impl From<String> for Line {
-//     fn from(text: String) -> Line {
-//         Line { text }
-//     }
-// }
-
-// impl From<&str> for Line {
-//     fn from(text: &str) -> Line {
-//         Line { text: text.into() }
-//     }
-// }
-
 impl<IS: Into<String>> From<IS> for Line {
     fn from(text: IS) -> Self {
         Line { text: text.into() }
