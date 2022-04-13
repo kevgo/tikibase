@@ -34,14 +34,29 @@ Feature: recognize sections with inconsistent heading level
 
   Scenario: fix
     When fixing
-    Then it finds no issues
-    And all files are unchanged
+    Then it prints:
+      """
+      2.md:3  normalized section "alpha" from <h5> to <h3>
+      """
+    And file "2.md" should contain:
+      """
+      # Two
+
+      ### alpha
+      [One](1.md)
+      """
 
   Scenario: pitstop
     When doing a pitstop
     Then it prints:
       """
-      1.md:3  inconsistent heading level
+      2.md:3  normalized section "alpha" from <h5> to <h3>
       """
-    And all files are unchanged
-    And the exit code is 1
+    And file "2.md" should contain:
+      """
+      # Two
+
+      ### alpha
+      [One](1.md)
+      """
+    And the exit code is 0

@@ -16,7 +16,7 @@ pub fn normalize_outliers(
     section.title_line.text = title_at_level(&section_title, new_level as usize);
     doc.save(&base_dir);
     Fixed(NormalizedSectionLevel {
-        location: Location::default(),
+        location,
         section_title,
         old_level,
         new_level,

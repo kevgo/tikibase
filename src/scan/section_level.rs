@@ -1,5 +1,6 @@
 use crate::{Issue, Location, Tikibase};
 use ahash::AHashMap;
+use std::cmp::Ordering;
 use std::path::Path;
 
 pub(crate) fn scan(base: &Tikibase) -> Vec<Issue> {
@@ -86,11 +87,15 @@ fn find_most_common_levels(level_counts: &AHashMap<u8, Vec<FileSection>>) -> Opt
     let mut max = 0;
     for (name, elements) in level_counts {
         let count = elements.len();
-        if count > max {
-            result = Some(name.to_owned());
-            max = count;
-        } else if count == max {
-            result = None;
+        match count.cmp(&max) {
+            Ordering::Greater => {
+                result = Some(name.to_owned());
+                max = count;
+            }
+            Ordering::Equal => {
+                result = None;
+            }
+            _ => {}
         }
     }
     result
