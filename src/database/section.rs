@@ -209,7 +209,7 @@ mod tests {
 
         #[test]
         fn no_body() {
-            let section = Section::new(0, "title", vec![]);
+            let section = Section::new(0, "### title", vec![]);
             let have = section.last_line();
             let want = Line::from("### title");
             assert_eq!(have, &want);
