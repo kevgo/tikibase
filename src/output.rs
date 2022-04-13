@@ -148,10 +148,10 @@ impl Message {
                 end: Some(location.end),
                 fixable: true,
             },
-            Issue::InconsistentHeadingLevel { location, section_title, common_variants, this_variant} => {
-                if common_variants.len() == 1 {
+            Issue::InconsistentHeadingLevel { location, section_title, common_variant, this_variant, all_variants } => {
+                if let Some(common_variant) = common_variant {
                     Message {
-                        text: format!("heading level (<h{}>) is inconsistent with the usual level for \"{}\" (<h{}>)", this_variant, section_title, common_variants[0]),
+                        text: format!("heading level (<h{}>) is inconsistent with the usual level for \"{}\" (<h{}>)", this_variant, section_title, common_variant),
                         file: location.file,
                         line: Some(location.line),
                         start: Some(location.start),
@@ -159,9 +159,9 @@ impl Message {
                         fixable: true,
                     }
                 } else {
-                    let variants = common_variants.into_iter().map(|e| e.to_string()).collect::<Vec<String>>().join(", ");
+                    let variants = all_variants.into_iter().map(|e| format!("<h{}>", e)).collect::<Vec<String>>().join(" and ");
                     Message {
-                        text: format!("inconsistent section levels ({})", variants),
+                        text: format!("inconsistent heading level - section \"{}\" exists as ({})", section_title, variants),
                         file: location.file,
                         line: Some(location.line),
                         start: Some(location.start),

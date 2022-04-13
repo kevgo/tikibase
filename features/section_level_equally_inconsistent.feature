@@ -20,8 +20,8 @@ Feature: recognize sections with equally inconsistent heading levels
     When checking
     Then it prints:
       """
-      1.md:3  inconsistent heading level
-      2.md:3  inconsistent heading level
+      1.md:3  inconsistent heading level - section "alpha" exists as <h3> and <h5>
+      2.md:3  inconsistent heading level - section "alpha" exists as <h3> and <h5>
       """
     And the exit code is 1
 
@@ -34,8 +34,8 @@ Feature: recognize sections with equally inconsistent heading levels
     When doing a pitstop
     Then it prints:
       """
-      1.md:3  inconsistent heading level
-      2.md:3  inconsistent heading level
+      1.md:3  inconsistent heading level - section "alpha" exists as <h3> and <h5>
+      2.md:3  inconsistent heading level - section "alpha" exists as <h3> and <h5>
       """
     And all files are unchanged
     And the exit code is 1

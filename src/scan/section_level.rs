@@ -26,10 +26,13 @@ pub(crate) fn scan(base: &Tikibase) -> Vec<Issue> {
         if level_counts.len() < 2 {
             continue;
         }
-        let most_common_levels = find_most_common_levels(&level_counts);
+        let most_common_level = find_most_common_levels(&level_counts);
+        let all_variants: Vec<u8> = level_counts.keys().map(|e| e.to_owned()).collect();
         for (level, file_sections) in level_counts {
-            if most_common_levels.contains(&level) {
-                continue;
+            if let Some(most_common_level) = most_common_level {
+                if level == most_common_level {
+                    continue;
+                }
             }
             for file_section in file_sections {
                 issues.push(Issue::InconsistentHeadingLevel {
@@ -39,9 +42,10 @@ pub(crate) fn scan(base: &Tikibase) -> Vec<Issue> {
                         start: file_section.start,
                         end: file_section.end(),
                     },
-                    common_variants: most_common_levels.clone(),
+                    common_variant: most_common_level.clone(),
                     this_variant: level as u8,
                     section_title: file_section.title.into(),
+                    all_variants: all_variants.clone(),
                 })
             }
         }
@@ -76,16 +80,16 @@ impl Default for FileSection<'_> {
 }
 
 /// provides the most common key
-fn find_most_common_levels(level_counts: &AHashMap<u8, Vec<FileSection>>) -> Vec<u8> {
-    let mut result = vec![];
+fn find_most_common_levels(level_counts: &AHashMap<u8, Vec<FileSection>>) -> Option<u8> {
+    let mut result = None;
     let mut max = 0;
     for (name, elements) in level_counts {
         let count = elements.len();
         if count > max {
-            result = vec![name.to_owned()];
+            result = Some(name.to_owned());
             max = count;
         } else if count == max {
-            result = vec![];
+            result = None;
         }
     }
     result
@@ -127,9 +131,10 @@ mod tests {
                 start: 6,
                 end: 13,
             },
-            common_variants: vec![3],
+            common_variant: Some(3),
             this_variant: 5u8,
             section_title: "section".into(),
+            all_variants: vec![3, 5],
         }];
         pretty::assert_eq!(have, want);
     }
@@ -159,9 +164,10 @@ mod tests {
                     start: 4,
                     end: 11,
                 },
-                common_variants: vec![],
+                common_variant: None,
                 this_variant: 3u8,
                 section_title: "section".into(),
+                all_variants: vec![3, 5],
             },
             Issue::InconsistentHeadingLevel {
                 location: Location {
@@ -170,9 +176,10 @@ mod tests {
                     start: 6,
                     end: 13,
                 },
-                common_variants: vec![],
+                common_variant: None,
                 this_variant: 5u8,
                 section_title: "section".into(),
+                all_variants: vec![3, 5],
             },
         ];
         pretty::assert_eq!(have, want);
@@ -233,7 +240,7 @@ mod tests {
                 ..FileSection::default()
             });
             let have = find_most_common_levels(&give);
-            let want = vec![3];
+            let want = Some(3);
             assert_eq!(have, want);
         }
 
@@ -249,7 +256,7 @@ mod tests {
                 ..FileSection::default()
             });
             let have = find_most_common_levels(&give);
-            let want: Vec<u8> = vec![];
+            let want = None;
             assert_eq!(have, want);
         }
     }

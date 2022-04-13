@@ -17,9 +17,10 @@ pub fn fix(issue: Issue, base: &mut Tikibase, config: &Config) -> Result {
         }
         Issue::InconsistentHeadingLevel {
             location,
-            common_variants,
+            common_variant: common_variants,
             this_variant,
             section_title,
+            all_variants,
         } => inconsistent_levels::normalize_outliers(base),
         Issue::MissingLinks { location, links } => {
             missing_links::add_occurrences(base, location, links, config)

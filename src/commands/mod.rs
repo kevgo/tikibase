@@ -76,10 +76,12 @@ pub enum Issue {
         location: Location,
         /// human-readable section title
         section_title: String,
-        /// the most commonly observed level
-        common_variants: Vec<u8>,
+        /// the most commonly observed level (if one exists)
+        common_variant: Option<u8>,
         /// the level used here
         this_variant: u8,
+        /// all observed variants
+        all_variants: Vec<u8>,
     },
     InvalidConfigurationFile {
         location: Location,
