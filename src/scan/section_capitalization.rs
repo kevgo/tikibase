@@ -60,7 +60,6 @@ pub(crate) fn scan(base: &Tikibase) -> Vec<Issue> {
 }
 
 #[derive(Eq, Hash, Ord, PartialEq, PartialOrd)]
-// TODO: replace most fields with a reference to Section
 pub struct FileSection<'a> {
     pub file: &'a Path,
     pub title: &'a str,
@@ -124,7 +123,6 @@ mod tests {
         #[test]
         fn outlier_capitalization() {
             let dir = test::tmp_dir();
-            // TODO: change test::create_file to take the content last, then inline the contentX variables
             let content1 = indoc! {"
             # One
 
@@ -163,7 +161,6 @@ mod tests {
         #[test]
         fn mixed_capitalization_same_counts() {
             let dir = test::tmp_dir();
-            // TODO: change test::create_file to take the content last, then inline the contentX variables
             let content1 = indoc! {"
             # One
 
