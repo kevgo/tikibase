@@ -6,6 +6,7 @@ use heck::ToKebabCase;
 pub struct Section {
     /// the line number at which this section starts, 0-based
     pub line_number: u32,
+
     /// complete textual content of this section's title line, e.g. "# Title"
     pub title_line: Line,
 
