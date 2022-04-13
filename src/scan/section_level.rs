@@ -73,8 +73,7 @@ impl Default for FileSection<'_> {
     }
 }
 
-/// Provides the key with the most elements, if one can be determined.
-/// Returns None if there are multiple
+/// provides the most common key
 fn find_most_common_levels(level_counts: &AHashMap<u8, Vec<FileSection>>) -> Vec<u8> {
     let mut result = vec![];
     let mut max = 0;
@@ -84,10 +83,9 @@ fn find_most_common_levels(level_counts: &AHashMap<u8, Vec<FileSection>>) -> Vec
             result = vec![name.to_owned()];
             max = count;
         } else if count == max {
-            result.push(name.to_owned());
+            result = vec![];
         }
     }
-    result.sort();
     result
 }
 
@@ -246,7 +244,7 @@ mod tests {
                 ..FileSection::default()
             });
             let have = find_most_common_levels(&give);
-            let want = vec![3, 5];
+            let want: Vec<u8> = vec![];
             assert_eq!(have, want);
         }
     }
