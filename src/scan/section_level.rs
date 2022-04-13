@@ -27,7 +27,7 @@ pub(crate) fn scan(base: &Tikibase) -> Vec<Issue> {
             // one type of level --> section is consistently formatted everywhere
             continue;
         }
-        let most_common_level = find_most_common_levels(&level_counts);
+        let most_common_level = find_common_level(&level_counts);
         let mut all_variants: Vec<u8> = level_counts.keys().map(ToOwned::to_owned).collect();
         all_variants.sort_unstable();
         for (level, file_sections) in level_counts {
@@ -82,7 +82,7 @@ impl Default for FileSection<'_> {
 }
 
 /// provides the most common key
-fn find_most_common_levels(level_counts: &AHashMap<u8, Vec<FileSection>>) -> Option<u8> {
+fn find_common_level(level_counts: &AHashMap<u8, Vec<FileSection>>) -> Option<u8> {
     let mut result = None;
     let mut max = 0;
     for (name, elements) in level_counts {
@@ -227,7 +227,7 @@ mod tests {
     }
 
     mod find_most_common_level {
-        use super::super::{find_most_common_levels, FileSection};
+        use super::super::{find_common_level, FileSection};
         use ahash::AHashMap;
 
         #[test]
@@ -245,7 +245,7 @@ mod tests {
                 title: "5A",
                 ..FileSection::default()
             });
-            let have = find_most_common_levels(&give);
+            let have = find_common_level(&give);
             let want = Some(3);
             assert_eq!(have, want);
         }
@@ -261,7 +261,7 @@ mod tests {
                 title: "5A",
                 ..FileSection::default()
             });
-            let have = find_most_common_levels(&give);
+            let have = find_common_level(&give);
             let want = None;
             assert_eq!(have, want);
         }
