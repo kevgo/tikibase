@@ -112,7 +112,6 @@ fn normalize(section_title: &str) -> String {
 
 #[cfg(test)]
 mod tests {
-    use super::FileSection;
     use crate::{test, Config, Tikibase};
     use indoc::indoc;
 
@@ -150,7 +149,7 @@ mod tests {
                     file: PathBuf::from("2.md"),
                     line: 2,
                     start: 4,
-                    end: 7,
+                    end: 9,
                 },
                 all_variants: vec!["Alpha".into(), "alpha".into()],
                 this_variant: "Alpha".into(),
@@ -184,7 +183,7 @@ mod tests {
                         file: PathBuf::from("1.md"),
                         line: 2,
                         start: 4,
-                        end: 7,
+                        end: 9,
                     },
                     all_variants: vec!["Alpha".into(), "alpha".into()],
                     this_variant: "alpha".into(),
@@ -196,7 +195,7 @@ mod tests {
                         file: PathBuf::from("2.md"),
                         line: 2,
                         start: 4,
-                        end: 7,
+                        end: 9,
                     },
                     all_variants: vec!["Alpha".into(), "alpha".into()],
                     this_variant: "Alpha".into(),
@@ -266,26 +265,5 @@ mod tests {
         let have = super::scan(&base);
         let want = vec![];
         pretty::assert_eq!(have, want);
-    }
-
-    #[test]
-    fn variants_count() {
-        let give: Vec<FileSection> = vec![
-            FileSection {
-                title: "One",
-                ..FileSection::default()
-            },
-            FileSection {
-                title: "One",
-                ..FileSection::default()
-            },
-            FileSection {
-                title: "one",
-                ..FileSection::default()
-            },
-        ];
-        let have = super::variants_count(&give);
-        let want = 2;
-        assert_eq!(have, want);
     }
 }
