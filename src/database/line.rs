@@ -43,10 +43,6 @@ impl Line {
         Ok(())
     }
 
-    pub fn from<S: Into<String>>(text: S) -> Line {
-        Line { text: text.into() }
-    }
-
     /// indicates whether this line is the beginning or end of a code block
     pub fn is_code_block_boundary(&self) -> bool {
         self.text.starts_with("```")
@@ -94,6 +90,12 @@ impl Line {
             });
         }
         result
+    }
+}
+
+impl<IS: Into<String>> From<IS> for Line {
+    fn from(text: IS) -> Self {
+        Line { text: text.into() }
     }
 }
 
