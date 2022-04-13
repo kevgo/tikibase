@@ -159,8 +159,7 @@ impl Message {
                         fixable: true,
                     }
                 } else {
-                    let strings: Vec<String> = common_variants.into_iter().map(|e| e.to_string()).collect();
-                    let variants = strings.join(", ");
+                    let variants = common_variants.into_iter().map(|e| e.to_string()).collect::<Vec<String>>().join(", ");
                     Message {
                         text: format!("inconsistent section levels ({})", variants),
                         file: location.file,

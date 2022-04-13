@@ -39,7 +39,7 @@ pub(crate) fn scan(base: &Tikibase) -> Vec<Issue> {
                         start: file_section.start,
                         end: file_section.end(),
                     },
-                    common_variants: most_common_levels,
+                    common_variants: most_common_levels.clone(),
                     this_variant: level as u8,
                 })
             }
@@ -126,7 +126,7 @@ mod tests {
                 start: 6,
                 end: 13,
             },
-            common_variants: 3u8,
+            common_variants: vec![3],
             this_variant: 5u8,
         }];
         pretty::assert_eq!(have, want);
@@ -157,7 +157,7 @@ mod tests {
                     start: 3,
                     end: 10,
                 },
-                common_variants: 5u8,
+                common_variants: vec![5],
                 this_variant: 3u8,
             },
             Issue::InconsistentHeadingLevel {
@@ -167,7 +167,7 @@ mod tests {
                     start: 6,
                     end: 13,
                 },
-                common_variants: 3u8,
+                common_variants: vec![3],
                 this_variant: 5u8,
             },
         ];
