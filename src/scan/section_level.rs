@@ -44,7 +44,7 @@ pub(crate) fn scan(base: &Tikibase) -> Vec<Issue> {
                         start: file_section.start,
                         end: file_section.end(),
                     },
-                    common_variant: most_common_level.clone(),
+                    common_variant: most_common_level,
                     this_variant: level as u8,
                     section_title: file_section.title.into(),
                     all_variants: all_variants.clone(),
