@@ -202,7 +202,7 @@ impl Document {
     pub fn section_titles(&self) -> Vec<&str> {
         self.content_sections
             .iter()
-            .map(|section| section.human_title())
+            .map(Section::human_title)
             .collect()
     }
 

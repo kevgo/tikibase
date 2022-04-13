@@ -63,7 +63,7 @@ impl Section {
         let title: String = title.into();
         let mut chars = title.char_indices();
         let mut level = 0;
-        while let Some((i, c)) = chars.next() {
+        for (i, c) in chars.by_ref() {
             if c != '#' {
                 level = i;
                 break;
@@ -73,7 +73,7 @@ impl Section {
             level = title.len();
         }
         let mut start = level;
-        while let Some((i, c)) = chars.next() {
+        for (i, c) in chars {
             if c != ' ' {
                 start = i;
                 break;
