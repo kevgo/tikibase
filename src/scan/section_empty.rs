@@ -16,7 +16,7 @@ pub(crate) fn scan(base: &Tikibase) -> Vec<Issue> {
                         start: 0,
                         end: section.title_line.text.len() as u32,
                     },
-                    title: section.title().text.into(),
+                    title: section.human_title().into(),
                 });
             }
         }

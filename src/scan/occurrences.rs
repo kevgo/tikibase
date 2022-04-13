@@ -26,13 +26,12 @@ pub(crate) fn scan(
         if missing_outgoing.is_empty() {
             // no missing links --> done with this document
             if let Some(old_occurrences_section) = doc.old_occurrences_section.as_ref() {
-                let occurrences_title = old_occurrences_section.title();
                 issues.push(Issue::ObsoleteOccurrencesSection {
                     location: Location {
                         file: doc.path.clone(),
                         line: old_occurrences_section.line_number,
-                        start: occurrences_title.start,
-                        end: occurrences_title.end(),
+                        start: old_occurrences_section.title_text_start as u32,
+                        end: old_occurrences_section.title_text_end(),
                     },
                 });
             }
