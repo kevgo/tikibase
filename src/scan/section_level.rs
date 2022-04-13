@@ -28,8 +28,8 @@ pub(crate) fn scan(base: &Tikibase) -> Vec<Issue> {
             continue;
         }
         let most_common_level = find_most_common_levels(&level_counts);
-        let mut all_variants: Vec<u8> = level_counts.keys().map(|e| e.to_owned()).collect();
-        all_variants.sort();
+        let mut all_variants: Vec<u8> = level_counts.keys().map(ToOwned::to_owned).collect();
+        all_variants.sort_unstable();
         for (level, file_sections) in level_counts {
             if let Some(most_common_level) = most_common_level {
                 if level == most_common_level {
@@ -48,7 +48,7 @@ pub(crate) fn scan(base: &Tikibase) -> Vec<Issue> {
                     this_variant: level as u8,
                     section_title: file_section.title.into(),
                     all_variants: all_variants.clone(),
-                })
+                });
             }
         }
     }
