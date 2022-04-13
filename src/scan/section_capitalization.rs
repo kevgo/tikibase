@@ -16,6 +16,7 @@ pub(crate) fn scan(base: &Tikibase) -> Vec<Issue> {
                 .push(FileSection {
                     title: section_title,
                     file: &doc.path,
+                    level: section.level,
                     line: section.line_number,
                     start: section.title_text_start as u32,
                 });
@@ -48,6 +49,7 @@ pub(crate) fn scan(base: &Tikibase) -> Vec<Issue> {
                     all_variants: all_variants,
                     this_variant: variant.into(),
                     common_variant: common_variant,
+                    section_level: file_section.level,
                 });
             }
         }
@@ -56,9 +58,11 @@ pub(crate) fn scan(base: &Tikibase) -> Vec<Issue> {
 }
 
 #[derive(Eq, Hash, Ord, PartialEq, PartialOrd)]
+// TODO: replace most fields with a reference to Section
 pub struct FileSection<'a> {
     pub file: &'a Path,
     pub title: &'a str,
+    pub level: u8,
     pub line: u32,
     pub start: u32,
 }
@@ -76,6 +80,7 @@ impl Default for FileSection<'_> {
             title: "",
             line: 0,
             start: 0,
+            level: 1,
         }
     }
 }

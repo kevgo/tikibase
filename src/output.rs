@@ -50,6 +50,21 @@ impl Message {
                 end: Some(location.end),
                 fixable: false,
             },
+            Fix::NormalizedSectionCapitalization {
+                location,
+                old_capitalization,
+                new_capitalization,
+            } => Message {
+                text: format!(
+                    "normalized section title capitalization from \"{}\" to \"{}\"",
+                    old_capitalization, new_capitalization
+                ),
+                file: location.file,
+                line: Some(location.line),
+                start: Some(location.start),
+                end: Some(location.end),
+                fixable: false,
+            },
             Fix::NormalizedSectionLevel {
                 location,
                 section_title,
