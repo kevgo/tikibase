@@ -24,7 +24,7 @@ pub(crate) fn scan(base: &Tikibase) -> Vec<Issue> {
     let mut issues = vec![];
     for (_, level_counts) in level_variants.drain() {
         if level_counts.len() < 2 {
-            // one type of level --> section is okay
+            // one type of level --> section is consistently formatted everywhere
             continue;
         }
         let most_common_level = find_most_common_levels(&level_counts);
