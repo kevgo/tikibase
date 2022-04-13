@@ -1,3 +1,4 @@
+use super::inconsistent_levels::title_at_level;
 use super::Fix::NormalizedSectionCapitalization;
 use crate::database::Tikibase;
 use crate::fix::Result::Fixed;
@@ -20,30 +21,4 @@ pub fn normalize_capitalization(
         old_capitalization,
         new_capitalization,
     })
-}
-
-fn title_at_level(title: &str, level: usize) -> String {
-    format!("{} {}", "#".repeat(level), title)
-}
-
-#[cfg(test)]
-mod tests {
-
-    mod title_at_level {
-        use super::super::title_at_level;
-
-        #[test]
-        fn one() {
-            let have = title_at_level("title", 1);
-            let want = "# title".to_string();
-            assert_eq!(have, want);
-        }
-
-        #[test]
-        fn six() {
-            let have = title_at_level("title", 6);
-            let want = "###### title".to_string();
-            assert_eq!(have, want);
-        }
-    }
 }
