@@ -31,8 +31,8 @@ pub(crate) fn scan(base: &Tikibase) -> Vec<Issue> {
         let mut all_variants: Vec<u8> = level_counts.keys().map(ToOwned::to_owned).collect();
         all_variants.sort_unstable();
         for (level, file_sections) in level_counts {
-            if let Some(most_common_level) = common_level {
-                if level == most_common_level {
+            if let Some(common_level) = common_level {
+                if level == common_level {
                     continue;
                 }
             }
