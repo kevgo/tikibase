@@ -24,7 +24,7 @@ pub(crate) fn scan(base: &Tikibase) -> LinksResult {
         if references.is_empty() {
             result.issues.push(Issue::DocumentWithoutLinks {
                 location: Location {
-                    file: doc.path.clone(),
+                    file: doc.relative_path.clone(),
                     line: 0,
                     start: 0,
                     end: 0,
@@ -43,7 +43,7 @@ pub(crate) fn scan(base: &Tikibase) -> LinksResult {
                     if target.is_empty() {
                         result.issues.push(Issue::LinkWithoutTarget {
                             location: Location {
-                                file: doc.path.clone(),
+                                file: doc.relative_path.clone(),
                                 line,
                                 start,
                                 end,
@@ -59,10 +59,10 @@ pub(crate) fn scan(base: &Tikibase) -> LinksResult {
                         Some((base, anchor)) => (base.to_string(), anchor.to_string()),
                         None => (target.clone(), "".to_string()),
                     };
-                    if target_file == doc.path.to_string_lossy() {
+                    if target_file == doc.relative_path.to_string_lossy() {
                         result.issues.push(Issue::LinkToSameDocument {
                             location: Location {
-                                file: doc.path.clone(),
+                                file: doc.relative_path.clone(),
                                 line,
                                 start,
                                 end,
@@ -71,13 +71,14 @@ pub(crate) fn scan(base: &Tikibase) -> LinksResult {
                         continue;
                     }
                     if let Some(anchor_without_prefix) = target.strip_prefix('#') {
-                        let full_target = format!("{}{}", doc.path.to_string_lossy(), target);
+                        let full_target =
+                            format!("{}{}", doc.relative_path.to_string_lossy(), target);
                         if !strings_contain(&existing_targets, &full_target) {
                             result
                                 .issues
                                 .push(Issue::LinkToNonExistingAnchorInCurrentDocument {
                                     location: Location {
-                                        file: doc.path.clone(),
+                                        file: doc.relative_path.clone(),
                                         line,
                                         start,
                                         end,
@@ -94,7 +95,7 @@ pub(crate) fn scan(base: &Tikibase) -> LinksResult {
                                     result.issues.push(
                                         Issue::LinkToNonExistingAnchorInExistingDocument {
                                             location: Location {
-                                                file: doc.path.clone(),
+                                                file: doc.relative_path.clone(),
                                                 line,
                                                 start,
                                                 end,
@@ -106,7 +107,7 @@ pub(crate) fn scan(base: &Tikibase) -> LinksResult {
                                 } else {
                                     result.issues.push(Issue::LinkToNonExistingFile {
                                         location: Location {
-                                            file: doc.path.clone(),
+                                            file: doc.relative_path.clone(),
                                             line,
                                             start,
                                             end,
@@ -118,10 +119,10 @@ pub(crate) fn scan(base: &Tikibase) -> LinksResult {
                             }
                             result
                                 .incoming_doc_links
-                                .add(&target_file, doc.path.clone());
+                                .add(&target_file, doc.relative_path.clone());
                             result
                                 .outgoing_doc_links
-                                .add(doc.path.clone(), &target_file);
+                                .add(doc.relative_path.clone(), &target_file);
                         }
                         FileType::Resource => {
                             result.outgoing_resource_links.push(target_file);
@@ -141,7 +142,7 @@ pub(crate) fn scan(base: &Tikibase) -> LinksResult {
                     if !base.has_resource(&src) {
                         result.issues.push(Issue::BrokenImage {
                             location: Location {
-                                file: doc.path.clone(),
+                                file: doc.relative_path.clone(),
                                 line,
                                 start,
                                 end,

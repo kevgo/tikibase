@@ -22,7 +22,7 @@ pub(crate) fn scan(base: &Tikibase) -> Vec<Issue> {
                 for (line, start, end) in lines {
                     issues.push(Issue::DuplicateSection {
                         location: Location {
-                            file: doc.path.clone(),
+                            file: doc.relative_path.clone(),
                             line,
                             start,
                             end,
