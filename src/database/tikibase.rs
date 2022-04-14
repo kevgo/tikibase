@@ -150,9 +150,9 @@ impl From<&Path> for FileType {
 }
 
 /// case-insensitive comparison of file extensions
-fn has_extension(path: &str, extension: &str) -> bool {
-    let ext = path.rsplit('.').next().unwrap();
-    ext.eq_ignore_ascii_case(extension)
+fn has_extension(path: &str, given_ext: &str) -> bool {
+    let path_ext = path.rsplit('.').next().unwrap();
+    path_ext.eq_ignore_ascii_case(given_ext)
 }
 
 #[cfg(test)]
