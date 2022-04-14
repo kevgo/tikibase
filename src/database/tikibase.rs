@@ -151,10 +151,8 @@ impl From<&Path> for FileType {
 
 /// case-insensitive comparison of file extensions
 fn has_extension(path: &str, extension: &str) -> bool {
-    path.rsplit('.')
-        .next()
-        .map(|ext| ext.eq_ignore_ascii_case(extension))
-        == Some(true)
+    let ext = path.rsplit('.').next().unwrap();
+    ext.eq_ignore_ascii_case(extension)
 }
 
 #[cfg(test)]
@@ -223,6 +221,20 @@ mod tests {
             let dir = test::tmp_dir();
             let mut base = Tikibase::load(dir, &Config::default()).unwrap();
             assert!(base.get_doc_mut("zonk.md").is_none());
+        }
+    }
+
+    #[test]
+    fn has_extension() {
+        let tests = vec![
+            (("foo.md", "md"), true),
+            (("FOO.MD", "md"), true),
+            (("foo.md", "MD"), true),
+            (("foo.md", "png"), false),
+        ];
+        for (give, want) in tests {
+            let have = super::has_extension(give.0, give.1);
+            assert_eq!(have, want);
         }
     }
 
