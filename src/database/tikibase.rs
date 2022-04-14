@@ -149,6 +149,7 @@ impl From<&Path> for FileType {
     }
 }
 
+/// case-insensitive comparison of file extensions
 fn has_extension(path: &str, extension: &str) -> bool {
     path.rsplit('.')
         .next()
