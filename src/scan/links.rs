@@ -126,8 +126,7 @@ pub(crate) fn scan(base: &Tikibase) -> LinksResult {
                         FileType::Resource => {
                             result.outgoing_resource_links.push(target_file);
                         }
-                        FileType::Configuration => todo!(),
-                        FileType::Ignored => todo!(),
+                        FileType::Configuration | FileType::Ignored => {}
                     }
                 }
                 Reference::Image {

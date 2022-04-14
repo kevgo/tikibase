@@ -93,8 +93,7 @@ impl Tikibase {
                 FileType::Resource => resources.push(Resource {
                     path: rel_path.into(),
                 }),
-                FileType::Configuration => continue,
-                FileType::Ignored => continue,
+                FileType::Configuration | FileType::Ignored => continue,
             }
         }
         if errors.is_empty() {
@@ -109,6 +108,7 @@ impl Tikibase {
     }
 }
 
+#[derive(Debug, PartialEq)]
 pub enum FileType {
     /// Markdown document
     Document,
@@ -135,7 +135,7 @@ impl From<&str> for FileType {
         if path.starts_with('.') {
             return FileType::Ignored;
         }
-        if path.ends_with(".md") {
+        if has_extension(path, "md") {
             return FileType::Document;
         }
         FileType::Resource
@@ -146,6 +146,13 @@ impl From<&Path> for FileType {
     fn from(path: &Path) -> FileType {
         FileType::from(path.file_name().unwrap().to_string_lossy().as_ref())
     }
+}
+
+fn has_extension(path: &str, extension: &str) -> bool {
+    path.rsplit('.')
+        .next()
+        .map(|ext| ext.eq_ignore_ascii_case(extension))
+        == Some(true)
 }
 
 #[cfg(test)]
@@ -171,6 +178,10 @@ mod tests {
             ("foo.pdf", FileType::Resource),
             (".testconfig.json", FileType::Ignored),
         ];
+        for (give, want) in tests {
+            let have = FileType::from(give);
+            assert_eq!(have, want);
+        }
     }
 
     mod get_doc {
