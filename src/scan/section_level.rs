@@ -17,7 +17,7 @@ pub(crate) fn scan(base: &Tikibase) -> Vec<Issue> {
                     file: &doc.path,
                     title: section.human_title(),
                     line: section.line_number,
-                    start: section.title_text_start as u32,
+                    end: section.title_text_end(),
                 });
         }
     }
@@ -41,8 +41,8 @@ pub(crate) fn scan(base: &Tikibase) -> Vec<Issue> {
                     location: Location {
                         file: file_section.file.into(),
                         line: file_section.line,
-                        start: file_section.start,
-                        end: file_section.end(),
+                        start: 0,
+                        end: file_section.end,
                     },
                     common_level,
                     this_level: level as u8,
@@ -61,13 +61,7 @@ pub struct FileSection<'a> {
     pub file: &'a Path,
     pub title: &'a str,
     pub line: u32,
-    pub start: u32,
-}
-
-impl FileSection<'_> {
-    pub fn end(&self) -> u32 {
-        self.start + self.title.len() as u32
-    }
+    pub end: u32,
 }
 
 impl Default for FileSection<'_> {
@@ -76,7 +70,7 @@ impl Default for FileSection<'_> {
             file: Path::new(""),
             title: "",
             line: 0,
-            start: 0,
+            end: 0,
         }
     }
 }
@@ -135,7 +129,7 @@ mod tests {
                 location: Location {
                     file: PathBuf::from("2.md"),
                     line: 2,
-                    start: 6,
+                    start: 0,
                     end: 13,
                 },
                 common_level: Some(3),
@@ -168,7 +162,7 @@ mod tests {
                     location: Location {
                         file: PathBuf::from("1.md"),
                         line: 2,
-                        start: 4,
+                        start: 0,
                         end: 11,
                     },
                     common_level: None,
@@ -180,7 +174,7 @@ mod tests {
                     location: Location {
                         file: PathBuf::from("2.md"),
                         line: 2,
-                        start: 6,
+                        start: 0,
                         end: 13,
                     },
                     common_level: None,
@@ -211,20 +205,6 @@ mod tests {
             let have = super::super::scan(&base);
             let want = vec![];
             pretty::assert_eq!(have, want);
-        }
-    }
-
-    mod file_section {
-        use super::super::FileSection;
-
-        #[test]
-        fn end() {
-            let file_section = FileSection {
-                title: "test section",
-                start: 4,
-                ..FileSection::default()
-            };
-            assert_eq!(file_section.end(), 16);
         }
     }
 
