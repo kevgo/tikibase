@@ -108,6 +108,7 @@ impl Tikibase {
     }
 }
 
+/// types of files that Tikibase is aware of
 #[derive(Debug, PartialEq)]
 pub enum FileType {
     /// Markdown document
