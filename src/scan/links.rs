@@ -89,7 +89,7 @@ pub(crate) fn scan(base: &Tikibase) -> LinksResult {
                             continue;
                         }
                     }
-                    if is_md_document(&target_file) {
+                    if document_type(&target_file) {
                         if !strings_contain(&existing_targets, &target) {
                             if strings_contain(&existing_targets, &target_file) {
                                 result.issues.push(
@@ -153,12 +153,6 @@ pub(crate) fn scan(base: &Tikibase) -> LinksResult {
     result
 }
 
-/// indicates whether the given filename is for a resource or a Markdown document
-fn is_md_document(filename: &str) -> bool {
-    let dest_path = PathBuf::from(&filename);
-    dest_path.extension() == Some(OsStr::new("md"))
-}
-
 /// indicates whether the given Vec<String> contains the given &str
 ///
 // NOTE: cannot use "contains" because https://github.com/rust-lang/rust/issues/42671
@@ -168,13 +162,13 @@ fn strings_contain(targets: &[String], target: &str) -> bool {
 
 #[cfg(test)]
 mod tests {
-    use super::is_md_document;
+    use super::document_type;
 
     #[test]
     fn markdown() {
-        assert!(is_md_document("foo.md"));
-        assert!(!is_md_document("foo.pdf"));
-        assert!(!is_md_document("foo.png"));
+        assert!(document_type("foo.md"));
+        assert!(!document_type("foo.pdf"));
+        assert!(!document_type("foo.png"));
     }
 
     mod scan {

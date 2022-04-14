@@ -80,23 +80,21 @@ impl Tikibase {
             if entry.path() == dir {
                 continue;
             }
-            let filename = entry.file_name().to_string_lossy();
-            if filename.starts_with('.') || filename == "tikibase.json" {
-                continue;
-            }
             let path = entry.path();
-            let filepath = path.strip_prefix(&dir).unwrap();
-            match FileType::from_ext(path.extension()) {
+            let rel_path = path.strip_prefix(&dir).unwrap();
+            match FileType::from(path) {
                 FileType::Document => {
                     let file = File::open(&path).unwrap();
-                    match Document::from_reader(BufReader::new(file), filepath) {
+                    match Document::from_reader(BufReader::new(file), rel_path) {
                         Ok(doc) => docs.push(doc),
                         Err(err) => errors.push(err),
                     }
                 }
                 FileType::Resource => resources.push(Resource {
-                    path: filepath.into(),
+                    path: rel_path.into(),
                 }),
+                FileType::Configuration => continue,
+                FileType::Ignored => continue,
             }
         }
         if errors.is_empty() {
@@ -112,13 +110,25 @@ impl Tikibase {
 }
 
 enum FileType {
+    /// Markdown document
     Document,
+    /// linkable resource
     Resource,
+    /// Tikibase configuration file
+    Configuration,
+    /// ignored file
+    Ignored,
 }
 
-impl FileType {
-    fn from_ext(ext: Option<&std::ffi::OsStr>) -> FileType {
-        match ext {
+impl From<&Path> for FileType {
+    fn from(path: &Path) -> FileType {
+        if path.file_name().unwrap() == "tikibase.json" {
+            return FileType::Configuration;
+        }
+        if path.starts_with(".") {
+            return FileType::Ignored;
+        }
+        match path.extension() {
             None => FileType::Resource,
             Some(ext) => match ext.to_str() {
                 Some("md") => FileType::Document,
@@ -140,6 +150,15 @@ mod tests {
         let base = Tikibase::load(dir, &Config::default()).unwrap();
         assert_eq!(base.docs.len(), 0);
         assert_eq!(base.resources.len(), 0);
+    }
+
+    #[test]
+    fn file_type() {
+        let tests = vec![
+            ("foo.md", FileType::Document),
+            ("sub/foo.md", FileType::Document),
+            ("foo.png", FileType::Resource),
+        ];
     }
 
     mod get_doc {
