@@ -1,6 +1,4 @@
-use std::ffi::OsStr;
-use std::path::PathBuf;
-
+use crate::database::FileType;
 use crate::database::{DocLinks, Reference, Tikibase};
 use crate::{Issue, Location};
 
@@ -89,40 +87,46 @@ pub(crate) fn scan(base: &Tikibase) -> LinksResult {
                             continue;
                         }
                     }
-                    if is_md_document(&target_file) {
-                        if !strings_contain(&existing_targets, &target) {
-                            if strings_contain(&existing_targets, &target_file) {
-                                result.issues.push(
-                                    Issue::LinkToNonExistingAnchorInExistingDocument {
+                    match FileType::from(&target_file) {
+                        FileType::Document => {
+                            if !strings_contain(&existing_targets, &target) {
+                                if strings_contain(&existing_targets, &target_file) {
+                                    result.issues.push(
+                                        Issue::LinkToNonExistingAnchorInExistingDocument {
+                                            location: Location {
+                                                file: doc.path.clone(),
+                                                line,
+                                                start,
+                                                end,
+                                            },
+                                            target_file: target_file.clone(),
+                                            anchor: target_anchor,
+                                        },
+                                    );
+                                } else {
+                                    result.issues.push(Issue::LinkToNonExistingFile {
                                         location: Location {
                                             file: doc.path.clone(),
                                             line,
                                             start,
                                             end,
                                         },
-                                        target_file: target_file.clone(),
-                                        anchor: target_anchor,
-                                    },
-                                );
-                            } else {
-                                result.issues.push(Issue::LinkToNonExistingFile {
-                                    location: Location {
-                                        file: doc.path.clone(),
-                                        line,
-                                        start,
-                                        end,
-                                    },
-                                    target,
-                                });
-                                continue;
+                                        target,
+                                    });
+                                    continue;
+                                }
                             }
+                            result
+                                .incoming_doc_links
+                                .add(&target_file, doc.path.clone());
+                            result
+                                .outgoing_doc_links
+                                .add(doc.path.clone(), &target_file);
                         }
-                        result
-                            .incoming_doc_links
-                            .add(&target_file, doc.path.clone());
-                        result.outgoing_doc_links.add(doc.path.clone(), target_file);
-                    } else {
-                        result.outgoing_resource_links.push(target_file);
+                        FileType::Resource => {
+                            result.outgoing_resource_links.push(target_file);
+                        }
+                        FileType::Configuration | FileType::Ignored => {}
                     }
                 }
                 Reference::Image {
@@ -153,12 +157,6 @@ pub(crate) fn scan(base: &Tikibase) -> LinksResult {
     result
 }
 
-/// indicates whether the given filename is for a resource or a Markdown document
-fn is_md_document(filename: &str) -> bool {
-    let dest_path = PathBuf::from(&filename);
-    dest_path.extension() == Some(OsStr::new("md"))
-}
-
 /// indicates whether the given Vec<String> contains the given &str
 ///
 // NOTE: cannot use "contains" because https://github.com/rust-lang/rust/issues/42671
@@ -168,14 +166,6 @@ fn strings_contain(targets: &[String], target: &str) -> bool {
 
 #[cfg(test)]
 mod tests {
-    use super::is_md_document;
-
-    #[test]
-    fn markdown() {
-        assert!(is_md_document("foo.md"));
-        assert!(!is_md_document("foo.pdf"));
-        assert!(!is_md_document("foo.png"));
-    }
 
     mod scan {
         use super::super::scan;

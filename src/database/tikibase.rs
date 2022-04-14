@@ -80,23 +80,20 @@ impl Tikibase {
             if entry.path() == dir {
                 continue;
             }
-            let filename = entry.file_name().to_string_lossy();
-            if filename.starts_with('.') || filename == "tikibase.json" {
-                continue;
-            }
             let path = entry.path();
-            let filepath = path.strip_prefix(&dir).unwrap();
-            match FileType::from_ext(path.extension()) {
+            let rel_path = path.strip_prefix(&dir).unwrap();
+            match FileType::from(path) {
                 FileType::Document => {
                     let file = File::open(&path).unwrap();
-                    match Document::from_reader(BufReader::new(file), filepath) {
+                    match Document::from_reader(BufReader::new(file), rel_path) {
                         Ok(doc) => docs.push(doc),
                         Err(err) => errors.push(err),
                     }
                 }
                 FileType::Resource => resources.push(Resource {
-                    path: filepath.into(),
+                    path: rel_path.into(),
                 }),
+                FileType::Configuration | FileType::Ignored => continue,
             }
         }
         if errors.is_empty() {
@@ -111,21 +108,51 @@ impl Tikibase {
     }
 }
 
-enum FileType {
+/// types of files that Tikibase is aware of
+#[derive(Debug, PartialEq)]
+pub enum FileType {
+    /// Markdown document
     Document,
+    /// linkable resource
     Resource,
+    /// Tikibase configuration file
+    Configuration,
+    /// ignored file
+    Ignored,
 }
 
-impl FileType {
-    fn from_ext(ext: Option<&std::ffi::OsStr>) -> FileType {
-        match ext {
-            None => FileType::Resource,
-            Some(ext) => match ext.to_str() {
-                Some("md") => FileType::Document,
-                _ => FileType::Resource,
-            },
-        }
+impl From<&String> for FileType {
+    fn from(path: &String) -> Self {
+        let p: &str = path.as_ref();
+        FileType::from(p)
     }
+}
+
+impl From<&str> for FileType {
+    fn from(path: &str) -> Self {
+        if path == "tikibase.json" {
+            return FileType::Configuration;
+        }
+        if path.starts_with('.') {
+            return FileType::Ignored;
+        }
+        if has_extension(path, "md") {
+            return FileType::Document;
+        }
+        FileType::Resource
+    }
+}
+
+impl From<&Path> for FileType {
+    fn from(path: &Path) -> FileType {
+        FileType::from(path.file_name().unwrap().to_string_lossy().as_ref())
+    }
+}
+
+/// case-insensitive comparison of file extensions
+fn has_extension(path: &str, given_ext: &str) -> bool {
+    let path_ext = path.rsplit('.').next().unwrap();
+    path_ext.eq_ignore_ascii_case(given_ext)
 }
 
 #[cfg(test)]
@@ -140,6 +167,21 @@ mod tests {
         let base = Tikibase::load(dir, &Config::default()).unwrap();
         assert_eq!(base.docs.len(), 0);
         assert_eq!(base.resources.len(), 0);
+    }
+
+    #[test]
+    fn file_type() {
+        let tests = vec![
+            ("foo.md", FileType::Document),
+            ("sub/foo.md", FileType::Document),
+            ("foo.png", FileType::Resource),
+            ("foo.pdf", FileType::Resource),
+            (".testconfig.json", FileType::Ignored),
+        ];
+        for (give, want) in tests {
+            let have = FileType::from(give);
+            assert_eq!(have, want);
+        }
     }
 
     mod get_doc {
@@ -179,6 +221,20 @@ mod tests {
             let dir = test::tmp_dir();
             let mut base = Tikibase::load(dir, &Config::default()).unwrap();
             assert!(base.get_doc_mut("zonk.md").is_none());
+        }
+    }
+
+    #[test]
+    fn has_extension() {
+        let tests = vec![
+            (("foo.md", "md"), true),
+            (("FOO.MD", "md"), true),
+            (("foo.md", "MD"), true),
+            (("foo.md", "png"), false),
+        ];
+        for (give, want) in tests {
+            let have = super::has_extension(give.0, give.1);
+            assert_eq!(have, want);
         }
     }
 
