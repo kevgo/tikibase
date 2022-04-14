@@ -14,7 +14,7 @@ pub(crate) fn scan(base: &Tikibase) -> Vec<Issue> {
                 .entry(section.level)
                 .or_insert_with(Vec::new)
                 .push(FileSection {
-                    file: &doc.path,
+                    file: &doc.relative_path,
                     title: section.human_title(),
                     line: section.line_number,
                     end: section.title_text_end(),

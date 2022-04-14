@@ -14,15 +14,17 @@ pub struct Tikibase {
 
 impl Tikibase {
     /// provides the document with the given relative filename
-    pub fn get_doc<P: AsRef<Path>>(&self, path: P) -> Option<&Document> {
-        let path = path.as_ref();
-        self.docs.iter().find(|doc| doc.path == path)
+    pub fn get_doc<P: AsRef<Path>>(&self, relative_path: P) -> Option<&Document> {
+        let relative_path = relative_path.as_ref();
+        self.docs
+            .iter()
+            .find(|doc| doc.relative_path == relative_path)
     }
 
     /// provides the document with the given relative filename as a mutable reference
     pub fn get_doc_mut<P: AsRef<Path>>(&mut self, path: P) -> Option<&mut Document> {
         let path = path.as_ref();
-        self.docs.iter_mut().find(|doc| doc.path == path)
+        self.docs.iter_mut().find(|doc| doc.relative_path == path)
     }
 
     /// indicates whether this Tikibase contains a resource with the given path
@@ -35,7 +37,7 @@ impl Tikibase {
     pub fn link_targets(&self) -> Vec<String> {
         let mut result: Vec<String> = Vec::new();
         for doc in &self.docs {
-            let filename = doc.path.to_string_lossy().to_string();
+            let filename = doc.relative_path.to_string_lossy().to_string();
             for section in doc.sections() {
                 result.push(format!("{}{}", &filename, section.anchor()));
             }

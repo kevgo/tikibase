@@ -11,7 +11,7 @@ pub(crate) fn scan(base: &Tikibase) -> Vec<Issue> {
             if !has_content {
                 issues.push(Issue::EmptySection {
                     location: Location {
-                        file: doc.path.clone(),
+                        file: doc.relative_path.clone(),
                         line: section.line_number,
                         start: 0,
                         end: section.title_line.text.len() as u32,

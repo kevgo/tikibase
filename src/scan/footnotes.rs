@@ -10,7 +10,7 @@ pub(crate) fn scan(base: &Tikibase) -> Vec<Issue> {
         for missing_reference in footnotes.missing_references() {
             result.push(Issue::MissingFootnote {
                 location: Location {
-                    file: doc.path.clone(),
+                    file: doc.relative_path.clone(),
                     line: missing_reference.line,
                     start: missing_reference.start,
                     end: missing_reference.end,
@@ -21,7 +21,7 @@ pub(crate) fn scan(base: &Tikibase) -> Vec<Issue> {
         for unused_definition in footnotes.unused_definitions() {
             result.push(Issue::UnusedFootnote {
                 location: Location {
-                    file: doc.path.clone(),
+                    file: doc.relative_path.clone(),
                     line: unused_definition.line,
                     start: unused_definition.start,
                     end: unused_definition.end,

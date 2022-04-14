@@ -16,7 +16,7 @@ pub(crate) fn scan(base: &Tikibase, config: &Config) -> Vec<Issue> {
             {
                 issues.push(Issue::UnknownSection {
                     location: Location {
-                        file: doc.path.clone(),
+                        file: doc.relative_path.clone(),
                         line: section.line_number,
                         start: section.title_text_start as u32,
                         end: section.title_text_end(),

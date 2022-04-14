@@ -12,11 +12,11 @@ pub(crate) fn scan(
     let mut issues = Vec::new();
     for doc in &base.docs {
         let mut missing_outgoing: Vec<PathBuf> = incoming_doc_links
-            .get(&doc.path)
+            .get(&doc.relative_path)
             .get_or_insert(&AHashSet::new())
             .difference(
                 outgoing_doc_links
-                    .get(&doc.path)
+                    .get(&doc.relative_path)
                     .get_or_insert(&AHashSet::new()),
             )
             .into_iter()
@@ -28,7 +28,7 @@ pub(crate) fn scan(
             if let Some(old_occurrences_section) = doc.old_occurrences_section.as_ref() {
                 issues.push(Issue::ObsoleteOccurrencesSection {
                     location: Location {
-                        file: doc.path.clone(),
+                        file: doc.relative_path.clone(),
                         line: old_occurrences_section.line_number,
                         start: old_occurrences_section.title_text_start as u32,
                         end: old_occurrences_section.title_text_end(),
@@ -42,7 +42,7 @@ pub(crate) fn scan(
         missing_outgoing.sort();
         issues.push(Issue::MissingLinks {
             location: Location {
-                file: doc.path.clone(),
+                file: doc.relative_path.clone(),
                 line: doc.lines_count(),
                 start: 0,
                 end: doc.last_line().text.len() as u32,
@@ -51,7 +51,7 @@ pub(crate) fn scan(
                 .into_iter()
                 .map(|path| base.get_doc(&path).unwrap())
                 .map(|doc| MissingLink {
-                    path: doc.path.clone(),
+                    path: doc.relative_path.clone(),
                     title: doc.human_title().into(),
                 })
                 .collect(),

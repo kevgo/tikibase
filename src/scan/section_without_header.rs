@@ -7,7 +7,7 @@ pub(crate) fn scan(base: &Tikibase) -> Vec<Issue> {
             if section.human_title().is_empty() {
                 issues.push(Issue::SectionWithoutHeader {
                     location: Location {
-                        file: doc.path.clone(),
+                        file: doc.relative_path.clone(),
                         line: section.line_number,
                         start: 0,
                         end: section.title_text_end(),

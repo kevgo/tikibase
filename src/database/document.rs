@@ -7,7 +7,7 @@ use std::path::{Path, PathBuf};
 #[derive(Debug, PartialEq)]
 pub struct Document {
     /// the path relative to the Tikibase root directory
-    pub path: PathBuf,
+    pub relative_path: PathBuf,
     pub title_section: Section,
     pub content_sections: Vec<Section>,
     /// The old "occurrences" section that was filtered out when loading the document.
@@ -16,11 +16,11 @@ pub struct Document {
 
 impl Document {
     /// provides a Document instance containing the given text
-    pub fn from_lines<T, P: Into<PathBuf>>(lines: T, path: P) -> Result<Document, Issue>
+    pub fn from_lines<T, P: Into<PathBuf>>(lines: T, relative_path: P) -> Result<Document, Issue>
     where
         T: Iterator<Item = String>,
     {
-        let path = path.into();
+        let relative_path = relative_path.into();
         let mut sections: Vec<Section> = Vec::new();
         let mut section_builder: Option<section::Builder> = None;
         let mut inside_fence = false;
@@ -48,7 +48,7 @@ impl Document {
                 None => {
                     return Err(Issue::NoTitleSection {
                         location: Location {
-                            file: path,
+                            file: relative_path,
                             line: line_number as u32,
                             start: 0,
                             end: line.len() as u32,
@@ -66,12 +66,16 @@ impl Document {
                     sections.push(section);
                 }
             }
-            None => return Err(Issue::EmptyDocument { path }),
+            None => {
+                return Err(Issue::EmptyDocument {
+                    path: relative_path,
+                })
+            }
         }
         if inside_fence {
             return Err(Issue::UnclosedFence {
                 location: Location {
-                    file: path,
+                    file: relative_path,
                     line: (fence_line as u32),
                     start: 0,
                     end: 0,
@@ -80,7 +84,7 @@ impl Document {
         }
         let mut sections = sections.into_iter();
         Ok(Document {
-            path,
+            relative_path,
             title_section: sections.next().unwrap(),
             content_sections: sections.collect(),
             old_occurrences_section,
@@ -103,13 +107,13 @@ impl Document {
                 continue;
             }
             if code_block_start.is_none() {
-                line.add_footnotes_to(&mut result, &self.path, i as u32)?;
+                line.add_footnotes_to(&mut result, &self.relative_path, i as u32)?;
             }
         }
         if let Some(code_block_start) = code_block_start {
             return Err(Issue::UnclosedFence {
                 location: Location {
-                    file: self.path.clone(),
+                    file: self.relative_path.clone(),
                     line: code_block_start.line,
                     start: 0,
                     end: code_block_start.len,
@@ -185,7 +189,7 @@ impl Document {
 
     /// persists the changes made to this document to disk
     pub fn save(&self, root: &Path) {
-        let mut file = fs::File::create(root.join(&self.path)).unwrap();
+        let mut file = fs::File::create(root.join(&self.relative_path)).unwrap();
         file.write_all(self.text().as_bytes()).unwrap();
     }
 
@@ -396,7 +400,7 @@ mod tests {
                 content"};
             let have = Document::from_str("one.md", give);
             let want = Ok(Document {
-                path: PathBuf::from("one.md"),
+                relative_path: PathBuf::from("one.md"),
                 title_section: Section {
                     line_number: 0,
                     title_line: Line::from("# test"),
@@ -441,7 +445,7 @@ mod tests {
                 "};
             let have = Document::from_str("test.md", give);
             let want = Ok(Document {
-                path: PathBuf::from("test.md"),
+                relative_path: PathBuf::from("test.md"),
                 title_section: Section {
                     line_number: 0,
                     title_line: Line::from("# test"),
@@ -492,7 +496,7 @@ mod tests {
                 - link 1"};
             let have = Document::from_str("one.md", give);
             let want = Ok(Document {
-                path: PathBuf::from("one.md"),
+                relative_path: PathBuf::from("one.md"),
                 title_section: Section {
                     line_number: 0,
                     title_line: Line::from("# test"),

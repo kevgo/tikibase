@@ -11,7 +11,7 @@ pub(crate) fn scan(base: &Tikibase, config: &Config) -> Vec<Issue> {
             let section = doc.section_with_title(&mismatching).unwrap();
             issues.push(Issue::UnorderedSections {
                 location: crate::Location {
-                    file: doc.path.clone(),
+                    file: doc.relative_path.clone(),
                     line: section.line_number,
                     start: 0,
                     end: section.title_line.text.len() as u32,
