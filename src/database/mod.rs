@@ -9,7 +9,7 @@ mod resource;
 pub(crate) mod section;
 mod tikibase;
 
-pub(crate) use crate::database::tikibase::Tikibase;
+pub(crate) use crate::database::tikibase::{FileType, Tikibase};
 pub(crate) use doc_links::DocLinks;
 use document::Document;
 pub(crate) use footnotes::{Footnote, Footnotes};

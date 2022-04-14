@@ -109,7 +109,7 @@ impl Tikibase {
     }
 }
 
-enum FileType {
+pub enum FileType {
     /// Markdown document
     Document,
     /// linkable resource
@@ -120,21 +120,31 @@ enum FileType {
     Ignored,
 }
 
-impl From<&Path> for FileType {
-    fn from(path: &Path) -> FileType {
-        if path.file_name().unwrap() == "tikibase.json" {
+impl From<&String> for FileType {
+    fn from(path: &String) -> Self {
+        let p: &str = path.as_ref();
+        FileType::from(p)
+    }
+}
+
+impl From<&str> for FileType {
+    fn from(path: &str) -> Self {
+        if path == "tikibase.json" {
             return FileType::Configuration;
         }
-        if path.starts_with(".") {
+        if path.starts_with('.') {
             return FileType::Ignored;
         }
-        match path.extension() {
-            None => FileType::Resource,
-            Some(ext) => match ext.to_str() {
-                Some("md") => FileType::Document,
-                _ => FileType::Resource,
-            },
+        if path.ends_with(".md") {
+            return FileType::Document;
         }
+        FileType::Resource
+    }
+}
+
+impl From<&Path> for FileType {
+    fn from(path: &Path) -> FileType {
+        FileType::from(path.file_name().unwrap().to_string_lossy().as_ref())
     }
 }
 
@@ -158,6 +168,8 @@ mod tests {
             ("foo.md", FileType::Document),
             ("sub/foo.md", FileType::Document),
             ("foo.png", FileType::Resource),
+            ("foo.pdf", FileType::Resource),
+            (".testconfig.json", FileType::Ignored),
         ];
     }
 
