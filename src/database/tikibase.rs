@@ -22,6 +22,8 @@ impl Tikibase {
             .find_doc_mut(components.next().unwrap(), components)
     }
 
+    pub fn has_link_target(
+
     /// indicates whether this Tikibase contains a resource with the given path
     pub fn has_resource<P: AsRef<Path>>(&self, relative_path: P) -> bool {
         let components = relative_path.as_ref().components();
