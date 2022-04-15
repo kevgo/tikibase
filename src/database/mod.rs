@@ -1,5 +1,6 @@
 //! Read/write access to the Markdown files making up the database.
 
+mod directory;
 mod doc_links;
 pub(crate) mod document;
 mod footnotes;

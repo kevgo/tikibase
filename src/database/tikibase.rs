@@ -1,3 +1,4 @@
+use super::directory::Directory;
 use super::{Document, Resource};
 use crate::{Config, Issue, Location};
 use ignore::overrides::OverrideBuilder;
@@ -7,18 +8,15 @@ use std::io::BufReader;
 use std::path::{Path, PathBuf};
 
 pub struct Tikibase {
-    pub dir: PathBuf,
-    pub docs: Vec<Document>,
-    pub resources: Vec<Resource>,
+    pub path: PathBuf,
+    pub dir: Directory,
 }
 
 impl Tikibase {
     /// provides the document with the given relative filename
-    pub fn get_doc<P: AsRef<Path>>(&self, relative_path: P) -> Option<&Document> {
-        let relative_path = relative_path.as_ref();
-        self.docs
-            .iter()
-            .find(|doc| doc.relative_path == relative_path)
+    pub fn find_doc<P: AsRef<Path>>(&self, relative_path: P) -> Option<&Document> {
+        let components = relative_path.as_ref().components();
+        self.dir.find_doc(components.next().unwrap(), components)
     }
 
     /// provides the document with the given relative filename as a mutable reference
@@ -110,19 +108,6 @@ impl Tikibase {
     }
 }
 
-/// types of files that Tikibase is aware of
-#[derive(Debug, PartialEq)]
-pub enum FileType {
-    /// Markdown document
-    Document,
-    /// linkable resource
-    Resource,
-    /// Tikibase configuration file
-    Configuration,
-    /// ignored file
-    Ignored,
-}
-
 impl From<&String> for FileType {
     fn from(path: &String) -> Self {
         let p: &str = path.as_ref();
@@ -149,12 +134,6 @@ impl From<&Path> for FileType {
     fn from(path: &Path) -> FileType {
         FileType::from(path.file_name().unwrap().to_string_lossy().as_ref())
     }
-}
-
-/// case-insensitive comparison of file extensions
-fn has_extension(path: &str, given_ext: &str) -> bool {
-    let path_ext = path.rsplit('.').next().unwrap();
-    path_ext.eq_ignore_ascii_case(given_ext)
 }
 
 #[cfg(test)]
