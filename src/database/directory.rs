@@ -39,6 +39,39 @@ impl Directory {
         }
     }
 
+    /// provides the document with the given path components if it exists in this directory or one of its subdirectories
+    pub fn find_doc_mut(
+        &mut self,
+        current_component: path::Component,
+        remaining_components: path::Components,
+    ) -> Option<&mut Document> {
+        match remaining_components.next() {
+            None => self.documents.get_mut(current_component.as_os_str()),
+            Some(next_component) => match self.directories.get(current_component.as_os_str()) {
+                Some(dir) => dir.find_doc_mut(next_component, remaining_components),
+                None => None,
+            },
+        }
+    }
+
+    /// indicates whether this directory or one of its subdirectories contains a resource with the given path
+    pub fn has_resource(
+        &self,
+        current_component: path::Component,
+        remaining_components: path::Components,
+    ) -> bool {
+        match remaining_components.next() {
+            None => {
+                let s = current_component.as_os_str();
+                self.resources.iter().any(|r| r == s)
+            }
+            Some(next_component) => match self.directories.get(current_component.as_os_str()) {
+                Some(dir) => dir.has_resource(next_component, remaining_components),
+                None => false,
+            },
+        }
+    }
+
     /// provides a Directory instance containing all elements in the given directory and all its subdirectories
     pub fn load<P: AsRef<Path>>(dir: P) -> Result<Directory, Vec<Issue>> {
         let dir = dir.as_ref();

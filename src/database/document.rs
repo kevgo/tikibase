@@ -6,12 +6,12 @@ use std::path::{Path, PathBuf};
 
 #[derive(Debug, PartialEq)]
 pub struct Document {
-    /// the path relative to the Tikibase root directory
-    pub relative_path: PathBuf,
     pub title_section: Section,
     pub content_sections: Vec<Section>,
-    /// The old "occurrences" section that was filtered out when loading the document.
+    /// the old "occurrences" section that was filtered out when loading the document.
     pub old_occurrences_section: Option<Section>,
+    /// all the link targets that exist in this document
+    link_targets: Vec<String>,
 }
 
 impl Document {

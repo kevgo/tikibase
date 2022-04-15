@@ -1,10 +1,6 @@
 use super::directory::Directory;
-use super::{Document, Resource};
-use crate::{Config, Issue, Location};
-use ignore::overrides::OverrideBuilder;
-use ignore::WalkBuilder;
-use std::fs::File;
-use std::io::BufReader;
+use super::Document;
+use crate::{Config, Issue};
 use std::path::{Path, PathBuf};
 
 pub struct Tikibase {
@@ -20,15 +16,17 @@ impl Tikibase {
     }
 
     /// provides the document with the given relative filename as a mutable reference
-    pub fn get_doc_mut<P: AsRef<Path>>(&mut self, path: P) -> Option<&mut Document> {
-        let path = path.as_ref();
-        self.docs.iter_mut().find(|doc| doc.relative_path == path)
+    pub fn find_doc_mut<P: AsRef<Path>>(&mut self, relative_path: P) -> Option<&mut Document> {
+        let components = relative_path.as_ref().components();
+        self.dir
+            .find_doc_mut(components.next().unwrap(), components)
     }
 
     /// indicates whether this Tikibase contains a resource with the given path
-    pub fn has_resource<P: AsRef<Path>>(&self, path: P) -> bool {
-        let path = path.as_ref();
-        self.resources.iter().any(|resource| resource.path == path)
+    pub fn has_resource<P: AsRef<Path>>(&self, relative_path: P) -> bool {
+        let components = relative_path.as_ref().components();
+        self.dir
+            .has_resource(components.next().unwrap(), components)
     }
 
     /// provides all valid link targets in this Tikibase
@@ -46,93 +44,13 @@ impl Tikibase {
     }
 
     /// provides a Tikibase instance for the given directory
-    pub fn load(dir: PathBuf, config: &Config) -> Result<Tikibase, Vec<Issue>> {
-        let mut docs = Vec::new();
-        let mut resources = Vec::new();
-        let mut errors = Vec::new();
-        let mut override_builder = OverrideBuilder::new(&dir);
-        if let Some(globs) = &config.globs {
-            for glob in globs {
-                if let Err(err) = override_builder.add(glob) {
-                    return Err(vec![Issue::InvalidGlob {
-                        glob: glob.into(),
-                        location: Location {
-                            file: PathBuf::from("tikibase.json"),
-                            line: 0,
-                            start: 0,
-                            end: 0,
-                        },
-                        message: err.to_string(),
-                    }]);
-                }
-            }
-        }
-        let over_ride = match override_builder.build() {
-            Ok(o) => o,
-            Err(err) => panic!("Cannot build glob overrides: {}", err),
-        };
-        let walker = WalkBuilder::new(&dir)
-            .overrides(over_ride)
-            .sort_by_file_path(Ord::cmp)
-            .build();
-        for entry in walker {
-            let entry = entry.unwrap();
-            if entry.path() == dir {
-                continue;
-            }
-            let path = entry.path();
-            let rel_path = path.strip_prefix(&dir).unwrap();
-            match FileType::from(path) {
-                FileType::Document => {
-                    let file = File::open(&path).unwrap();
-                    match Document::from_reader(BufReader::new(file), rel_path) {
-                        Ok(doc) => docs.push(doc),
-                        Err(err) => errors.push(err),
-                    }
-                }
-                FileType::Resource => resources.push(Resource {
-                    path: rel_path.into(),
-                }),
-                FileType::Configuration | FileType::Ignored => continue,
-            }
-        }
-        if errors.is_empty() {
-            Ok(Tikibase {
-                dir,
-                docs,
-                resources,
-            })
-        } else {
-            Err(errors)
-        }
-    }
-}
-
-impl From<&String> for FileType {
-    fn from(path: &String) -> Self {
-        let p: &str = path.as_ref();
-        FileType::from(p)
-    }
-}
-
-impl From<&str> for FileType {
-    fn from(path: &str) -> Self {
-        if path == "tikibase.json" {
-            return FileType::Configuration;
-        }
-        if path.starts_with('.') {
-            return FileType::Ignored;
-        }
-        if has_extension(path, "md") {
-            return FileType::Document;
-        }
-        FileType::Resource
-    }
-}
-
-impl From<&Path> for FileType {
-    fn from(path: &Path) -> FileType {
-        FileType::from(path.file_name().unwrap().to_string_lossy().as_ref())
+    pub fn load(path: PathBuf, config: &Config) -> Result<Tikibase, Vec<Issue>> {
+        let mut issues = Vec::new();
+        let directory = Directory::load(&path)?;
+        Ok(Tikibase {
+            path,
+            dir: directory,
+        })
     }
 }
 
