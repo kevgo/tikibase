@@ -11,7 +11,7 @@ pub struct Document {
     /// the old "occurrences" section that was filtered out when loading the document.
     pub old_occurrences_section: Option<Section>,
     /// all the link targets that exist in this document
-    link_targets: Vec<String>,
+    targets: Vec<String>,
 }
 
 impl Document {
@@ -82,12 +82,13 @@ impl Document {
                 },
             });
         }
+        let targets: Vec<String> = sections.iter().map(|section| section.anchor()).collect();
         let mut sections = sections.into_iter();
         Ok(Document {
-            relative_path,
             title_section: sections.next().unwrap(),
             content_sections: sections.collect(),
             old_occurrences_section,
+            targets,
         })
     }
 
@@ -121,6 +122,11 @@ impl Document {
             });
         }
         Ok(result)
+    }
+
+    /// indicates whether this document contains the given target (without leading '#')
+    pub fn has_target(&self, target: &str) -> bool {
+        self.targets.iter().any(|t| t == target)
     }
 
     #[cfg(test)]

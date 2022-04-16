@@ -1,4 +1,4 @@
-use super::Document;
+use super::{Document, LinkTargetResult};
 use crate::{Config, Issue};
 use ahash::AHashMap;
 use std::ffi::OsString;
@@ -19,9 +19,8 @@ impl Directory {
     /// provides a non-consuming iterator over all documents in this directory and all its subdirectories
     pub fn documents(&self) -> DocumentsIterator {
         // TODO: iterate subdirs
-        DocumentsIterator {
-            doc_iter: self.documents.values(),
-        }
+        let doc_iter = self.documents.iter().map(|(k, v)| v);
+        DocumentsIterator { doc_iter }
     }
 
     /// provides the document with the given path components if it exists in this directory or one of its subdirectories
@@ -50,6 +49,55 @@ impl Directory {
             Some(next_component) => match self.directories.get(current_component.as_os_str()) {
                 Some(dir) => dir.find_doc_mut(next_component, remaining_components),
                 None => None,
+            },
+        }
+    }
+
+    /// indicates whether this directory or one of its subdirectories contains the given link target
+    pub fn has_link_target(
+        &self,
+        current_component: path::Component,
+        remaining_components: path::Components,
+    ) -> LinkTargetResult {
+        match remaining_components.next() {
+            None => {
+                // arrived at the filename to look for
+                let (filename, target) = current_component
+                    .as_os_str()
+                    .to_string_lossy()
+                    .split_once('#')
+                    .unwrap();
+                if has_extension(&filename, "md") {
+                    // link points to document
+                    // TODO: try to get rid of the unnecessary allocation here
+                    // possibly using https://github.com/rabite0/osstrtools
+                    let filename = OsString::from(filename);
+                    // let os_str = OsStr::new(filename);
+                    match self.documents.get(&filename) {
+                        Some(doc) => match doc.has_target(target) {
+                            true => return LinkTargetResult::Exists,
+                            false => return LinkTargetResult::NoAnchor,
+                        },
+                        None => return LinkTargetResult::NoAnchor,
+                    }
+                } else {
+                    // link points to resource
+                    if target.is_empty() {
+                        if self.has_resource(current_component, remaining_components) {
+                            return LinkTargetResult::Exists;
+                        } else {
+                            return LinkTargetResult::NoFile(
+                                current_component.as_os_str().to_owned(),
+                            );
+                        }
+                    } else {
+                        return LinkTargetResult::ResourceWithAnchor;
+                    }
+                }
+            }
+            Some(next_component) => match self.directories.get(current_component.as_os_str()) {
+                Some(dir) => dir.has_link_target(next_component, remaining_components),
+                None => LinkTargetResult::NoDir(current_component.as_os_str().to_owned()),
             },
         }
     }
@@ -111,6 +159,13 @@ impl Directory {
         }
         Ok(directory)
     }
+
+    pub fn resources(&self) -> ResourceIterator {
+        // TODO: iterate subdirectories
+        ResourceIterator {
+            iter: self.resources.iter(),
+        }
+    }
 }
 
 /// types of files that Tikibase is aware of
@@ -159,11 +214,23 @@ fn has_extension(path: &str, given_ext: &str) -> bool {
 
 /// iterates all documents in this directory
 pub struct DocumentsIterator<'a> {
-    doc_iter: std::slice::Iter<'a, Document>,
+    doc_iter: Box<dyn Iterator<Item = &'a Document>>,
 }
 
 impl<'a> Iterator for DocumentsIterator<'a> {
     type Item = &'a Document;
+
+    fn next(&mut self) -> Option<Self::Item> {
+        todo!()
+    }
+}
+
+pub struct ResourceIterator<'a> {
+    iter: std::slice::Iter<'a, OsString>,
+}
+
+impl<'a> Iterator for ResourceIterator<'a> {
+    type Item = &'a OsString;
 
     fn next(&mut self) -> Option<Self::Item> {
         todo!()
@@ -179,5 +246,22 @@ mod tests {
         fn foo() {
             // TODO
         }
+    }
+
+    #[test]
+    fn entry_type() {
+        // TODO: create test tikibase and load real DirEntry values
+        // let tests = vec![
+        //     ("foo.md", EntryType::Document),
+        //     ("sub/foo.md", EntryType::Document),
+        //     ("foo.png", EntryType::Resource),
+        //     ("foo.pdf", EntryType::Resource),
+        //     (".testconfig.json", EntryType::Ignored),
+        // ];
+        // for (give, want) in tests {
+        //     let dir_entry = std::fs::DirEntry::try_from(give);
+        //     let have = EntryType::from(dir_entry);
+        //     assert_eq!(have, want);
+        // }
     }
 }

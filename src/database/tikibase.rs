@@ -1,6 +1,6 @@
-use super::directory::Directory;
-use super::Document;
+use super::{Directory, Document, DocumentsIterator, ResourceIterator};
 use crate::{Config, Issue};
+use std::ffi::OsString;
 use std::path::{Path, PathBuf};
 
 pub struct Tikibase {
@@ -9,6 +9,10 @@ pub struct Tikibase {
 }
 
 impl Tikibase {
+    pub fn documents(&self) -> DocumentsIterator {
+        self.dir.documents()
+    }
+
     /// provides the document with the given relative filename
     pub fn find_doc<P: AsRef<Path>>(&self, relative_path: P) -> Option<&Document> {
         let components = relative_path.as_ref().components();
@@ -22,7 +26,11 @@ impl Tikibase {
             .find_doc_mut(components.next().unwrap(), components)
     }
 
-    pub fn has_link_target(
+    pub fn has_link_target<P: AsRef<Path>>(&self, relative_path: P) -> LinkTargetResult {
+        let components = relative_path.as_ref().components();
+        self.dir
+            .has_link_target(components.next().unwrap(), components)
+    }
 
     /// indicates whether this Tikibase contains a resource with the given path
     pub fn has_resource<P: AsRef<Path>>(&self, relative_path: P) -> bool {
@@ -31,29 +39,30 @@ impl Tikibase {
             .has_resource(components.next().unwrap(), components)
     }
 
-    /// provides all valid link targets in this Tikibase
-    pub fn link_targets(&self) -> Vec<String> {
-        let mut result: Vec<String> = Vec::new();
-        for doc in &self.docs {
-            let filename = doc.relative_path.to_string_lossy().to_string();
-            for section in doc.sections() {
-                result.push(format!("{}{}", &filename, section.anchor()));
-            }
-            result.push(filename);
-        }
-        result.sort();
-        result
-    }
-
     /// provides a Tikibase instance for the given directory
     pub fn load(path: PathBuf, config: &Config) -> Result<Tikibase, Vec<Issue>> {
-        let mut issues = Vec::new();
-        let directory = Directory::load(&path)?;
         Ok(Tikibase {
             path,
-            dir: directory,
+            dir: Directory::load(&path)?,
         })
     }
+
+    pub fn resources(&self) -> ResourceIterator {
+        self.dir.resources()
+    }
+}
+
+pub enum LinkTargetResult {
+    /// the given link target exists
+    Exists,
+    /// the given file doesn't exist
+    NoFile(OsString),
+    /// a directory doesn't exist
+    NoDir(OsString),
+    /// the given file exists but the given anchor in it doesn't exist
+    NoAnchor,
+    /// the given link target points to a resource with an anchor, which isn't supported
+    ResourceWithAnchor,
 }
 
 #[cfg(test)]
@@ -66,23 +75,8 @@ mod tests {
     fn empty() {
         let dir = test::tmp_dir();
         let base = Tikibase::load(dir, &Config::default()).unwrap();
-        assert_eq!(base.docs.len(), 0);
-        assert_eq!(base.resources.len(), 0);
-    }
-
-    #[test]
-    fn file_type() {
-        let tests = vec![
-            ("foo.md", FileType::Document),
-            ("sub/foo.md", FileType::Document),
-            ("foo.png", FileType::Resource),
-            ("foo.pdf", FileType::Resource),
-            (".testconfig.json", FileType::Ignored),
-        ];
-        for (give, want) in tests {
-            let have = FileType::from(give);
-            assert_eq!(have, want);
-        }
+        assert_eq!(base.documents().count(), 0);
+        assert_eq!(base.resources().count(), 0);
     }
 
     mod get_doc {

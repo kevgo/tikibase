@@ -113,6 +113,10 @@ pub enum Issue {
         location: Location,
         target: String,
     },
+    LinkToResourceWithTarget {
+        location: Location,
+        target: String,
+    },
     LinkToSameDocument {
         location: Location,
     },
