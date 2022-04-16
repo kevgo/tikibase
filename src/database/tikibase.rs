@@ -136,33 +136,8 @@ mod tests {
             let base = Tikibase::load(dir, &Config::default()).unwrap();
             assert!(base.has_resource("foo.png"));
         }
-    }
 
-    #[test]
-    fn link_targets() {
-        let dir = test::tmp_dir();
-        let content = indoc! {"
-            # One
-
-            ### Alpha
-            ### Beta
-
-            content"};
-        test::create_file("one.md", content, &dir);
-        test::create_file("two.md", content, &dir);
-        let base = Tikibase::load(dir, &Config::default()).unwrap();
-        let have = base.link_targets();
-        let want = vec![
-            "one.md",
-            "one.md#alpha",
-            "one.md#beta",
-            "one.md#one",
-            "two.md",
-            "two.md#alpha",
-            "two.md#beta",
-            "two.md#one",
-        ];
-        pretty::assert_eq!(have, want);
+        // TODO: test resource in subdir
     }
 
     #[test]

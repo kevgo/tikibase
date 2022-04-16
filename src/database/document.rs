@@ -304,7 +304,8 @@ struct CodeblockStart {
 #[cfg(test)]
 mod tests {
     use super::Document;
-    use crate::database::Reference;
+    use crate::database::{Reference, Tikibase};
+    use crate::{test, Config};
     use indoc::indoc;
 
     mod footnotes {
@@ -536,6 +537,22 @@ mod tests {
             });
             pretty::assert_eq!(have, want);
         }
+    }
+
+    #[test]
+    fn has_target() {
+        let dir = test::tmp_dir();
+        let content = indoc! {"
+            # One
+            ### Alpha
+            ### Beta
+            content"};
+        test::create_file("one.md", content, &dir);
+        let doc = Document::from_str("foo", content).unwrap();
+        assert!(doc.has_target(""));
+        assert!(doc.has_target("alpha"));
+        assert!(doc.has_target("beta"));
+        assert!(!doc.has_target("zonk"));
     }
 
     mod last_line {
