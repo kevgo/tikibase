@@ -2,10 +2,11 @@ use super::{Document, LinkTargetResult};
 use crate::{Config, Issue};
 use ahash::AHashMap;
 use std::collections::hash_map::Iter;
-use std::ffi::OsString;
+use std::ffi::{OsStr, OsString};
 use std::fs::{self, File};
 use std::io::BufReader;
 use std::path::{self, Path};
+use std::str::Split;
 
 /// a directory containing Tikibase files
 #[derive(Default)]
@@ -56,26 +57,14 @@ impl Directory {
     }
 
     /// indicates whether this directory or one of its subdirectories contains the given link target
-    pub fn has_link_target(
-        &self,
-        current_component: path::Component,
-        remaining_components: path::Components,
-    ) -> LinkTargetResult {
-        match remaining_components.next() {
+    pub fn has_link_target(&self, current_segment: &str, iter: Split<char>) -> LinkTargetResult {
+        match iter.next() {
             None => {
-                // arrived at the filename to look for
-                let (filename, target) = current_component
-                    .as_os_str()
-                    .to_string_lossy()
-                    .split_once('#')
-                    .unwrap();
+                // arrived at the filename segment
+                let (filename, target) = current_segment.split_once('#').unwrap();
                 if has_extension(&filename, "md") {
                     // link points to document
-                    // TODO: try to get rid of the unnecessary allocation here
-                    // possibly using https://github.com/rabite0/osstrtools
-                    let filename = OsString::from(filename);
-                    // let os_str = OsStr::new(filename);
-                    match self.documents.get(&filename) {
+                    match self.documents.get(OsStr::new(filename)) {
                         Some(doc) => match doc.has_target(target) {
                             true => return LinkTargetResult::Exists,
                             false => return LinkTargetResult::NoAnchor,
@@ -85,38 +74,29 @@ impl Directory {
                 } else {
                     // link points to resource
                     if target.is_empty() {
-                        if self.has_resource(current_component, remaining_components) {
+                        if self.has_resource(current_segment, iter) {
                             return LinkTargetResult::Exists;
                         } else {
-                            return LinkTargetResult::NoFile(
-                                current_component.as_os_str().to_owned(),
-                            );
+                            return LinkTargetResult::NoFile(current_segment.into());
                         }
                     } else {
                         return LinkTargetResult::ResourceWithAnchor;
                     }
                 }
             }
-            Some(next_component) => match self.directories.get(current_component.as_os_str()) {
-                Some(dir) => dir.has_link_target(next_component, remaining_components),
-                None => LinkTargetResult::NoDir(current_component.as_os_str().to_owned()),
+            Some(next_component) => match self.directories.get(OsStr::new(current_segment)) {
+                Some(dir) => dir.has_link_target(next_component, iter),
+                None => LinkTargetResult::NoDir(current_segment.into()),
             },
         }
     }
 
     /// indicates whether this directory or one of its subdirectories contains a resource with the given path
-    pub fn has_resource(
-        &self,
-        current_component: path::Component,
-        remaining_components: path::Components,
-    ) -> bool {
-        match remaining_components.next() {
-            None => {
-                let s = current_component.as_os_str();
-                self.resources.iter().any(|r| r == s)
-            }
-            Some(next_component) => match self.directories.get(current_component.as_os_str()) {
-                Some(dir) => dir.has_resource(next_component, remaining_components),
+    pub fn has_resource(&self, current_segment: &str, iter: Split<char>) -> bool {
+        match iter.next() {
+            None => self.resources.iter().any(|r| r == current_segment),
+            Some(next_component) => match self.directories.get(OsStr::new(current_segment)) {
+                Some(dir) => dir.has_resource(next_component, iter),
                 None => false,
             },
         }

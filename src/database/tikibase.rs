@@ -26,17 +26,16 @@ impl Tikibase {
             .find_doc_mut(components.next().unwrap(), components)
     }
 
-    pub fn has_link_target<P: AsRef<Path>>(&self, relative_path: P) -> LinkTargetResult {
-        let components = relative_path.as_ref().components();
-        self.dir
-            .has_link_target(components.next().unwrap(), components)
+    /// indicates whether the given link originating in the given Document points to something
+    pub fn has_link_target(&self, doc: &Document, link: &str) -> LinkTargetResult {
+        let iter = link.split('/');
+        self.dir.has_link_target(iter.next().unwrap(), iter)
     }
 
     /// indicates whether this Tikibase contains a resource with the given path
-    pub fn has_resource<P: AsRef<Path>>(&self, relative_path: P) -> bool {
-        let components = relative_path.as_ref().components();
-        self.dir
-            .has_resource(components.next().unwrap(), components)
+    pub fn has_resource(&self, doc: &Document, link: &str) -> bool {
+        let iter = link.split('/');
+        self.dir.has_resource(iter.next().unwrap(), iter)
     }
 
     /// provides a Tikibase instance for the given directory
@@ -56,9 +55,9 @@ pub enum LinkTargetResult {
     /// the given link target exists
     Exists,
     /// the given file doesn't exist
-    NoFile(OsString),
+    NoFile(String),
     /// a directory doesn't exist
-    NoDir(OsString),
+    NoDir(String),
     /// the given file exists but the given anchor in it doesn't exist
     NoAnchor,
     /// the given link target points to a resource with an anchor, which isn't supported

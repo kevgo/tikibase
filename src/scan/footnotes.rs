@@ -2,7 +2,7 @@ use crate::{Issue, Location, Tikibase};
 
 pub(crate) fn scan(base: &Tikibase) -> Vec<Issue> {
     let mut result = Vec::<Issue>::new();
-    for doc in &base.docs {
+    for doc in base.documents() {
         let footnotes = match doc.footnotes() {
             Ok(footnotes) => footnotes,
             Err(issue) => return vec![issue],
