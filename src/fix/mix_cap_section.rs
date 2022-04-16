@@ -12,7 +12,7 @@ pub fn normalize_capitalization(
     new_capitalization: String,
 ) -> fix::Result {
     let base_dir = base.dir.clone();
-    let doc = base.get_doc_mut(&location.file).unwrap();
+    let doc = base.find_doc_mut(&location.file).unwrap();
     let section = doc.section_with_title_mut(&old_capitalization).unwrap();
     section.title_line.text = title_at_level(&new_capitalization, section_level as usize);
     doc.save(&base_dir);

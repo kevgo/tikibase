@@ -16,7 +16,7 @@ pub fn add_occurrences(
     config: &Config,
 ) -> fix::Result {
     let base_dir = base.dir.clone();
-    let doc = base.get_doc_mut(&location.file).unwrap();
+    let doc = base.find_doc_mut(&location.file).unwrap();
 
     // append a newline to the section before
     doc.last_section_mut().push_line("");

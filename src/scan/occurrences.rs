@@ -49,7 +49,7 @@ pub(crate) fn scan(
             },
             links: missing_outgoing
                 .into_iter()
-                .map(|path| base.get_doc(&path).unwrap())
+                .map(|path| base.find_doc(&path).unwrap())
                 .map(|doc| MissingLink {
                     path: doc.relative_path.clone(),
                     title: doc.human_title().into(),
