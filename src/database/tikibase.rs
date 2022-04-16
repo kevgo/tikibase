@@ -155,7 +155,7 @@ mod tests {
         test::create_file("file.md", content, &dir);
         let base = Tikibase::load(dir, &Config::default()).unwrap();
         // make sure we can load existing documents
-        let _doc = &base.get_doc("file.md").unwrap();
+        let _doc = &base.find_doc("file.md").unwrap();
     }
 
     #[test]
@@ -163,6 +163,6 @@ mod tests {
         let dir = test::tmp_dir();
         test::create_file(".hidden", "content", &dir);
         let base = Tikibase::load(dir, &Config::default()).unwrap();
-        assert_eq!(base.resources.len(), 0);
+        assert_eq!(base.resources().count(), 0);
     }
 }
