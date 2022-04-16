@@ -66,21 +66,21 @@ impl Directory {
                     // link points to document
                     match self.documents.get(OsStr::new(filename)) {
                         Some(doc) => match doc.has_target(target) {
-                            true => return LinkTargetResult::Exists,
-                            false => return LinkTargetResult::NoAnchor,
+                            true => LinkTargetResult::Exists,
+                            false => LinkTargetResult::NoAnchor,
                         },
-                        None => return LinkTargetResult::NoAnchor,
+                        None => LinkTargetResult::NoAnchor,
                     }
                 } else {
                     // link points to resource
                     if target.is_empty() {
                         if self.has_resource(current_segment, iter) {
-                            return LinkTargetResult::Exists;
+                            LinkTargetResult::Exists
                         } else {
-                            return LinkTargetResult::NoFile(current_segment.into());
+                            LinkTargetResult::NoFile(current_segment.into())
                         }
                     } else {
-                        return LinkTargetResult::ResourceWithAnchor;
+                        LinkTargetResult::ResourceWithAnchor
                     }
                 }
             }

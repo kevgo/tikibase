@@ -1,4 +1,3 @@
-use crate::database::FileType;
 use crate::database::{DocLinks, Reference, Tikibase};
 use crate::{Issue, Location};
 
