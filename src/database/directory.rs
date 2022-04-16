@@ -266,4 +266,18 @@ mod tests {
         //     assert_eq!(have, want);
         // }
     }
+
+    #[test]
+    fn has_extension() {
+        let tests = vec![
+            (("foo.md", "md"), true),
+            (("FOO.MD", "md"), true),
+            (("foo.md", "MD"), true),
+            (("foo.md", "png"), false),
+        ];
+        for (give, want) in tests {
+            let have = super::has_extension(give.0, give.1);
+            assert_eq!(have, want);
+        }
+    }
 }
