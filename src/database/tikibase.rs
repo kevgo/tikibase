@@ -79,7 +79,7 @@ mod tests {
         assert_eq!(base.resources().count(), 0);
     }
 
-    mod get_doc {
+    mod find_doc {
         use crate::{test, Config, Tikibase};
 
         #[test]
@@ -87,7 +87,7 @@ mod tests {
             let dir = test::tmp_dir();
             test::create_file("one.md", "# test doc", &dir);
             let base = Tikibase::load(dir, &Config::default()).unwrap();
-            let doc = base.get_doc("one.md").expect("document not found");
+            let doc = base.find_doc("one.md").expect("document not found");
             assert_eq!(doc.title_section.title_line.text, "# test doc");
         }
 
@@ -95,7 +95,7 @@ mod tests {
         fn missing() {
             let dir = test::tmp_dir();
             let base = Tikibase::load(dir, &Config::default()).unwrap();
-            assert!(base.get_doc("zonk.md").is_none());
+            assert!(base.find_doc("zonk.md").is_none());
         }
     }
 
@@ -107,7 +107,7 @@ mod tests {
             let dir = test::tmp_dir();
             test::create_file("one.md", "# test doc", &dir);
             let mut base = Tikibase::load(dir, &Config::default()).unwrap();
-            let doc = base.get_doc_mut("one.md").expect("document not found");
+            let doc = base.find_doc_mut("one.md").expect("document not found");
             assert_eq!(doc.title_section.title_line.text, "# test doc");
         }
 
@@ -115,7 +115,7 @@ mod tests {
         fn missing() {
             let dir = test::tmp_dir();
             let mut base = Tikibase::load(dir, &Config::default()).unwrap();
-            assert!(base.get_doc_mut("zonk.md").is_none());
+            assert!(base.find_doc_mut("zonk.md").is_none());
         }
     }
 
