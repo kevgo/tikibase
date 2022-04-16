@@ -1,6 +1,7 @@
 use super::{Document, LinkTargetResult};
 use crate::{Config, Issue};
 use ahash::AHashMap;
+use std::collections::hash_map::Iter;
 use std::ffi::OsString;
 use std::fs::{self, File};
 use std::io::BufReader;
@@ -17,10 +18,11 @@ pub struct Directory {
 
 impl Directory {
     /// provides a non-consuming iterator over all documents in this directory and all its subdirectories
-    pub fn documents(&self) -> DocumentsIterator {
+    pub fn documents<'a>(&'a self) -> DocumentsIterator<'a> {
         // TODO: iterate subdirs
-        let doc_iter = self.documents.iter().map(|(k, v)| v);
-        DocumentsIterator { doc_iter }
+        DocumentsIterator {
+            doc_iter: self.documents.iter(),
+        }
     }
 
     /// provides the document with the given path components if it exists in this directory or one of its subdirectories
@@ -214,7 +216,7 @@ fn has_extension(path: &str, given_ext: &str) -> bool {
 
 /// iterates all documents in this directory
 pub struct DocumentsIterator<'a> {
-    doc_iter: Box<dyn Iterator<Item = &'a Document>>,
+    doc_iter: Iter<'a, OsString, Document>,
 }
 
 impl<'a> Iterator for DocumentsIterator<'a> {
