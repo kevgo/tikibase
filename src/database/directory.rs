@@ -1,9 +1,7 @@
+use super::{Document, Resource};
+use crate::{Config, Issue, Location};
 use ignore::overrides::OverrideBuilder;
 use ignore::WalkBuilder;
-
-use crate::{Config, Issue, Location};
-
-use super::{Document, Resource};
 use std::fs::File;
 use std::io::BufReader;
 use std::path::{Path, PathBuf};
