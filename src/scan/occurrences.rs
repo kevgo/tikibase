@@ -10,7 +10,7 @@ pub(crate) fn scan(
     outgoing_doc_links: &DocLinks,
 ) -> Vec<Issue> {
     let mut issues = Vec::new();
-    for doc in &base.docs {
+    for doc in base.documents() {
         let mut missing_outgoing: Vec<PathBuf> = incoming_doc_links
             .get(&doc.relative_path)
             .get_or_insert(&AHashSet::new())

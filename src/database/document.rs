@@ -124,15 +124,24 @@ impl Document {
         Ok(result)
     }
 
-    /// indicates whether this document contains the given target (without leading '#')
-    pub fn has_target(&self, target: &str) -> bool {
-        self.targets.iter().any(|t| t == target)
+    /// provides the Document contained in the file with the given path
+    pub fn from_reader<R: BufRead, P: Into<PathBuf>>(
+        reader: R,
+        path: P,
+    ) -> Result<Document, Issue> {
+        let lines = reader.lines().map(Result::unwrap);
+        Document::from_lines(lines, path)
     }
 
     #[cfg(test)]
     /// provides Document instances in tests
     pub fn from_str<P: Into<PathBuf>>(path: P, text: &str) -> Result<Document, Issue> {
         Document::from_lines(text.lines().map(std::string::ToString::to_string), path)
+    }
+
+    /// indicates whether this document contains the given target (without leading '#')
+    pub fn has_target(&self, target: &str) -> bool {
+        self.targets.iter().any(|t| t == target)
     }
 
     /// provides the last line in this document
@@ -175,20 +184,24 @@ impl Document {
             .last_line_abs()
     }
 
-    /// provides the Document contained in the file with the given path
-    pub fn from_reader<R: BufRead, P: Into<PathBuf>>(
-        reader: R,
-        path: P,
-    ) -> Result<Document, Issue> {
-        let lines = reader.lines().map(Result::unwrap);
-        Document::from_lines(lines, path)
+    /// Populates the given accumulator with the normalized paths of all resources referenced in this document.
+    /// Normalizes the link targets to paths relative to the Tikibase dir.
+    pub fn normalized_referenced_resources(&self, acc: &mut Vec<&str>, parent: &OsString) -> usize {
+        for reference in self.referenced_resources(acc)
     }
 
-    /// provides all the references in this document
-    pub fn references(&self) -> Vec<Reference> {
+    /// Populates the given accumulator with the link targets of all resources referenced in this document.
+    /// Provides the link targets as they are in the document.
+    pub fn referenced_resources(&self, acc: &mut Vec<&str>) -> usize {
+        //
+    }
+
+    /// populates the given accumulator with all references in this document,
+    /// returns the number of references populated
+    pub fn references(&self, acc: &mut Vec<Reference>) -> usize {
         let mut result = vec![];
         for (i, line) in self.lines().enumerate() {
-            result.append(&mut line.references(i as u32));
+            line.references(i as u32));
         }
         result
     }

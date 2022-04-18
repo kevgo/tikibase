@@ -1,7 +1,8 @@
-use super::{Directory, Document, DocumentsIterator, ResourceIterator};
+use super::{Directory, Document, DocumentsIterator};
 use crate::{Config, Issue};
 use std::ffi::OsString;
 use std::path::{Path, PathBuf};
+use std::str::FromStr;
 
 pub struct Tikibase {
     pub path: PathBuf,
@@ -9,6 +10,14 @@ pub struct Tikibase {
 }
 
 impl Tikibase {
+    /// all existing resources with normalized name
+    pub fn all_resources(&self) -> Vec<&OsString> {
+        let mut result: Vec<&OsString> = vec![];
+        self.dir
+            .existing_resources(&mut result, OsString::from_str(""));
+        result
+    }
+
     pub fn documents(&self) -> DocumentsIterator {
         self.dir.documents()
     }
@@ -44,10 +53,6 @@ impl Tikibase {
             path,
             dir: Directory::load(&path)?,
         })
-    }
-
-    pub fn resources(&self) -> ResourceIterator {
-        self.dir.resources()
     }
 }
 

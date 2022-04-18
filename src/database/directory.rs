@@ -1,3 +1,4 @@
+use super::dir_chain::DirChain;
 use super::{Document, LinkTargetResult};
 use crate::{Config, Issue};
 use ahash::AHashMap;
@@ -11,18 +12,44 @@ use std::str::Split;
 /// a directory containing Tikibase files
 #[derive(Default)]
 pub struct Directory {
-    documents: AHashMap<OsString, Document>,
-    resources: Vec<OsString>,
-    directories: AHashMap<OsString, Directory>,
-    configuration: Config,
+    /// name --> document
+    pub documents: AHashMap<OsString, Document>,
+    pub resources: Vec<OsString>,
+    pub directories: AHashMap<OsString, Directory>,
+    pub configuration: Config,
 }
 
 impl Directory {
-    /// provides a non-consuming iterator over all documents in this directory and all its subdirectories
-    pub fn documents<'a>(&'a self) -> DocumentsIterator<'a> {
-        // TODO: iterate subdirs
-        DocumentsIterator {
-            doc_iter: self.documents.iter(),
+    // /// provides an iterator over all documents in this directory and all its subdirectories
+    // pub fn documents<'a>(&'a self, parents: &DirChain) -> DocumentsIterator<'a> {
+    //     // TODO: iterate subdirs
+    //     DocumentsIterator {
+    //         doc_iter: self.documents.iter(),
+    //     }
+    // }
+
+    /// populates the given accumulator with all existing resources in this directory and subdirectories
+    pub fn existing_resources(&self, acc: &mut Vec<&OsString>, parent: &OsString) {
+        acc.reserve(self.resources.len());
+        for resource in self.resources {
+            acc.push(parent.join(&resource));
+        }
+        for (dir_path, dir) in self.directories {
+            dir.existing_resources(&mut acc, parent.join(dir_path));
+        }
+    }
+
+    /// populates the given accumulator with the normalized paths of resources
+    /// that are referenced in documents in this directory and subdirectories
+    pub fn referenced_resources(&self, acc: &mut Vec<&OsString>, parent: &OsString) {
+        for (doc_name, doc) in &self.documents {
+            let doc_path = parent.join(doc_name);
+            for resource in doc.normalized_referenced_resources(acc, doc_path) {
+                acc.push(resource);
+            }
+        }
+        for (dir_path, dir) in self.directories {
+            dir.existing_resources(&mut acc, parent.join(dir_path));
         }
     }
 
@@ -142,12 +169,12 @@ impl Directory {
         Ok(directory)
     }
 
-    pub fn resources(&self) -> ResourceIterator {
-        // TODO: iterate subdirectories
-        ResourceIterator {
-            iter: self.resources.iter(),
-        }
-    }
+    // pub fn resources(&self) -> ResourceIterator {
+    //     // TODO: iterate subdirectories
+    //     ResourceIterator {
+    //         iter: self.resources.iter(),
+    //     }
+    // }
 }
 
 /// types of files that Tikibase is aware of
@@ -196,11 +223,12 @@ fn has_extension(path: &str, given_ext: &str) -> bool {
 
 /// iterates all documents in this directory
 pub struct DocumentsIterator<'a> {
-    doc_iter: Iter<'a, OsString, Document>,
+    doc_iter: Iter<'a, Document, DirChain>,
+    parents: DirChain,
 }
 
-impl<'a> Iterator for DocumentsIterator<'a> {
-    type Item = &'a Document;
+impl<'a, 'b> Iterator for DocumentsIterator<'a, 'b> {
+    type Item = (&'a Document, &'b DirChain);
 
     fn next(&mut self) -> Option<Self::Item> {
         todo!()
