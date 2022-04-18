@@ -15,7 +15,7 @@ pub fn add_occurrences(
     links: Vec<MissingLink>,
     config: &Config,
 ) -> fix::Result {
-    let base_dir = base.dir.clone();
+    let base_dir = base.root.clone();
     let doc = base.get_doc_mut(&location.file).unwrap();
 
     // append a newline to the section before

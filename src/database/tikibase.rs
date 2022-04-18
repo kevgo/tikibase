@@ -7,7 +7,7 @@ use std::io::BufReader;
 use std::path::{Path, PathBuf};
 
 pub struct Tikibase {
-    pub dir: PathBuf,
+    pub root: PathBuf,
     pub docs: Vec<Document>,
     pub resources: Vec<Resource>,
 }
@@ -100,7 +100,7 @@ impl Tikibase {
         }
         if errors.is_empty() {
             Ok(Tikibase {
-                dir,
+                root: dir,
                 docs,
                 resources,
             })
