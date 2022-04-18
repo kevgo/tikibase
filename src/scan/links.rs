@@ -18,8 +18,8 @@ pub(crate) struct LinksResult {
 
 pub(crate) fn scan(base: &Tikibase) -> LinksResult {
     let mut result = LinksResult::default();
-    let existing_targets = base.link_targets();
-    for doc in &base.docs {
+    let existing_targets = base.dir.link_targets();
+    for doc in &base.dir.docs {
         let references = doc.references();
         if references.is_empty() {
             result.issues.push(Issue::DocumentWithoutLinks {
@@ -139,7 +139,7 @@ pub(crate) fn scan(base: &Tikibase) -> LinksResult {
                     if src.starts_with("http") {
                         continue;
                     }
-                    if !base.has_resource(&src) {
+                    if !base.dir.has_resource(&src) {
                         result.issues.push(Issue::BrokenImage {
                             location: Location {
                                 file: doc.relative_path.clone(),

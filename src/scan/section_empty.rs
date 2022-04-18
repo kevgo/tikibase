@@ -5,7 +5,7 @@ use crate::{Issue, Location, Tikibase};
 /// returns the unfixed issues
 pub(crate) fn scan(base: &Tikibase) -> Vec<Issue> {
     let mut issues = Vec::<Issue>::new();
-    for doc in &base.docs {
+    for doc in &base.dir.docs {
         for section in &doc.content_sections {
             let has_content = section.body.iter().any(|line| !line.text.is_empty());
             if !has_content {

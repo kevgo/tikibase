@@ -2,7 +2,7 @@ use crate::{Issue, Location, Tikibase};
 
 pub(crate) fn scan(base: &Tikibase) -> Vec<Issue> {
     let mut issues = Vec::<Issue>::new();
-    for doc in &base.docs {
+    for doc in &base.dir.docs {
         for section in doc.sections() {
             if section.human_title().is_empty() {
                 issues.push(Issue::SectionWithoutHeader {

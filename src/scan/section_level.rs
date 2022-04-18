@@ -6,7 +6,7 @@ use std::path::Path;
 pub(crate) fn scan(base: &Tikibase) -> Vec<Issue> {
     // title --> level --> FileSections with this level and title
     let mut level_variants: AHashMap<&str, AHashMap<u8, Vec<FileSection>>> = AHashMap::new();
-    for doc in &base.docs {
+    for doc in &base.dir.docs {
         for section in doc.sections() {
             level_variants
                 .entry(section.human_title())

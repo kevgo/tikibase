@@ -2,8 +2,8 @@ use crate::{Outcome, Tikibase};
 use ahash::AHashMap;
 
 pub fn stats(base: &Tikibase) -> Outcome {
-    println!("documents: {}", base.docs.len());
-    println!("resources: {}", base.resources.len());
+    println!("documents: {}", base.dir.docs.len());
+    println!("resources: {}", base.dir.resources.len());
     println!();
     let section_titles = collect_section_titles(base);
     println!("{} section titles:", section_titles.len());
@@ -17,7 +17,7 @@ pub fn stats(base: &Tikibase) -> Outcome {
 
 fn collect_section_titles(tb: &Tikibase) -> AHashMap<&str, u32> {
     let mut result: AHashMap<&str, u32> = AHashMap::new();
-    for doc in &tb.docs {
+    for doc in &tb.dir.docs {
         for section in &doc.content_sections {
             let section_title = section.human_title();
             match result.get(section_title) {

@@ -6,7 +6,7 @@ pub(crate) fn scan(base: &Tikibase, config: &Config) -> Vec<Issue> {
         None => return issues,
         Some(sections) => sections,
     };
-    for doc in &base.docs {
+    for doc in &base.dir.docs {
         for section in &doc.content_sections {
             let section_title = section.human_title();
             // HACK: see https://github.com/rust-lang/rust/issues/42671
