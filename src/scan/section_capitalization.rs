@@ -6,7 +6,7 @@ use std::path::Path;
 pub(crate) fn scan(base: &Tikibase) -> Vec<Issue> {
     // normalized title --> variant --> sections with this variant
     let mut title_variants: AHashMap<String, AHashMap<&str, Vec<FileSection>>> = AHashMap::new();
-    for doc in &base.dir.docs {
+    for (_path, doc) in &base.dir.docs {
         for section in doc.sections() {
             let section_title = section.human_title();
             title_variants

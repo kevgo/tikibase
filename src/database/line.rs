@@ -4,7 +4,7 @@ use once_cell::sync::Lazy;
 use regex::Regex;
 use std::path::Path;
 
-#[derive(Debug, Default, PartialEq)]
+#[derive(Debug, Default, Eq, Hash, PartialEq)]
 pub struct Line {
     pub text: String,
 }

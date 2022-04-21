@@ -4,7 +4,7 @@ use ahash::AHashMap;
 /// finds all duplicate sections in the given Tikibase
 pub(crate) fn scan(base: &Tikibase) -> Vec<Issue> {
     let mut issues = Vec::new();
-    for doc in &base.dir.docs {
+    for (_path, doc) in &base.dir.docs {
         // section title -> [lines with this section]
         let mut sections_lines: AHashMap<&str, Vec<(u32, u32, u32)>> = AHashMap::new();
         for section in doc.sections() {

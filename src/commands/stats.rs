@@ -17,7 +17,7 @@ pub fn stats(base: &Tikibase) -> Outcome {
 
 fn collect_section_titles(tb: &Tikibase) -> AHashMap<&str, u32> {
     let mut result: AHashMap<&str, u32> = AHashMap::new();
-    for doc in &tb.dir.docs {
+    for (_path, doc) in &tb.dir.docs {
         for section in &doc.content_sections {
             let section_title = section.human_title();
             match result.get(section_title) {

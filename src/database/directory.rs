@@ -11,24 +11,19 @@ pub struct Directory {
     pub config: Config,
     // TODO: make AHashMap<OsString, ()>
     pub dirs: Vec<Directory>,
-    // TODO: make AHashMap<OsString, ()>
-    pub docs: Vec<Document>,
+    pub docs: AHashMap<OsString, Document>,
     pub resources: AHashMap<OsString, ()>,
 }
 
 impl Directory {
     /// provides the document with the given relative filename
-    pub fn get_doc<P: AsRef<Path>>(&self, relative_path: P) -> Option<&Document> {
-        let relative_path = relative_path.as_ref();
-        self.docs
-            .iter()
-            .find(|doc| doc.relative_path == relative_path)
+    pub fn get_doc<OS: AsRef<OsStr>>(&self, relative_path: OS) -> Option<&Document> {
+        self.docs.get(relative_path.as_ref())
     }
 
     /// provides the document with the given relative filename as a mutable reference
-    pub fn get_doc_mut<P: AsRef<Path>>(&mut self, path: P) -> Option<&mut Document> {
-        let path = path.as_ref();
-        self.docs.iter_mut().find(|doc| doc.relative_path == path)
+    pub fn get_doc_mut<OS: AsRef<OsStr>>(&mut self, relative_path: OS) -> Option<&mut Document> {
+        self.docs.get_mut(relative_path.as_ref())
     }
 
     /// indicates whether this Tikibase contains a resource with the given path
@@ -40,7 +35,7 @@ impl Directory {
     /// provides all valid link targets in this Tikibase
     pub fn link_targets(&self) -> Vec<String> {
         let mut result: Vec<String> = Vec::new();
-        for doc in &self.docs {
+        for (_path, doc) in &self.docs {
             let filename = doc.relative_path.to_string_lossy().to_string();
             for section in doc.sections() {
                 result.push(format!("{}{}", &filename, section.anchor()));
@@ -61,7 +56,7 @@ impl Directory {
             }
             LoadResult::Error(issue) => return Err(vec![issue]),
         };
-        let mut docs = Vec::new();
+        let mut docs = AHashMap::new();
         let mut dirs = Vec::new();
         let mut resources = AHashMap::new();
         let mut errors = Vec::new();
@@ -72,8 +67,10 @@ impl Directory {
             match EntryType::from_direntry(&entry, &config) {
                 EntryType::Document => {
                     let file = File::open(&entry_path).unwrap();
-                    match Document::from_reader(BufReader::new(file), entry_name) {
-                        Ok(doc) => docs.push(doc),
+                    match Document::from_reader(BufReader::new(file), entry_name.clone()) {
+                        Ok(doc) => {
+                            docs.insert(entry_name, doc);
+                        }
                         Err(err) => errors.push(err),
                     }
                 }

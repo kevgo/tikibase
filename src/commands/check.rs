@@ -29,6 +29,7 @@ pub fn check(base: &mut Tikibase) -> Outcome {
             ));
         }
     }
+    issues.sort();
     Outcome {
         issues,
         fixes: vec![],

@@ -4,7 +4,7 @@ use std::fs;
 use std::io::prelude::*;
 use std::path::{Path, PathBuf};
 
-#[derive(Debug, PartialEq)]
+#[derive(Debug, Eq, Hash, PartialEq)]
 pub struct Document {
     /// the path relative to the Tikibase root directory
     pub relative_path: PathBuf,

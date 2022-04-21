@@ -6,7 +6,7 @@ pub(crate) fn scan(base: &Tikibase) -> Vec<Issue> {
         None => return issues,
         Some(expected_sections) => expected_sections,
     };
-    for doc in &base.dir.docs {
+    for (_path, doc) in &base.dir.docs {
         if let Some(mismatching) = first_mismatching(&doc.section_titles(), expected_order) {
             let section = doc.section_with_title(&mismatching).unwrap();
             issues.push(Issue::UnorderedSections {

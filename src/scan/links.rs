@@ -19,7 +19,7 @@ pub(crate) struct LinksResult {
 pub(crate) fn scan(base: &Tikibase) -> LinksResult {
     let mut result = LinksResult::default();
     let existing_targets = base.dir.link_targets();
-    for doc in &base.dir.docs {
+    for (_path, doc) in &base.dir.docs {
         let references = doc.references();
         if references.is_empty() {
             result.issues.push(Issue::DocumentWithoutLinks {
