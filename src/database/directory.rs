@@ -1,9 +1,11 @@
-use super::{Document, Resource};
+use super::Document;
 use crate::config::LoadResult;
 use crate::{config, Config, Issue};
+use ahash::AHashMap;
+use std::ffi::{OsStr, OsString};
 use std::fs::{self, File};
 use std::io::BufReader;
-use std::path::{Path, PathBuf};
+use std::path::Path;
 
 pub struct Directory {
     pub config: Config,
@@ -11,8 +13,7 @@ pub struct Directory {
     pub dirs: Vec<Directory>,
     // TODO: make AHashMap<OsString, ()>
     pub docs: Vec<Document>,
-    // TODO: make AHashMap<OsString, ()>
-    pub resources: Vec<Resource>,
+    pub resources: AHashMap<OsString, ()>,
 }
 
 impl Directory {
@@ -33,7 +34,7 @@ impl Directory {
     /// indicates whether this Tikibase contains a resource with the given path
     pub fn has_resource<P: AsRef<Path>>(&self, path: P) -> bool {
         let path = path.as_ref();
-        self.resources.iter().any(|resource| resource.path == path)
+        self.resources.contains_key(OsStr::new(path))
     }
 
     /// provides all valid link targets in this Tikibase
@@ -62,7 +63,7 @@ impl Directory {
         };
         let mut docs = Vec::new();
         let mut dirs = Vec::new();
-        let mut resources = Vec::new();
+        let mut resources = AHashMap::new();
         let mut errors = Vec::new();
         for entry in fs::read_dir(dir).unwrap() {
             let entry = entry.unwrap();
@@ -77,9 +78,7 @@ impl Directory {
                     }
                 }
                 EntryType::Resource => {
-                    resources.push(Resource {
-                        path: PathBuf::from(entry_name),
-                    });
+                    resources.insert(entry_name, ());
                 }
                 EntryType::Configuration | EntryType::Ignored => continue,
                 EntryType::Directory => dirs.push(Directory::load(&entry_path, config.clone())?), // TODO: try to borrow config here
