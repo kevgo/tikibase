@@ -9,8 +9,7 @@ use std::path::Path;
 
 pub struct Directory {
     pub config: Config,
-    // TODO: make AHashMap<OsString, ()>
-    pub dirs: Vec<Directory>,
+    pub dirs: AHashMap<OsString, Directory>,
     pub docs: AHashMap<OsString, Document>,
     pub resources: AHashMap<OsString, ()>,
 }
@@ -57,7 +56,7 @@ impl Directory {
             LoadResult::Error(issue) => return Err(vec![issue]),
         };
         let mut docs = AHashMap::new();
-        let mut dirs = Vec::new();
+        let mut dirs = AHashMap::new();
         let mut resources = AHashMap::new();
         let mut errors = Vec::new();
         for entry in fs::read_dir(dir).unwrap() {
@@ -78,7 +77,9 @@ impl Directory {
                     resources.insert(entry_name, ());
                 }
                 EntryType::Configuration | EntryType::Ignored => continue,
-                EntryType::Directory => dirs.push(Directory::load(&entry_path, config.clone())?), // TODO: try to borrow config here
+                EntryType::Directory => {
+                    dirs.insert(entry_name, Directory::load(&entry_path, config.clone())?);
+                } // TODO: try to borrow config here
             }
         }
         if errors.is_empty() {
