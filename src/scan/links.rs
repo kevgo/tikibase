@@ -1,4 +1,4 @@
-use crate::database::FileType;
+use crate::database::EntryType;
 use crate::database::{DocLinks, Reference, Tikibase};
 use crate::{Issue, Location};
 
@@ -88,8 +88,8 @@ pub(crate) fn scan(base: &Tikibase) -> LinksResult {
                             continue;
                         }
                     }
-                    match FileType::from(&target_file) {
-                        FileType::Document => {
+                    match EntryType::from_str(&target_file) {
+                        EntryType::Document => {
                             if !strings_contain(&existing_targets, &target) {
                                 if strings_contain(&existing_targets, &target_file) {
                                     result.issues.push(
@@ -124,10 +124,11 @@ pub(crate) fn scan(base: &Tikibase) -> LinksResult {
                                 .outgoing_doc_links
                                 .add(doc.relative_path.clone(), &target_file);
                         }
-                        FileType::Resource => {
+                        EntryType::Resource => {
                             result.outgoing_resource_links.push(target_file);
                         }
-                        FileType::Configuration | FileType::Ignored => {}
+                        EntryType::Configuration | EntryType::Ignored => {}
+                        EntryType::Directory => todo!(),
                     }
                 }
                 Reference::Image {
@@ -170,7 +171,7 @@ mod tests {
 
     mod scan {
         use super::super::scan;
-        use crate::{test, Config, Issue, Location, Tikibase};
+        use crate::{test, Issue, Location, Tikibase};
         use indoc::indoc;
         use std::path::PathBuf;
 
@@ -178,7 +179,7 @@ mod tests {
         fn link_to_non_existing_file() {
             let dir = test::tmp_dir();
             test::create_file("one.md", "# One\n\n[invalid](non-existing.md)\n", &dir);
-            let base = Tikibase::load(dir, &Config::default()).unwrap();
+            let base = Tikibase::load(dir).unwrap();
             let have = scan(&base);
             let want = vec![Issue::LinkToNonExistingFile {
                 location: Location {
@@ -200,7 +201,7 @@ mod tests {
             let dir = test::tmp_dir();
             test::create_file("1.md", "# One\n[non-existing anchor](2.md#zonk)\n", &dir);
             test::create_file("2.md", "# Two\n[One](1.md)", &dir);
-            let base = Tikibase::load(dir, &Config::default()).unwrap();
+            let base = Tikibase::load(dir).unwrap();
             let have = scan(&base);
             let want = vec![Issue::LinkToNonExistingAnchorInExistingDocument {
                 location: Location {
@@ -222,7 +223,7 @@ mod tests {
         fn link_to_non_existing_anchor_in_current_file() {
             let dir = test::tmp_dir();
             test::create_file("1.md", "# One\n[non-existing anchor](#zonk)\n", &dir);
-            let base = Tikibase::load(dir, &Config::default()).unwrap();
+            let base = Tikibase::load(dir).unwrap();
             let have = scan(&base);
             let want = vec![Issue::LinkToNonExistingAnchorInCurrentDocument {
                 location: Location {
@@ -247,7 +248,7 @@ mod tests {
                 "# One\n[anchor in non-existing file](2.md#foo)\n",
                 &dir,
             );
-            let base = Tikibase::load(dir, &Config::default()).unwrap();
+            let base = Tikibase::load(dir).unwrap();
             let have = scan(&base);
             let want = vec![Issue::LinkToNonExistingFile {
                 location: Location {
@@ -276,7 +277,7 @@ mod tests {
             test::create_file("1.md", content, &dir);
             test::create_file("2.md", "# Two\n[1](1.md)", &dir);
             test::create_file("3.md", "# Three\n[1](1.md)", &dir);
-            let base = Tikibase::load(dir, &Config::default()).unwrap();
+            let base = Tikibase::load(dir).unwrap();
             let have = scan(&base);
             pretty::assert_eq!(have.issues, vec![]);
             assert_eq!(have.outgoing_doc_links.data.len(), 3);
@@ -298,7 +299,7 @@ mod tests {
         fn link_without_target() {
             let dir = test::tmp_dir();
             test::create_file("one.md", "# One\n\n[invalid]()\n", &dir);
-            let base = Tikibase::load(dir, &Config::default()).unwrap();
+            let base = Tikibase::load(dir).unwrap();
             let have = scan(&base);
             pretty::assert_eq!(
                 have.issues,
@@ -327,7 +328,7 @@ mod tests {
                 "};
             test::create_file("one.md", content, &dir);
             test::create_file("two.md", "# Two\n[one](one.md)", &dir);
-            let base = Tikibase::load(dir, &Config::default()).unwrap();
+            let base = Tikibase::load(dir).unwrap();
             let have = scan(&base);
             assert!(have.issues.is_empty());
             assert_eq!(have.incoming_doc_links.data.len(), 1);
@@ -340,7 +341,7 @@ mod tests {
             let dir = test::tmp_dir();
             test::create_file("1.md", "# One\n\n![image](foo.png)\n", &dir);
             test::create_file("foo.png", "image content", &dir);
-            let base = Tikibase::load(dir, &Config::default()).unwrap();
+            let base = Tikibase::load(dir).unwrap();
             let have = scan(&base);
             assert!(have.issues.is_empty());
             assert_eq!(have.outgoing_resource_links.len(), 1);
@@ -353,7 +354,7 @@ mod tests {
         fn imagelink_to_non_existing_image() {
             let dir = test::tmp_dir();
             test::create_file("1.md", "# One\n\n![image](zonk.png)\n", &dir);
-            let base = Tikibase::load(dir, &Config::default()).unwrap();
+            let base = Tikibase::load(dir).unwrap();
             let have = scan(&base);
             let want = vec![Issue::BrokenImage {
                 location: Location {
@@ -376,7 +377,7 @@ mod tests {
             let dir = test::tmp_dir();
             test::create_file("1.md", "# One\n\n[docs](docs.pdf)\n", &dir);
             test::create_file("docs.pdf", "PDF content", &dir);
-            let base = Tikibase::load(dir, &Config::default()).unwrap();
+            let base = Tikibase::load(dir).unwrap();
             let have = scan(&base);
             pretty::assert_eq!(have.issues, vec![]);
             assert_eq!(have.outgoing_resource_links.len(), 1);

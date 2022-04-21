@@ -7,10 +7,10 @@ mod mix_cap_section;
 mod obsolete_occurrences_section;
 mod unordered_sections;
 
-use crate::{Config, Issue, Location, Tikibase};
+use crate::{Issue, Location, Tikibase};
 
 /// fixes the given Issue
-pub fn fix(issue: Issue, base: &mut Tikibase, config: &Config) -> Result {
+pub fn fix(issue: Issue, base: &mut Tikibase) -> Result {
     match issue {
         // actual fixes
         Issue::EmptySection { location, title } => {
@@ -36,7 +36,7 @@ pub fn fix(issue: Issue, base: &mut Tikibase, config: &Config) -> Result {
             }
         }
         Issue::MissingLinks { location, links } => {
-            missing_links::add_occurrences(base, location, links, config)
+            missing_links::add_occurrences(base, location, links)
         }
         Issue::MixCapSection {
             location,
@@ -60,9 +60,7 @@ pub fn fix(issue: Issue, base: &mut Tikibase, config: &Config) -> Result {
         Issue::ObsoleteOccurrencesSection { location } => {
             obsolete_occurrences_section::remove_occurrences_section(base, location)
         }
-        Issue::UnorderedSections { location } => {
-            unordered_sections::sort_sections(base, location, config.sections.as_ref().unwrap())
-        }
+        Issue::UnorderedSections { location } => unordered_sections::sort_sections(base, location),
         // no-ops
         Issue::BrokenImage {
             location: _,

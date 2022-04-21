@@ -39,7 +39,7 @@ pub(crate) fn scan(base: &Tikibase) -> Vec<Issue> {
 #[cfg(test)]
 mod tests {
     use super::scan;
-    use crate::{test, Config, Issue, Location, Tikibase};
+    use crate::{test, Issue, Location, Tikibase};
     use indoc::indoc;
     use std::path::PathBuf;
 
@@ -54,7 +54,7 @@ mod tests {
             ### One
             content"};
         test::create_file("test.md", content, &dir);
-        let base = Tikibase::load(dir, &Config::default()).unwrap();
+        let base = Tikibase::load(dir).unwrap();
         let have = scan(&base);
         let want = vec![
             Issue::DuplicateSection {

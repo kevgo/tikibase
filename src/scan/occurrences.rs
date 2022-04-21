@@ -64,7 +64,7 @@ pub(crate) fn scan(
 mod tests {
     use crate::commands::MissingLink;
     use crate::database::DocLinks;
-    use crate::{test, Config, Issue, Location, Tikibase};
+    use crate::{test, Issue, Location, Tikibase};
 
     #[test]
     fn missing_links() {
@@ -72,7 +72,7 @@ mod tests {
         test::create_file("1.md", "# One\n\ntext\n", &dir);
         test::create_file("2.md", "# Two\n\n[one](1.md)\n", &dir);
         test::create_file("3.md", "# Three\n\n[one](1.md)\n", &dir);
-        let base = Tikibase::load(dir, &Config::default()).unwrap();
+        let base = Tikibase::load(dir).unwrap();
         let mut outgoing_links = DocLinks::default();
         outgoing_links.add("3.md", "1.md");
         outgoing_links.add("2.md", "1.md");
@@ -107,7 +107,7 @@ mod tests {
     fn obsolete_occurrences() {
         let dir = test::tmp_dir();
         test::create_file("1.md", "# One\n\ntext\n### occurrences\n\n- foo", &dir);
-        let base = Tikibase::load(dir, &Config::default()).unwrap();
+        let base = Tikibase::load(dir).unwrap();
         let outgoing_links = DocLinks::default();
         let incoming_links = DocLinks::default();
         let have = super::scan(&base, &incoming_links, &outgoing_links);

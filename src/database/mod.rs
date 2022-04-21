@@ -11,7 +11,7 @@ pub(crate) mod section;
 mod tikibase;
 
 pub(crate) use crate::database::tikibase::Tikibase;
-pub(crate) use directory::{Directory, FileType};
+pub(crate) use directory::{Directory, EntryType};
 pub(crate) use doc_links::DocLinks;
 pub(crate) use document::Document;
 pub(crate) use footnotes::{Footnote, Footnotes};

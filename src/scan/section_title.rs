@@ -1,8 +1,8 @@
-use crate::{Config, Issue, Location, Tikibase};
+use crate::{Issue, Location, Tikibase};
 
-pub(crate) fn scan(base: &Tikibase, config: &Config) -> Vec<Issue> {
+pub(crate) fn scan(base: &Tikibase) -> Vec<Issue> {
     let mut issues = Vec::<Issue>::new();
-    let config_sections = match &config.sections {
+    let config_sections = match &base.dir.config.sections {
         None => return issues,
         Some(sections) => sections,
     };
@@ -22,7 +22,7 @@ pub(crate) fn scan(base: &Tikibase, config: &Config) -> Vec<Issue> {
                         end: section.title_text_end(),
                     },
                     title: section_title.into(),
-                    allowed_titles: config.sections.clone().unwrap(),
+                    allowed_titles: base.dir.config.sections.clone().unwrap(),
                 });
             }
         }

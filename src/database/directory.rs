@@ -1,13 +1,17 @@
 use super::{Document, Resource};
-use crate::{Config, Issue, Location};
-use ignore::overrides::OverrideBuilder;
-use ignore::WalkBuilder;
-use std::fs::File;
+use crate::config::LoadResult;
+use crate::{config, Config, Issue};
+use std::fs::{self, File};
 use std::io::BufReader;
 use std::path::{Path, PathBuf};
 
 pub struct Directory {
+    pub config: Config,
+    // TODO: make AHashMap<OsString, ()>
+    pub dirs: Vec<Directory>,
+    // TODO: make AHashMap<OsString, ()>
     pub docs: Vec<Document>,
+    // TODO: make AHashMap<OsString, ()>
     pub resources: Vec<Resource>,
 }
 
@@ -47,58 +51,47 @@ impl Directory {
     }
 
     /// provides a Tikibase instance for the given directory
-    pub fn load(dir: &Path, config: &Config) -> Result<Directory, Vec<Issue>> {
+    pub fn load(dir: &Path, parent_config: Config) -> Result<Directory, Vec<Issue>> {
+        let config = match config::load(dir) {
+            LoadResult::Loaded(config) => config, // TODO: merge with parent_config
+            LoadResult::NotFound => {
+                let config: Config = parent_config;
+                config
+            }
+            LoadResult::Error(issue) => return Err(vec![issue]),
+        };
         let mut docs = Vec::new();
+        let mut dirs = Vec::new();
         let mut resources = Vec::new();
         let mut errors = Vec::new();
-        let mut override_builder = OverrideBuilder::new(dir);
-        if let Some(globs) = &config.globs {
-            for glob in globs {
-                if let Err(err) = override_builder.add(glob) {
-                    return Err(vec![Issue::InvalidGlob {
-                        glob: glob.into(),
-                        location: Location {
-                            file: PathBuf::from("tikibase.json"),
-                            line: 0,
-                            start: 0,
-                            end: 0,
-                        },
-                        message: err.to_string(),
-                    }]);
-                }
-            }
-        }
-        let over_ride = match override_builder.build() {
-            Ok(o) => o,
-            Err(err) => panic!("Cannot build glob overrides: {}", err),
-        };
-        let walker = WalkBuilder::new(dir)
-            .overrides(over_ride)
-            .sort_by_file_path(Ord::cmp)
-            .build();
-        for entry in walker {
+        for entry in fs::read_dir(dir).unwrap() {
             let entry = entry.unwrap();
-            if entry.path() == dir {
-                continue;
-            }
-            let path = entry.path();
-            let rel_path = path.strip_prefix(dir).unwrap();
-            match FileType::from(path) {
-                FileType::Document => {
-                    let file = File::open(&path).unwrap();
-                    match Document::from_reader(BufReader::new(file), rel_path) {
+            let entry_path = entry.path();
+            let entry_name = entry.file_name();
+            match EntryType::from_direntry(&entry, &config) {
+                EntryType::Document => {
+                    let file = File::open(&entry_path).unwrap();
+                    match Document::from_reader(BufReader::new(file), entry_name) {
                         Ok(doc) => docs.push(doc),
                         Err(err) => errors.push(err),
                     }
                 }
-                FileType::Resource => resources.push(Resource {
-                    path: rel_path.into(),
-                }),
-                FileType::Configuration | FileType::Ignored => continue,
+                EntryType::Resource => {
+                    resources.push(Resource {
+                        path: PathBuf::from(entry_name),
+                    });
+                }
+                EntryType::Configuration | EntryType::Ignored => continue,
+                EntryType::Directory => dirs.push(Directory::load(&entry_path, config.clone())?), // TODO: try to borrow config here
             }
         }
         if errors.is_empty() {
-            Ok(Directory { docs, resources })
+            Ok(Directory {
+                config,
+                dirs,
+                docs,
+                resources,
+            })
         } else {
             Err(errors)
         }
@@ -107,7 +100,9 @@ impl Directory {
 
 /// types of files that Tikibase is aware of
 #[derive(Debug, PartialEq)]
-pub enum FileType {
+pub enum EntryType {
+    /// subdirectory of the current directory
+    Directory,
     /// Markdown document
     Document,
     /// linkable resource
@@ -118,31 +113,43 @@ pub enum FileType {
     Ignored,
 }
 
-impl From<&String> for FileType {
-    fn from(path: &String) -> Self {
-        let p: &str = path.as_ref();
-        FileType::from(p)
+impl EntryType {
+    fn from_direntry(entry: &fs::DirEntry, config: &Config) -> EntryType {
+        let entry_type = entry.file_type().unwrap();
+        let entry_os_filename = entry.file_name();
+        if entry_type.is_file() {
+            if entry_os_filename == "tikibase.json" {
+                return EntryType::Configuration;
+            }
+            let entry_filestr = entry_os_filename.to_string_lossy();
+            if entry_filestr.starts_with('.') {
+                return EntryType::Ignored;
+            }
+            if config.ignore(&entry_filestr) {
+                return EntryType::Ignored;
+            }
+            if has_extension(&entry_filestr, "md") {
+                return EntryType::Document {};
+            }
+            return EntryType::Resource;
+        }
+        if entry_type.is_dir() {
+            return EntryType::Directory;
+        }
+        EntryType::Ignored
     }
-}
 
-impl From<&str> for FileType {
-    fn from(path: &str) -> Self {
+    pub fn from_str(path: &str) -> EntryType {
         if path == "tikibase.json" {
-            return FileType::Configuration;
+            return EntryType::Configuration;
         }
         if path.starts_with('.') {
-            return FileType::Ignored;
+            return EntryType::Ignored;
         }
         if has_extension(path, "md") {
-            return FileType::Document;
+            return EntryType::Document;
         }
-        FileType::Resource
-    }
-}
-
-impl From<&Path> for FileType {
-    fn from(path: &Path) -> FileType {
-        FileType::from(path.file_name().unwrap().to_string_lossy().as_ref())
+        EntryType::Resource
     }
 }
 
@@ -161,23 +168,27 @@ mod tests {
     #[test]
     fn empty() {
         let dir = test::tmp_dir();
-        let dir = Directory::load(&dir, &Config::default()).unwrap();
+        let dir = Directory::load(&dir, Config::default()).unwrap();
         assert_eq!(dir.docs.len(), 0);
         assert_eq!(dir.resources.len(), 0);
     }
 
-    #[test]
-    fn file_type() {
-        let tests = vec![
-            ("foo.md", FileType::Document),
-            ("sub/foo.md", FileType::Document),
-            ("foo.png", FileType::Resource),
-            ("foo.pdf", FileType::Resource),
-            (".testconfig.json", FileType::Ignored),
-        ];
-        for (give, want) in tests {
-            let have = FileType::from(give);
-            assert_eq!(have, want);
+    mod entry_type {
+        use crate::database::EntryType;
+
+        #[test]
+        fn from_str() {
+            let tests = vec![
+                ("foo.md", EntryType::Document),
+                ("sub/foo.md", EntryType::Document),
+                ("foo.png", EntryType::Resource),
+                ("foo.pdf", EntryType::Resource),
+                (".testconfig.json", EntryType::Ignored),
+            ];
+            for (give, want) in tests {
+                let have = EntryType::from_str(give);
+                assert_eq!(have, want);
+            }
         }
     }
 
@@ -189,7 +200,7 @@ mod tests {
         fn exists() {
             let dir = test::tmp_dir();
             test::create_file("one.md", "# test doc", &dir);
-            let dir = Directory::load(&dir, &Config::default()).unwrap();
+            let dir = Directory::load(&dir, Config::default()).unwrap();
             let doc = dir.get_doc("one.md").expect("document not found");
             assert_eq!(doc.title_section.title_line.text, "# test doc");
         }
@@ -197,7 +208,7 @@ mod tests {
         #[test]
         fn missing() {
             let dir = test::tmp_dir();
-            let dir = Directory::load(&dir, &Config::default()).unwrap();
+            let dir = Directory::load(&dir, Config::default()).unwrap();
             assert!(dir.get_doc("zonk.md").is_none());
         }
     }
@@ -210,7 +221,7 @@ mod tests {
         fn exists() {
             let dir = test::tmp_dir();
             test::create_file("one.md", "# test doc", &dir);
-            let mut dir = Directory::load(&dir, &Config::default()).unwrap();
+            let mut dir = Directory::load(&dir, Config::default()).unwrap();
             let doc = dir.get_doc_mut("one.md").expect("document not found");
             assert_eq!(doc.title_section.title_line.text, "# test doc");
         }
@@ -218,7 +229,7 @@ mod tests {
         #[test]
         fn missing() {
             let dir = test::tmp_dir();
-            let mut dir = Directory::load(&dir, &Config::default()).unwrap();
+            let mut dir = Directory::load(&dir, Config::default()).unwrap();
             assert!(dir.get_doc_mut("zonk.md").is_none());
         }
     }
@@ -244,7 +255,7 @@ mod tests {
         #[test]
         fn empty() {
             let dir = test::tmp_dir();
-            let dir = Directory::load(&dir, &Config::default()).unwrap();
+            let dir = Directory::load(&dir, Config::default()).unwrap();
             assert!(!dir.has_resource("foo.png"));
         }
 
@@ -252,7 +263,7 @@ mod tests {
         fn matching_resource() {
             let dir = test::tmp_dir();
             test::create_file("foo.png", "content", &dir);
-            let dir = Directory::load(&dir, &Config::default()).unwrap();
+            let dir = Directory::load(&dir, Config::default()).unwrap();
             assert!(dir.has_resource("foo.png"));
         }
     }
@@ -269,7 +280,7 @@ mod tests {
             content"};
         test::create_file("one.md", content, &dir);
         test::create_file("two.md", content, &dir);
-        let dir = Directory::load(&dir, &Config::default()).unwrap();
+        let dir = Directory::load(&dir, Config::default()).unwrap();
         let have = dir.link_targets();
         let want = vec![
             "one.md",
@@ -297,7 +308,7 @@ mod tests {
             foo
             "};
         test::create_file("file.md", content, &dir);
-        let dir = Directory::load(&dir, &Config::default()).unwrap();
+        let dir = Directory::load(&dir, Config::default()).unwrap();
         // make sure we can load existing documents
         let _doc = &dir.get_doc("file.md").unwrap();
     }
@@ -306,7 +317,7 @@ mod tests {
     fn load_hidden_file() {
         let dir = test::tmp_dir();
         test::create_file(".hidden", "content", &dir);
-        let dir = Directory::load(&dir, &Config::default()).unwrap();
+        let dir = Directory::load(&dir, Config::default()).unwrap();
         assert_eq!(dir.resources.len(), 0);
     }
 }

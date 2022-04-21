@@ -4,7 +4,7 @@ use crate::commands::MissingLink;
 use crate::database::{section, Tikibase};
 use crate::fix;
 use crate::fix::Result::{Failed, Fixed};
-use crate::{Config, Issue, Location};
+use crate::{Issue, Location};
 use once_cell::sync::Lazy;
 use regex::{Captures, Regex};
 use std::borrow::Cow;
@@ -13,9 +13,12 @@ pub fn add_occurrences(
     base: &mut Tikibase,
     location: Location,
     links: Vec<MissingLink>,
-    config: &Config,
 ) -> fix::Result {
     let base_dir = base.root.clone();
+    let title_regex = match base.dir.config.title_regex() {
+        Ok(regex) => regex,
+        Err(issue) => return Failed(issue),
+    };
     let doc = base.get_doc_mut(&location.file).unwrap();
 
     // append a newline to the section before
@@ -24,13 +27,9 @@ pub fn add_occurrences(
     // insert occurrences section
     let mut section_builder = section::Builder::new("### occurrences", doc.lines_count() + 1);
     section_builder.add_line("");
-    let regex = match config.title_regex() {
-        Ok(regex) => regex,
-        Err(issue) => return Failed(issue),
-    };
     for link in links {
         let stripped_title = &strip_links(&link.title);
-        let title = match &regex {
+        let title = match &title_regex {
             None => stripped_title,
             Some(regex) => match extract_shortcut(stripped_title, regex) {
                 ExtractShortcutResult::ShortcutFound(shortcut) => shortcut,

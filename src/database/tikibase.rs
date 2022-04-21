@@ -8,8 +8,8 @@ pub struct Tikibase {
 }
 
 impl Tikibase {
-    pub fn load(root: PathBuf, config: &Config) -> Result<Tikibase, Vec<Issue>> {
-        let dir = Directory::load(&root, config)?;
+    pub fn load(root: PathBuf) -> Result<Tikibase, Vec<Issue>> {
+        let dir = Directory::load(&root, Config::default())?;
         Ok(Tikibase { root, dir })
     }
 
