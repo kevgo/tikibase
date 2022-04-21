@@ -1,4 +1,3 @@
-@this
 Feature: Ignore files
 
   Background:
