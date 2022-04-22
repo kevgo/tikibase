@@ -2,6 +2,7 @@ use super::Document;
 use crate::config::LoadResult;
 use crate::{config, Config, Issue};
 use ahash::AHashMap;
+use merge::Merge;
 use std::ffi::{OsStr, OsString};
 use std::fs::{self, File};
 use std::io::BufReader;
@@ -46,9 +47,12 @@ impl Directory {
     }
 
     /// provides a Tikibase instance for the given directory
-    pub fn load(dir: &Path, parent_config: Config) -> Result<Directory, Vec<Issue>> {
+    pub fn load(dir: &Path, mut parent_config: Config) -> Result<Directory, Vec<Issue>> {
         let config = match config::load(dir) {
-            LoadResult::Loaded(config) => config, // TODO: merge with parent_config
+            LoadResult::Loaded(config) => {
+                parent_config.merge(config);
+                parent_config
+            }
             LoadResult::NotFound => {
                 let config: Config = parent_config;
                 config
@@ -79,7 +83,7 @@ impl Directory {
                 EntryType::Configuration | EntryType::Ignored => continue,
                 EntryType::Directory => {
                     dirs.insert(entry_name, Directory::load(&entry_path, config.clone())?);
-                } // TODO: try to borrow config here
+                }
             }
         }
         if errors.is_empty() {

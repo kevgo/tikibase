@@ -1,4 +1,5 @@
 use crate::{Issue, Location};
+use merge::Merge;
 use regex::Regex;
 use schemars::JsonSchema;
 use serde::Deserialize;
@@ -7,7 +8,7 @@ use std::io::ErrorKind;
 use std::path::{Path, PathBuf};
 
 /// Tikibase configuration data
-#[derive(Clone, Deserialize, Debug, Default, JsonSchema, PartialEq)]
+#[derive(Clone, Deserialize, Debug, Default, JsonSchema, Merge, PartialEq)]
 #[serde(deny_unknown_fields)]
 #[serde(rename_all = "camelCase")]
 pub struct Config {
@@ -229,6 +230,60 @@ mod tests {
                 },
             });
             pretty::assert_eq!(have, want);
+        }
+    }
+
+    mod merge {
+        use crate::Config;
+        use merge::Merge;
+
+        #[test]
+        fn merge_default() {
+            let mut config1 = Config {
+                bidi_links: Some(true),
+                ignore: Some(vec!["one".into(), "two".into()]),
+                sections: Some(vec!["hello".into(), "bye".into()]),
+                title_reg_ex: Some("config2regex".into()),
+                schema: Some("config2schema".into()),
+            };
+            let config2 = Config::default();
+            let old_config_1 = config1.clone();
+            config1.merge(config2);
+            assert_eq!(config1, old_config_1);
+        }
+
+        #[test]
+        fn merge_into_default() {
+            let mut config1 = Config::default();
+            let config2 = Config {
+                bidi_links: Some(true),
+                ignore: Some(vec!["one".into(), "two".into()]),
+                sections: Some(vec!["hello".into(), "bye".into()]),
+                title_reg_ex: Some("config2regex".into()),
+                schema: Some("config2schema".into()),
+            };
+            config1.merge(config2.clone());
+            assert_eq!(config1, config2);
+        }
+
+        #[test]
+        fn both_have_values() {
+            let mut config1 = Config {
+                bidi_links: Some(true),
+                ignore: Some(vec!["one".into(), "two".into()]),
+                sections: Some(vec!["hello".into(), "bye".into()]),
+                title_reg_ex: Some("config2regex".into()),
+                schema: Some("config2schema".into()),
+            };
+            let config2 = Config {
+                bidi_links: Some(true),
+                ignore: Some(vec!["one".into(), "two".into()]),
+                sections: Some(vec!["hello".into(), "bye".into()]),
+                title_reg_ex: Some("config2regex".into()),
+                schema: Some("config2schema".into()),
+            };
+            config1.merge(config2.clone());
+            assert_eq!(config1, config2);
         }
     }
 }
