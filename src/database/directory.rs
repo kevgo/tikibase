@@ -27,9 +27,8 @@ impl Directory {
     }
 
     /// indicates whether this Tikibase contains a resource with the given path
-    pub fn has_resource<P: AsRef<Path>>(&self, path: P) -> bool {
-        let path = path.as_ref();
-        self.resources.contains_key(OsStr::new(path))
+    pub fn has_resource<P: AsRef<OsStr>>(&self, path: P) -> bool {
+        self.resources.contains_key(path.as_ref())
     }
 
     /// provides all valid link targets in this Tikibase
