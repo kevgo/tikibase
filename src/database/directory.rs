@@ -31,7 +31,7 @@ impl Directory {
         self.resources.contains_key(path.as_ref())
     }
 
-    /// provides all valid link targets in this Tikibase
+    /// provides all valid link targets in this directory
     // TODO: populate a given accumulator
     pub fn link_targets(&self) -> Vec<String> {
         let mut result: Vec<String> = Vec::new();
