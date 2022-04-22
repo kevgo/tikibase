@@ -32,6 +32,7 @@ impl Directory {
     }
 
     /// provides all valid link targets in this Tikibase
+    // TODO: populate a given accumulator
     pub fn link_targets(&self) -> Vec<String> {
         let mut result: Vec<String> = Vec::new();
         for (_path, doc) in &self.docs {
