@@ -66,6 +66,7 @@ impl Directory {
             let entry_name = entry.file_name();
             match EntryType::from_direntry(&entry, &config) {
                 EntryType::Document => {
+                    // TODO: make Document::load method
                     let file = File::open(&entry_path).unwrap();
                     match Document::from_reader(BufReader::new(file), entry_name.clone()) {
                         Ok(doc) => {
