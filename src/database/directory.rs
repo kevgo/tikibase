@@ -53,10 +53,7 @@ impl Directory {
                 parent_config.merge(config);
                 parent_config
             }
-            LoadResult::NotFound => {
-                let config: Config = parent_config;
-                config
-            }
+            LoadResult::NotFound => parent_config,
             LoadResult::Error(issue) => return Err(vec![issue]),
         };
         let mut docs = AHashMap::new();
