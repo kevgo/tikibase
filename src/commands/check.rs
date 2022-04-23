@@ -1,6 +1,6 @@
 use crate::scan::{
-    footnotes, image_orphaned, links, occurrences, section_capitalization, section_duplicate,
-    section_empty, section_level, section_order, section_title, section_without_header,
+    footnotes, image_orphaned, links, occurrences, section_capitalization, section_empty,
+    section_level, section_order, section_title, section_without_header,
 };
 use crate::{Outcome, Tikibase};
 
@@ -8,7 +8,6 @@ pub fn check(base: &mut Tikibase) -> Outcome {
     let mut issues = Vec::new();
     base.check(&mut issues);
 
-    issues.extend(section_duplicate::scan(base));
     issues.extend(section_empty::scan(base));
     issues.extend(section_capitalization::scan(base));
     issues.extend(section_level::scan(base));

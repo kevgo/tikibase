@@ -1,5 +1,6 @@
 use super::{section, Footnotes, Line, Reference, Section};
 use crate::{Issue, Location};
+use ahash::AHashMap;
 use std::ffi::OsString;
 use std::fs::{self, File};
 use std::io::{prelude::*, BufReader};
@@ -16,6 +17,37 @@ pub struct Document {
 }
 
 impl Document {
+    /// populates the given issues list with all duplicate sections in this document
+    pub fn find_duplicate_sections(&self, relative_path: &Path, issues: &mut Vec<Issue>) {
+        // section title -> [lines with this section]
+        let mut sections_lines: AHashMap<&str, Vec<(u32, u32, u32)>> = AHashMap::new();
+        for section in self.sections() {
+            sections_lines
+                .entry(section.human_title())
+                .or_insert_with(Vec::new)
+                .push((
+                    section.line_number,
+                    section.title_text_start as u32,
+                    section.title_text_end(),
+                ));
+        }
+        for (title, lines) in sections_lines.drain() {
+            if lines.len() > 1 {
+                for (line, start, end) in lines {
+                    issues.push(Issue::DuplicateSection {
+                        location: Location {
+                            file: relative_path.into(),
+                            line,
+                            start,
+                            end,
+                        },
+                        title: title.into(),
+                    });
+                }
+            }
+        }
+    }
+
     /// provides all the footnotes that this document defines and references
     pub fn footnotes(&self) -> Result<Footnotes, Issue> {
         let mut result = Footnotes::default();
@@ -305,8 +337,44 @@ struct CodeblockStart {
 mod tests {
     use super::Document;
     use crate::database::Reference;
+    use crate::{Issue, Location};
     use indoc::indoc;
+    use std::path::PathBuf;
 
+    #[test]
+    fn duplicate_sections() {
+        let content = indoc! {"
+            # test document
+
+            ### One
+            content
+            ### One
+            content"};
+        let doc = Document::from_str("test.md", content).unwrap();
+        let mut have = vec![];
+        doc.find_duplicate_sections(&PathBuf::from("test.md"), &mut have);
+        let want = vec![
+            Issue::DuplicateSection {
+                location: Location {
+                    file: PathBuf::from("test.md"),
+                    line: 2,
+                    start: 4,
+                    end: 7,
+                },
+                title: "One".into(),
+            },
+            Issue::DuplicateSection {
+                location: Location {
+                    file: PathBuf::from("test.md"),
+                    line: 4,
+                    start: 4,
+                    end: 7,
+                },
+                title: "One".into(),
+            },
+        ];
+        pretty::assert_eq!(have, want);
+    }
     mod footnotes {
         use crate::database::{Document, Footnote, Footnotes};
         use indoc::indoc;

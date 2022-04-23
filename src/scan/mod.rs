@@ -6,7 +6,6 @@ pub(crate) mod image_orphaned;
 pub(crate) mod links;
 pub(crate) mod occurrences;
 pub(crate) mod section_capitalization;
-pub(crate) mod section_duplicate;
 pub(crate) mod section_empty;
 pub(crate) mod section_level;
 pub(crate) mod section_order;
