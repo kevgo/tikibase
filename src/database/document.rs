@@ -1,5 +1,5 @@
 use super::{section, Footnotes, Line, Reference, Section};
-use crate::{Issue, Location};
+use crate::{Config, Issue, Location};
 use ahash::AHashMap;
 use std::ffi::OsString;
 use std::fs::{self, File};
@@ -19,7 +19,7 @@ pub struct Document {
 
 impl Document {
     /// populates the given issues list with all duplicate sections in this document
-    pub fn find_duplicate_sections(&self, relative_path: &Path, issues: &mut Vec<Issue>) {
+    pub fn find_duplicate_sections(&self, path: &Path, issues: &mut Vec<Issue>) {
         // section title -> [lines with this section]
         let mut sections_lines: AHashMap<&str, Vec<(u32, u32, u32)>> = AHashMap::new();
         for section in self.sections() {
@@ -37,7 +37,7 @@ impl Document {
                 for (line, start, end) in lines {
                     issues.push(Issue::DuplicateSection {
                         location: Location {
-                            file: relative_path.into(),
+                            file: path.into(),
                             line,
                             start,
                             end,
@@ -49,18 +49,38 @@ impl Document {
         }
     }
 
-    pub fn find_empty_sections(&self, relative_path: &Path, issues: &mut Vec<Issue>) {
+    /// populates the given issues list with all empty sections in this document
+    pub fn find_empty_sections(&self, path: &Path, issues: &mut Vec<Issue>) {
         for section in &self.content_sections {
             let has_content = section.body.iter().any(|line| !line.text.is_empty());
             if !has_content {
                 issues.push(Issue::EmptySection {
                     location: Location {
-                        file: relative_path.into(),
+                        file: path.into(),
                         line: section.line_number,
                         start: 0,
                         end: section.title_line.text.len() as u32,
                     },
                     title: section.human_title().into(),
+                });
+            }
+        }
+    }
+
+    /// populates the given issues list with all sections in this document that don't match the configured sections
+    pub fn find_mismatching_sections(&self, path: &Path, config: &Config, issues: &mut Vec<Issue>) {
+        for section in &self.content_sections {
+            let section_title = section.human_title();
+            if !config.matching_title(section_title) {
+                issues.push(Issue::UnknownSection {
+                    location: Location {
+                        file: path.into(),
+                        line: section.line_number,
+                        start: section.title_text_start as u32,
+                        end: section.title_text_end(),
+                    },
+                    title: section_title.into(),
+                    allowed_titles: config.sections.clone().unwrap(),
                 });
             }
         }

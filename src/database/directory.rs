@@ -21,6 +21,7 @@ impl Directory {
             let doc_path = relative_path.join(path);
             doc.find_duplicate_sections(&doc_path, issues);
             doc.find_empty_sections(&doc_path, issues);
+            doc.find_mismatching_sections(&doc_path, &self.config, issues);
         }
         for (path, dir) in &self.dirs {
             dir.check(&relative_path.join(path), issues);

@@ -52,6 +52,17 @@ impl Config {
             None => Ok(None),
         }
     }
+
+    /// indicates whether the given title matches one of the allowed titles
+    pub fn matching_title(&self, title: &str) -> bool {
+        match &self.sections {
+            // HACK: see https://github.com/rust-lang/rust/issues/42671
+            Some(sections) => sections
+                .iter()
+                .any(|config_section| config_section == title),
+            None => true,
+        }
+    }
 }
 
 /// reads the config file
@@ -230,6 +241,37 @@ mod tests {
                 },
             });
             pretty::assert_eq!(have, want);
+        }
+    }
+
+    mod matching_title {
+        use crate::Config;
+
+        #[test]
+        fn matches() {
+            let config = Config {
+                sections: Some(vec!["one".into(), "two".into()]),
+                ..Config::default()
+            };
+            assert!(config.matching_title("two"));
+        }
+
+        #[test]
+        fn no_match() {
+            let config = Config {
+                sections: Some(vec!["one".into(), "two".into()]),
+                ..Config::default()
+            };
+            assert!(!config.matching_title("three"));
+        }
+
+        #[test]
+        fn not_defined() {
+            let config = Config {
+                sections: None,
+                ..Config::default()
+            };
+            assert!(config.matching_title("anything"));
         }
     }
 
