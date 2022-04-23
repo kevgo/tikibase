@@ -18,13 +18,7 @@ impl Directory {
     // populates the given issues list with all issues in this directory
     pub fn check(&self, relative_path: &Path, issues: &mut Vec<Issue>) {
         for (path, doc) in &self.docs {
-            let doc_path = relative_path.join(path);
-            doc.find_duplicate_sections(&doc_path, issues);
-            doc.find_empty_sections(&doc_path, issues);
-            doc.find_mismatching_sections(&doc_path, &self.config, issues);
-            doc.find_unordered_sections(&doc_path, &self.config, issues);
-            doc.find_empty_titles(&doc_path, issues);
-            doc.find_mismatching_footnotes(&doc_path, issues);
+            doc.check(&relative_path.join(path), &self.config, issues);
         }
         for (path, dir) in &self.dirs {
             dir.check(&relative_path.join(path), issues);
