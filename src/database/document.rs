@@ -1,7 +1,8 @@
 use super::{section, Footnotes, Line, Reference, Section};
 use crate::{Issue, Location};
-use std::fs;
-use std::io::prelude::*;
+use std::ffi::OsString;
+use std::fs::{self, File};
+use std::io::{prelude::*, BufReader};
 use std::path::{Path, PathBuf};
 
 #[derive(Debug, Eq, Hash, PartialEq)]
@@ -181,6 +182,11 @@ impl Document {
             .or(Some(&self.title_section))
             .unwrap()
             .last_line_abs()
+    }
+
+    pub fn load<P: AsRef<Path>>(path: P, name: OsString) -> Result<Document, Issue> {
+        let file = File::open(path.as_ref()).unwrap();
+        Document::from_reader(BufReader::new(file), name)
     }
 
     /// provides all the references in this document

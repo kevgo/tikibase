@@ -4,8 +4,7 @@ use crate::{config, Config, Issue};
 use ahash::AHashMap;
 use merge::Merge;
 use std::ffi::{OsStr, OsString};
-use std::fs::{self, File};
-use std::io::BufReader;
+use std::fs;
 use std::path::Path;
 
 pub struct Directory {
@@ -65,16 +64,12 @@ impl Directory {
             let entry_path = entry.path();
             let entry_name = entry.file_name();
             match EntryType::from_direntry(&entry, &config) {
-                EntryType::Document => {
-                    // TODO: make Document::load method
-                    let file = File::open(&entry_path).unwrap();
-                    match Document::from_reader(BufReader::new(file), entry_name.clone()) {
-                        Ok(doc) => {
-                            docs.insert(entry_name, doc);
-                        }
-                        Err(err) => errors.push(err),
+                EntryType::Document => match Document::load(&entry_path, entry_name.clone()) {
+                    Ok(doc) => {
+                        docs.insert(entry_name, doc);
                     }
-                }
+                    Err(err) => errors.push(err),
+                },
                 EntryType::Resource => {
                     resources.insert(entry_name, ());
                 }
