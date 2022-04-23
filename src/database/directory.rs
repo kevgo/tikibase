@@ -115,19 +115,19 @@ pub enum EntryType {
 impl EntryType {
     fn from_direntry(entry: &fs::DirEntry, config: &Config) -> EntryType {
         let entry_type = entry.file_type().unwrap();
-        let entry_os_filename = entry.file_name();
+        let entry_filename_os = entry.file_name();
+        let entry_filename = entry_filename_os.to_string_lossy();
         if entry_type.is_file() {
-            if entry_os_filename == "tikibase.json" {
+            if entry_filename == "tikibase.json" {
                 return EntryType::Configuration;
             }
-            let entry_filestr = entry_os_filename.to_string_lossy();
-            if entry_filestr.starts_with('.') {
+            if entry_filename.starts_with('.') {
                 return EntryType::Ignored;
             }
-            if config.ignore(&entry_filestr) {
+            if config.ignore(&entry_filename) {
                 return EntryType::Ignored;
             }
-            if has_extension(&entry_filestr, "md") {
+            if has_extension(&entry_filename, "md") {
                 return EntryType::Document {};
             }
             return EntryType::Resource;
