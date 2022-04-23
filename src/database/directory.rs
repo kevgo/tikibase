@@ -97,7 +97,7 @@ impl Directory {
     }
 }
 
-/// types of files that Tikibase is aware of
+/// filesystem entry types that Tikibase distinguishes
 #[derive(Debug, PartialEq)]
 pub enum EntryType {
     /// subdirectory of the current directory
