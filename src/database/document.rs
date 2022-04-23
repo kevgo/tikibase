@@ -8,6 +8,7 @@ use std::path::{Path, PathBuf};
 
 #[derive(Debug, Eq, Hash, PartialEq)]
 pub struct Document {
+    // TODO: make these elements private once move to new architecture is complete
     /// the path relative to the Tikibase root directory
     pub relative_path: PathBuf,
     pub title_section: Section,
@@ -44,6 +45,23 @@ impl Document {
                         title: title.into(),
                     });
                 }
+            }
+        }
+    }
+
+    pub fn find_empty_sections(&self, relative_path: &Path, issues: &mut Vec<Issue>) {
+        for section in &self.content_sections {
+            let has_content = section.body.iter().any(|line| !line.text.is_empty());
+            if !has_content {
+                issues.push(Issue::EmptySection {
+                    location: Location {
+                        file: relative_path.into(),
+                        line: section.line_number,
+                        start: 0,
+                        end: section.title_line.text.len() as u32,
+                    },
+                    title: section.human_title().into(),
+                });
             }
         }
     }
@@ -342,7 +360,7 @@ mod tests {
     use std::path::PathBuf;
 
     #[test]
-    fn duplicate_sections() {
+    fn find_duplicate_sections() {
         let content = indoc! {"
             # test document
 
@@ -375,6 +393,77 @@ mod tests {
         ];
         pretty::assert_eq!(have, want);
     }
+
+    mod find_empty_sections {
+        use crate::database::Document;
+        use crate::{Issue, Location};
+        use indoc::indoc;
+        use std::path::PathBuf;
+
+        #[test]
+        fn empty_section() {
+            let content = indoc! {"
+            # test document
+
+            ### empty section
+            ### next section
+
+            content"};
+            let doc = Document::from_str("test.md", content).unwrap();
+            let mut have = vec![];
+            doc.find_empty_sections(&PathBuf::from("test.md"), &mut have);
+            let want = vec![Issue::EmptySection {
+                location: Location {
+                    file: PathBuf::from("test.md"),
+                    line: 2,
+                    start: 0,
+                    end: 17,
+                },
+                title: "empty section".into(),
+            }];
+            pretty::assert_eq!(have, want);
+        }
+
+        #[test]
+        fn blank_line() {
+            let content = indoc! {"
+            # test document
+
+            ### empty section
+
+            ### next section
+
+            content"};
+            let doc = Document::from_str("test.md", content).unwrap();
+            let mut have = vec![];
+            doc.find_empty_sections(&PathBuf::from("test.md"), &mut have);
+            let want = vec![Issue::EmptySection {
+                location: Location {
+                    file: PathBuf::from("test.md"),
+                    line: 2,
+                    start: 0,
+                    end: 17,
+                },
+                title: "empty section".into(),
+            }];
+            pretty::assert_eq!(have, want);
+        }
+
+        #[test]
+        fn content() {
+            let content = indoc! {"
+            # test document
+
+            ### section with content
+
+            content"};
+            let doc = Document::from_str("test.md", content).unwrap();
+            let mut have = vec![];
+            doc.find_empty_sections(&PathBuf::from("test.md"), &mut have);
+            assert!(have.is_empty());
+        }
+    }
+
     mod footnotes {
         use crate::database::{Document, Footnote, Footnotes};
         use indoc::indoc;
