@@ -67,6 +67,22 @@ impl Document {
         }
     }
 
+    /// populates the given issues list with all sections that have empty titles
+    pub fn find_empty_titles(&self, path: &Path, issues: &mut Vec<Issue>) {
+        for section in self.sections() {
+            if section.human_title().is_empty() {
+                issues.push(Issue::SectionWithoutHeader {
+                    location: Location {
+                        file: path.into(),
+                        line: section.line_number,
+                        start: 0,
+                        end: section.title_text_end(),
+                    },
+                });
+            }
+        }
+    }
+
     /// populates the given issues list with all sections in this document that don't match the configured order
     pub fn find_unordered_sections(&self, path: &Path, config: &Config, issues: &mut Vec<Issue>) {
         let schema_titles = match &config.sections {
@@ -109,14 +125,12 @@ impl Document {
                 schema_title_option = schema_iter.next();
                 continue;
             }
-
             // HACK: see https://github.com/rust-lang/rust/issues/42671
             if !schema_titles.iter().any(|st| st == doc_section_title) {
                 // unknown element in actual --> ignore here (there is a separate check for this)
                 doc_section_option = doc_iter.next();
                 continue;
             }
-
             // elements don't match --> advance the schema
             // (because schema might contain elements that are not in actual)
             schema_title_option = schema_iter.next();
@@ -537,6 +551,46 @@ mod tests {
             let mut have = vec![];
             doc.find_empty_sections(&PathBuf::from("test.md"), &mut have);
             assert!(have.is_empty());
+        }
+    }
+
+    mod find_empty_titles {
+        use crate::database::Document;
+        use crate::{Issue, Location};
+        use indoc::indoc;
+        use std::path::PathBuf;
+
+        #[test]
+        fn empty_title() {
+            let content = indoc! {"
+            # test document
+
+            ###
+            content
+            ###
+            content"};
+            let doc = Document::from_str("test.md", content).unwrap();
+            let mut have = vec![];
+            doc.find_empty_titles(&PathBuf::from("test.md"), &mut have);
+            let want = vec![
+                Issue::SectionWithoutHeader {
+                    location: Location {
+                        file: PathBuf::from("test.md"),
+                        line: 2,
+                        start: 0,
+                        end: 3,
+                    },
+                },
+                Issue::SectionWithoutHeader {
+                    location: Location {
+                        file: PathBuf::from("test.md"),
+                        line: 4,
+                        start: 0,
+                        end: 3,
+                    },
+                },
+            ];
+            pretty::assert_eq!(have, want);
         }
     }
 
