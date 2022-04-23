@@ -15,6 +15,16 @@ pub struct Directory {
 }
 
 impl Directory {
+    // populates the given issues list with all issues in this directory
+    pub fn check(&self, relative_path: &Path, issues: &mut Vec<Issue>) {
+        for (path, doc) in &self.docs {
+            //
+        }
+        for (path, dir) in &self.dirs {
+            dir.check(relative_path, issues);
+        }
+    }
+
     /// provides the document with the given relative filename
     pub fn get_doc<OS: AsRef<OsStr>>(&self, relative_path: OS) -> Option<&Document> {
         self.docs.get(relative_path.as_ref())

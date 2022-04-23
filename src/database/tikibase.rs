@@ -9,6 +9,11 @@ pub struct Tikibase {
 }
 
 impl Tikibase {
+    /// populates the gives issues vector with all issues found in this Tikibase
+    pub fn check(&self, issues: &mut Vec<Issue>) {
+        self.dir.check(&PathBuf::from(""), issues);
+    }
+
     pub fn load(root: PathBuf) -> Result<Tikibase, Vec<Issue>> {
         let dir = Directory::load(&root, Config::default())?;
         Ok(Tikibase { root, dir })

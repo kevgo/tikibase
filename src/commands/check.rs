@@ -6,6 +6,8 @@ use crate::{Outcome, Tikibase};
 
 pub fn check(base: &mut Tikibase) -> Outcome {
     let mut issues = Vec::new();
+    base.check(&mut issues);
+
     issues.extend(section_duplicate::scan(base));
     issues.extend(section_empty::scan(base));
     issues.extend(section_capitalization::scan(base));
