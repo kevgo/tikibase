@@ -200,7 +200,7 @@ mod tests {
             let dir = test::tmp_dir();
             test::create_file("one.md", "# test doc", &dir);
             let dir = Directory::load(&dir, Config::default()).unwrap();
-            let doc = dir.get_doc("one.md").expect("document not found");
+            let doc = dir.get_doc("one.md").unwrap();
             assert_eq!(doc.title_section.title_line.text, "# test doc");
         }
 
@@ -221,7 +221,7 @@ mod tests {
             let dir = test::tmp_dir();
             test::create_file("one.md", "# test doc", &dir);
             let mut dir = Directory::load(&dir, Config::default()).unwrap();
-            let doc = dir.get_doc_mut("one.md").expect("document not found");
+            let doc = dir.get_doc_mut("one.md").unwrap();
             assert_eq!(doc.title_section.title_line.text, "# test doc");
         }
 
