@@ -6,7 +6,7 @@ use std::path::Path;
 pub(crate) fn scan(base: &Tikibase) -> Vec<Issue> {
     // title --> level --> FileSections with this level and title
     let mut level_variants: AHashMap<&str, AHashMap<u8, Vec<FileSection>>> = AHashMap::new();
-    for doc in &base.docs {
+    for (_path, doc) in &base.dir.docs {
         for section in doc.sections() {
             level_variants
                 .entry(section.human_title())
@@ -98,7 +98,7 @@ fn find_common_level(level_counts: &AHashMap<u8, Vec<FileSection>>) -> Option<u8
 mod tests {
 
     mod scan {
-        use crate::{test, Config, Issue, Location, Tikibase};
+        use crate::{test, Issue, Location, Tikibase};
         use indoc::indoc;
         use std::path::PathBuf;
 
@@ -123,7 +123,7 @@ mod tests {
                 ### section
                 content"};
             test::create_file("3.md", content3, &dir);
-            let base = Tikibase::load(dir, &Config::default()).unwrap();
+            let base = Tikibase::load(dir).unwrap();
             let have = super::super::scan(&base);
             let want = vec![Issue::InconsistentHeadingLevel {
                 location: Location {
@@ -155,7 +155,7 @@ mod tests {
                 ##### section
                 content"};
             test::create_file("2.md", content2, &dir);
-            let base = Tikibase::load(dir, &Config::default()).unwrap();
+            let base = Tikibase::load(dir).unwrap();
             let have = super::super::scan(&base);
             let want = vec![
                 Issue::InconsistentHeadingLevel {
@@ -201,7 +201,7 @@ mod tests {
                 ### section
                 content"};
             test::create_file("2.md", content2, &dir);
-            let base = Tikibase::load(dir, &Config::default()).unwrap();
+            let base = Tikibase::load(dir).unwrap();
             let have = super::super::scan(&base);
             let want = vec![];
             pretty::assert_eq!(have, want);

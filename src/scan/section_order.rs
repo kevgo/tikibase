@@ -1,12 +1,12 @@
-use crate::{Config, Issue, Tikibase};
+use crate::{Issue, Tikibase};
 
-pub(crate) fn scan(base: &Tikibase, config: &Config) -> Vec<Issue> {
+pub(crate) fn scan(base: &Tikibase) -> Vec<Issue> {
     let mut issues = Vec::new();
-    let expected_order = match &config.sections {
+    let expected_order = match &base.dir.config.sections {
         None => return issues,
         Some(expected_sections) => expected_sections,
     };
-    for doc in &base.docs {
+    for (_path, doc) in &base.dir.docs {
         if let Some(mismatching) = first_mismatching(&doc.section_titles(), expected_order) {
             let section = doc.section_with_title(&mismatching).unwrap();
             issues.push(Issue::UnorderedSections {
@@ -64,7 +64,7 @@ fn first_mismatching(actual: &[&str], schema: &[String]) -> Option<String> {
 
 #[cfg(test)]
 mod tests {
-    use crate::{test, Config, Issue, Location, Tikibase};
+    use crate::{test, Issue, Location, Tikibase};
     use indoc::indoc;
     use std::path::PathBuf;
 
@@ -120,15 +120,13 @@ mod tests {
             # another
             [1](1.md) content"};
         test::create_file("2.md", content2, &dir);
-        let config = Config {
-            bidi_links: None,
-            sections: Some(vec!["one".into(), "two".into(), "three".into()]),
-            globs: None,
-            schema: None,
-            title_reg_ex: None,
-        };
-        let base = Tikibase::load(dir, &Config::default()).unwrap();
-        let have = super::scan(&base, &config);
+        let config = indoc! {r#"
+            {
+                "sections": ["one", "two", "three"]
+            }"#};
+        test::create_file("tikibase.json", config, &dir);
+        let base = Tikibase::load(dir).unwrap();
+        let have = super::scan(&base);
         let want = vec![Issue::UnorderedSections {
             location: Location {
                 file: PathBuf::from("1.md"),

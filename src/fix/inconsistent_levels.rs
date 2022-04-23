@@ -10,7 +10,7 @@ pub fn normalize_outliers(
     old_level: u8,
     new_level: u8,
 ) -> fix::Result {
-    let base_dir = base.dir.clone();
+    let base_dir = base.root.clone();
     let doc = base.get_doc_mut(&location.file).unwrap();
     let section = doc.section_with_title_mut(&section_title).unwrap();
     section.title_line.text = title_at_level(&section_title, new_level as usize);

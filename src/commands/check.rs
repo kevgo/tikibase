@@ -2,16 +2,16 @@ use crate::scan::{
     footnotes, image_orphaned, links, occurrences, section_capitalization, section_duplicate,
     section_empty, section_level, section_order, section_title, section_without_header,
 };
-use crate::{Config, Outcome, Tikibase};
+use crate::{Outcome, Tikibase};
 
-pub fn check(base: &mut Tikibase, config: &Config) -> Outcome {
+pub fn check(base: &mut Tikibase) -> Outcome {
     let mut issues = Vec::new();
     issues.extend(section_duplicate::scan(base));
     issues.extend(section_empty::scan(base));
     issues.extend(section_capitalization::scan(base));
     issues.extend(section_level::scan(base));
-    issues.extend(section_title::scan(base, config));
-    issues.extend(section_order::scan(base, config));
+    issues.extend(section_title::scan(base));
+    issues.extend(section_order::scan(base));
     issues.extend(section_without_header::scan(base));
     issues.extend(footnotes::scan(base));
     let links_result = links::scan(base);
@@ -20,7 +20,7 @@ pub fn check(base: &mut Tikibase, config: &Config) -> Outcome {
         base,
         &links_result.outgoing_resource_links,
     ));
-    if let Some(bidi_links) = config.bidi_links {
+    if let Some(bidi_links) = base.dir.config.bidi_links {
         if bidi_links {
             issues.extend(occurrences::scan(
                 base,
@@ -29,6 +29,7 @@ pub fn check(base: &mut Tikibase, config: &Config) -> Outcome {
             ));
         }
     }
+    issues.sort();
     Outcome {
         issues,
         fixes: vec![],

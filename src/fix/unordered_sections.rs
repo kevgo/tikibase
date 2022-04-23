@@ -4,10 +4,11 @@ use crate::fix;
 use crate::fix::Fix::SortedSections;
 use crate::{Location, Tikibase};
 
-pub fn sort_sections(base: &mut Tikibase, location: Location, sections: &[String]) -> fix::Result {
-    let base_dir = base.dir.clone();
+pub fn sort_sections(base: &mut Tikibase, location: Location) -> fix::Result {
+    let base_dir = base.root.clone();
+    let sections = base.dir.config.sections.clone().unwrap();
     let mut doc = base.get_doc_mut(&location.file).unwrap();
-    doc.content_sections = reorder(&mut doc.content_sections, sections);
+    doc.content_sections = reorder(&mut doc.content_sections, &sections);
     doc.save(&base_dir);
     Fixed(SortedSections { location })
 }

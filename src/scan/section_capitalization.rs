@@ -6,7 +6,7 @@ use std::path::Path;
 pub(crate) fn scan(base: &Tikibase) -> Vec<Issue> {
     // normalized title --> variant --> sections with this variant
     let mut title_variants: AHashMap<String, AHashMap<&str, Vec<FileSection>>> = AHashMap::new();
-    for doc in &base.docs {
+    for (_path, doc) in &base.dir.docs {
         for section in doc.sections() {
             let section_title = section.human_title();
             title_variants
@@ -112,11 +112,11 @@ fn normalize(section_title: &str) -> String {
 
 #[cfg(test)]
 mod tests {
-    use crate::{test, Config, Tikibase};
+    use crate::{test, Tikibase};
     use indoc::indoc;
 
     mod scan {
-        use crate::{test, Config, Issue, Location, Tikibase};
+        use crate::{test, Issue, Location, Tikibase};
         use indoc::indoc;
         use std::path::PathBuf;
 
@@ -141,7 +141,7 @@ mod tests {
             ### alpha
             [1](1.md)"};
             test::create_file("3.md", content3, &dir);
-            let base = Tikibase::load(dir, &Config::default()).unwrap();
+            let base = Tikibase::load(dir).unwrap();
             let have = super::super::scan(&base);
             let want = vec![Issue::MixCapSection {
                 location: Location {
@@ -173,7 +173,7 @@ mod tests {
             ### Alpha
             [1](1.md)"};
             test::create_file("2.md", content2, &dir);
-            let base = Tikibase::load(dir, &Config::default()).unwrap();
+            let base = Tikibase::load(dir).unwrap();
             let have = super::super::scan(&base);
             let want = vec![
                 Issue::MixCapSection {
@@ -219,7 +219,7 @@ mod tests {
             ### alpha
             [1](1.md)"};
             test::create_file("2.md", content2, &dir);
-            let base = Tikibase::load(dir, &Config::default()).unwrap();
+            let base = Tikibase::load(dir).unwrap();
             let have = super::super::scan(&base);
             let want = vec![];
             pretty::assert_eq!(have, want);
@@ -259,7 +259,7 @@ mod tests {
             ### One
             content"};
         test::create_file("1.md", content1, &dir);
-        let base = Tikibase::load(dir, &Config::default()).unwrap();
+        let base = Tikibase::load(dir).unwrap();
         let have = super::scan(&base);
         let want = vec![];
         pretty::assert_eq!(have, want);

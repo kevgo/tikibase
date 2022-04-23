@@ -23,19 +23,15 @@ pub fn run(command: &input::Command, dir: PathBuf) -> Messages {
     if command == &Command::JsonSchema {
         return Messages::from_outcome(commands::json_schema());
     }
-    let config = match config::load(&dir) {
-        Ok(config) => config,
-        Err(issue) => return Messages::from_issue(issue),
-    };
-    let mut base = match Tikibase::load(dir, &config) {
+    let mut base = match Tikibase::load(dir) {
         Ok(base) => base,
         Err(issues) => return Messages::from_issues(issues),
     };
     let outcome = match command {
-        Command::Check => commands::check(&mut base, &config),
+        Command::Check => commands::check(&mut base),
         Command::Stats => commands::stats(&base),
-        Command::Fix => commands::fix(&mut base, &config),
-        Command::P => commands::pitstop(&mut base, &config),
+        Command::Fix => commands::fix(&mut base),
+        Command::P => commands::pitstop(&mut base),
         Command::Init | Command::JsonSchema => panic!(), // handled above
     };
     Messages::from_outcome(outcome)

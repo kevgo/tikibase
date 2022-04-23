@@ -112,7 +112,7 @@ fn it_prints_nothing(world: &mut MyWorld) {
 
 #[then("it finds no issues")]
 fn it_finds_no_issues(world: &mut MyWorld) {
-    assert!(world.output.is_empty());
+    assert_eq!(world.output, Messages::default());
     assert_eq!(world.output.exit_code, 0);
 }
 

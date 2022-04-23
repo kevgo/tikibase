@@ -5,7 +5,7 @@ use crate::{Issue, Location, Tikibase};
 /// returns the unfixed issues
 pub(crate) fn scan(base: &Tikibase) -> Vec<Issue> {
     let mut issues = Vec::<Issue>::new();
-    for doc in &base.docs {
+    for (_path, doc) in &base.dir.docs {
         for section in &doc.content_sections {
             let has_content = section.body.iter().any(|line| !line.text.is_empty());
             if !has_content {
@@ -27,7 +27,7 @@ pub(crate) fn scan(base: &Tikibase) -> Vec<Issue> {
 #[cfg(test)]
 mod tests {
     use super::scan;
-    use crate::{test, Config, Location};
+    use crate::{test, Location};
     use crate::{Issue, Tikibase};
     use indoc::indoc;
     use std::path::PathBuf;
@@ -43,7 +43,7 @@ mod tests {
 
             content"};
         test::create_file("test.md", content, &dir);
-        let base = Tikibase::load(dir, &Config::default()).unwrap();
+        let base = Tikibase::load(dir).unwrap();
         let have = scan(&base);
         let want = vec![Issue::EmptySection {
             location: Location {
@@ -69,7 +69,7 @@ mod tests {
 
             content"};
         test::create_file("test.md", content, &dir);
-        let base = Tikibase::load(dir, &Config::default()).unwrap();
+        let base = Tikibase::load(dir).unwrap();
         let have = scan(&base);
         let want = vec![Issue::EmptySection {
             location: Location {
@@ -93,7 +93,7 @@ mod tests {
 
             content"};
         test::create_file("test.md", content, &dir);
-        let base = Tikibase::load(dir, &Config::default()).unwrap();
+        let base = Tikibase::load(dir).unwrap();
         let have = scan(&base);
         assert!(have.is_empty());
     }

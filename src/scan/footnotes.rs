@@ -2,7 +2,7 @@ use crate::{Issue, Location, Tikibase};
 
 pub(crate) fn scan(base: &Tikibase) -> Vec<Issue> {
     let mut result = Vec::<Issue>::new();
-    for doc in &base.docs {
+    for (_path, doc) in &base.dir.docs {
         let footnotes = match doc.footnotes() {
             Ok(footnotes) => footnotes,
             Err(issue) => return vec![issue],
@@ -35,7 +35,7 @@ pub(crate) fn scan(base: &Tikibase) -> Vec<Issue> {
 
 #[cfg(test)]
 mod tests {
-    use crate::{test, Config, Issue, Location, Tikibase};
+    use crate::{test, Issue, Location, Tikibase};
     use indoc::indoc;
     use std::path::PathBuf;
 
@@ -58,7 +58,7 @@ mod tests {
             [^existing]: existing footnote
             "};
         test::create_file("1.md", content, &dir);
-        let base = Tikibase::load(dir, &Config::default()).unwrap();
+        let base = Tikibase::load(dir).unwrap();
         let have = super::scan(&base);
         let want = vec![Issue::MissingFootnote {
             location: Location {
@@ -91,7 +91,7 @@ mod tests {
             [^unused]: unused footnote
             "};
         test::create_file("1.md", content, &dir);
-        let base = Tikibase::load(dir, &Config::default()).unwrap();
+        let base = Tikibase::load(dir).unwrap();
         let have = super::scan(&base);
         let want = vec![Issue::UnusedFootnote {
             location: Location {

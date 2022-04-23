@@ -4,7 +4,7 @@ use ahash::AHashMap;
 /// finds all duplicate sections in the given Tikibase
 pub(crate) fn scan(base: &Tikibase) -> Vec<Issue> {
     let mut issues = Vec::new();
-    for doc in &base.docs {
+    for (_path, doc) in &base.dir.docs {
         // section title -> [lines with this section]
         let mut sections_lines: AHashMap<&str, Vec<(u32, u32, u32)>> = AHashMap::new();
         for section in doc.sections() {
@@ -39,7 +39,7 @@ pub(crate) fn scan(base: &Tikibase) -> Vec<Issue> {
 #[cfg(test)]
 mod tests {
     use super::scan;
-    use crate::{test, Config, Issue, Location, Tikibase};
+    use crate::{test, Issue, Location, Tikibase};
     use indoc::indoc;
     use std::path::PathBuf;
 
@@ -54,7 +54,7 @@ mod tests {
             ### One
             content"};
         test::create_file("test.md", content, &dir);
-        let base = Tikibase::load(dir, &Config::default()).unwrap();
+        let base = Tikibase::load(dir).unwrap();
         let have = scan(&base);
         let want = vec![
             Issue::DuplicateSection {

@@ -4,8 +4,8 @@ Feature: Ignore files
     Given file "tikibase.json" with content:
       """
       {
-        "globs": [
-          "!Makefile"
+        "ignore": [
+          "Makefile"
         ]
       }
       """
