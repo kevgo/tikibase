@@ -19,13 +19,13 @@ pub struct Document {
 
 impl Document {
     // populates the given issues list with all issues in this document
-    pub fn check(&self, relative_path: &Path, config: &Config, issues: &mut Vec<Issue>) {
-        self.find_duplicate_sections(relative_path, issues);
-        self.find_empty_sections(relative_path, issues);
-        self.find_mismatching_sections(relative_path, config, issues);
-        self.find_unordered_sections(relative_path, config, issues);
-        self.find_empty_titles(relative_path, issues);
-        self.find_mismatching_footnotes(relative_path, issues);
+    pub fn check(&self, path: &Path, config: &Config, issues: &mut Vec<Issue>) {
+        self.find_duplicate_sections(path, issues);
+        self.find_empty_sections(path, issues);
+        self.find_mismatching_sections(path, config, issues);
+        self.find_unordered_sections(path, config, issues);
+        self.find_empty_titles(path, issues);
+        self.find_mismatching_footnotes(path, issues);
     }
 
     /// populates the given issues list with all duplicate sections in this document
