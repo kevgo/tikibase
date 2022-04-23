@@ -15,6 +15,38 @@ pub struct Document {
 }
 
 impl Document {
+    /// provides all the footnotes that this document defines and references
+    pub fn footnotes(&self) -> Result<Footnotes, Issue> {
+        let mut result = Footnotes::default();
+        let mut code_block_start: Option<CodeblockStart> = None;
+        for (i, line) in self.lines().enumerate() {
+            if line.is_code_block_boundary() {
+                code_block_start = match code_block_start {
+                    Some(_) => None,
+                    None => Some(CodeblockStart {
+                        line: i as u32,
+                        len: line.text.len() as u32,
+                    }),
+                };
+                continue;
+            }
+            if code_block_start.is_none() {
+                line.add_footnotes_to(&mut result, &self.relative_path, i as u32)?;
+            }
+        }
+        if let Some(code_block_start) = code_block_start {
+            return Err(Issue::UnclosedFence {
+                location: Location {
+                    file: self.relative_path.clone(),
+                    line: code_block_start.line,
+                    start: 0,
+                    end: code_block_start.len,
+                },
+            });
+        }
+        Ok(result)
+    }
+
     /// provides a Document instance containing the given text
     pub fn from_lines<T, P: Into<PathBuf>>(lines: T, relative_path: P) -> Result<Document, Issue>
     where
@@ -91,42 +123,24 @@ impl Document {
         })
     }
 
-    /// provides all the footnotes that this document defines and references
-    pub fn footnotes(&self) -> Result<Footnotes, Issue> {
-        let mut result = Footnotes::default();
-        let mut code_block_start: Option<CodeblockStart> = None;
-        for (i, line) in self.lines().enumerate() {
-            if line.is_code_block_boundary() {
-                code_block_start = match code_block_start {
-                    Some(_) => None,
-                    None => Some(CodeblockStart {
-                        line: i as u32,
-                        len: line.text.len() as u32,
-                    }),
-                };
-                continue;
-            }
-            if code_block_start.is_none() {
-                line.add_footnotes_to(&mut result, &self.relative_path, i as u32)?;
-            }
-        }
-        if let Some(code_block_start) = code_block_start {
-            return Err(Issue::UnclosedFence {
-                location: Location {
-                    file: self.relative_path.clone(),
-                    line: code_block_start.line,
-                    start: 0,
-                    end: code_block_start.len,
-                },
-            });
-        }
-        Ok(result)
+    /// provides the Document contained in the file with the given path
+    pub fn from_reader<R: BufRead, P: Into<PathBuf>>(
+        reader: R,
+        path: P,
+    ) -> Result<Document, Issue> {
+        let lines = reader.lines().map(Result::unwrap);
+        Document::from_lines(lines, path)
     }
 
     #[cfg(test)]
     /// provides Document instances in tests
     pub fn from_str<P: Into<PathBuf>>(path: P, text: &str) -> Result<Document, Issue> {
         Document::from_lines(text.lines().map(std::string::ToString::to_string), path)
+    }
+
+    /// provides the human-readable title of this document
+    pub fn human_title(&self) -> &str {
+        self.title_section.human_title()
     }
 
     /// provides the last line in this document
@@ -167,15 +181,6 @@ impl Document {
             .or(Some(&self.title_section))
             .unwrap()
             .last_line_abs()
-    }
-
-    /// provides the Document contained in the file with the given path
-    pub fn from_reader<R: BufRead, P: Into<PathBuf>>(
-        reader: R,
-        path: P,
-    ) -> Result<Document, Issue> {
-        let lines = reader.lines().map(Result::unwrap);
-        Document::from_lines(lines, path)
     }
 
     /// provides all the references in this document
@@ -231,11 +236,6 @@ impl Document {
             result.push_str(&section.text());
         }
         result
-    }
-
-    /// provides the human-readable title of this document
-    pub fn human_title(&self) -> &str {
-        self.title_section.human_title()
     }
 }
 
