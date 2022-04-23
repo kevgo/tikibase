@@ -1,6 +1,4 @@
-use crate::scan::{
-    footnotes, image_orphaned, links, occurrences, section_capitalization, section_level,
-};
+use crate::scan::{image_orphaned, links, occurrences, section_capitalization, section_level};
 use crate::{Outcome, Tikibase};
 
 pub fn check(base: &mut Tikibase) -> Outcome {
@@ -15,7 +13,6 @@ pub fn check(base: &mut Tikibase) -> Outcome {
     // It rarely, if ever, makes sense to allow different levels.
     issues.extend(section_level::scan(base));
 
-    issues.extend(footnotes::scan(base));
     let links_result = links::scan(base);
     issues.extend(links_result.issues);
     issues.extend(image_orphaned::scan(

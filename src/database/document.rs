@@ -83,6 +83,58 @@ impl Document {
         }
     }
 
+    /// populates the given issues list with all sections in this document that don't match the configured sections
+    pub fn find_mismatching_footnotes(&self, path: &Path, issues: &mut Vec<Issue>) {
+        let footnotes = match self.footnotes() {
+            Ok(footnotes) => footnotes,
+            Err(issue) => {
+                issues.push(issue);
+                return;
+            }
+        };
+        for missing_reference in footnotes.missing_references() {
+            issues.push(Issue::MissingFootnote {
+                location: Location {
+                    file: path.into(),
+                    line: missing_reference.line,
+                    start: missing_reference.start,
+                    end: missing_reference.end,
+                },
+                identifier: missing_reference.identifier.clone(),
+            });
+        }
+        for unused_definition in footnotes.unused_definitions() {
+            issues.push(Issue::UnusedFootnote {
+                location: Location {
+                    file: path.into(),
+                    line: unused_definition.line,
+                    start: unused_definition.start,
+                    end: unused_definition.end,
+                },
+                identifier: unused_definition.identifier.clone(),
+            });
+        }
+    }
+
+    /// populates the given issues list with all sections in this document that don't match the configured sections
+    pub fn find_mismatching_sections(&self, path: &Path, config: &Config, issues: &mut Vec<Issue>) {
+        for section in &self.content_sections {
+            let section_title = section.human_title();
+            if !config.matching_title(section_title) {
+                issues.push(Issue::UnknownSection {
+                    location: Location {
+                        file: path.into(),
+                        line: section.line_number,
+                        start: section.title_text_start as u32,
+                        end: section.title_text_end(),
+                    },
+                    title: section_title.into(),
+                    allowed_titles: config.sections.clone().unwrap(),
+                });
+            }
+        }
+    }
+
     /// populates the given issues list with all sections in this document that don't match the configured order
     pub fn find_unordered_sections(&self, path: &Path, config: &Config, issues: &mut Vec<Issue>) {
         let schema_titles = match &config.sections {
@@ -134,25 +186,6 @@ impl Document {
             // elements don't match --> advance the schema
             // (because schema might contain elements that are not in actual)
             schema_title_option = schema_iter.next();
-        }
-    }
-
-    /// populates the given issues list with all sections in this document that don't match the configured sections
-    pub fn find_mismatching_sections(&self, path: &Path, config: &Config, issues: &mut Vec<Issue>) {
-        for section in &self.content_sections {
-            let section_title = section.human_title();
-            if !config.matching_title(section_title) {
-                issues.push(Issue::UnknownSection {
-                    location: Location {
-                        file: path.into(),
-                        line: section.line_number,
-                        start: section.title_text_start as u32,
-                        end: section.title_text_end(),
-                    },
-                    title: section_title.into(),
-                    allowed_titles: config.sections.clone().unwrap(),
-                });
-            }
         }
     }
 
@@ -590,6 +623,77 @@ mod tests {
                     },
                 },
             ];
+            pretty::assert_eq!(have, want);
+        }
+    }
+
+    mod find_unused_footnotes {
+        use crate::database::Document;
+        use crate::{Issue, Location};
+        use indoc::indoc;
+        use std::path::PathBuf;
+
+        #[test]
+        fn missing_footnote_definition() {
+            let content = indoc! {"
+                # Title
+                existing footnote[^existing]
+                other footnote[^other]
+
+                ```go
+                result := map[^0]
+                ```
+
+                Another snippet of code that should be ignored: `map[^0]`.
+
+                ### links
+
+                [^existing]: existing footnote
+                "};
+            let doc = Document::from_str("test.md", content).unwrap();
+            let mut have = vec![];
+            doc.find_mismatching_footnotes(&PathBuf::from("test.md"), &mut have);
+            let want = vec![Issue::MissingFootnote {
+                location: Location {
+                    file: PathBuf::from("test.md"),
+                    line: 2,
+                    start: 14,
+                    end: 22,
+                },
+                identifier: "other".into(),
+            }];
+            pretty::assert_eq!(have, want);
+        }
+
+        #[test]
+        fn unused_footnote_definition() {
+            let content = indoc! {"
+                # Title
+                existing footnote[^existing]
+
+                ```go
+                result := map[^0]
+                ```
+
+                Another snippet of code that should be ignored: `map[^0]`.
+
+                ### links
+
+                [^existing]: existing footnote
+                [^unused]: unused footnote
+                "};
+            let doc = Document::from_str("test.md", content).unwrap();
+            let mut have = vec![];
+            doc.find_mismatching_footnotes(&PathBuf::from("test.md"), &mut have);
+            let want = vec![Issue::UnusedFootnote {
+                location: Location {
+                    file: PathBuf::from("test.md"),
+                    line: 12,
+                    start: 0,
+                    end: 10,
+                },
+                identifier: "unused".into(),
+            }];
             pretty::assert_eq!(have, want);
         }
     }
