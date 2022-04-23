@@ -1,5 +1,4 @@
-use crate::database::EntryType;
-use crate::database::{DocLinks, Reference, Tikibase};
+use crate::database::{DocLinks, EntryType, Reference, Tikibase};
 use crate::{Issue, Location};
 
 #[derive(Default)]
