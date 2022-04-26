@@ -105,7 +105,6 @@ impl Document {
                         continue;
                     }
                     if target.starts_with('#') {
-                        // TODO: maybe cache this in a field?
                         if !self
                             .content_sections
                             .iter()
@@ -460,7 +459,6 @@ impl Document {
     }
 
     /// indicates whether this document contains the given anchor
-    // TODO: maybe cache the anchors in this document
     pub fn has_anchor(&self, anchor: &str) -> bool {
         self.content_sections
             .iter()
