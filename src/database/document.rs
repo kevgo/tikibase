@@ -104,23 +104,22 @@ impl Document {
                         });
                         continue;
                     }
-                    if target.starts_with('#') {
-                        if !self
+                    if target.starts_with('#')
+                        && !self
                             .content_sections
                             .iter()
                             .any(|section| &section.anchor() == target)
-                        {
-                            issues.push(Issue::LinkToNonExistingAnchorInCurrentDocument {
-                                location: Location {
-                                    file: path.into(),
-                                    line: line.to_owned(),
-                                    start: start.to_owned(),
-                                    end: end.to_owned(),
-                                },
-                                anchor: target.clone(),
-                            });
-                            continue;
-                        }
+                    {
+                        issues.push(Issue::LinkToNonExistingAnchorInCurrentDocument {
+                            location: Location {
+                                file: path.into(),
+                                line: line.to_owned(),
+                                start: start.to_owned(),
+                                end: end.to_owned(),
+                            },
+                            anchor: target.clone(),
+                        });
+                        continue;
                     }
                     match EntryType::from_str(&target_file) {
                         EntryType::Document => {
