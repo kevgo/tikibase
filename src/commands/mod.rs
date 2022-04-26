@@ -123,9 +123,10 @@ pub enum Issue {
         location: Location,
         identifier: String,
     },
-    MissingLinks {
+    MissingLink {
         location: Location,
-        links: MissingLink,
+        path: PathBuf,
+        title: String,
     },
     MixCapSection {
         location: Location,
@@ -174,13 +175,6 @@ pub enum Issue {
         location: Location,
         identifier: String,
     },
-}
-
-/// a missing link to a document
-#[derive(Clone, Debug, Eq, Ord, PartialEq, PartialOrd)]
-pub struct MissingLink {
-    pub path: PathBuf,
-    pub title: String,
 }
 
 /// the position of an issue or fix

@@ -35,9 +35,11 @@ pub fn fix(issue: Issue, base: &mut Tikibase) -> Result {
                 Result::Unfixable
             }
         }
-        Issue::MissingLinks { location, links } => {
-            missing_links::add_occurrences(base, location, &links)
-        }
+        Issue::MissingLink {
+            location,
+            path,
+            title,
+        } => missing_links::add_occurrences(base, location, &path, &title),
         Issue::MixCapSection {
             location,
             all_variants: _,

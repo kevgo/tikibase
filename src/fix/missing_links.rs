@@ -1,6 +1,5 @@
 use super::Fix::AddedOccurrencesSection;
 use crate::commands::Issue::{TitleRegexNoCaptures, TitleRegexTooManyCaptures};
-use crate::commands::MissingLink;
 use crate::database::{section, Line, Tikibase};
 use crate::fix;
 use crate::fix::Result::{Failed, Fixed};
@@ -8,11 +7,13 @@ use crate::{Issue, Location};
 use once_cell::sync::Lazy;
 use regex::{Captures, Regex};
 use std::borrow::Cow;
+use std::path::Path;
 
 pub fn add_occurrences(
     base: &mut Tikibase,
     location: Location,
-    links: &MissingLink,
+    path: &Path,
+    title: &str,
 ) -> fix::Result {
     let base_dir = base.root.clone();
     let title_regex = match base.dir.config.title_regex() {
@@ -35,7 +36,7 @@ pub fn add_occurrences(
         doc.content_sections.push(section);
         doc.section_with_title_mut("occurrences").unwrap()
     };
-    let stripped_title = &strip_links(&links.title);
+    let stripped_title = &strip_links(title);
     let title = match &title_regex {
         None => stripped_title,
         Some(regex) => match extract_shortcut(stripped_title, regex) {
@@ -44,8 +45,9 @@ pub fn add_occurrences(
             ExtractShortcutResult::Failed(issue) => return Failed(issue),
         },
     };
+    let path_str = path.to_string_lossy().to_string();
     occurrences_section.body.push(Line {
-        text: format!("- [{}]({})", title, links.path.to_string_lossy()),
+        text: format!("- [{}]({})", title, path_str),
     });
 
     let line = occurrences_section.line_number;
@@ -58,7 +60,7 @@ pub fn add_occurrences(
             start: 0,
             end,
         },
-        target: links.path.to_string_lossy().to_string(),
+        target: path_str,
     })
 }
 

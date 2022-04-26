@@ -270,9 +270,9 @@ impl Message {
                 end: Some(location.end),
                 fixable: false,
             },
-            Issue::MissingLinks { location, links } => {
+            Issue::MissingLink { location, path, title: _ } => {
                 Message {
-                    text: format!("missing link to {}", links.path.to_string_lossy()),
+                    text: format!("missing link to {}", path.to_string_lossy()),
                     file: location.file,
                     line: Some(location.line),
                     start: Some(location.start),

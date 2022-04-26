@@ -39,7 +39,6 @@ impl Tikibase {
 
 #[cfg(test)]
 mod tests {
-    use crate::commands::MissingLink;
     use crate::{test, Issue, Location, Tikibase};
 
     #[test]
@@ -62,29 +61,25 @@ mod tests {
                     end: 0,
                 },
             },
-            Issue::MissingLinks {
+            Issue::MissingLink {
                 location: Location {
                     file: "1.md".into(),
                     line: 2,
                     start: 0,
                     end: 0,
                 },
-                links: MissingLink {
-                    path: "2.md".into(),
-                    title: "Two".into(),
-                },
+                path: "2.md".into(),
+                title: "Two".into(),
             },
-            Issue::MissingLinks {
+            Issue::MissingLink {
                 location: Location {
                     file: "1.md".into(),
                     line: 2,
                     start: 0,
                     end: 0,
                 },
-                links: MissingLink {
-                    path: "3.md".into(),
-                    title: "Three".into(),
-                },
+                path: "3.md".into(),
+                title: "Three".into(),
             },
         ];
         issues.sort();

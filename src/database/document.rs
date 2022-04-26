@@ -1,5 +1,4 @@
 use super::{section, Directory, EntryType, Footnotes, Line, Reference, Section};
-use crate::commands::MissingLink;
 use crate::{Config, Issue, Location};
 use ahash::AHashMap;
 use std::ffi::OsString;
@@ -140,17 +139,15 @@ impl Document {
                                 // check for backlink from doc to us
                                 if let Some(bidi_links) = config.bidi_links {
                                     if bidi_links && !doc.contains_reference_to(path) {
-                                        issues.push(Issue::MissingLinks {
+                                        issues.push(Issue::MissingLink {
                                             location: Location {
                                                 file: PathBuf::from(target_file),
                                                 line: doc.lines_count(),
                                                 start: 0,
                                                 end: 0,
                                             },
-                                            links: MissingLink {
-                                                path: path.into(),
-                                                title: self.human_title().into(),
-                                            },
+                                            path: path.into(),
+                                            title: self.human_title().into(),
                                         });
                                     }
                                 }

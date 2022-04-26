@@ -51,7 +51,12 @@ impl Directory {
                 if let Some(old_occurrences_section) = &doc.old_occurrences_section {
                     if bidi_links
                         && !issues.iter().any(|issue| {
-                            if let Issue::MissingLinks { location, links: _ } = issue {
+                            if let Issue::MissingLink {
+                                location,
+                                path: _,
+                                title: _,
+                            } = issue
+                            {
                                 location.file == doc_path
                             } else {
                                 false
