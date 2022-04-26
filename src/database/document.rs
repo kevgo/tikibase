@@ -34,7 +34,6 @@ impl Document {
         root: &Directory,
     ) {
         self.find_duplicate_sections(path, issues);
-        self.find_mismatching_sections(path, config, issues);
         self.find_unordered_sections(path, config, issues);
         self.find_mismatching_footnotes(path, issues);
         self.check_links(path, dir, issues, linked_resources, root, config);
@@ -43,6 +42,7 @@ impl Document {
         for section in &self.content_sections {
             section.check_empty(path, issues);
             section.check_empty_title(path, issues);
+            section.check_mismatching_title(path, config, issues);
         }
     }
 
@@ -280,25 +280,6 @@ impl Document {
                 },
                 identifier: unused_definition.identifier.clone(),
             });
-        }
-    }
-
-    /// populates the given issues list with all sections in this document that don't match the configured sections
-    pub fn find_mismatching_sections(&self, path: &Path, config: &Config, issues: &mut Vec<Issue>) {
-        for section in &self.content_sections {
-            let section_title = section.human_title();
-            if !config.matching_title(section_title) {
-                issues.push(Issue::UnknownSection {
-                    location: Location {
-                        file: path.into(),
-                        line: section.line_number,
-                        start: section.title_text_start as u32,
-                        end: section.title_text_end(),
-                    },
-                    title: section_title.into(),
-                    allowed_titles: config.sections.clone().unwrap(),
-                });
-            }
         }
     }
 
