@@ -34,12 +34,16 @@ impl Document {
         root: &Directory,
     ) {
         self.find_duplicate_sections(path, issues);
-        self.find_empty_sections(path, issues);
         self.find_mismatching_sections(path, config, issues);
         self.find_unordered_sections(path, config, issues);
-        self.find_empty_titles(path, issues);
         self.find_mismatching_footnotes(path, issues);
         self.check_links(path, dir, issues, linked_resources, root, config);
+
+        self.title_section.check_empty_title(path, issues);
+        for section in &self.content_sections {
+            section.check_empty(path, issues);
+            section.check_empty_title(path, issues);
+        }
     }
 
     /// populates the given issues list with all link issues in this document
@@ -242,42 +246,6 @@ impl Document {
                         title: title.into(),
                     });
                 }
-            }
-        }
-    }
-
-    /// populates the given issues list with all empty sections in this document
-    // TODO: move to section.check()
-    pub fn find_empty_sections(&self, path: &Path, issues: &mut Vec<Issue>) {
-        for section in &self.content_sections {
-            let has_content = section.body.iter().any(|line| !line.text.is_empty());
-            if !has_content {
-                issues.push(Issue::EmptySection {
-                    location: Location {
-                        file: path.into(),
-                        line: section.line_number,
-                        start: 0,
-                        end: section.title_line.text.len() as u32,
-                    },
-                    title: section.human_title().into(),
-                });
-            }
-        }
-    }
-
-    /// populates the given issues list with all sections that have empty titles
-    // TODO: move to section.check()
-    pub fn find_empty_titles(&self, path: &Path, issues: &mut Vec<Issue>) {
-        for section in self.sections() {
-            if section.human_title().is_empty() {
-                issues.push(Issue::SectionWithoutHeader {
-                    location: Location {
-                        file: path.into(),
-                        line: section.line_number,
-                        start: 0,
-                        end: section.title_text_end(),
-                    },
-                });
             }
         }
     }
@@ -1025,116 +993,6 @@ mod tests {
             },
         ];
         pretty::assert_eq!(have, want);
-    }
-
-    mod find_empty_sections {
-        use crate::database::Document;
-        use crate::{Issue, Location};
-        use indoc::indoc;
-        use std::path::PathBuf;
-
-        #[test]
-        fn empty_section() {
-            let content = indoc! {"
-            # test document
-
-            ### empty section
-            ### next section
-
-            content"};
-            let doc = Document::from_str("test.md", content).unwrap();
-            let mut have = vec![];
-            doc.find_empty_sections(&PathBuf::from("test.md"), &mut have);
-            let want = vec![Issue::EmptySection {
-                location: Location {
-                    file: PathBuf::from("test.md"),
-                    line: 2,
-                    start: 0,
-                    end: 17,
-                },
-                title: "empty section".into(),
-            }];
-            pretty::assert_eq!(have, want);
-        }
-
-        #[test]
-        fn blank_line() {
-            let content = indoc! {"
-            # test document
-
-            ### empty section
-
-            ### next section
-
-            content"};
-            let doc = Document::from_str("test.md", content).unwrap();
-            let mut have = vec![];
-            doc.find_empty_sections(&PathBuf::from("test.md"), &mut have);
-            let want = vec![Issue::EmptySection {
-                location: Location {
-                    file: PathBuf::from("test.md"),
-                    line: 2,
-                    start: 0,
-                    end: 17,
-                },
-                title: "empty section".into(),
-            }];
-            pretty::assert_eq!(have, want);
-        }
-
-        #[test]
-        fn content() {
-            let content = indoc! {"
-            # test document
-
-            ### section with content
-
-            content"};
-            let doc = Document::from_str("test.md", content).unwrap();
-            let mut have = vec![];
-            doc.find_empty_sections(&PathBuf::from("test.md"), &mut have);
-            assert!(have.is_empty());
-        }
-    }
-
-    mod find_empty_titles {
-        use crate::database::Document;
-        use crate::{Issue, Location};
-        use indoc::indoc;
-        use std::path::PathBuf;
-
-        #[test]
-        fn empty_title() {
-            let content = indoc! {"
-            # test document
-
-            ###
-            content
-            ###
-            content"};
-            let doc = Document::from_str("test.md", content).unwrap();
-            let mut have = vec![];
-            doc.find_empty_titles(&PathBuf::from("test.md"), &mut have);
-            let want = vec![
-                Issue::SectionWithoutHeader {
-                    location: Location {
-                        file: PathBuf::from("test.md"),
-                        line: 2,
-                        start: 0,
-                        end: 3,
-                    },
-                },
-                Issue::SectionWithoutHeader {
-                    location: Location {
-                        file: PathBuf::from("test.md"),
-                        line: 4,
-                        start: 0,
-                        end: 3,
-                    },
-                },
-            ];
-            pretty::assert_eq!(have, want);
-        }
     }
 
     mod find_unused_footnotes {
