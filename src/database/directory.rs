@@ -108,21 +108,6 @@ impl Directory {
         self.resources.contains_key(path.as_ref())
     }
 
-    /// provides all valid link targets in this directory
-    // TODO: populate a given accumulator
-    pub fn link_targets(&self) -> Vec<String> {
-        let mut result: Vec<String> = Vec::new();
-        for (_path, doc) in &self.docs {
-            let filename = doc.relative_path.to_string_lossy().to_string();
-            for section in doc.sections() {
-                result.push(format!("{}{}", &filename, section.anchor()));
-            }
-            result.push(filename);
-        }
-        result.sort();
-        result
-    }
-
     /// provides a Tikibase instance for the given directory
     pub fn load(dir: &Path, mut parent_config: Config) -> Result<Directory, Vec<Issue>> {
         let config = match config::load(dir) {
@@ -338,33 +323,6 @@ mod tests {
             let dir = Directory::load(&dir, Config::default()).unwrap();
             assert!(dir.has_resource("foo.png"));
         }
-    }
-
-    #[test]
-    fn link_targets() {
-        let dir = test::tmp_dir();
-        let content = indoc! {"
-            # One
-
-            ### Alpha
-            ### Beta
-
-            content"};
-        test::create_file("one.md", content, &dir);
-        test::create_file("two.md", content, &dir);
-        let dir = Directory::load(&dir, Config::default()).unwrap();
-        let have = dir.link_targets();
-        let want = vec![
-            "one.md",
-            "one.md#alpha",
-            "one.md#beta",
-            "one.md#one",
-            "two.md",
-            "two.md#alpha",
-            "two.md#beta",
-            "two.md#one",
-        ];
-        pretty::assert_eq!(have, want);
     }
 
     #[test]
