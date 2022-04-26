@@ -37,7 +37,6 @@ impl Document {
         self.find_unordered_sections(path, config, issues);
         self.find_mismatching_footnotes(path, issues);
         self.check_links(path, dir, issues, linked_resources, root, config);
-
         self.title_section.check_empty_title(path, issues);
         for section in &self.content_sections {
             section.check_empty(path, issues);
