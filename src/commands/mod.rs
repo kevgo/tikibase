@@ -125,7 +125,7 @@ pub enum Issue {
     },
     MissingLinks {
         location: Location,
-        links: Vec<MissingLink>,
+        links: MissingLink,
     },
     MixCapSection {
         location: Location,

@@ -1,4 +1,4 @@
-use super::Line;
+use super::{Line, Reference};
 use heck::ToKebabCase;
 
 /// a section in a document, from one heading to above the next heading
@@ -92,6 +92,13 @@ impl Section {
     /// adds a new line with the given text to this section
     pub fn push_line<IS: Into<String>>(&mut self, text: IS) {
         self.body.push(Line::from(text));
+    }
+
+    pub fn references(&self, acc: &mut Vec<Reference>) {
+        self.title_line.references(self.line_number, acc);
+        for (i, line) in self.body.iter().enumerate() {
+            line.references(self.line_number + i as u32 + 1, acc);
+        }
     }
 
     #[cfg(test)]

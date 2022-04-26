@@ -1,7 +1,7 @@
 use super::Fix::AddedOccurrencesSection;
 use crate::commands::Issue::{TitleRegexNoCaptures, TitleRegexTooManyCaptures};
 use crate::commands::MissingLink;
-use crate::database::{section, Tikibase};
+use crate::database::{section, Line, Tikibase};
 use crate::fix;
 use crate::fix::Result::{Failed, Fixed};
 use crate::{Issue, Location};
@@ -12,7 +12,7 @@ use std::borrow::Cow;
 pub fn add_occurrences(
     base: &mut Tikibase,
     location: Location,
-    links: Vec<MissingLink>,
+    links: &MissingLink,
 ) -> fix::Result {
     let base_dir = base.root.clone();
     let title_regex = match base.dir.config.title_regex() {
@@ -21,28 +21,35 @@ pub fn add_occurrences(
     };
     let doc = base.get_doc_mut(&location.file).unwrap();
 
-    // append a newline to the section before
-    doc.last_section_mut().push_line("");
+    // check for existing occurrences section
+    let occurrences_section = if let Some(section) = doc.section_with_title_mut("occurrences") {
+        section
+    } else {
+        // append a newline to the section before
+        doc.last_section_mut().push_line("");
 
-    // insert occurrences section
-    let mut section_builder = section::Builder::new("### occurrences", doc.lines_count() + 1);
-    section_builder.add_line("");
-    for link in links {
-        let stripped_title = &strip_links(&link.title);
-        let title = match &title_regex {
-            None => stripped_title,
-            Some(regex) => match extract_shortcut(stripped_title, regex) {
-                ExtractShortcutResult::ShortcutFound(shortcut) => shortcut,
-                ExtractShortcutResult::NoShortcutFound => stripped_title,
-                ExtractShortcutResult::Failed(issue) => return Failed(issue),
-            },
-        };
-        section_builder.add_line(format!("- [{}]({})", title, link.path.to_string_lossy()));
-    }
-    let occurrences_section = section_builder.result();
+        // insert occurrences section
+        let mut section_builder = section::Builder::new("### occurrences", doc.lines_count() + 1);
+        section_builder.add_line("");
+        let section = section_builder.result();
+        doc.content_sections.push(section);
+        doc.section_with_title_mut("occurrences").unwrap()
+    };
+    let stripped_title = &strip_links(&links.title);
+    let title = match &title_regex {
+        None => stripped_title,
+        Some(regex) => match extract_shortcut(stripped_title, regex) {
+            ExtractShortcutResult::ShortcutFound(shortcut) => shortcut,
+            ExtractShortcutResult::NoShortcutFound => stripped_title,
+            ExtractShortcutResult::Failed(issue) => return Failed(issue),
+        },
+    };
+    occurrences_section.body.push(Line {
+        text: format!("- [{}]({})", title, links.path.to_string_lossy()),
+    });
+
     let line = occurrences_section.line_number;
     let end = occurrences_section.title_line.text.len() as u32;
-    doc.content_sections.push(occurrences_section);
     doc.save(&base_dir);
     Fixed(AddedOccurrencesSection {
         location: Location {
@@ -51,6 +58,7 @@ pub fn add_occurrences(
             start: 0,
             end,
         },
+        target: links.path.to_string_lossy().to_string(),
     })
 }
 

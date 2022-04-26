@@ -36,15 +36,17 @@ Feature: add occurrence sections with a title regex
     When checking
     Then it prints:
       """
-      1.md:4  missing link to 2.md, 3.md
+      1.md:4  missing link to 2.md
+      1.md:4  missing link to 3.md
       """
-    And the exit code is 1
+    And the exit code is 2
 
   Scenario: fix
     When fixing
     Then it prints:
       """
-      1.md:6  added occurrences section
+      1.md:6  added 2.md to occurrences section
+      1.md:6  added 3.md to occurrences section
       """
     And file "1.md" should contain:
       """
@@ -66,7 +68,8 @@ Feature: add occurrence sections with a title regex
     When doing a pitstop
     Then it prints:
       """
-      1.md:6  added occurrences section
+      1.md:6  added 2.md to occurrences section
+      1.md:6  added 3.md to occurrences section
       """
     And file "1.md" should contain:
       """

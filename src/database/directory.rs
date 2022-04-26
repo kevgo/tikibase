@@ -1,11 +1,11 @@
 use super::Document;
 use crate::config::LoadResult;
-use crate::{config, Config, Issue};
+use crate::{config, Config, Issue, Location};
 use ahash::AHashMap;
 use merge::Merge;
 use std::ffi::{OsStr, OsString};
 use std::fs;
-use std::path::Path;
+use std::path::{Path, PathBuf};
 
 pub struct Directory {
     pub config: Config,
@@ -16,12 +16,75 @@ pub struct Directory {
 
 impl Directory {
     // populates the given issues list with all issues in this directory
-    pub fn check(&self, relative_path: &Path, issues: &mut Vec<Issue>) {
-        for (path, doc) in &self.docs {
-            doc.check(&relative_path.join(path), &self.config, issues);
+    pub fn check(
+        &self,
+        parent: &Path,
+        issues: &mut Vec<Issue>,
+        linked_resources: &mut Vec<PathBuf>,
+        root: &Directory,
+    ) {
+        for (filename, doc) in &self.docs {
+            doc.check(
+                &parent.join(filename),
+                parent,
+                &self.config,
+                issues,
+                linked_resources,
+                root,
+            );
         }
-        for (path, dir) in &self.dirs {
-            dir.check(&relative_path.join(path), issues);
+        for (dirname, dir) in &self.dirs {
+            dir.check(&parent.join(dirname), issues, linked_resources, root);
+        }
+    }
+
+    /// populates the given `unlinked_resources` list with all resources in this directory that aren't linked to
+    pub fn check_round_2(
+        &self,
+        relative_path: &Path,
+        linked_resources: &[PathBuf],
+        issues: &mut Vec<Issue>,
+    ) {
+        for (name, doc) in &self.docs {
+            let doc_path = relative_path.join(name);
+            if let Some(bidi_links) = self.config.bidi_links {
+                if let Some(old_occurrences_section) = &doc.old_occurrences_section {
+                    if bidi_links
+                        && !issues.iter().any(|issue| {
+                            if let Issue::MissingLinks { location, links: _ } = issue {
+                                location.file == doc_path
+                            } else {
+                                false
+                            }
+                        })
+                    {
+                        issues.push(Issue::ObsoleteOccurrencesSection {
+                            location: Location {
+                                file: doc_path,
+                                line: old_occurrences_section.line_number,
+                                start: old_occurrences_section.title_text_start as u32,
+                                end: old_occurrences_section.title_text_end(),
+                            },
+                        });
+                    }
+                }
+            }
+        }
+        for resource in self.resources.keys() {
+            let full_path = relative_path.join(resource);
+            if !linked_resources.contains(&full_path) {
+                issues.push(Issue::OrphanedResource {
+                    location: Location {
+                        file: PathBuf::from(resource),
+                        line: 0,
+                        start: 0,
+                        end: 0,
+                    },
+                });
+            }
+        }
+        for (name, dir) in &self.dirs {
+            dir.check_round_2(&relative_path.join(&name), linked_resources, issues);
         }
     }
 

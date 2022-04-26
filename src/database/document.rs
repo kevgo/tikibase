@@ -1,4 +1,5 @@
-use super::{section, Footnotes, Line, Reference, Section};
+use super::{section, Directory, EntryType, Footnotes, Line, Reference, Section};
+use crate::commands::MissingLink;
 use crate::{Config, Issue, Location};
 use ahash::AHashMap;
 use std::ffi::OsString;
@@ -8,24 +9,213 @@ use std::path::{Path, PathBuf};
 
 #[derive(Debug, Eq, Hash, PartialEq)]
 pub struct Document {
-    // TODO: make these elements private once move to new architecture is complete
+    // TODO: make these elements private once the move to new architecture is complete
     /// the path relative to the Tikibase root directory
     pub relative_path: PathBuf,
     pub title_section: Section,
     pub content_sections: Vec<Section>,
     /// The old "occurrences" section that was filtered out when loading the document.
     pub old_occurrences_section: Option<Section>,
+
+    /// cache of files this document links to
+    // TODO: convert to HashSet and use https://github.com/mcarton/rust-derivative to ignore this when hashing Document
+    pub references: Vec<Reference>,
 }
 
 impl Document {
     // populates the given issues list with all issues in this document
-    pub fn check(&self, path: &Path, config: &Config, issues: &mut Vec<Issue>) {
+    pub fn check(
+        &self,
+        // TODO: replace Path with a string-based Path struct
+        path: &Path,
+        dir: &Path,
+        config: &Config,
+        issues: &mut Vec<Issue>,
+        linked_resources: &mut Vec<PathBuf>,
+        root: &Directory,
+    ) {
         self.find_duplicate_sections(path, issues);
         self.find_empty_sections(path, issues);
         self.find_mismatching_sections(path, config, issues);
         self.find_unordered_sections(path, config, issues);
         self.find_empty_titles(path, issues);
         self.find_mismatching_footnotes(path, issues);
+        self.check_links(path, dir, issues, linked_resources, root, config);
+    }
+
+    /// populates the given issues list with all link issues in this document
+    pub fn check_links(
+        &self,
+        path: &Path,
+        dir: &Path,
+        issues: &mut Vec<Issue>,
+        linked_resources: &mut Vec<PathBuf>,
+        root: &Directory,
+        config: &Config,
+    ) {
+        if self.references.is_empty() {
+            issues.push(Issue::DocumentWithoutLinks {
+                location: Location {
+                    file: path.into(),
+                    line: 0,
+                    start: 0,
+                    end: 0,
+                },
+            });
+        }
+        for reference in &self.references {
+            match reference {
+                Reference::Link {
+                    target,
+                    line,
+                    start,
+                    end,
+                } => {
+                    if target.is_empty() {
+                        issues.push(Issue::LinkWithoutTarget {
+                            location: Location {
+                                file: path.into(),
+                                line: line.to_owned(),
+                                start: start.to_owned(),
+                                end: end.to_owned(),
+                            },
+                        });
+                        continue;
+                    }
+                    if target.starts_with("http") {
+                        // ignore external links
+                        continue;
+                    }
+                    let (target_file, target_anchor) = match target.split_once('#') {
+                        Some((base, anchor)) => (base.to_string(), format!("#{}", anchor)),
+                        None => (target.clone(), "".to_string()),
+                    };
+                    let path_str = path.to_string_lossy();
+                    if target_file == path_str {
+                        issues.push(Issue::LinkToSameDocument {
+                            location: Location {
+                                file: path.into(),
+                                line: line.to_owned(),
+                                start: start.to_owned(),
+                                end: end.to_owned(),
+                            },
+                        });
+                        continue;
+                    }
+                    if target.starts_with('#') {
+                        // TODO: maybe cache this in a field?
+                        if !self
+                            .content_sections
+                            .iter()
+                            .any(|section| &section.anchor() == target)
+                        {
+                            issues.push(Issue::LinkToNonExistingAnchorInCurrentDocument {
+                                location: Location {
+                                    file: path.into(),
+                                    line: line.to_owned(),
+                                    start: start.to_owned(),
+                                    end: end.to_owned(),
+                                },
+                                anchor: target.clone(),
+                            });
+                            continue;
+                        }
+                    }
+                    match EntryType::from_str(&target_file) {
+                        EntryType::Document => {
+                            if let Some(doc) = root.get_doc(&target_file) {
+                                if !target_anchor.is_empty() && !doc.has_anchor(&target_anchor) {
+                                    issues.push(Issue::LinkToNonExistingAnchorInExistingDocument {
+                                        location: Location {
+                                            file: path.into(),
+                                            line: line.to_owned(),
+                                            start: start.to_owned(),
+                                            end: end.to_owned(),
+                                        },
+                                        target_file: target_file.clone(),
+                                        anchor: target_anchor,
+                                    });
+                                    // continue;
+                                }
+                                // check for backlink from doc to us
+                                if let Some(bidi_links) = config.bidi_links {
+                                    if bidi_links && !doc.contains_reference_to(path) {
+                                        issues.push(Issue::MissingLinks {
+                                            location: Location {
+                                                file: PathBuf::from(target_file),
+                                                line: doc.lines_count(),
+                                                start: 0,
+                                                end: 0,
+                                            },
+                                            links: MissingLink {
+                                                path: path.into(),
+                                                title: self.human_title().into(),
+                                            },
+                                        });
+                                    }
+                                }
+                            } else {
+                                issues.push(Issue::LinkToNonExistingFile {
+                                    location: Location {
+                                        file: path.into(),
+                                        line: line.to_owned(),
+                                        start: start.to_owned(),
+                                        end: end.to_owned(),
+                                    },
+                                    target: target.into(),
+                                });
+                                continue;
+                            };
+                        }
+                        EntryType::Resource => {
+                            if !root.has_resource(&target_file) {
+                                issues.push(Issue::LinkToNonExistingFile {
+                                    location: Location {
+                                        file: path.into(),
+                                        line: line.to_owned(),
+                                        start: start.to_owned(),
+                                        end: end.to_owned(),
+                                    },
+                                    target: target.into(),
+                                });
+                                continue;
+                            }
+                            linked_resources.push(dir.join(&target_file));
+                        }
+                        EntryType::Configuration | EntryType::Ignored => {}
+                        EntryType::Directory => todo!(),
+                    }
+                }
+                Reference::Image {
+                    src,
+                    line,
+                    start,
+                    end,
+                } => {
+                    if src.starts_with("http") {
+                        continue;
+                    }
+                    if !root.has_resource(&src) {
+                        issues.push(Issue::BrokenImage {
+                            location: Location {
+                                file: path.into(),
+                                line: line.to_owned(),
+                                start: start.to_owned(),
+                                end: end.to_owned(),
+                            },
+                            target: src.clone(),
+                        });
+                        continue;
+                    }
+                    linked_resources.push(dir.join(src));
+                }
+            }
+        }
+    }
+
+    pub fn contains_reference_to<P: AsRef<Path>>(&self, path: P) -> bool {
+        let path_str = path.as_ref().to_string_lossy();
+        self.references.iter().any(|r| r.points_to(&path_str))
     }
 
     /// populates the given issues list with all duplicate sections in this document
@@ -60,6 +250,7 @@ impl Document {
     }
 
     /// populates the given issues list with all empty sections in this document
+    // TODO: move to section.check()
     pub fn find_empty_sections(&self, path: &Path, issues: &mut Vec<Issue>) {
         for section in &self.content_sections {
             let has_content = section.body.iter().any(|line| !line.text.is_empty());
@@ -78,6 +269,7 @@ impl Document {
     }
 
     /// populates the given issues list with all sections that have empty titles
+    // TODO: move to section.check()
     pub fn find_empty_titles(&self, path: &Path, issues: &mut Vec<Issue>) {
         for section in self.sections() {
             if section.human_title().is_empty() {
@@ -299,12 +491,12 @@ impl Document {
             });
         }
         let mut sections = sections.into_iter();
-        Ok(Document {
+        Ok(Document::new(
             relative_path,
-            title_section: sections.next().unwrap(),
-            content_sections: sections.collect(),
+            sections.next().unwrap(),
+            sections.collect(),
             old_occurrences_section,
-        })
+        ))
     }
 
     /// provides the Document contained in the file with the given path
@@ -320,6 +512,14 @@ impl Document {
     /// provides Document instances in tests
     pub fn from_str<P: Into<PathBuf>>(path: P, text: &str) -> Result<Document, Issue> {
         Document::from_lines(text.lines().map(std::string::ToString::to_string), path)
+    }
+
+    /// indicates whether this document contains the given anchor
+    // TODO: maybe cache the anchors in this document
+    pub fn has_anchor(&self, anchor: &str) -> bool {
+        self.content_sections
+            .iter()
+            .any(|section| section.anchor() == anchor)
     }
 
     /// provides the human-readable title of this document
@@ -372,13 +572,32 @@ impl Document {
         Document::from_reader(BufReader::new(file), name)
     }
 
-    /// provides all the references in this document
-    pub fn references(&self) -> Vec<Reference> {
-        let mut result = vec![];
-        for (i, line) in self.lines().enumerate() {
-            result.append(&mut line.references(i as u32));
+    pub fn new(
+        path: PathBuf,
+        title_section: Section,
+        content_sections: Vec<Section>,
+        old_occurrences_section: Option<Section>,
+    ) -> Document {
+        let mut references = vec![];
+        Document::references(&title_section, &content_sections, &mut references);
+        Document {
+            relative_path: path,
+            title_section,
+            content_sections,
+            old_occurrences_section,
+            references,
         }
-        result
+    }
+
+    pub fn references(
+        title_section: &Section,
+        content_sections: &[Section],
+        acc: &mut Vec<Reference>,
+    ) {
+        title_section.references(acc);
+        for section in content_sections {
+            section.references(acc);
+        }
     }
 
     /// persists the changes made to this document to disk
@@ -491,6 +710,290 @@ mod tests {
     use crate::{Issue, Location};
     use indoc::indoc;
     use std::path::PathBuf;
+
+    mod check_links {
+        use crate::{test, Config, Issue, Location, Tikibase};
+        use indoc::indoc;
+        use std::path::PathBuf;
+
+        #[test]
+        fn link_to_non_existing_file() {
+            let dir = test::tmp_dir();
+            test::create_file("one.md", "# One\n\n[invalid](non-existing.md)\n", &dir);
+            let base = Tikibase::load(dir).unwrap();
+            let doc = base.get_doc("one.md").unwrap();
+            let mut issues = vec![];
+            let mut linked_resources = vec![];
+            doc.check_links(
+                &PathBuf::from("one.md"),
+                &PathBuf::from(""),
+                &mut issues,
+                &mut linked_resources,
+                &base.dir,
+                &Config::default(),
+            );
+            let want = vec![Issue::LinkToNonExistingFile {
+                location: Location {
+                    file: "one.md".into(),
+                    line: 2,
+                    start: 0,
+                    end: 26,
+                },
+                target: "non-existing.md".into(),
+            }];
+            pretty::assert_eq!(issues, want);
+            assert_eq!(linked_resources, Vec::<PathBuf>::new());
+        }
+
+        #[test]
+        fn link_to_non_existing_anchor_in_existing_file() {
+            let dir = test::tmp_dir();
+            test::create_file("1.md", "# One\n[non-existing anchor](2.md#zonk)\n", &dir);
+            test::create_file("2.md", "# Two\n[One](1.md)", &dir);
+            let base = Tikibase::load(dir).unwrap();
+            let doc = base.get_doc("1.md").unwrap();
+            let mut issues = vec![];
+            let mut linked_resources = vec![];
+            doc.check_links(
+                &PathBuf::from("1.md"),
+                &PathBuf::from(""),
+                &mut issues,
+                &mut linked_resources,
+                &base.dir,
+                &Config::default(),
+            );
+            let want = vec![Issue::LinkToNonExistingAnchorInExistingDocument {
+                location: Location {
+                    file: "1.md".into(),
+                    line: 1,
+                    start: 0,
+                    end: 32,
+                },
+                target_file: "2.md".into(),
+                anchor: "#zonk".into(),
+            }];
+            pretty::assert_eq!(issues, want);
+            assert_eq!(linked_resources, Vec::<PathBuf>::new());
+        }
+
+        #[test]
+        fn link_to_non_existing_anchor_in_current_file() {
+            let dir = test::tmp_dir();
+            test::create_file("1.md", "# One\n[non-existing anchor](#zonk)\n", &dir);
+            let base = Tikibase::load(dir).unwrap();
+            let doc = base.get_doc("1.md").unwrap();
+            let mut issues = vec![];
+            let mut linked_resources = vec![];
+            doc.check_links(
+                &PathBuf::from("1.md"),
+                &PathBuf::from(""),
+                &mut issues,
+                &mut linked_resources,
+                &base.dir,
+                &Config::default(),
+            );
+            let want = vec![Issue::LinkToNonExistingAnchorInCurrentDocument {
+                location: Location {
+                    file: "1.md".into(),
+                    line: 1,
+                    start: 0,
+                    end: 28,
+                },
+                anchor: "#zonk".into(),
+            }];
+            pretty::assert_eq!(issues, want);
+            assert_eq!(linked_resources, Vec::<PathBuf>::new());
+        }
+
+        #[test]
+        fn link_to_anchor_in_nonexisting_file() {
+            let dir = test::tmp_dir();
+            test::create_file(
+                "1.md",
+                "# One\n[anchor in non-existing file](2.md#foo)\n",
+                &dir,
+            );
+            let base = Tikibase::load(dir).unwrap();
+            let doc = base.get_doc("1.md").unwrap();
+            let mut issues = vec![];
+            let mut linked_resources = vec![];
+            doc.check_links(
+                &PathBuf::from("1.md"),
+                &PathBuf::from(""),
+                &mut issues,
+                &mut linked_resources,
+                &base.dir,
+                &Config::default(),
+            );
+            let want = vec![Issue::LinkToNonExistingFile {
+                location: Location {
+                    file: "1.md".into(),
+                    line: 1,
+                    start: 0,
+                    end: 39,
+                },
+                target: "2.md#foo".into(),
+            }];
+            pretty::assert_eq!(issues, want);
+            assert_eq!(linked_resources, Vec::<PathBuf>::new());
+        }
+
+        #[test]
+        fn link_to_existing_file() {
+            let dir = test::tmp_dir();
+            let content = indoc! {"
+                # One
+                working link to [Two](2.md)
+                ### section
+                working link to [Three](3.md)
+                "};
+            test::create_file("1.md", content, &dir);
+            test::create_file("2.md", "# Two\n[1](1.md)", &dir);
+            test::create_file("3.md", "# Three\n[1](1.md)", &dir);
+            let base = Tikibase::load(dir).unwrap();
+            let doc = base.get_doc("1.md").unwrap();
+            let mut issues = vec![];
+            let mut linked_resources = vec![];
+            doc.check_links(
+                &PathBuf::from("1.md"),
+                &PathBuf::from(""),
+                &mut issues,
+                &mut linked_resources,
+                &base.dir,
+                &Config::default(),
+            );
+            pretty::assert_eq!(issues, vec![]);
+            assert_eq!(linked_resources, Vec::<PathBuf>::new());
+        }
+
+        #[test]
+        fn link_without_target() {
+            let dir = test::tmp_dir();
+            test::create_file("one.md", "# One\n\n[invalid]()\n", &dir);
+            let base = Tikibase::load(dir).unwrap();
+            let doc = base.get_doc("one.md").unwrap();
+            let mut issues = vec![];
+            let mut linked_resources = vec![];
+            doc.check_links(
+                &PathBuf::from("one.md"),
+                &PathBuf::from(""),
+                &mut issues,
+                &mut linked_resources,
+                &base.dir,
+                &Config::default(),
+            );
+            pretty::assert_eq!(
+                issues,
+                vec![Issue::LinkWithoutTarget {
+                    location: Location {
+                        file: "one.md".into(),
+                        line: 2,
+                        start: 0,
+                        end: 11,
+                    }
+                }]
+            );
+            assert_eq!(linked_resources, Vec::<PathBuf>::new());
+        }
+
+        #[test]
+        fn link_to_external_url() {
+            let dir = test::tmp_dir();
+            let content = indoc! {"
+                # One
+
+                [external site](https://google.com)
+                ![external image](https://google.com/foo.png)
+                "};
+            test::create_file("one.md", content, &dir);
+            test::create_file("two.md", "# Two\n[one](one.md)", &dir);
+            let base = Tikibase::load(dir).unwrap();
+            let doc = base.get_doc("one.md").unwrap();
+            let mut issues = vec![];
+            let mut linked_resources = vec![];
+            doc.check_links(
+                &PathBuf::from("one.md"),
+                &PathBuf::from(""),
+                &mut issues,
+                &mut linked_resources,
+                &base.dir,
+                &Config::default(),
+            );
+            assert!(issues.is_empty());
+            assert_eq!(linked_resources, Vec::<PathBuf>::new());
+        }
+
+        #[test]
+        fn imagelink_to_existing_image() {
+            let dir = test::tmp_dir();
+            test::create_file("1.md", "# One\n\n![image](foo.png)\n", &dir);
+            test::create_file("foo.png", "image content", &dir);
+            let base = Tikibase::load(dir).unwrap();
+            let doc = base.get_doc("1.md").unwrap();
+            let mut issues = vec![];
+            let mut linked_resources = vec![];
+            doc.check_links(
+                &PathBuf::from("one.md"),
+                &PathBuf::from(""),
+                &mut issues,
+                &mut linked_resources,
+                &base.dir,
+                &Config::default(),
+            );
+            assert!(issues.is_empty());
+            assert_eq!(linked_resources, vec![PathBuf::from("foo.png")]);
+        }
+
+        #[test]
+        fn imagelink_to_non_existing_image() {
+            let dir = test::tmp_dir();
+            test::create_file("1.md", "# One\n\n![image](zonk.png)\n", &dir);
+            let base = Tikibase::load(dir).unwrap();
+            let doc = base.get_doc("1.md").unwrap();
+            let mut issues = vec![];
+            let mut linked_resources = vec![];
+            doc.check_links(
+                &PathBuf::from("1.md"),
+                &PathBuf::from(""),
+                &mut issues,
+                &mut linked_resources,
+                &base.dir,
+                &Config::default(),
+            );
+            let want = vec![Issue::BrokenImage {
+                location: Location {
+                    file: "1.md".into(),
+                    line: 2,
+                    start: 0,
+                    end: 18,
+                },
+                target: "zonk.png".into(),
+            }];
+            pretty::assert_eq!(issues, want);
+            assert_eq!(linked_resources, Vec::<PathBuf>::new());
+        }
+
+        #[test]
+        fn link_to_existing_resource() {
+            let dir = test::tmp_dir();
+            test::create_file("1.md", "# One\n\n[docs](docs.pdf)\n", &dir);
+            test::create_file("docs.pdf", "PDF content", &dir);
+            let base = Tikibase::load(dir).unwrap();
+            let doc = base.get_doc("1.md").unwrap();
+            let mut issues = vec![];
+            let mut linked_resources = vec![];
+            doc.check_links(
+                &PathBuf::from("1.md"),
+                &PathBuf::from(""),
+                &mut issues,
+                &mut linked_resources,
+                &base.dir,
+                &Config::default(),
+            );
+            pretty::assert_eq!(issues, vec![]);
+            assert_eq!(linked_resources, vec![PathBuf::from("docs.pdf")]);
+        }
+    }
 
     #[test]
     fn find_duplicate_sections() {
@@ -921,6 +1424,7 @@ mod tests {
                     level: 3,
                 }],
                 old_occurrences_section: None,
+                references: vec![],
             });
             pretty::assert_eq!(have, want);
         }
@@ -965,6 +1469,7 @@ mod tests {
                 },
                 content_sections: vec![],
                 old_occurrences_section: None,
+                references: vec![],
             });
             pretty::assert_eq!(have, want);
         }
@@ -1032,8 +1537,22 @@ mod tests {
                     title_text_start: 4,
                     level: 3,
                 }),
+                references: vec![],
             });
             pretty::assert_eq!(have, want);
+        }
+    }
+
+    mod has_anchor {
+        use crate::database::Document;
+
+        #[test]
+        fn matching() {
+            let doc =
+                Document::from_str("test.md", "# Title\n\n## head 1\ntext\n### head 2\n").unwrap();
+            assert!(doc.has_anchor("#head-1"));
+            assert!(doc.has_anchor("#head-2"));
+            assert!(!doc.has_anchor("#head-3"));
         }
     }
 
@@ -1222,13 +1741,15 @@ mod tests {
 
     #[test]
     fn references() {
-        let give = indoc! {"
+        let text = indoc! {"
             # Title
             a link: [one](1.md)
             ### section
             an image: ![two](2.png)
             "};
-        let have = Document::from_str("test.md", give).unwrap().references();
+        let doc = Document::from_str("test.md", text).unwrap();
+        let mut have = vec![];
+        Document::references(&doc.title_section, &doc.content_sections, &mut have);
         let want = vec![
             Reference::Link {
                 target: "1.md".into(),

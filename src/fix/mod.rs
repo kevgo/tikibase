@@ -36,7 +36,7 @@ pub fn fix(issue: Issue, base: &mut Tikibase) -> Result {
             }
         }
         Issue::MissingLinks { location, links } => {
-            missing_links::add_occurrences(base, location, links)
+            missing_links::add_occurrences(base, location, &links)
         }
         Issue::MixCapSection {
             location,
@@ -143,6 +143,7 @@ pub fn fix(issue: Issue, base: &mut Tikibase) -> Result {
 pub enum Fix {
     AddedOccurrencesSection {
         location: Location,
+        target: String,
     },
     NormalizedSectionCapitalization {
         location: Location,
