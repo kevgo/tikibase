@@ -1,5 +1,6 @@
 use super::Document;
 use crate::config::LoadResult;
+use crate::scan::section_capitalization::OutlierInfo;
 use crate::{config, Config, Issue, Location};
 use ahash::AHashMap;
 use merge::Merge;
@@ -15,38 +16,48 @@ pub struct Directory {
 }
 
 impl Directory {
-    // populates the given issues list with all issues in this directory
-    pub fn check(
+    // check phase 1
+    pub fn check_1(
         &self,
         parent: &Path,
         issues: &mut Vec<Issue>,
         linked_resources: &mut Vec<PathBuf>,
+        title_variants: &mut AHashMap<String, u32>,
         root: &Directory,
     ) {
         for (filename, doc) in &self.docs {
-            doc.check(
+            doc.check_1(
                 &parent.join(filename),
                 parent,
                 &self.config,
                 issues,
                 linked_resources,
+                title_variants,
                 root,
             );
         }
         for (dirname, dir) in &self.dirs {
-            dir.check(&parent.join(dirname), issues, linked_resources, root);
+            dir.check_1(
+                &parent.join(dirname),
+                issues,
+                linked_resources,
+                title_variants,
+                root,
+            );
         }
     }
 
-    /// populates the given `unlinked_resources` list with all resources in this directory that aren't linked to
-    pub fn check_round_2(
+    /// check phase 2
+    pub fn check_2(
         &self,
         relative_path: &Path,
         linked_resources: &[PathBuf],
         issues: &mut Vec<Issue>,
+        outliers: &AHashMap<String, OutlierInfo>,
     ) {
         for (name, doc) in &self.docs {
             let doc_path = relative_path.join(name);
+            doc.check_2(&doc_path, issues, outliers);
             if let Some(bidi_links) = self.config.bidi_links {
                 if let Some(old_occurrences_section) = &doc.old_occurrences_section {
                     if bidi_links
@@ -89,7 +100,12 @@ impl Directory {
             }
         }
         for (name, dir) in &self.dirs {
-            dir.check_round_2(&relative_path.join(&name), linked_resources, issues);
+            dir.check_2(
+                &relative_path.join(&name),
+                linked_resources,
+                issues,
+                outliers,
+            );
         }
     }
 

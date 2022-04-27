@@ -1,127 +1,126 @@
-use crate::{Issue, Location, Tikibase};
+use crate::database::Section;
+use crate::{Issue, Location};
 use ahash::AHashMap;
 use std::cmp::Ordering::{Equal, Greater, Less};
 use std::path::Path;
 
-pub(crate) fn scan(base: &Tikibase) -> Vec<Issue> {
-    // normalized title --> variant --> sections with this variant
-    let mut title_variants: AHashMap<String, AHashMap<&str, Vec<FileSection>>> = AHashMap::new();
-    for (_path, doc) in &base.dir.docs {
-        for section in doc.sections() {
-            let section_title = section.human_title();
-            title_variants
-                .entry(normalize(section_title))
-                .or_insert_with(AHashMap::new)
-                .entry(section_title)
-                .or_insert_with(Vec::new)
-                .push(FileSection {
-                    title: section_title,
-                    file: &doc.relative_path,
-                    level: section.level,
-                    line: section.line_number,
-                    start: section.title_text_start as u32,
-                });
-        }
+pub(crate) fn phase_1(section: &Section, acc: &mut AHashMap<String, u32>) {
+    let variant = section.human_title().to_string();
+    let entry = acc.entry(variant).or_insert(0u32);
+    *entry += 1;
+}
+
+pub(crate) fn process(mut input: AHashMap<String, u32>) -> AHashMap<String, OutlierInfo> {
+    // step 1: group related variants together
+    // normalized variant --> variant --> count
+    let mut grouped: AHashMap<String, AHashMap<String, u32>> = AHashMap::new();
+    for (variant, count) in input.drain() {
+        let normalized = variant.to_lowercase();
+        grouped
+            .entry(normalized)
+            .or_insert_with(AHashMap::new)
+            .insert(variant, count);
     }
-    let mut issues = Vec::new();
-    for (_, variants_sections) in title_variants.drain() {
-        if variants_sections.len() < 2 {
-            // one type of capitalization --> section is consistently formatted everywhere
-            continue;
-        }
-        let common_variant = find_common_capitalization(&variants_sections);
-        let mut all_variants: Vec<String> =
-            variants_sections.keys().map(ToString::to_string).collect();
-        all_variants.sort_unstable();
-        for (variant, file_sections) in variants_sections {
-            if let Some(common_variant) = &common_variant {
-                if variant == common_variant {
-                    continue;
+    // step 2: find the outliers
+    let mut outliers = AHashMap::new();
+    for (_, variants) in grouped {
+        let mut all: Vec<String> = variants.keys().map(ToString::to_string).collect();
+        all.sort();
+        match find_common_capitalization(&variants) {
+            Some(common) => {
+                for (variant, _count) in variants {
+                    if variant != common {
+                        outliers.insert(
+                            variant,
+                            OutlierInfo {
+                                common: Some(common.clone()),
+                                all: all.clone(),
+                            },
+                        );
+                    }
                 }
             }
-            for file_section in file_sections {
-                issues.push(Issue::MixCapSection {
-                    location: Location {
-                        file: file_section.file.into(),
-                        line: file_section.line,
-                        start: file_section.start,
-                        end: file_section.end(),
-                    },
-                    all_variants: all_variants.clone(),
-                    this_variant: variant.into(),
-                    common_variant: common_variant.clone(),
-                    section_level: file_section.level,
-                });
+            None => {
+                for (variant, _count) in variants {
+                    outliers.insert(
+                        variant,
+                        OutlierInfo {
+                            common: None,
+                            all: all.clone(),
+                        },
+                    );
+                }
             }
         }
     }
-    issues.sort();
-    issues
+    outliers
 }
 
-#[derive(Eq, Hash, Ord, PartialEq, PartialOrd)]
-pub struct FileSection<'a> {
-    pub file: &'a Path,
-    pub title: &'a str,
-    pub level: u8,
-    pub line: u32,
-    pub start: u32,
-}
-
-impl FileSection<'_> {
-    pub fn end(&self) -> u32 {
-        self.start + self.title.len() as u32
+pub(crate) fn phase_2(
+    path: &Path,
+    section: &Section,
+    issues: &mut Vec<Issue>,
+    outliers: &AHashMap<String, OutlierInfo>,
+) {
+    let section_title = section.human_title();
+    if let Some(OutlierInfo { common, all }) = outliers.get(section_title) {
+        issues.push(Issue::MixCapSection {
+            location: Location {
+                file: path.into(),
+                line: section.line_number,
+                start: section.title_text_start as u32,
+                end: section.title_text_end(),
+            },
+            all_variants: all.clone(),
+            this_variant: section_title.into(),
+            common_variant: common.clone(),
+            section_level: section.level,
+        });
     }
 }
 
-impl Default for FileSection<'_> {
-    fn default() -> Self {
-        Self {
-            file: Path::new(""),
-            title: "",
-            line: 0,
-            start: 0,
-            level: 1,
-        }
-    }
+pub struct OutlierInfo {
+    pub common: Option<String>,
+    pub all: Vec<String>,
 }
 
 /// provides the most common key
-fn find_common_capitalization(level_counts: &AHashMap<&str, Vec<FileSection>>) -> Option<String> {
-    let mut result: Option<&str> = None;
-    let mut max = 0;
-    for (variant, file_sections) in level_counts {
-        match file_sections.len().cmp(&max) {
+fn find_common_capitalization(variants: &AHashMap<String, u32>) -> Option<String> {
+    let mut max_count = 0;
+    let mut max_variant = "".to_string();
+    let mut unique = true;
+    for (variant, count) in variants {
+        match count.cmp(&max_count) {
             Greater => {
-                result = Some(*variant);
-                max = file_sections.len();
+                max_count = count.to_owned();
+                max_variant = variant.into();
+                unique = true;
             }
             Equal => {
-                result = None;
+                unique = false;
             }
             Less => {}
         }
     }
-    result.map(ToString::to_string)
-}
-
-/// normalizes the given section title
-fn normalize(section_title: &str) -> String {
-    section_title.to_ascii_lowercase()
+    if unique {
+        Some(max_variant)
+    } else {
+        None
+    }
 }
 
 #[cfg(test)]
 mod tests {
-    use crate::{test, Tikibase};
-    use indoc::indoc;
 
     mod scan {
         use crate::{test, Issue, Location, Tikibase};
+        use ahash::AHashMap;
         use indoc::indoc;
         use std::path::PathBuf;
 
         #[test]
         fn outlier_capitalization() {
+            // create files
             let dir = test::tmp_dir();
             let content1 = indoc! {"
             # One
@@ -141,8 +140,7 @@ mod tests {
             ### alpha
             [1](1.md)"};
             test::create_file("3.md", content3, &dir);
-            let base = Tikibase::load(dir).unwrap();
-            let have = super::super::scan(&base);
+            let have = run(dir);
             let want = vec![Issue::MixCapSection {
                 location: Location {
                     file: PathBuf::from("2.md"),
@@ -173,8 +171,7 @@ mod tests {
             ### Alpha
             [1](1.md)"};
             test::create_file("2.md", content2, &dir);
-            let base = Tikibase::load(dir).unwrap();
-            let have = super::super::scan(&base);
+            let have = run(dir);
             let want = vec![
                 Issue::MixCapSection {
                     location: Location {
@@ -219,49 +216,36 @@ mod tests {
             ### alpha
             [1](1.md)"};
             test::create_file("2.md", content2, &dir);
-            let base = Tikibase::load(dir).unwrap();
-            let have = super::super::scan(&base);
+            let have = run(dir);
             let want = vec![];
             pretty::assert_eq!(have, want);
         }
-    }
 
-    mod file_section {
-        use crate::scan::section_capitalization::FileSection;
-
-        #[test]
-        fn end() {
-            let file_section = FileSection {
-                title: "test section",
-                start: 4,
-                ..FileSection::default()
-            };
-            assert_eq!(file_section.end(), 16);
+        fn run(dir: PathBuf) -> Vec<Issue> {
+            let base = Tikibase::load(dir).unwrap();
+            // stage 1
+            let mut title_variants = AHashMap::new();
+            for (_filename, doc) in &base.dir.docs {
+                for section in &doc.content_sections {
+                    super::super::phase_1(section, &mut title_variants);
+                }
+            }
+            // stage 2
+            let outliers = super::super::process(title_variants);
+            // stage 3
+            let mut issues = vec![];
+            for (name, doc) in base.dir.docs {
+                for section in doc.content_sections {
+                    super::super::phase_2(
+                        &PathBuf::new().join(&name),
+                        &section,
+                        &mut issues,
+                        &outliers,
+                    );
+                }
+            }
+            issues.sort();
+            issues
         }
-    }
-
-    #[test]
-    fn normalize() {
-        assert_eq!(super::normalize("foo"), "foo");
-        assert_eq!(super::normalize("Foo"), "foo");
-        assert_eq!(super::normalize("FOO"), "foo");
-    }
-
-    #[test]
-    fn same_capitalization() {
-        let dir = test::tmp_dir();
-        let content1 = indoc! {"
-            # test document
-
-            ### One
-            content
-
-            ### One
-            content"};
-        test::create_file("1.md", content1, &dir);
-        let base = Tikibase::load(dir).unwrap();
-        let have = super::scan(&base);
-        let want = vec![];
-        pretty::assert_eq!(have, want);
     }
 }

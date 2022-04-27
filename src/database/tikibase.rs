@@ -1,5 +1,7 @@
 use super::{Directory, Document};
+use crate::scan::section_capitalization;
 use crate::{Config, Issue};
+use ahash::AHashMap;
 use std::ffi::OsStr;
 use std::path::PathBuf;
 
@@ -10,16 +12,30 @@ pub struct Tikibase {
 
 impl Tikibase {
     /// populates the gives issues vector with all issues found in this Tikibase
-    pub fn check(&self, issues: &mut Vec<Issue>, linked_resources: &mut Vec<PathBuf>) {
-        self.dir
-            .check(&PathBuf::from(""), issues, linked_resources, &self.dir);
-        self.check_round_2(linked_resources, issues);
-    }
 
-    /// populates the given `unlinked_resources` list with all resources in this Tikibase that aren't linked to
-    pub fn check_round_2(&self, linked_resources: &[PathBuf], issues: &mut Vec<Issue>) {
-        self.dir
-            .check_round_2(&PathBuf::from(""), linked_resources, issues);
+    pub fn check(&self) -> Vec<Issue> {
+        let mut issues = vec![];
+        let mut linked_resources = vec![];
+        let mut title_variants = AHashMap::new();
+        // round 1
+        self.dir.check_1(
+            &PathBuf::from(""),
+            &mut issues,
+            &mut linked_resources,
+            &mut title_variants,
+            &self.dir,
+        );
+        // analyze
+        let outliers = section_capitalization::process(title_variants);
+        // round 2
+        self.dir.check_2(
+            &PathBuf::from(""),
+            &linked_resources,
+            &mut issues,
+            &outliers,
+        );
+        issues.sort();
+        issues
     }
 
     pub fn load(root: PathBuf) -> Result<Tikibase, Vec<Issue>> {
@@ -49,9 +65,7 @@ mod tests {
         test::create_file("3.md", "# Three\n\n[one](1.md)\n", &dir);
         test::create_file("tikibase.json", r#"{ "bidiLinks": true }"#, &dir);
         let base = Tikibase::load(dir).unwrap();
-        let mut issues = vec![];
-        let mut linked_resources = vec![];
-        base.check(&mut issues, &mut linked_resources);
+        let have = base.check();
         let want = vec![
             Issue::DocumentWithoutLinks {
                 location: Location {
@@ -82,8 +96,7 @@ mod tests {
                 title: "Three".into(),
             },
         ];
-        issues.sort();
-        pretty::assert_eq!(issues, want);
+        pretty::assert_eq!(have, want);
     }
 
     #[test]
@@ -92,9 +105,7 @@ mod tests {
         test::create_file("1.md", "# One\n\ntext\n### occurrences\n\n- foo", &dir);
         test::create_file("tikibase.json", r#"{ "bidiLinks": true }"#, &dir);
         let base = Tikibase::load(dir).unwrap();
-        let mut issues = vec![];
-        let mut linked_resources = vec![];
-        base.check(&mut issues, &mut linked_resources);
+        let have = base.check();
         let want = vec![
             Issue::DocumentWithoutLinks {
                 location: Location {
@@ -113,6 +124,6 @@ mod tests {
                 },
             },
         ];
-        pretty::assert_eq!(issues, want);
+        pretty::assert_eq!(have, want);
     }
 }

@@ -1,4 +1,5 @@
 use super::{section, Directory, EntryType, Footnotes, Line, Reference, Section};
+use crate::scan::section_capitalization::{self, OutlierInfo};
 use crate::{Config, Issue, Location};
 use ahash::AHashMap;
 use std::ffi::OsString;
@@ -23,13 +24,14 @@ pub struct Document {
 
 impl Document {
     // populates the given issues list with all issues in this document
-    pub fn check(
+    pub fn check_1(
         &self,
         path: &Path,
         dir: &Path,
         config: &Config,
         issues: &mut Vec<Issue>,
         linked_resources: &mut Vec<PathBuf>,
+        title_variants: &mut AHashMap<String, u32>,
         root: &Directory,
     ) {
         self.find_duplicate_sections(path, issues);
@@ -37,10 +39,22 @@ impl Document {
         self.find_mismatching_footnotes(path, issues);
         self.check_links(path, dir, issues, linked_resources, root, config);
         self.title_section.check_empty_title(path, issues);
-        for section in &self.content_sections {
-            section.check_empty(path, issues);
-            section.check_empty_title(path, issues);
-            section.check_mismatching_title(path, config, issues);
+        for content_section in &self.content_sections {
+            content_section.check_empty(path, issues);
+            content_section.check_empty_title(path, issues);
+            content_section.check_mismatching_title(path, config, issues);
+            section_capitalization::phase_1(content_section, title_variants);
+        }
+    }
+
+    pub fn check_2(
+        &self,
+        path: &Path,
+        issues: &mut Vec<Issue>,
+        outliers: &AHashMap<String, OutlierInfo>,
+    ) {
+        for content_section in &self.content_sections {
+            section_capitalization::phase_2(path, content_section, issues, outliers);
         }
     }
 
