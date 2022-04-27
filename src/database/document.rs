@@ -1,6 +1,6 @@
 use super::{section, Directory, EntryType, Footnotes, Line, Reference, Section};
 use crate::scan::section_capitalization::{self, OutlierInfo};
-use crate::scan::{duplicate_sections, unordered_sections};
+use crate::scan::{duplicate_sections, footnotes, unordered_sections};
 use crate::{Config, Issue, Location};
 use ahash::AHashMap;
 use std::ffi::OsString;
@@ -37,7 +37,7 @@ impl Document {
     ) {
         duplicate_sections::scan(self, path, issues);
         unordered_sections::scan(self, path, config, issues);
-        self.find_mismatching_footnotes(path, issues);
+        footnotes::scan(self, path, issues);
         self.check_links(path, dir, issues, linked_resources, root, config);
         self.title_section.check_empty_title(path, issues);
         for content_section in &self.content_sections {
@@ -228,39 +228,6 @@ impl Document {
     pub fn contains_reference_to<P: AsRef<Path>>(&self, path: P) -> bool {
         let path_str = path.as_ref().to_string_lossy();
         self.references.iter().any(|r| r.points_to(&path_str))
-    }
-
-    /// populates the given issues list with all sections in this document that don't match the configured sections
-    pub fn find_mismatching_footnotes(&self, path: &Path, issues: &mut Vec<Issue>) {
-        let footnotes = match self.footnotes() {
-            Ok(footnotes) => footnotes,
-            Err(issue) => {
-                issues.push(issue);
-                return;
-            }
-        };
-        for missing_reference in footnotes.missing_references() {
-            issues.push(Issue::MissingFootnote {
-                location: Location {
-                    file: path.into(),
-                    line: missing_reference.line,
-                    start: missing_reference.start,
-                    end: missing_reference.end,
-                },
-                identifier: missing_reference.identifier.clone(),
-            });
-        }
-        for unused_definition in footnotes.unused_definitions() {
-            issues.push(Issue::UnusedFootnote {
-                location: Location {
-                    file: path.into(),
-                    line: unused_definition.line,
-                    start: unused_definition.start,
-                    end: unused_definition.end,
-                },
-                identifier: unused_definition.identifier.clone(),
-            });
-        }
     }
 
     /// provides all the footnotes that this document defines and references
@@ -861,76 +828,6 @@ mod tests {
             );
             pretty::assert_eq!(issues, vec![]);
             assert_eq!(linked_resources, vec![PathBuf::from("docs.pdf")]);
-        }
-    }
-
-    mod find_unused_footnotes {
-        use crate::{Document, Issue, Location};
-        use indoc::indoc;
-        use std::path::PathBuf;
-
-        #[test]
-        fn missing_footnote_definition() {
-            let content = indoc! {"
-                # Title
-                existing footnote[^existing]
-                other footnote[^other]
-
-                ```go
-                result := map[^0]
-                ```
-
-                Another snippet of code that should be ignored: `map[^0]`.
-
-                ### links
-
-                [^existing]: existing footnote
-                "};
-            let doc = Document::from_str("test.md", content).unwrap();
-            let mut have = vec![];
-            doc.find_mismatching_footnotes(&PathBuf::from("test.md"), &mut have);
-            let want = vec![Issue::MissingFootnote {
-                location: Location {
-                    file: PathBuf::from("test.md"),
-                    line: 2,
-                    start: 14,
-                    end: 22,
-                },
-                identifier: "other".into(),
-            }];
-            pretty::assert_eq!(have, want);
-        }
-
-        #[test]
-        fn unused_footnote_definition() {
-            let content = indoc! {"
-                # Title
-                existing footnote[^existing]
-
-                ```go
-                result := map[^0]
-                ```
-
-                Another snippet of code that should be ignored: `map[^0]`.
-
-                ### links
-
-                [^existing]: existing footnote
-                [^unused]: unused footnote
-                "};
-            let doc = Document::from_str("test.md", content).unwrap();
-            let mut have = vec![];
-            doc.find_mismatching_footnotes(&PathBuf::from("test.md"), &mut have);
-            let want = vec![Issue::UnusedFootnote {
-                location: Location {
-                    file: PathBuf::from("test.md"),
-                    line: 12,
-                    start: 0,
-                    end: 10,
-                },
-                identifier: "unused".into(),
-            }];
-            pretty::assert_eq!(have, want);
         }
     }
 
