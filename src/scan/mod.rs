@@ -3,6 +3,7 @@
 
 pub(crate) mod duplicate_sections;
 pub(crate) mod footnotes;
+pub(crate) mod links;
 pub(crate) mod section_capitalization;
 pub(crate) mod section_level;
 pub(crate) mod unordered_sections;
