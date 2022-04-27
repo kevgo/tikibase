@@ -4,9 +4,10 @@ use ahash::AHashMap;
 use std::cmp::Ordering::{Equal, Greater, Less};
 use std::path::Path;
 
-pub(crate) fn phase_1(section: &Section, acc: &mut AHashMap<String, u32>) {
-    let variant = section.human_title().to_string();
-    let entry = acc.entry(variant).or_insert(0u32);
+pub(crate) fn phase_1(section: &Section, title_variants: &mut AHashMap<String, u32>) {
+    let entry = title_variants
+        .entry(section.human_title().to_string())
+        .or_insert(0);
     *entry += 1;
 }
 
