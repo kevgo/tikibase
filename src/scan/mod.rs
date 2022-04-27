@@ -2,7 +2,8 @@
 //! and reports problems found as `Issues`.
 
 pub(crate) mod duplicate_sections;
-pub(crate) mod empty_sections;
+pub(crate) mod empty_section_content;
+pub(crate) mod empty_section_title;
 pub(crate) mod footnotes;
 pub(crate) mod links;
 pub(crate) mod section_capitalization;

@@ -1,6 +1,9 @@
 use super::{section, Directory, Footnotes, Line, Reference, Section};
 use crate::scan::section_capitalization::{self, OutlierInfo};
-use crate::scan::{duplicate_sections, empty_sections, footnotes, links, unordered_sections};
+use crate::scan::{
+    duplicate_sections, empty_section_content, empty_section_title, footnotes, links,
+    unordered_sections,
+};
 use crate::{Config, Issue, Location};
 use ahash::AHashMap;
 use std::ffi::OsString;
@@ -39,10 +42,10 @@ impl Document {
         unordered_sections::scan(self, path, config, issues);
         footnotes::scan(self, path, issues);
         links::scan(self, path, dir, issues, linked_resources, root, config);
-        self.title_section.check_empty_title(path, issues);
+        empty_section_title::scan(&self.title_section, path, issues);
         for content_section in &self.content_sections {
-            empty_sections::scan(content_section, path, issues);
-            content_section.check_empty_title(path, issues);
+            empty_section_content::scan(content_section, path, issues);
+            empty_section_title::scan(content_section, path, issues);
             content_section.check_mismatching_title(path, config, issues);
             section_capitalization::phase_1(content_section, title_variants);
         }
