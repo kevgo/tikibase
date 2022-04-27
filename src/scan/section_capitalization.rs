@@ -113,36 +113,79 @@ fn find_common_capitalization(variants: &AHashMap<String, u32>) -> Option<String
 #[cfg(test)]
 mod tests {
 
-    mod scan {
-        use crate::{test, Issue, Location, Tikibase};
-        use ahash::AHashMap;
-        use indoc::indoc;
-        use std::path::PathBuf;
+    use crate::{test, Issue, Location, Tikibase};
+    use ahash::AHashMap;
+    use indoc::indoc;
+    use std::path::PathBuf;
 
-        #[test]
-        fn outlier_capitalization() {
-            // create files
-            let dir = test::tmp_dir();
-            let content1 = indoc! {"
+    #[test]
+    fn outlier_capitalization() {
+        // create files
+        let dir = test::tmp_dir();
+        let content1 = indoc! {"
             # One
 
             ### alpha
             [2](2.md)"};
-            test::create_file("1.md", content1, &dir);
-            let content2 = indoc! {"
+        test::create_file("1.md", content1, &dir);
+        let content2 = indoc! {"
             # Two
 
             ### Alpha
             [3](3.md)"};
-            test::create_file("2.md", content2, &dir);
-            let content3 = indoc! {"
+        test::create_file("2.md", content2, &dir);
+        let content3 = indoc! {"
             # Three
 
             ### alpha
             [1](1.md)"};
-            test::create_file("3.md", content3, &dir);
-            let have = run(dir);
-            let want = vec![Issue::MixCapSection {
+        test::create_file("3.md", content3, &dir);
+        let have = run(dir);
+        let want = vec![Issue::MixCapSection {
+            location: Location {
+                file: PathBuf::from("2.md"),
+                line: 2,
+                start: 4,
+                end: 9,
+            },
+            all_variants: vec!["Alpha".into(), "alpha".into()],
+            this_variant: "Alpha".into(),
+            common_variant: Some("alpha".into()),
+            section_level: 3,
+        }];
+        pretty::assert_eq!(have, want);
+    }
+
+    #[test]
+    fn mixed_capitalization_same_counts() {
+        let dir = test::tmp_dir();
+        let content1 = indoc! {"
+            # One
+
+            ### alpha
+            [2](2.md)"};
+        test::create_file("1.md", content1, &dir);
+        let content2 = indoc! {"
+            # Two
+
+            ### Alpha
+            [1](1.md)"};
+        test::create_file("2.md", content2, &dir);
+        let have = run(dir);
+        let want = vec![
+            Issue::MixCapSection {
+                location: Location {
+                    file: PathBuf::from("1.md"),
+                    line: 2,
+                    start: 4,
+                    end: 9,
+                },
+                all_variants: vec!["Alpha".into(), "alpha".into()],
+                this_variant: "alpha".into(),
+                common_variant: None,
+                section_level: 3,
+            },
+            Issue::MixCapSection {
                 location: Location {
                     file: PathBuf::from("2.md"),
                     line: 2,
@@ -151,102 +194,57 @@ mod tests {
                 },
                 all_variants: vec!["Alpha".into(), "alpha".into()],
                 this_variant: "Alpha".into(),
-                common_variant: Some("alpha".into()),
+                common_variant: None,
                 section_level: 3,
-            }];
-            pretty::assert_eq!(have, want);
-        }
+            },
+        ];
+        pretty::assert_eq!(have, want);
+    }
 
-        #[test]
-        fn mixed_capitalization_same_counts() {
-            let dir = test::tmp_dir();
-            let content1 = indoc! {"
+    #[test]
+    fn same_capitalization() {
+        let dir = test::tmp_dir();
+        let content1 = indoc! {"
             # One
 
             ### alpha
             [2](2.md)"};
-            test::create_file("1.md", content1, &dir);
-            let content2 = indoc! {"
-            # Two
-
-            ### Alpha
-            [1](1.md)"};
-            test::create_file("2.md", content2, &dir);
-            let have = run(dir);
-            let want = vec![
-                Issue::MixCapSection {
-                    location: Location {
-                        file: PathBuf::from("1.md"),
-                        line: 2,
-                        start: 4,
-                        end: 9,
-                    },
-                    all_variants: vec!["Alpha".into(), "alpha".into()],
-                    this_variant: "alpha".into(),
-                    common_variant: None,
-                    section_level: 3,
-                },
-                Issue::MixCapSection {
-                    location: Location {
-                        file: PathBuf::from("2.md"),
-                        line: 2,
-                        start: 4,
-                        end: 9,
-                    },
-                    all_variants: vec!["Alpha".into(), "alpha".into()],
-                    this_variant: "Alpha".into(),
-                    common_variant: None,
-                    section_level: 3,
-                },
-            ];
-            pretty::assert_eq!(have, want);
-        }
-
-        #[test]
-        fn same_capitalization() {
-            let dir = test::tmp_dir();
-            let content1 = indoc! {"
-            # One
-
-            ### alpha
-            [2](2.md)"};
-            test::create_file("1.md", content1, &dir);
-            let content2 = indoc! {"
+        test::create_file("1.md", content1, &dir);
+        let content2 = indoc! {"
             # Two
 
             ### alpha
             [1](1.md)"};
-            test::create_file("2.md", content2, &dir);
-            let have = run(dir);
-            let want = vec![];
-            pretty::assert_eq!(have, want);
-        }
+        test::create_file("2.md", content2, &dir);
+        let have = run(dir);
+        let want = vec![];
+        pretty::assert_eq!(have, want);
+    }
 
-        fn run(dir: PathBuf) -> Vec<Issue> {
-            let base = Tikibase::load(dir).unwrap();
-            // stage 1
-            let mut title_variants = AHashMap::new();
-            for (_filename, doc) in &base.dir.docs {
-                for section in &doc.content_sections {
-                    super::super::phase_1(section, &mut title_variants);
-                }
+    fn run(dir: PathBuf) -> Vec<Issue> {
+        let base = Tikibase::load(dir).unwrap();
+        // stage 1
+        let mut title_variants = AHashMap::new();
+        for (_filename, doc) in &base.dir.docs {
+            for section in &doc.content_sections {
+                super::phase_1(section, &mut title_variants);
             }
-            // stage 2
-            let outliers = super::super::process(title_variants);
-            // stage 3
-            let mut issues = vec![];
-            for (name, doc) in base.dir.docs {
-                for section in doc.content_sections {
-                    super::super::phase_2(
-                        &PathBuf::new().join(&name),
-                        &section,
-                        &mut issues,
-                        &outliers,
-                    );
-                }
-            }
-            issues.sort();
-            issues
         }
+        // stage 2
+        let outliers = super::process(title_variants);
+        // stage 3
+        let mut issues = vec![];
+        for (name, doc) in base.dir.docs {
+            for section in doc.content_sections {
+                super::phase_2(
+                    &PathBuf::new().join(&name),
+                    &section,
+                    &mut issues,
+                    &outliers,
+                );
+            }
+        }
+        issues.sort();
+        issues
     }
 }

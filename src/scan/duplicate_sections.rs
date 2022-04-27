@@ -40,7 +40,7 @@ mod tests {
     use std::path::PathBuf;
 
     #[test]
-    fn find_duplicate_sections() {
+    fn with_duplicate_sections() {
         let content = indoc! {"
             # test document
 
