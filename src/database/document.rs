@@ -25,7 +25,6 @@ impl Document {
     // populates the given issues list with all issues in this document
     pub fn check(
         &self,
-        // TODO: replace Path with a string-based Path struct
         path: &Path,
         dir: &Path,
         config: &Config,
