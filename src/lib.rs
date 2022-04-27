@@ -9,7 +9,7 @@ pub mod test;
 
 pub use commands::{Issue, Location, Outcome};
 pub use config::Config;
-use database::Tikibase;
+pub(crate) use database::{Document, Tikibase};
 pub use fix::Fix;
 use input::Command;
 pub use output::{Message, Messages};

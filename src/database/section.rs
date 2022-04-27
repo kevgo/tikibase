@@ -243,8 +243,7 @@ mod tests {
         }
     }
     mod check_empty {
-        use crate::database::Document;
-        use crate::{Issue, Location};
+        use crate::{Document, Issue, Location};
         use indoc::indoc;
         use std::path::PathBuf;
 
@@ -319,8 +318,7 @@ mod tests {
     }
 
     mod check_empty_title {
-        use crate::database::Document;
-        use crate::{Issue, Location};
+        use crate::{Document, Issue, Location};
         use indoc::indoc;
         use std::path::PathBuf;
 

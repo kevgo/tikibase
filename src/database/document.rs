@@ -1,4 +1,5 @@
 use super::{section, Directory, EntryType, Footnotes, Line, Reference, Section};
+use crate::scan::duplicate_sections;
 use crate::scan::section_capitalization::{self, OutlierInfo};
 use crate::{Config, Issue, Location};
 use ahash::AHashMap;
@@ -34,7 +35,7 @@ impl Document {
         title_variants: &mut AHashMap<String, u32>,
         root: &Directory,
     ) {
-        self.find_duplicate_sections(path, issues);
+        duplicate_sections::scan(self, path, issues);
         self.find_unordered_sections(path, config, issues);
         self.find_mismatching_footnotes(path, issues);
         self.check_links(path, dir, issues, linked_resources, root, config);
@@ -227,37 +228,6 @@ impl Document {
     pub fn contains_reference_to<P: AsRef<Path>>(&self, path: P) -> bool {
         let path_str = path.as_ref().to_string_lossy();
         self.references.iter().any(|r| r.points_to(&path_str))
-    }
-
-    /// populates the given issues list with all duplicate sections in this document
-    pub fn find_duplicate_sections(&self, path: &Path, issues: &mut Vec<Issue>) {
-        // section title -> [lines with this section]
-        let mut sections_lines: AHashMap<&str, Vec<(u32, u32, u32)>> = AHashMap::new();
-        for section in self.sections() {
-            sections_lines
-                .entry(section.human_title())
-                .or_insert_with(Vec::new)
-                .push((
-                    section.line_number,
-                    section.title_text_start as u32,
-                    section.title_text_end(),
-                ));
-        }
-        for (title, lines) in sections_lines.drain() {
-            if lines.len() > 1 {
-                for (line, start, end) in lines {
-                    issues.push(Issue::DuplicateSection {
-                        location: Location {
-                            file: path.into(),
-                            line,
-                            start,
-                            end,
-                        },
-                        title: title.into(),
-                    });
-                }
-            }
-        }
     }
 
     /// populates the given issues list with all sections in this document that don't match the configured sections
@@ -662,9 +632,7 @@ struct CodeblockStart {
 mod tests {
     use super::Document;
     use crate::database::Reference;
-    use crate::{Issue, Location};
     use indoc::indoc;
-    use std::path::PathBuf;
 
     mod check_links {
         use crate::{test, Config, Issue, Location, Tikibase};
@@ -950,44 +918,8 @@ mod tests {
         }
     }
 
-    #[test]
-    fn find_duplicate_sections() {
-        let content = indoc! {"
-            # test document
-
-            ### One
-            content
-            ### One
-            content"};
-        let doc = Document::from_str("test.md", content).unwrap();
-        let mut have = vec![];
-        doc.find_duplicate_sections(&PathBuf::from("test.md"), &mut have);
-        let want = vec![
-            Issue::DuplicateSection {
-                location: Location {
-                    file: PathBuf::from("test.md"),
-                    line: 2,
-                    start: 4,
-                    end: 7,
-                },
-                title: "One".into(),
-            },
-            Issue::DuplicateSection {
-                location: Location {
-                    file: PathBuf::from("test.md"),
-                    line: 4,
-                    start: 4,
-                    end: 7,
-                },
-                title: "One".into(),
-            },
-        ];
-        pretty::assert_eq!(have, want);
-    }
-
     mod find_unused_footnotes {
-        use crate::database::Document;
-        use crate::{Issue, Location};
+        use crate::{Document, Issue, Location};
         use indoc::indoc;
         use std::path::PathBuf;
 
@@ -1057,8 +989,7 @@ mod tests {
     }
 
     mod find_unordered_sections {
-        use crate::database::Document;
-        use crate::{Config, Issue, Location};
+        use crate::{Config, Document, Issue, Location};
         use indoc::indoc;
         use std::path::PathBuf;
 
@@ -1389,7 +1320,7 @@ mod tests {
     }
 
     mod has_anchor {
-        use crate::database::Document;
+        use crate::Document;
 
         #[test]
         fn matching() {
@@ -1439,7 +1370,7 @@ mod tests {
     }
 
     mod last_section {
-        use crate::database::Document;
+        use crate::Document;
 
         #[test]
         fn title_only() {
