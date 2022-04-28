@@ -1,8 +1,7 @@
 use crate::{Document, Issue, Location};
-use std::path::Path;
 
 /// populates the given issues list with all sections in this document that don't match the configured sections
-pub fn scan(doc: &Document, path: &Path, issues: &mut Vec<Issue>) {
+pub fn scan(doc: &Document, issues: &mut Vec<Issue>) {
     let footnotes = match doc.footnotes() {
         Ok(footnotes) => footnotes,
         Err(issue) => {
@@ -13,7 +12,7 @@ pub fn scan(doc: &Document, path: &Path, issues: &mut Vec<Issue>) {
     for missing_reference in footnotes.missing_references() {
         issues.push(Issue::MissingFootnote {
             location: Location {
-                file: path.into(),
+                file: doc.relative_path.clone(),
                 line: missing_reference.line,
                 start: missing_reference.start,
                 end: missing_reference.end,
@@ -24,7 +23,7 @@ pub fn scan(doc: &Document, path: &Path, issues: &mut Vec<Issue>) {
     for unused_definition in footnotes.unused_definitions() {
         issues.push(Issue::UnusedFootnote {
             location: Location {
-                file: path.into(),
+                file: doc.relative_path.clone(),
                 line: unused_definition.line,
                 start: unused_definition.start,
                 end: unused_definition.end,
@@ -59,7 +58,7 @@ mod tests {
                 "};
         let doc = Document::from_str("test.md", content).unwrap();
         let mut have = vec![];
-        super::scan(&doc, &PathBuf::from("test.md"), &mut have);
+        super::scan(&doc, &mut have);
         let want = vec![Issue::MissingFootnote {
             location: Location {
                 file: PathBuf::from("test.md"),
@@ -91,7 +90,7 @@ mod tests {
                 "};
         let doc = Document::from_str("test.md", content).unwrap();
         let mut have = vec![];
-        super::scan(&doc, &PathBuf::from("test.md"), &mut have);
+        super::scan(&doc, &mut have);
         let want = vec![Issue::UnusedFootnote {
             location: Location {
                 file: PathBuf::from("test.md"),

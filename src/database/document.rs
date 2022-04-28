@@ -39,7 +39,7 @@ impl Document {
     ) {
         duplicate_sections::scan(self, issues);
         unordered_sections::scan(self, config, issues);
-        footnotes::scan(self, path, issues);
+        footnotes::scan(self, issues);
         links::scan(self, path, dir, issues, linked_resources, root, config);
         empty_section_title::scan(&self.title_section, path, issues);
         for content_section in &self.content_sections {
