@@ -1,8 +1,7 @@
 use super::{section, Directory, Footnotes, Line, Reference, Section};
-use crate::scan::section_capitalization::{self, OutlierInfo};
 use crate::scan::{
     duplicate_sections, empty_section_content, empty_section_title, footnotes, illegal_sections,
-    links, unordered_sections,
+    links, section_capitalization, section_level, unordered_sections,
 };
 use crate::{Config, Issue, Location};
 use ahash::AHashMap;
@@ -13,7 +12,6 @@ use std::path::{Path, PathBuf};
 
 #[derive(Debug, Eq, Hash, PartialEq)]
 pub struct Document {
-    // TODO: make these elements private once the move to new architecture is complete
     /// the path relative to the Tikibase root directory
     pub relative_path: PathBuf,
     pub title_section: Section,
@@ -36,6 +34,7 @@ impl Document {
         issues: &mut Vec<Issue>,
         linked_resources: &mut Vec<PathBuf>,
         title_variants: &mut AHashMap<String, u32>,
+        level_variants: &mut AHashMap<String, AHashMap<u8, u32>>,
         root: &Directory,
     ) {
         duplicate_sections::scan(self, path, issues);
@@ -46,8 +45,12 @@ impl Document {
         for content_section in &self.content_sections {
             empty_section_content::scan(content_section, path, issues);
             empty_section_title::scan(content_section, path, issues);
-            illegal_sections::scan(content_section, path, config, issues);
-            section_capitalization::phase_1(content_section, title_variants);
+            if config.sections.is_some() {
+                illegal_sections::scan(content_section, path, config, issues);
+            } else {
+                section_capitalization::phase_1(content_section, title_variants);
+                section_level::phase_1(content_section, level_variants);
+            }
         }
     }
 
@@ -55,10 +58,12 @@ impl Document {
         &self,
         path: &Path,
         issues: &mut Vec<Issue>,
-        outliers: &AHashMap<String, OutlierInfo>,
+        cap_outliers: &AHashMap<String, section_capitalization::OutlierInfo>,
+        level_outliers: &AHashMap<String, section_level::OutlierInfo>,
     ) {
         for content_section in &self.content_sections {
-            section_capitalization::phase_2(path, content_section, issues, outliers);
+            section_capitalization::phase_2(path, content_section, issues, cap_outliers);
+            section_level::phase_2(content_section, path, issues, level_outliers);
         }
     }
 

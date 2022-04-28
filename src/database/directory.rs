@@ -1,6 +1,6 @@
 use super::Document;
 use crate::config::LoadResult;
-use crate::scan::section_capitalization::OutlierInfo;
+use crate::scan::{section_capitalization, section_level};
 use crate::{config, Config, Issue, Location};
 use ahash::AHashMap;
 use merge::Merge;
@@ -23,6 +23,7 @@ impl Directory {
         issues: &mut Vec<Issue>,
         linked_resources: &mut Vec<PathBuf>,
         title_variants: &mut AHashMap<String, u32>,
+        level_variants: &mut AHashMap<String, AHashMap<u8, u32>>,
         root: &Directory,
     ) {
         for (filename, doc) in &self.docs {
@@ -33,6 +34,7 @@ impl Directory {
                 issues,
                 linked_resources,
                 title_variants,
+                level_variants,
                 root,
             );
         }
@@ -42,6 +44,7 @@ impl Directory {
                 issues,
                 linked_resources,
                 title_variants,
+                level_variants,
                 root,
             );
         }
@@ -53,11 +56,12 @@ impl Directory {
         relative_path: &Path,
         linked_resources: &[PathBuf],
         issues: &mut Vec<Issue>,
-        outliers: &AHashMap<String, OutlierInfo>,
+        cap_outliers: &AHashMap<String, section_capitalization::OutlierInfo>,
+        level_outliers: &AHashMap<String, section_level::OutlierInfo>,
     ) {
         for (name, doc) in &self.docs {
             let doc_path = relative_path.join(name);
-            doc.check_2(&doc_path, issues, outliers);
+            doc.check_2(&doc_path, issues, cap_outliers, level_outliers);
             if let Some(bidi_links) = self.config.bidi_links {
                 if let Some(old_occurrences_section) = &doc.old_occurrences_section {
                     if bidi_links
@@ -104,7 +108,8 @@ impl Directory {
                 &relative_path.join(&name),
                 linked_resources,
                 issues,
-                outliers,
+                cap_outliers,
+                level_outliers,
             );
         }
     }

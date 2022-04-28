@@ -1,5 +1,5 @@
 use super::{Directory, Document};
-use crate::scan::section_capitalization;
+use crate::scan::{section_capitalization, section_level};
 use crate::{Config, Issue};
 use ahash::AHashMap;
 use std::ffi::OsStr;
@@ -17,22 +17,26 @@ impl Tikibase {
         let mut issues = vec![];
         let mut linked_resources = vec![];
         let mut title_variants = AHashMap::new();
+        let mut level_variants = AHashMap::new();
         // round 1
         self.dir.check_1(
             &PathBuf::from(""),
             &mut issues,
             &mut linked_resources,
             &mut title_variants,
+            &mut level_variants,
             &self.dir,
         );
         // analyze
-        let outliers = section_capitalization::process(title_variants);
+        let title_outliers = section_capitalization::process(title_variants);
+        let level_outliers = section_level::process(level_variants);
         // round 2
         self.dir.check_2(
             &PathBuf::from(""),
             &linked_resources,
             &mut issues,
-            &outliers,
+            &title_outliers,
+            &level_outliers,
         );
         issues.sort();
         issues

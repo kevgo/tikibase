@@ -1,89 +1,85 @@
-use crate::{Issue, Location, Tikibase};
+use crate::database::Section;
+use crate::{Issue, Location};
 use ahash::AHashMap;
 use std::cmp::Ordering::{Equal, Greater, Less};
 use std::path::Path;
 
-pub(crate) fn scan(base: &Tikibase) -> Vec<Issue> {
-    // title --> level --> FileSections with this level and title
-    let mut level_variants: AHashMap<&str, AHashMap<u8, Vec<FileSection>>> = AHashMap::new();
-    for (_path, doc) in &base.dir.docs {
-        for section in doc.sections() {
-            level_variants
-                .entry(section.human_title())
-                .or_insert_with(AHashMap::new)
-                .entry(section.level)
-                .or_insert_with(Vec::new)
-                .push(FileSection {
-                    file: &doc.relative_path,
-                    title: section.human_title(),
-                    line: section.line_number,
-                    end: section.title_text_end(),
-                });
-        }
-    }
-    let mut issues = vec![];
-    for (_, level_counts) in level_variants.drain() {
-        if level_counts.len() < 2 {
-            // one type of level --> section is consistently formatted everywhere
-            continue;
-        }
-        let common_level = find_common_level(&level_counts);
-        let mut all_variants: Vec<u8> = level_counts.keys().map(ToOwned::to_owned).collect();
-        all_variants.sort_unstable();
-        for (level, file_sections) in level_counts {
-            if let Some(common_level) = common_level {
-                if level == common_level {
-                    continue;
+pub fn phase_1(section: &Section, level_variants: &mut AHashMap<String, AHashMap<u8, u32>>) {
+    let entry = level_variants
+        .entry(section.human_title().to_string())
+        .or_insert_with(AHashMap::new)
+        .entry(section.level)
+        .or_insert(0);
+    *entry += 1;
+}
+
+/// converts the input to full tite --> `OutlierInfo`
+pub fn process(input: AHashMap<String, AHashMap<u8, u32>>) -> AHashMap<String, OutlierInfo> {
+    let mut result = AHashMap::new();
+    for (title, variants) in input {
+        let mut all: Vec<u8> = variants.keys().map(ToOwned::to_owned).collect();
+        all.sort_unstable();
+        match find_common_level(&variants) {
+            Some(common) => {
+                for (variant, _count) in variants {
+                    if variant != common {
+                        result.insert(
+                            format_variant(&title, variant),
+                            OutlierInfo {
+                                common: Some(common),
+                                all: all.clone(),
+                            },
+                        );
+                    }
                 }
             }
-            for file_section in file_sections {
-                issues.push(Issue::InconsistentHeadingLevel {
-                    location: Location {
-                        file: file_section.file.into(),
-                        line: file_section.line,
-                        start: 0,
-                        end: file_section.end,
-                    },
-                    common_level,
-                    this_level: level as u8,
-                    section_title: file_section.title.into(),
-                    all_levels: all_variants.clone(),
-                });
+            None => {
+                for (variant, _count) in variants {
+                    result.insert(
+                        format_variant(&title, variant),
+                        OutlierInfo {
+                            common: None,
+                            all: all.clone(),
+                        },
+                    );
+                }
             }
         }
     }
-    issues.sort();
-    issues
+    result
 }
 
-#[derive(Eq, Hash, Ord, PartialEq, PartialOrd)]
-pub struct FileSection<'a> {
-    pub file: &'a Path,
-    pub title: &'a str,
-    pub line: u32,
-    pub end: u32,
-}
-
-impl Default for FileSection<'_> {
-    fn default() -> Self {
-        Self {
-            file: Path::new(""),
-            title: "",
-            line: 0,
-            end: 0,
-        }
+pub fn phase_2(
+    section: &Section,
+    path: &Path,
+    issues: &mut Vec<Issue>,
+    level_variants: &AHashMap<String, OutlierInfo>,
+) {
+    if let Some(outlier_info) = level_variants.get(&section.title_line.text) {
+        issues.push(Issue::InconsistentHeadingLevel {
+            location: Location {
+                file: path.into(),
+                line: section.line_number,
+                start: 0,
+                end: section.title_text_end(),
+            },
+            common_level: outlier_info.common,
+            this_level: section.level,
+            section_title: section.human_title().into(),
+            all_levels: outlier_info.all.clone(),
+        });
     }
 }
 
-/// provides the most common key
-fn find_common_level(level_counts: &AHashMap<u8, Vec<FileSection>>) -> Option<u8> {
+/// provides the most common variant
+fn find_common_level(level_counts: &AHashMap<u8, u32>) -> Option<u8> {
     let mut result = None;
     let mut max = 0;
-    for (name, elements) in level_counts {
-        match elements.len().cmp(&max) {
+    for (variant, count) in level_counts {
+        match count.cmp(&max) {
             Greater => {
-                result = Some(name.to_owned());
-                max = elements.len();
+                result = Some(variant.to_owned());
+                max = count.to_owned();
             }
             Equal => {
                 result = None;
@@ -94,16 +90,26 @@ fn find_common_level(level_counts: &AHashMap<u8, Vec<FileSection>>) -> Option<u8
     result
 }
 
+fn format_variant(title: &str, level: u8) -> String {
+    format!("{} {}", "#".repeat(level as usize), title)
+}
+
+pub struct OutlierInfo {
+    pub common: Option<u8>,
+    pub all: Vec<u8>,
+}
+
 #[cfg(test)]
 mod tests {
 
     mod scan {
         use crate::{test, Issue, Location, Tikibase};
+        use ahash::AHashMap;
         use indoc::indoc;
         use std::path::PathBuf;
 
         #[test]
-        fn outlier_level() {
+        fn has_outlier() {
             let dir = test::tmp_dir();
             let content1 = indoc! {"
                 # one
@@ -123,8 +129,7 @@ mod tests {
                 ### section
                 content"};
             test::create_file("3.md", content3, &dir);
-            let base = Tikibase::load(dir).unwrap();
-            let have = super::super::scan(&base);
+            let have = run(dir);
             let want = vec![Issue::InconsistentHeadingLevel {
                 location: Location {
                     file: PathBuf::from("2.md"),
@@ -141,7 +146,7 @@ mod tests {
         }
 
         #[test]
-        fn different_levels_same_counts() {
+        fn no_outlier() {
             let dir = test::tmp_dir();
             let content1 = indoc! {"
                 # one
@@ -155,8 +160,7 @@ mod tests {
                 ##### section
                 content"};
             test::create_file("2.md", content2, &dir);
-            let base = Tikibase::load(dir).unwrap();
-            let have = super::super::scan(&base);
+            let have = run(dir);
             let want = vec![
                 Issue::InconsistentHeadingLevel {
                     location: Location {
@@ -187,7 +191,7 @@ mod tests {
         }
 
         #[test]
-        fn matching_levels() {
+        fn no_problems() {
             let dir = test::tmp_dir();
             let content1 = indoc! {"
                 # one
@@ -201,50 +205,71 @@ mod tests {
                 ### section
                 content"};
             test::create_file("2.md", content2, &dir);
-            let base = Tikibase::load(dir).unwrap();
-            let have = super::super::scan(&base);
+            let have = run(dir);
             let want = vec![];
             pretty::assert_eq!(have, want);
+        }
+
+        fn run(dir: PathBuf) -> Vec<Issue> {
+            let base = Tikibase::load(dir).unwrap();
+            // stage 1
+            let mut title_variants = AHashMap::new();
+            for (_filename, doc) in &base.dir.docs {
+                for section in &doc.content_sections {
+                    super::super::phase_1(section, &mut title_variants);
+                }
+            }
+            // stage 2
+            let outliers = super::super::process(title_variants);
+            // stage 3
+            let mut issues = vec![];
+            for (name, doc) in base.dir.docs {
+                for section in doc.content_sections {
+                    super::super::phase_2(
+                        &section,
+                        &PathBuf::new().join(&name),
+                        &mut issues,
+                        &outliers,
+                    );
+                }
+            }
+            issues.sort();
+            issues
         }
     }
 
     mod find_most_common_level {
-        use super::super::{find_common_level, FileSection};
+        use super::super::find_common_level;
         use ahash::AHashMap;
 
         #[test]
-        fn different_counts() {
-            let mut give: AHashMap<u8, Vec<FileSection>> = AHashMap::new();
-            give.entry(3).or_insert_with(Vec::new).push(FileSection {
-                title: "3A",
-                ..FileSection::default()
-            });
-            give.entry(3).or_insert_with(Vec::new).push(FileSection {
-                title: "3B",
-                ..FileSection::default()
-            });
-            give.entry(5).or_insert_with(Vec::new).push(FileSection {
-                title: "5A",
-                ..FileSection::default()
-            });
+        fn has_outlier() {
+            let mut give: AHashMap<u8, u32> = AHashMap::new();
+            give.entry(3).or_insert(2);
+            give.entry(4).or_insert(1);
+            give.entry(5).or_insert(1);
             let have = find_common_level(&give);
             let want = Some(3);
             assert_eq!(have, want);
         }
 
         #[test]
-        fn same_counts() {
-            let mut give: AHashMap<u8, Vec<FileSection>> = AHashMap::new();
-            give.entry(3).or_insert_with(Vec::new).push(FileSection {
-                title: "3A",
-                ..FileSection::default()
-            });
-            give.entry(5).or_insert_with(Vec::new).push(FileSection {
-                title: "5A",
-                ..FileSection::default()
-            });
+        fn no_outlier() {
+            let mut give: AHashMap<u8, u32> = AHashMap::new();
+            give.entry(3).or_insert(1);
+            give.entry(4).or_insert(1);
+            give.entry(5).or_insert(1);
             let have = find_common_level(&give);
             let want = None;
+            assert_eq!(have, want);
+        }
+
+        #[test]
+        fn no_problems() {
+            let mut give: AHashMap<u8, u32> = AHashMap::new();
+            give.entry(3).or_insert(2);
+            let have = find_common_level(&give);
+            let want = Some(3);
             assert_eq!(have, want);
         }
     }

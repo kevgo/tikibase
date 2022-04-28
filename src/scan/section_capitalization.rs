@@ -26,7 +26,7 @@ pub(crate) fn process(mut input: AHashMap<String, u32>) -> AHashMap<String, Outl
     let mut outliers = AHashMap::new();
     for (_, variants) in grouped {
         let mut all: Vec<String> = variants.keys().map(ToString::to_string).collect();
-        all.sort();
+        all.sort_unstable();
         match find_common_capitalization(&variants) {
             Some(common) => {
                 for (variant, _count) in variants {
