@@ -78,7 +78,7 @@ fn find_common_level(level_counts: &AHashMap<u8, u32>) -> Option<u8> {
     for (variant, count) in level_counts {
         match count.cmp(&max) {
             Greater => {
-                result = Some(variant.to_owned());
+                result = Some(variant);
                 max = count.to_owned();
             }
             Equal => {
@@ -87,7 +87,7 @@ fn find_common_level(level_counts: &AHashMap<u8, u32>) -> Option<u8> {
             Less => {}
         }
     }
-    result
+    result.map(ToOwned::to_owned)
 }
 
 fn format_variant(title: &str, level: u8) -> String {
