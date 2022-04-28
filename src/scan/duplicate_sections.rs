@@ -1,9 +1,8 @@
 use crate::{Document, Issue, Location};
 use ahash::AHashMap;
-use std::path::Path;
 
 /// populates the given issues list with all duplicate sections in this document
-pub(crate) fn scan(doc: &Document, path: &Path, issues: &mut Vec<Issue>) {
+pub(crate) fn scan(doc: &Document, issues: &mut Vec<Issue>) {
     // section title -> [lines with this section]
     let mut sections_lines: AHashMap<&str, Vec<(u32, u32, u32)>> = AHashMap::new();
     for section in doc.sections() {
@@ -21,7 +20,7 @@ pub(crate) fn scan(doc: &Document, path: &Path, issues: &mut Vec<Issue>) {
             for (line, start, end) in lines {
                 issues.push(Issue::DuplicateSection {
                     location: Location {
-                        file: path.into(),
+                        file: doc.relative_path.clone(),
                         line,
                         start,
                         end,
@@ -50,7 +49,7 @@ mod tests {
             content"};
         let doc = Document::from_str("test.md", content).unwrap();
         let mut have = vec![];
-        super::scan(&doc, &PathBuf::from("test.md"), &mut have);
+        super::scan(&doc, &mut have);
         let want = vec![
             Issue::DuplicateSection {
                 location: Location {

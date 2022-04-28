@@ -37,7 +37,7 @@ impl Document {
         level_variants: &mut AHashMap<String, AHashMap<u8, u32>>,
         root: &Directory,
     ) {
-        duplicate_sections::scan(self, path, issues);
+        duplicate_sections::scan(self, issues);
         unordered_sections::scan(self, path, config, issues);
         footnotes::scan(self, path, issues);
         links::scan(self, path, dir, issues, linked_resources, root, config);
