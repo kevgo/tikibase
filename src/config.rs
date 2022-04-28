@@ -1,4 +1,4 @@
-use crate::{Issue, Location};
+use crate::check::{Issue, Location};
 use merge::Merge;
 use regex::Regex;
 use schemars::JsonSchema;
@@ -50,6 +50,17 @@ impl Config {
                 }),
             },
             None => Ok(None),
+        }
+    }
+
+    /// indicates whether the given title matches one of the allowed titles
+    pub fn matching_title(&self, title: &str) -> bool {
+        match &self.sections {
+            // HACK: see https://github.com/rust-lang/rust/issues/42671
+            Some(sections) => sections
+                .iter()
+                .any(|config_section| config_section == title),
+            None => true,
         }
     }
 }
@@ -141,8 +152,9 @@ mod tests {
 
     mod load {
         use super::super::{load, Config};
+        use crate::check::{Issue, Location};
         use crate::config::LoadResult;
-        use crate::{test, Issue, Location};
+        use crate::test;
         use std::path::PathBuf;
 
         #[test]
@@ -230,6 +242,37 @@ mod tests {
                 },
             });
             pretty::assert_eq!(have, want);
+        }
+    }
+
+    mod matching_title {
+        use crate::Config;
+
+        #[test]
+        fn matches() {
+            let config = Config {
+                sections: Some(vec!["one".into(), "two".into()]),
+                ..Config::default()
+            };
+            assert!(config.matching_title("two"));
+        }
+
+        #[test]
+        fn no_match() {
+            let config = Config {
+                sections: Some(vec!["one".into(), "two".into()]),
+                ..Config::default()
+            };
+            assert!(!config.matching_title("three"));
+        }
+
+        #[test]
+        fn not_defined() {
+            let config = Config {
+                sections: None,
+                ..Config::default()
+            };
+            assert!(config.matching_title("anything"));
         }
     }
 

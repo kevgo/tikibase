@@ -1,4 +1,5 @@
-use crate::{Outcome, Tikibase};
+use super::Outcome;
+use crate::Tikibase;
 use ahash::AHashMap;
 
 pub fn stats(base: &Tikibase) -> Outcome {

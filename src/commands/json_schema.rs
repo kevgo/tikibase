@@ -1,4 +1,6 @@
-use crate::{config, Issue, Outcome};
+use super::Outcome;
+use crate::check::Issue;
+use crate::config;
 use colored::Colorize;
 use schemars::schema_for;
 use std::fs::File;

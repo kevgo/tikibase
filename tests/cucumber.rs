@@ -102,7 +102,7 @@ fn it_prints(world: &mut MyWorld, step: &Step) {
         have.push_str("\n");
     }
     let want = step.docstring.as_ref().unwrap();
-    assert_eq!(have.trim(), want.trim());
+    pretty::assert_eq!(have.trim(), want.trim());
 }
 
 #[then("it prints nothing")]
@@ -112,8 +112,7 @@ fn it_prints_nothing(world: &mut MyWorld) {
 
 #[then("it finds no issues")]
 fn it_finds_no_issues(world: &mut MyWorld) {
-    assert_eq!(world.output, Messages::default());
-    assert_eq!(world.output.exit_code, 0);
+    pretty::assert_eq!(world.output, Messages::default());
 }
 
 #[then(regex = "^the exit code is (\\d+)$")]

@@ -1,13 +1,15 @@
 use super::Document;
+use crate::check::Issue;
 use crate::config::LoadResult;
-use crate::{config, Config, Issue};
+use crate::{config, Config};
 use ahash::AHashMap;
 use merge::Merge;
 use std::ffi::{OsStr, OsString};
 use std::fs;
-use std::path::Path;
+use std::path::{Path, PathBuf};
 
 pub struct Directory {
+    pub relative_path: PathBuf,
     pub config: Config,
     pub dirs: AHashMap<OsString, Directory>,
     pub docs: AHashMap<OsString, Document>,
@@ -30,24 +32,14 @@ impl Directory {
         self.resources.contains_key(path.as_ref())
     }
 
-    /// provides all valid link targets in this directory
-    // TODO: populate a given accumulator
-    pub fn link_targets(&self) -> Vec<String> {
-        let mut result: Vec<String> = Vec::new();
-        for (_path, doc) in &self.docs {
-            let filename = doc.relative_path.to_string_lossy().to_string();
-            for section in doc.sections() {
-                result.push(format!("{}{}", &filename, section.anchor()));
-            }
-            result.push(filename);
-        }
-        result.sort();
-        result
-    }
-
-    /// provides a Tikibase instance for the given directory
-    pub fn load(dir: &Path, mut parent_config: Config) -> Result<Directory, Vec<Issue>> {
-        let config = match config::load(dir) {
+    /// provides a Directory instance for the given directory
+    pub fn load(
+        root: &Path,
+        relative_path: PathBuf,
+        mut parent_config: Config,
+    ) -> Result<Directory, Vec<Issue>> {
+        let abs_path = root.join(&relative_path);
+        let config = match config::load(&abs_path) {
             LoadResult::Loaded(config) => {
                 parent_config.merge(config);
                 parent_config
@@ -59,7 +51,7 @@ impl Directory {
         let mut dirs = AHashMap::new();
         let mut resources = AHashMap::new();
         let mut errors = Vec::new();
-        for entry in fs::read_dir(dir).unwrap() {
+        for entry in fs::read_dir(abs_path).unwrap() {
             let entry = entry.unwrap();
             let entry_path = entry.path();
             let entry_name = entry.file_name();
@@ -75,12 +67,16 @@ impl Directory {
                 }
                 EntryType::Configuration | EntryType::Ignored => continue,
                 EntryType::Directory => {
-                    dirs.insert(entry_name, Directory::load(&entry_path, config.clone())?);
+                    dirs.insert(
+                        entry_name,
+                        Directory::load(root, entry_path, config.clone())?,
+                    );
                 }
             }
         }
         if errors.is_empty() {
             Ok(Directory {
+                relative_path,
                 config,
                 dirs,
                 docs,
@@ -162,7 +158,7 @@ mod tests {
     #[test]
     fn empty() {
         let dir = test::tmp_dir();
-        let dir = Directory::load(&dir, Config::default()).unwrap();
+        let dir = Directory::load(&dir, PathBuf::from(""), Config::default()).unwrap();
         assert_eq!(dir.docs.len(), 0);
         assert_eq!(dir.resources.len(), 0);
     }
@@ -189,12 +185,13 @@ mod tests {
     mod get_doc {
         use crate::database::Directory;
         use crate::{test, Config};
+        use std::path::PathBuf;
 
         #[test]
         fn exists() {
             let dir = test::tmp_dir();
             test::create_file("one.md", "# test doc", &dir);
-            let dir = Directory::load(&dir, Config::default()).unwrap();
+            let dir = Directory::load(&dir, PathBuf::from(""), Config::default()).unwrap();
             let doc = dir.get_doc("one.md").unwrap();
             assert_eq!(doc.title_section.title_line.text, "# test doc");
         }
@@ -202,7 +199,7 @@ mod tests {
         #[test]
         fn missing() {
             let dir = test::tmp_dir();
-            let dir = Directory::load(&dir, Config::default()).unwrap();
+            let dir = Directory::load(&dir, PathBuf::from(""), Config::default()).unwrap();
             assert!(dir.get_doc("zonk.md").is_none());
         }
     }
@@ -210,12 +207,13 @@ mod tests {
     mod get_doc_mut {
         use crate::database::Directory;
         use crate::{test, Config};
+        use std::path::PathBuf;
 
         #[test]
         fn exists() {
             let dir = test::tmp_dir();
             test::create_file("one.md", "# test doc", &dir);
-            let mut dir = Directory::load(&dir, Config::default()).unwrap();
+            let mut dir = Directory::load(&dir, PathBuf::from(""), Config::default()).unwrap();
             let doc = dir.get_doc_mut("one.md").unwrap();
             assert_eq!(doc.title_section.title_line.text, "# test doc");
         }
@@ -223,7 +221,7 @@ mod tests {
         #[test]
         fn missing() {
             let dir = test::tmp_dir();
-            let mut dir = Directory::load(&dir, Config::default()).unwrap();
+            let mut dir = Directory::load(&dir, PathBuf::from(""), Config::default()).unwrap();
             assert!(dir.get_doc_mut("zonk.md").is_none());
         }
     }
@@ -245,11 +243,12 @@ mod tests {
     mod has_resource {
         use crate::database::Directory;
         use crate::{test, Config};
+        use std::path::PathBuf;
 
         #[test]
         fn empty() {
             let dir = test::tmp_dir();
-            let dir = Directory::load(&dir, Config::default()).unwrap();
+            let dir = Directory::load(&dir, PathBuf::from(""), Config::default()).unwrap();
             assert!(!dir.has_resource("foo.png"));
         }
 
@@ -257,36 +256,9 @@ mod tests {
         fn matching_resource() {
             let dir = test::tmp_dir();
             test::create_file("foo.png", "content", &dir);
-            let dir = Directory::load(&dir, Config::default()).unwrap();
+            let dir = Directory::load(&dir, PathBuf::from(""), Config::default()).unwrap();
             assert!(dir.has_resource("foo.png"));
         }
-    }
-
-    #[test]
-    fn link_targets() {
-        let dir = test::tmp_dir();
-        let content = indoc! {"
-            # One
-
-            ### Alpha
-            ### Beta
-
-            content"};
-        test::create_file("one.md", content, &dir);
-        test::create_file("two.md", content, &dir);
-        let dir = Directory::load(&dir, Config::default()).unwrap();
-        let have = dir.link_targets();
-        let want = vec![
-            "one.md",
-            "one.md#alpha",
-            "one.md#beta",
-            "one.md#one",
-            "two.md",
-            "two.md#alpha",
-            "two.md#beta",
-            "two.md#one",
-        ];
-        pretty::assert_eq!(have, want);
     }
 
     #[test]
@@ -302,7 +274,7 @@ mod tests {
             foo
             "};
         test::create_file("file.md", content, &dir);
-        let dir = Directory::load(&dir, Config::default()).unwrap();
+        let dir = Directory::load(&dir, PathBuf::from(""), Config::default()).unwrap();
         // make sure we can load existing documents
         let _doc = &dir.get_doc("file.md").unwrap();
     }
@@ -311,7 +283,7 @@ mod tests {
     fn load_hidden_file() {
         let dir = test::tmp_dir();
         test::create_file(".hidden", "content", &dir);
-        let dir = Directory::load(&dir, Config::default()).unwrap();
+        let dir = Directory::load(&dir, PathBuf::from(""), Config::default()).unwrap();
         assert_eq!(dir.resources.len(), 0);
     }
 }

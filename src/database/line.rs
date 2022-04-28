@@ -1,5 +1,5 @@
+use crate::check::{Issue, Location};
 use crate::database::{Footnote, Footnotes, Reference};
-use crate::{Issue, Location};
 use once_cell::sync::Lazy;
 use regex::Regex;
 use std::path::Path;
@@ -48,20 +48,19 @@ impl Line {
         self.text.starts_with("```")
     }
 
-    /// provides all links and images in this line
-    pub fn references(&self, line: u32) -> Vec<Reference> {
-        let mut result = Vec::new();
+    /// populates the given accumulator with all links and images in this line
+    pub fn references(&self, line: u32, acc: &mut Vec<Reference>) {
         for cap in MD_RE.captures_iter(&self.text) {
             let full_match = cap.get(0).unwrap();
             match &cap[1] {
-                "!" => result.push(Reference::Image {
+                "!" => acc.push(Reference::Image {
                     src: cap[2].to_string(),
                     line,
                     start: full_match.start() as u32,
                     end: full_match.end() as u32,
                 }),
                 "" => {
-                    result.push(Reference::Link {
+                    acc.push(Reference::Link {
                         target: cap[2].into(),
                         line,
                         start: full_match.start() as u32,
@@ -73,7 +72,7 @@ impl Line {
         }
         for cap in A_HTML_RE.captures_iter(&self.text) {
             let full_match = cap.get(0).unwrap();
-            result.push(Reference::Link {
+            acc.push(Reference::Link {
                 target: cap[1].into(),
                 line,
                 start: full_match.start() as u32,
@@ -82,14 +81,13 @@ impl Line {
         }
         for cap in IMG_HTML_RE.captures_iter(&self.text) {
             let full_match = cap.get(0).unwrap();
-            result.push(Reference::Image {
+            acc.push(Reference::Image {
                 src: cap[1].to_string(),
                 line,
                 start: full_match.start() as u32,
                 end: full_match.end() as u32,
             });
         }
-        result
     }
 }
 
@@ -232,7 +230,8 @@ mod tests {
             let line = Line::from(
                 r#"an MD link: [one](one.md) and one to a section: [two pieces](two.md#pieces)!"#,
             );
-            let have = line.references(12);
+            let mut have = vec![];
+            line.references(12, &mut have);
             let want = vec![
                 Reference::Link {
                     target: "one.md".into(),
@@ -253,7 +252,8 @@ mod tests {
         #[test]
         fn link_html() {
             let line = Line::from(r#"an HTML link: <a href="two.md">two</a>"#);
-            let have = line.references(12);
+            let mut have = vec![];
+            line.references(12, &mut have);
             let want = vec![Reference::Link {
                 target: "two.md".into(),
                 line: 12,
@@ -266,7 +266,8 @@ mod tests {
         #[test]
         fn img_md() {
             let line = Line::from(r#"an MD image: ![zonk](zonk.md)"#);
-            let have = line.references(12);
+            let mut have = vec![];
+            line.references(12, &mut have);
             let want = vec![Reference::Image {
                 src: "zonk.md".into(),
                 line: 12,
@@ -279,7 +280,8 @@ mod tests {
         #[test]
         fn img_html() {
             let line = Line::from(r#"<img src="zonk.md">"#);
-            let have = line.references(12);
+            let mut have = vec![];
+            line.references(12, &mut have);
             let want = vec![Reference::Image {
                 src: "zonk.md".into(),
                 line: 12,
@@ -292,7 +294,8 @@ mod tests {
         #[test]
         fn img_html_extra_attributes() {
             let line = Line::from(r#"<img src="zonk.md" width="10" height="10">"#);
-            let have = line.references(12);
+            let mut have = vec![];
+            line.references(12, &mut have);
             let want = vec![Reference::Image {
                 src: "zonk.md".into(),
                 line: 12,
@@ -305,7 +308,8 @@ mod tests {
         #[test]
         fn img_xml_nospace() {
             let line = Line::from(r#"<img src="zonk.md"/>"#);
-            let have = line.references(12);
+            let mut have = vec![];
+            line.references(12, &mut have);
             let want = vec![Reference::Image {
                 src: "zonk.md".into(),
                 line: 12,
@@ -318,7 +322,8 @@ mod tests {
         #[test]
         fn img_xml_space() {
             let line = Line::from(r#"<img src="zonk.md" />"#);
-            let have = line.references(12);
+            let mut have = vec![];
+            line.references(12, &mut have);
             let want = vec![Reference::Image {
                 src: "zonk.md".into(),
                 line: 12,
@@ -331,7 +336,7 @@ mod tests {
 
     mod sanitize_code_segments {
         use super::super::sanitize_code_segments;
-        use crate::{Issue, Location};
+        use crate::check::{Issue, Location};
         use std::path::{Path, PathBuf};
 
         #[test]

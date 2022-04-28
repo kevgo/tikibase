@@ -1,8 +1,9 @@
 use super::inconsistent_levels::title_at_level;
 use super::Fix::NormalizedSectionCapitalization;
+use crate::check::Location;
 use crate::database::Tikibase;
+use crate::fix;
 use crate::fix::Result::Fixed;
-use crate::{fix, Location};
 
 pub fn normalize_capitalization(
     base: &mut Tikibase,

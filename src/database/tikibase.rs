@@ -1,5 +1,6 @@
 use super::{Directory, Document};
-use crate::{Config, Issue};
+use crate::check::Issue;
+use crate::Config;
 use std::ffi::OsStr;
 use std::path::PathBuf;
 
@@ -10,7 +11,7 @@ pub struct Tikibase {
 
 impl Tikibase {
     pub fn load(root: PathBuf) -> Result<Tikibase, Vec<Issue>> {
-        let dir = Directory::load(&root, Config::default())?;
+        let dir = Directory::load(&root, PathBuf::from(""), Config::default())?;
         Ok(Tikibase { root, dir })
     }
 

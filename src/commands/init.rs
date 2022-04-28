@@ -1,4 +1,5 @@
-use crate::{Issue, Outcome};
+use super::Outcome;
+use crate::check::Issue;
 use indoc::indoc;
 use std::fs;
 use std::path::{Path, PathBuf};

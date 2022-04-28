@@ -7,7 +7,8 @@ mod mix_cap_section;
 mod obsolete_occurrences_section;
 mod unordered_sections;
 
-use crate::{Issue, Location, Tikibase};
+use crate::check::{Issue, Location};
+use crate::Tikibase;
 
 /// fixes the given Issue
 pub fn fix(issue: Issue, base: &mut Tikibase) -> Result {
@@ -35,9 +36,11 @@ pub fn fix(issue: Issue, base: &mut Tikibase) -> Result {
                 Result::Unfixable
             }
         }
-        Issue::MissingLinks { location, links } => {
-            missing_links::add_occurrences(base, location, links)
-        }
+        Issue::MissingLink {
+            location,
+            path,
+            title,
+        } => missing_links::add_occurrences(base, location, &path, &title),
         Issue::MixCapSection {
             location,
             all_variants: _,
@@ -140,9 +143,11 @@ pub fn fix(issue: Issue, base: &mut Tikibase) -> Result {
 }
 
 /// documents the fixes that this linter performs
+#[derive(Debug, PartialEq)]
 pub enum Fix {
     AddedOccurrencesSection {
         location: Location,
+        target: String,
     },
     NormalizedSectionCapitalization {
         location: Location,

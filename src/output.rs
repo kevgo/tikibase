@@ -1,8 +1,9 @@
 //! Tooling for outputting the results of lint operations in text/JSON format.
 
-use crate::{Fix, Issue, Outcome};
+use crate::check::Issue;
+use crate::commands::Outcome;
+use crate::Fix;
 use serde::Serialize;
-use std::borrow::Cow;
 use std::path::PathBuf;
 
 /// human-readable summary of running a single command
@@ -42,8 +43,8 @@ impl Message {
                 end: Some(location.end),
                 fixable: false,
             },
-            Fix::AddedOccurrencesSection { location } => Message {
-                text: "added occurrences section".into(),
+            Fix::AddedOccurrencesSection { location, target } => Message {
+                text: format!("added {} to occurrences section", target),
                 file: location.file,
                 line: Some(location.line),
                 start: Some(location.start),
@@ -223,7 +224,7 @@ impl Message {
             },
             Issue::LinkToNonExistingAnchorInCurrentDocument { location, anchor } => Message {
                 text: format!(
-                    "link to non-existing anchor \"#{}\" in current file",
+                    "link to non-existing anchor \"{}\" in current file",
                     anchor
                 ),
                 file: location.file,
@@ -238,7 +239,7 @@ impl Message {
                 anchor,
             } => Message {
                 text: format!(
-                    "link to non-existing anchor \"#{}\" in \"{}\"",
+                    "link to non-existing anchor \"{}\" in \"{}\"",
                     anchor, target_file
                 ),
                 file: location.file,
@@ -271,11 +272,9 @@ impl Message {
                 end: Some(location.end),
                 fixable: false,
             },
-            Issue::MissingLinks { location, links } => {
-                let links: Vec<Cow<str>> =
-                    links.iter().map(|ml| ml.path.to_string_lossy()).collect();
+            Issue::MissingLink { location, path, title: _ } => {
                 Message {
-                    text: format!("missing link to {}", links.join(", ")),
+                    text: format!("missing link to {}", path.to_string_lossy()),
                     file: location.file,
                     line: Some(location.line),
                     start: Some(location.start),
@@ -492,7 +491,8 @@ impl Messages {
 mod tests {
 
     mod all {
-        use crate::{Message, Messages};
+        use crate::output::Message;
+        use crate::Messages;
 
         #[test]
         fn empty() {
@@ -535,7 +535,8 @@ mod tests {
     }
 
     mod is_empty {
-        use crate::{Message, Messages};
+        use crate::output::Message;
+        use crate::Messages;
 
         #[test]
         fn empty() {
@@ -573,7 +574,8 @@ mod tests {
     }
 
     mod has_issues_and_fixes {
-        use crate::{Message, Messages};
+        use crate::output::Message;
+        use crate::Messages;
 
         #[test]
         fn empty() {

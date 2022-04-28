@@ -1,5 +1,5 @@
 use super::{section, Footnotes, Line, Reference, Section};
-use crate::{Issue, Location};
+use crate::check::{Issue, Location};
 use std::ffi::OsString;
 use std::fs::{self, File};
 use std::io::{prelude::*, BufReader};
@@ -13,9 +13,18 @@ pub struct Document {
     pub content_sections: Vec<Section>,
     /// The old "occurrences" section that was filtered out when loading the document.
     pub old_occurrences_section: Option<Section>,
+
+    /// cache of files this document links to
+    // TODO: convert to HashSet and use https://github.com/mcarton/rust-derivative to ignore this when hashing Document
+    pub references: Vec<Reference>,
 }
 
 impl Document {
+    pub fn contains_reference_to<P: AsRef<Path>>(&self, path: P) -> bool {
+        let path_str = path.as_ref().to_string_lossy();
+        self.references.iter().any(|r| r.points_to(&path_str))
+    }
+
     /// provides all the footnotes that this document defines and references
     pub fn footnotes(&self) -> Result<Footnotes, Issue> {
         let mut result = Footnotes::default();
@@ -116,12 +125,12 @@ impl Document {
             });
         }
         let mut sections = sections.into_iter();
-        Ok(Document {
+        Ok(Document::new(
             relative_path,
-            title_section: sections.next().unwrap(),
-            content_sections: sections.collect(),
+            sections.next().unwrap(),
+            sections.collect(),
             old_occurrences_section,
-        })
+        ))
     }
 
     /// provides the Document contained in the file with the given path
@@ -137,6 +146,13 @@ impl Document {
     /// provides Document instances in tests
     pub fn from_str<P: Into<PathBuf>>(path: P, text: &str) -> Result<Document, Issue> {
         Document::from_lines(text.lines().map(std::string::ToString::to_string), path)
+    }
+
+    /// indicates whether this document contains the given anchor
+    pub fn has_anchor(&self, anchor: &str) -> bool {
+        self.content_sections
+            .iter()
+            .any(|section| section.anchor() == anchor)
     }
 
     /// provides the human-readable title of this document
@@ -189,11 +205,27 @@ impl Document {
         Document::from_reader(BufReader::new(file), name)
     }
 
-    /// provides all the references in this document
-    pub fn references(&self) -> Vec<Reference> {
+    pub fn new(
+        path: PathBuf,
+        title_section: Section,
+        content_sections: Vec<Section>,
+        old_occurrences_section: Option<Section>,
+    ) -> Document {
+        let references = Document::references(&title_section, &content_sections);
+        Document {
+            relative_path: path,
+            title_section,
+            content_sections,
+            old_occurrences_section,
+            references,
+        }
+    }
+
+    pub fn references(title_section: &Section, content_sections: &[Section]) -> Vec<Reference> {
         let mut result = vec![];
-        for (i, line) in self.lines().enumerate() {
-            result.append(&mut line.references(i as u32));
+        title_section.references(&mut result);
+        for section in content_sections {
+            section.references(&mut result);
         }
         result
     }
@@ -393,8 +425,8 @@ mod tests {
 
     mod from_str {
         use super::super::Document;
+        use crate::check::{Issue, Location};
         use crate::database::{Line, Section};
-        use crate::{Issue, Location};
         use indoc::indoc;
         use std::path::PathBuf;
 
@@ -422,6 +454,7 @@ mod tests {
                     level: 3,
                 }],
                 old_occurrences_section: None,
+                references: vec![],
             });
             pretty::assert_eq!(have, want);
         }
@@ -466,6 +499,7 @@ mod tests {
                 },
                 content_sections: vec![],
                 old_occurrences_section: None,
+                references: vec![],
             });
             pretty::assert_eq!(have, want);
         }
@@ -533,9 +567,19 @@ mod tests {
                     title_text_start: 4,
                     level: 3,
                 }),
+                references: vec![],
             });
             pretty::assert_eq!(have, want);
         }
+    }
+
+    #[test]
+    fn has_anchor() {
+        let doc =
+            Document::from_str("test.md", "# Title\n\n## head 1\ntext\n### head 2\n").unwrap();
+        assert!(doc.has_anchor("#head-1"));
+        assert!(doc.has_anchor("#head-2"));
+        assert!(!doc.has_anchor("#head-3"));
     }
 
     mod last_line {
@@ -723,13 +767,14 @@ mod tests {
 
     #[test]
     fn references() {
-        let give = indoc! {"
+        let text = indoc! {"
             # Title
             a link: [one](1.md)
             ### section
             an image: ![two](2.png)
             "};
-        let have = Document::from_str("test.md", give).unwrap().references();
+        let doc = Document::from_str("test.md", text).unwrap();
+        let have = Document::references(&doc.title_section, &doc.content_sections);
         let want = vec![
             Reference::Link {
                 target: "1.md".into(),

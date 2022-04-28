@@ -1,7 +1,6 @@
 //! Read/write access to the Markdown files making up the database.
 
 mod directory;
-mod doc_links;
 pub(crate) mod document;
 mod footnotes;
 mod line;
@@ -11,7 +10,6 @@ mod tikibase;
 
 pub(crate) use crate::database::tikibase::Tikibase;
 pub(crate) use directory::{Directory, EntryType};
-pub(crate) use doc_links::DocLinks;
 pub(crate) use document::Document;
 pub(crate) use footnotes::{Footnote, Footnotes};
 pub(crate) use line::Line;

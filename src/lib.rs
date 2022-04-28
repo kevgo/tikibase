@@ -1,16 +1,18 @@
+mod check;
 pub mod commands;
 pub mod config;
 mod database;
 mod fix;
 pub mod input;
 mod output;
-mod scan;
 pub mod test;
 
-pub use commands::{Issue, Location, Outcome};
+// exports
 pub use config::Config;
-use database::Tikibase;
 pub use fix::Fix;
+
+// used locally
+use database::Tikibase;
 use input::Command;
 pub use output::{Message, Messages};
 use std::path::PathBuf;
@@ -28,7 +30,7 @@ pub fn run(command: &input::Command, dir: PathBuf) -> Messages {
         Err(issues) => return Messages::from_issues(issues),
     };
     let outcome = match command {
-        Command::Check => commands::check(&mut base),
+        Command::Check => commands::check(&base),
         Command::Stats => commands::stats(&base),
         Command::Fix => commands::fix(&mut base),
         Command::P => commands::pitstop(&mut base),
