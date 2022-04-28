@@ -1,8 +1,8 @@
 use super::{section, Directory, Footnotes, Line, Reference, Section};
 use crate::scan::section_capitalization::{self, OutlierInfo};
 use crate::scan::{
-    duplicate_sections, empty_section_content, empty_section_title, footnotes, links,
-    unordered_sections,
+    duplicate_sections, empty_section_content, empty_section_title, footnotes, illegal_sections,
+    links, unordered_sections,
 };
 use crate::{Config, Issue, Location};
 use ahash::AHashMap;
@@ -46,7 +46,7 @@ impl Document {
         for content_section in &self.content_sections {
             empty_section_content::scan(content_section, path, issues);
             empty_section_title::scan(content_section, path, issues);
-            content_section.check_mismatching_title(path, config, issues);
+            illegal_sections::scan(content_section, path, config, issues);
             section_capitalization::phase_1(content_section, title_variants);
         }
     }

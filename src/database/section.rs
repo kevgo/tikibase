@@ -1,7 +1,5 @@
 use super::{Line, Reference};
-use crate::{Config, Issue, Location};
 use heck::ToKebabCase;
-use std::path::Path;
 
 /// a section in a document, from one heading to above the next heading
 #[derive(Debug, Eq, Hash, PartialEq)]
@@ -27,23 +25,6 @@ impl Section {
     /// provides the link anchor for this section, in GitHub format
     pub fn anchor(&self) -> String {
         format!("#{}", self.human_title().to_kebab_case())
-    }
-
-    /// populates the given issues list with all sections in this document that don't match the configured sections
-    pub fn check_mismatching_title(&self, path: &Path, config: &Config, issues: &mut Vec<Issue>) {
-        let section_title = self.human_title();
-        if !config.matching_title(section_title) {
-            issues.push(Issue::UnknownSection {
-                location: Location {
-                    file: path.into(),
-                    line: self.line_number,
-                    start: self.title_text_start as u32,
-                    end: self.title_text_end(),
-                },
-                title: section_title.into(),
-                allowed_titles: config.sections.clone().unwrap(),
-            });
-        }
     }
 
     /// provides the cursor column at which the title text ends,
