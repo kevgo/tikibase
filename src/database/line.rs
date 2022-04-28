@@ -335,9 +335,8 @@ mod tests {
     }
 
     mod sanitize_code_segments {
-        use crate::check::{Issue, Location};
-
         use super::super::sanitize_code_segments;
+        use crate::check::{Issue, Location};
         use std::path::{Path, PathBuf};
 
         #[test]
