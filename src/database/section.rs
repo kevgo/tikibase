@@ -99,6 +99,7 @@ impl Section {
         self.body.push(Line::from(text));
     }
 
+    /// populates the given accumulator with all references in this section
     pub fn references(&self, acc: &mut Vec<Reference>) {
         self.title_line.references(self.line_number, acc);
         for (i, line) in self.body.iter().enumerate() {
