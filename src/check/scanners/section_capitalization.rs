@@ -63,7 +63,7 @@ pub(crate) fn phase_2(
     outliers: &AHashMap<String, OutlierInfo>,
 ) {
     let section_title = section.human_title();
-    if let Some(OutlierInfo { common, all }) = outliers.get(section_title) {
+    if let Some(outlier_info) = outliers.get(section_title) {
         issues.push(Issue::MixCapSection {
             location: Location {
                 file: path.into(),
@@ -71,9 +71,9 @@ pub(crate) fn phase_2(
                 start: section.title_text_start as u32,
                 end: section.title_text_end(),
             },
-            all_variants: all.clone(),
+            all_variants: outlier_info.all.clone(),
             this_variant: section_title.into(),
-            common_variant: common.clone(),
+            common_variant: outlier_info.common.clone(),
             section_level: section.level,
         });
     }
