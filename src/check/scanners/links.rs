@@ -145,7 +145,9 @@ pub fn scan(
                 if src.starts_with("http") {
                     continue;
                 }
-                if !root.has_resource(&src) {
+                if root.has_resource(&src) {
+                    linked_resources.push(dir.join(src));
+                } else {
                     issues.push(Issue::BrokenImage {
                         location: Location {
                             file: doc.relative_path.clone(),
@@ -155,9 +157,7 @@ pub fn scan(
                         },
                         target: src.clone(),
                     });
-                    continue;
                 }
-                linked_resources.push(dir.join(src));
             }
         }
     }
