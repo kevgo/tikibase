@@ -16,8 +16,9 @@ pub(crate) fn find_outliers(mut input: AHashMap<String, u32>) -> AHashMap<String
     // normalized variant --> variant --> count
     let mut grouped: AHashMap<String, AHashMap<String, u32>> = AHashMap::new();
     for (variant, count) in input.drain() {
+        let normalized = variant.to_lowercase();
         grouped
-            .entry(variant.to_lowercase())
+            .entry(normalized)
             .or_insert_with(AHashMap::new)
             .insert(variant, count);
     }
