@@ -3,18 +3,12 @@ use super::scanners::{
     links, section_capitalization, section_level, unordered_sections,
 };
 use super::State1;
-use crate::database::{Directory, Document};
+use crate::database::Document;
 use crate::Config;
 use std::path::Path;
 
 // phase 1 `Document` check
-pub(crate) fn check_doc_1(
-    doc: &Document,
-    dir: &Path,
-    config: &Config,
-    state_1: &mut State1,
-    root: &Directory,
-) {
+pub(crate) fn check_doc_1(doc: &Document, dir: &Path, config: &Config, state_1: &mut State1) {
     duplicate_sections::scan(doc, &mut state_1.issues);
     unordered_sections::scan(doc, config, &mut state_1.issues);
     footnotes::scan(doc, &mut state_1.issues);
@@ -23,7 +17,7 @@ pub(crate) fn check_doc_1(
         dir,
         &mut state_1.issues,
         &mut state_1.linked_resources,
-        root,
+        state_1.base_dir,
         config,
     );
     empty_section_title::scan(&doc.title_section, &doc.relative_path, &mut state_1.issues);

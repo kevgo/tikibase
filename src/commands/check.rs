@@ -11,9 +11,10 @@ pub fn check(base: &Tikibase) -> Outcome {
         linked_resources: vec![],
         capitalization_variants: AHashMap::new(),
         level_variants: AHashMap::new(),
+        base_dir: &base.dir,
     };
     // round 1
-    check_dir_1(&base.dir, &PathBuf::from(""), &mut state_1, &base.dir);
+    check_dir_1(&base.dir, &PathBuf::from(""), &mut state_1);
     // analyze
     let state_2 = State2 {
         capitalization_outliers: section_capitalization::find_outliers(
