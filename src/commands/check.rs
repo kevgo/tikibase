@@ -1,6 +1,5 @@
-use crate::database::Tikibase;
 use crate::scan::{section_capitalization, section_level};
-use crate::Outcome;
+use crate::{Outcome, Tikibase};
 use ahash::AHashMap;
 use std::path::PathBuf;
 
