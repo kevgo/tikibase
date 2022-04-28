@@ -17,6 +17,8 @@ use serde::Serialize;
 pub use stats::stats;
 use std::path::PathBuf;
 
+// TODO: move to a new "check" module
+// TODO: move the contents of "scan" into a "check/scanners" module
 /// The inner API of the check subsystem.
 /// This data structure is returned by the probes.
 /// It contains highly structured, semantically meaningful data
