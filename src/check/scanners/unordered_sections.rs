@@ -58,7 +58,6 @@ pub fn scan(doc: &Document, config: &Config, issues: &mut Vec<Issue>) {
 
 #[cfg(test)]
 mod tests {
-
     use crate::check::{Issue, Location};
     use crate::database::Document;
     use crate::Config;
