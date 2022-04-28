@@ -28,7 +28,7 @@ pub fn run(command: &input::Command, dir: PathBuf) -> Messages {
         Err(issues) => return Messages::from_issues(issues),
     };
     let outcome = match command {
-        Command::Check => commands::check(&mut base),
+        Command::Check => commands::check(&base),
         Command::Stats => commands::stats(&base),
         Command::Fix => commands::fix(&mut base),
         Command::P => commands::pitstop(&mut base),

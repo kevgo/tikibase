@@ -17,11 +17,11 @@ use serde::Serialize;
 pub use stats::stats;
 use std::path::PathBuf;
 
-/// The inner API of Tikibase.
+/// The inner API of the check subsystem.
 /// This data structure is returned by the probes.
 /// It contains highly structured, semantically meaningful data
 /// intended to be used programmatically.
-#[derive(Default)]
+#[derive(Debug, Default, PartialEq)]
 pub struct Outcome {
     /// the issues identified but not fixed
     pub issues: Vec<Issue>,
