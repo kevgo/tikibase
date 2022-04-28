@@ -573,17 +573,13 @@ mod tests {
         }
     }
 
-    mod has_anchor {
-        use crate::database::Document;
-
-        #[test]
-        fn matching() {
-            let doc =
-                Document::from_str("test.md", "# Title\n\n## head 1\ntext\n### head 2\n").unwrap();
-            assert!(doc.has_anchor("#head-1"));
-            assert!(doc.has_anchor("#head-2"));
-            assert!(!doc.has_anchor("#head-3"));
-        }
+    #[test]
+    fn has_anchor() {
+        let doc =
+            Document::from_str("test.md", "# Title\n\n## head 1\ntext\n### head 2\n").unwrap();
+        assert!(doc.has_anchor("#head-1"));
+        assert!(doc.has_anchor("#head-2"));
+        assert!(!doc.has_anchor("#head-3"));
     }
 
     mod last_line {
