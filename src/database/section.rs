@@ -156,7 +156,6 @@ impl<'a> Iterator for LinesIterator<'a> {
 }
 
 /// allows building up sections one line at a time
-// TODO: delete this?
 pub struct Builder {
     pub line_number: u32,
     title_line: String,
