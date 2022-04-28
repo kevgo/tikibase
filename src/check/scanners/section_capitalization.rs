@@ -79,8 +79,11 @@ pub(crate) fn phase_2(
     }
 }
 
+/// information about an unusual section capitalization
 pub struct OutlierInfo {
+    /// the most common capitalization variant
     pub common: Option<String>,
+    /// all capitalization variants
     pub all: Vec<String>,
 }
 
