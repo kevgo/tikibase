@@ -2,7 +2,7 @@ use super::{check_doc_2, Issue, Location, State2};
 use crate::database::Directory;
 use std::path::PathBuf;
 
-/// check phase 2
+// phase 2 `Directory` check
 pub(crate) fn check_dir_2(
     dir: &Directory,
     linked_resources: &[PathBuf],

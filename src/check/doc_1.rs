@@ -7,7 +7,7 @@ use crate::database::{Directory, Document};
 use crate::Config;
 use std::path::Path;
 
-// populates the given issues list with all issues in this document
+// phase 1 `Document` check
 pub(crate) fn check_doc_1(
     doc: &Document,
     dir: &Path,
