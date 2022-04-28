@@ -6,6 +6,7 @@ use crate::fix;
 use crate::fix::Result::{Failed, Fixed};
 use once_cell::sync::Lazy;
 use regex::{Captures, Regex};
+use section::Section;
 use std::borrow::Cow;
 use std::path::Path;
 
@@ -30,10 +31,8 @@ pub fn add_occurrences(
         doc.last_section_mut().push_line("");
 
         // insert occurrences section
-        let mut section_builder = section::Builder::new("### occurrences", doc.lines_count() + 1);
-        section_builder.add_line("");
-        let section = section_builder.result();
-        doc.content_sections.push(section);
+        let occurrences_section = Section::new(doc.lines_count() + 1, "### occurrences", vec![""]);
+        doc.content_sections.push(occurrences_section);
         doc.section_with_title_mut("occurrences").unwrap()
     };
     let stripped_title = &strip_links(title);
