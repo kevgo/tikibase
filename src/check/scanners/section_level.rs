@@ -1,5 +1,5 @@
+use crate::check::{Issue, Location};
 use crate::database::Section;
-use crate::{Issue, Location};
 use ahash::AHashMap;
 use std::cmp::Ordering::{Equal, Greater, Less};
 use std::path::Path;
@@ -103,7 +103,8 @@ pub struct OutlierInfo {
 mod tests {
 
     mod scan {
-        use crate::{test, Issue, Location, Tikibase};
+        use crate::check::{Issue, Location};
+        use crate::{test, Tikibase};
         use ahash::AHashMap;
         use indoc::indoc;
         use std::path::PathBuf;

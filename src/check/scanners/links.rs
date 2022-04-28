@@ -1,5 +1,6 @@
-use crate::database::{Directory, EntryType, Reference};
-use crate::{Config, Document, Issue, Location};
+use crate::check::{Issue, Location};
+use crate::database::{Directory, Document, EntryType, Reference};
+use crate::Config;
 use std::path::{Path, PathBuf};
 
 /// populates the given issues list with all link issues in this document
@@ -171,8 +172,8 @@ pub fn scan(
 
 #[cfg(test)]
 mod tests {
-
-    use crate::{test, Config, Issue, Location, Tikibase};
+    use crate::check::{Issue, Location};
+    use crate::{test, Config, Tikibase};
     use indoc::indoc;
     use std::path::PathBuf;
 

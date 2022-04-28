@@ -1,5 +1,5 @@
+use crate::check::{Issue, Location};
 use crate::database::{Footnote, Footnotes, Reference};
-use crate::{Issue, Location};
 use once_cell::sync::Lazy;
 use regex::Regex;
 use std::path::Path;
@@ -335,8 +335,9 @@ mod tests {
     }
 
     mod sanitize_code_segments {
+        use crate::check::{Issue, Location};
+
         use super::super::sanitize_code_segments;
-        use crate::{Issue, Location};
         use std::path::{Path, PathBuf};
 
         #[test]

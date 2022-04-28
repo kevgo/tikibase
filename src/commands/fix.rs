@@ -1,5 +1,6 @@
+use super::Outcome;
 use crate::fix::Result::{Failed, Fixed, Unfixable};
-use crate::{commands, fix, Outcome, Tikibase};
+use crate::{commands, fix, Tikibase};
 
 pub fn fix(base: &mut Tikibase) -> Outcome {
     let check_result = commands::check(base);

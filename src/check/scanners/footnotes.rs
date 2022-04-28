@@ -1,4 +1,5 @@
-use crate::{Document, Issue, Location};
+use crate::check::{Issue, Location};
+use crate::database::Document;
 
 /// populates the given issues list with all sections in this document that don't match the configured sections
 pub fn scan(doc: &Document, issues: &mut Vec<Issue>) {
@@ -35,9 +36,11 @@ pub fn scan(doc: &Document, issues: &mut Vec<Issue>) {
 
 #[cfg(test)]
 mod tests {
-    use crate::{Document, Issue, Location};
     use indoc::indoc;
     use std::path::PathBuf;
+
+    use crate::check::{Issue, Location};
+    use crate::database::Document;
 
     #[test]
     fn missing_footnote_definition() {

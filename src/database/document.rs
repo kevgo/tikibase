@@ -1,10 +1,6 @@
-use super::{section, Directory, Footnotes, Line, Reference, Section};
-use crate::scan::{
-    duplicate_sections, empty_section_content, empty_section_title, footnotes, illegal_sections,
-    links, section_capitalization, section_level, unordered_sections,
-};
-use crate::{Config, Issue, Location};
-use ahash::AHashMap;
+use crate::check::{Issue, Location};
+
+use super::{section, Footnotes, Line, Reference, Section};
 use std::ffi::OsString;
 use std::fs::{self, File};
 use std::io::{prelude::*, BufReader};
@@ -25,51 +21,6 @@ pub struct Document {
 }
 
 impl Document {
-    // populates the given issues list with all issues in this document
-    pub fn check_1(
-        &self,
-        dir: &Path,
-        config: &Config,
-        issues: &mut Vec<Issue>,
-        linked_resources: &mut Vec<PathBuf>,
-        title_variants: &mut AHashMap<String, u32>,
-        level_variants: &mut AHashMap<String, AHashMap<u8, u32>>,
-        root: &Directory,
-    ) {
-        duplicate_sections::scan(self, issues);
-        unordered_sections::scan(self, config, issues);
-        footnotes::scan(self, issues);
-        links::scan(self, dir, issues, linked_resources, root, config);
-        empty_section_title::scan(&self.title_section, &self.relative_path, issues);
-        for content_section in &self.content_sections {
-            empty_section_content::scan(content_section, &self.relative_path, issues);
-            empty_section_title::scan(content_section, &self.relative_path, issues);
-            if config.sections.is_some() {
-                illegal_sections::scan(content_section, &self.relative_path, config, issues);
-            } else {
-                section_capitalization::phase_1(content_section, title_variants);
-                section_level::phase_1(content_section, level_variants);
-            }
-        }
-    }
-
-    pub fn check_2(
-        &self,
-        issues: &mut Vec<Issue>,
-        cap_outliers: &AHashMap<String, section_capitalization::OutlierInfo>,
-        level_outliers: &AHashMap<String, section_level::OutlierInfo>,
-    ) {
-        for content_section in &self.content_sections {
-            section_capitalization::phase_2(
-                &self.relative_path,
-                content_section,
-                issues,
-                cap_outliers,
-            );
-            section_level::phase_2(content_section, &self.relative_path, issues, level_outliers);
-        }
-    }
-
     pub fn contains_reference_to<P: AsRef<Path>>(&self, path: P) -> bool {
         let path_str = path.as_ref().to_string_lossy();
         self.references.iter().any(|r| r.points_to(&path_str))
@@ -478,8 +429,8 @@ mod tests {
 
     mod from_str {
         use super::super::Document;
+        use crate::check::{Issue, Location};
         use crate::database::{Line, Section};
-        use crate::{Issue, Location};
         use indoc::indoc;
         use std::path::PathBuf;
 
@@ -627,7 +578,7 @@ mod tests {
     }
 
     mod has_anchor {
-        use crate::Document;
+        use crate::database::Document;
 
         #[test]
         fn matching() {
@@ -677,7 +628,7 @@ mod tests {
     }
 
     mod last_section {
-        use crate::Document;
+        use crate::database::Document;
 
         #[test]
         fn title_only() {

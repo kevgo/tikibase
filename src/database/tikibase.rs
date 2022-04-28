@@ -1,5 +1,6 @@
 use super::{Directory, Document};
-use crate::{Config, Issue};
+use crate::check::Issue;
+use crate::Config;
 use std::ffi::OsStr;
 use std::path::PathBuf;
 

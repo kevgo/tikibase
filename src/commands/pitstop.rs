@@ -1,5 +1,5 @@
+use super::Outcome;
 use crate::fix::Result::{Failed, Fixed, Unfixable};
-use crate::Outcome;
 use crate::{commands, fix::fix, Tikibase};
 
 pub fn pitstop(base: &mut Tikibase) -> Outcome {

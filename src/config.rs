@@ -1,4 +1,4 @@
-use crate::{Issue, Location};
+use crate::check::{Issue, Location};
 use merge::Merge;
 use regex::Regex;
 use schemars::JsonSchema;
@@ -152,8 +152,9 @@ mod tests {
 
     mod load {
         use super::super::{load, Config};
+        use crate::check::{Issue, Location};
         use crate::config::LoadResult;
-        use crate::{test, Issue, Location};
+        use crate::test;
         use std::path::PathBuf;
 
         #[test]

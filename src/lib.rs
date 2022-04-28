@@ -1,16 +1,18 @@
+mod check;
 pub mod commands;
 pub mod config;
 mod database;
 mod fix;
 pub mod input;
 mod output;
-mod scan;
 pub mod test;
 
-pub use commands::{Issue, Location, Outcome};
+// exports
 pub use config::Config;
-pub(crate) use database::{Document, Tikibase};
 pub use fix::Fix;
+
+// used locally
+use database::Tikibase;
 use input::Command;
 pub use output::{Message, Messages};
 use std::path::PathBuf;

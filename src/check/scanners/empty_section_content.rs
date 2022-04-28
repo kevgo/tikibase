@@ -1,5 +1,5 @@
+use crate::check::{Issue, Location};
 use crate::database::Section;
-use crate::{Issue, Location};
 use std::path::Path;
 
 /// populates the given issues list if this section has no content
@@ -19,8 +19,8 @@ pub fn scan(section: &Section, path: &Path, issues: &mut Vec<Issue>) {
 
 #[cfg(test)]
 mod tests {
-
-    use crate::{Document, Issue, Location};
+    use crate::check::{Issue, Location};
+    use crate::database::Document;
     use indoc::indoc;
     use std::path::PathBuf;
 

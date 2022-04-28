@@ -1,7 +1,7 @@
 use super::Document;
+use crate::check::Issue;
 use crate::config::LoadResult;
-use crate::scan::{section_capitalization, section_level};
-use crate::{config, Config, Issue, Location};
+use crate::{config, Config};
 use ahash::AHashMap;
 use merge::Merge;
 use std::ffi::{OsStr, OsString};
@@ -17,96 +17,6 @@ pub struct Directory {
 }
 
 impl Directory {
-    // check phase 1
-    pub fn check_1(
-        &self,
-        parent: &Path,
-        issues: &mut Vec<Issue>,
-        linked_resources: &mut Vec<PathBuf>,
-        title_variants: &mut AHashMap<String, u32>,
-        level_variants: &mut AHashMap<String, AHashMap<u8, u32>>,
-        root: &Directory,
-    ) {
-        for (_filename, doc) in &self.docs {
-            doc.check_1(
-                parent,
-                &self.config,
-                issues,
-                linked_resources,
-                title_variants,
-                level_variants,
-                root,
-            );
-        }
-        for (dirname, dir) in &self.dirs {
-            dir.check_1(
-                &parent.join(dirname),
-                issues,
-                linked_resources,
-                title_variants,
-                level_variants,
-                root,
-            );
-        }
-    }
-
-    /// check phase 2
-    pub fn check_2(
-        &self,
-        linked_resources: &[PathBuf],
-        issues: &mut Vec<Issue>,
-        cap_outliers: &AHashMap<String, section_capitalization::OutlierInfo>,
-        level_outliers: &AHashMap<String, section_level::OutlierInfo>,
-    ) {
-        for (name, doc) in &self.docs {
-            let doc_path = self.relative_path.join(name);
-            doc.check_2(issues, cap_outliers, level_outliers);
-            if let Some(bidi_links) = self.config.bidi_links {
-                if let Some(old_occurrences_section) = &doc.old_occurrences_section {
-                    if bidi_links
-                        && !issues.iter().any(|issue| {
-                            if let Issue::MissingLink {
-                                location,
-                                path: _,
-                                title: _,
-                            } = issue
-                            {
-                                location.file == doc_path
-                            } else {
-                                false
-                            }
-                        })
-                    {
-                        issues.push(Issue::ObsoleteOccurrencesSection {
-                            location: Location {
-                                file: doc_path,
-                                line: old_occurrences_section.line_number,
-                                start: old_occurrences_section.title_text_start as u32,
-                                end: old_occurrences_section.title_text_end(),
-                            },
-                        });
-                    }
-                }
-            }
-        }
-        for resource in self.resources.keys() {
-            let full_path = self.relative_path.join(resource);
-            if !linked_resources.contains(&full_path) {
-                issues.push(Issue::OrphanedResource {
-                    location: Location {
-                        file: PathBuf::from(resource),
-                        line: 0,
-                        start: 0,
-                        end: 0,
-                    },
-                });
-            }
-        }
-        for dir in self.dirs.values() {
-            dir.check_2(linked_resources, issues, cap_outliers, level_outliers);
-        }
-    }
-
     /// provides the document with the given relative filename
     pub fn get_doc<OS: AsRef<OsStr>>(&self, relative_path: OS) -> Option<&Document> {
         self.docs.get(relative_path.as_ref())

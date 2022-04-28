@@ -1,5 +1,5 @@
+use crate::check::{Issue, Location};
 use crate::database::Section;
-use crate::{Issue, Location};
 use std::path::Path;
 
 /// populates the given issues list if this section has an empty title
@@ -18,8 +18,8 @@ pub fn scan(section: &Section, path: &Path, issues: &mut Vec<Issue>) {
 
 #[cfg(test)]
 mod tests {
+    use crate::check::{Issue, Location};
     use crate::database::Document;
-    use crate::{Issue, Location};
     use indoc::indoc;
     use std::path::PathBuf;
 

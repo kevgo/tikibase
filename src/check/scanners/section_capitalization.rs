@@ -1,5 +1,5 @@
+use crate::check::{Issue, Location};
 use crate::database::Section;
-use crate::{Issue, Location};
 use ahash::AHashMap;
 use std::cmp::Ordering::{Equal, Greater, Less};
 use std::path::Path;
@@ -113,7 +113,8 @@ fn find_common_capitalization(variants: &AHashMap<String, u32>) -> Option<String
 #[cfg(test)]
 mod tests {
 
-    use crate::{test, Issue, Location, Tikibase};
+    use crate::check::{Issue, Location};
+    use crate::{test, Tikibase};
     use ahash::AHashMap;
     use indoc::indoc;
     use std::path::PathBuf;

@@ -1,7 +1,8 @@
 use super::Fix::NormalizedSectionLevel;
+use crate::check::Location;
 use crate::database::Tikibase;
+use crate::fix;
 use crate::fix::Result::Fixed;
-use crate::{fix, Location};
 
 pub fn normalize_outliers(
     base: &mut Tikibase,

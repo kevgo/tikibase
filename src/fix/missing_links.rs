@@ -1,9 +1,9 @@
 use super::Fix::AddedOccurrencesSection;
-use crate::commands::Issue::{TitleRegexNoCaptures, TitleRegexTooManyCaptures};
+use crate::check::Issue::{self, TitleRegexNoCaptures, TitleRegexTooManyCaptures};
+use crate::check::Location;
 use crate::database::{section, Line, Tikibase};
 use crate::fix;
 use crate::fix::Result::{Failed, Fixed};
-use crate::{Issue, Location};
 use once_cell::sync::Lazy;
 use regex::{Captures, Regex};
 use std::borrow::Cow;
@@ -111,8 +111,8 @@ static SOURCE_RE: Lazy<Regex> = Lazy::new(|| Regex::new(r#"\[([^]]*)\]\([^)]*\)"
 mod tests {
 
     mod extract_shortcut {
+        use crate::check::Issue;
         use crate::fix::missing_links::{extract_shortcut, ExtractShortcutResult};
-        use crate::Issue;
         use regex::Regex;
 
         #[test]

@@ -1,4 +1,5 @@
-use crate::{Document, Issue, Location};
+use crate::check::{Issue, Location};
+use crate::database::Document;
 use ahash::AHashMap;
 
 /// populates the given issues list with all duplicate sections in this document
@@ -34,7 +35,8 @@ pub(crate) fn scan(doc: &Document, issues: &mut Vec<Issue>) {
 
 #[cfg(test)]
 mod tests {
-    use crate::{Document, Issue, Location};
+    use crate::check::{Issue, Location};
+    use crate::database::Document;
     use indoc::indoc;
     use std::path::PathBuf;
 

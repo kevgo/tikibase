@@ -1,6 +1,8 @@
 //! Tooling for outputting the results of lint operations in text/JSON format.
 
-use crate::{Fix, Issue, Outcome};
+use crate::check::Issue;
+use crate::commands::Outcome;
+use crate::Fix;
 use serde::Serialize;
 use std::path::PathBuf;
 
@@ -489,7 +491,8 @@ impl Messages {
 mod tests {
 
     mod all {
-        use crate::{Message, Messages};
+        use crate::output::Message;
+        use crate::Messages;
 
         #[test]
         fn empty() {
@@ -532,7 +535,8 @@ mod tests {
     }
 
     mod is_empty {
-        use crate::{Message, Messages};
+        use crate::output::Message;
+        use crate::Messages;
 
         #[test]
         fn empty() {
@@ -570,7 +574,8 @@ mod tests {
     }
 
     mod has_issues_and_fixes {
-        use crate::{Message, Messages};
+        use crate::output::Message;
+        use crate::Messages;
 
         #[test]
         fn empty() {

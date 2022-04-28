@@ -1,5 +1,6 @@
+use crate::check::{Issue, Location};
 use crate::database::Section;
-use crate::{Config, Issue, Location};
+use crate::Config;
 use std::path::Path;
 
 /// populates the given issues list with all sections in this document that don't match the configured sections
