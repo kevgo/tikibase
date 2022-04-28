@@ -4,8 +4,8 @@ use std::path::PathBuf;
 
 // phase 2 `Directory` check
 pub(crate) fn check_dir_2(dir: &Directory, state: &mut State2) {
-    for (name, doc) in &dir.docs {
-        let doc_path = dir.relative_path.join(name);
+    for (doc_name, doc) in &dir.docs {
+        let doc_path = dir.relative_path.join(doc_name);
         check_doc_2(doc, state);
         if let Some(bidi_links) = dir.config.bidi_links {
             if let Some(old_occurrences_section) = &doc.old_occurrences_section {
