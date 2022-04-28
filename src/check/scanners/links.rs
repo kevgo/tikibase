@@ -87,7 +87,6 @@ pub fn scan(
                                     target_file: target_file.clone(),
                                     anchor: target_anchor,
                                 });
-                                // continue;
                             }
                             // check for backlink from doc to us
                             if let Some(bidi_links) = config.bidi_links {
