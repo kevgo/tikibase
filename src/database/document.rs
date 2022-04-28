@@ -55,14 +55,18 @@ impl Document {
 
     pub fn check_2(
         &self,
-        path: &Path,
         issues: &mut Vec<Issue>,
         cap_outliers: &AHashMap<String, section_capitalization::OutlierInfo>,
         level_outliers: &AHashMap<String, section_level::OutlierInfo>,
     ) {
         for content_section in &self.content_sections {
-            section_capitalization::phase_2(path, content_section, issues, cap_outliers);
-            section_level::phase_2(content_section, path, issues, level_outliers);
+            section_capitalization::phase_2(
+                &self.relative_path,
+                content_section,
+                issues,
+                cap_outliers,
+            );
+            section_level::phase_2(content_section, &self.relative_path, issues, level_outliers);
         }
     }
 

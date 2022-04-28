@@ -60,7 +60,7 @@ impl Directory {
     ) {
         for (name, doc) in &self.docs {
             let doc_path = relative_path.join(name);
-            doc.check_2(&doc_path, issues, cap_outliers, level_outliers);
+            doc.check_2(issues, cap_outliers, level_outliers);
             if let Some(bidi_links) = self.config.bidi_links {
                 if let Some(old_occurrences_section) = &doc.old_occurrences_section {
                     if bidi_links
