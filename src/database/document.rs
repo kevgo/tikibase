@@ -1,6 +1,5 @@
-use crate::check::{Issue, Location};
-
 use super::{section, Footnotes, Line, Reference, Section};
+use crate::check::{Issue, Location};
 use std::ffi::OsString;
 use std::fs::{self, File};
 use std::io::{prelude::*, BufReader};
