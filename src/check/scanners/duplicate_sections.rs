@@ -5,32 +5,38 @@ use ahash::AHashMap;
 /// populates the given issues list with all duplicate sections in this document
 pub(crate) fn scan(doc: &Document, issues: &mut Vec<Issue>) {
     // section title -> [lines with this section]
-    let mut sections_lines: AHashMap<&str, Vec<(u32, u32, u32)>> = AHashMap::new();
+    let mut sections_lines: AHashMap<&str, Vec<LocationWithinFile>> = AHashMap::new();
     for section in doc.sections() {
         sections_lines
             .entry(section.human_title())
             .or_insert_with(Vec::new)
-            .push((
-                section.line_number,
-                section.title_text_start as u32,
-                section.title_text_end(),
-            ));
+            .push(LocationWithinFile {
+                line: section.line_number,
+                start: section.title_text_start as u32,
+                end: section.title_text_end(),
+            });
     }
     for (title, lines) in sections_lines.drain() {
         if lines.len() > 1 {
-            for (line, start, end) in lines {
+            for loc in lines {
                 issues.push(Issue::DuplicateSection {
                     location: Location {
                         file: doc.relative_path.clone(),
-                        line,
-                        start,
-                        end,
+                        line: loc.line,
+                        start: loc.start,
+                        end: loc.end,
                     },
                     title: title.into(),
                 });
             }
         }
     }
+}
+
+struct LocationWithinFile {
+    line: u32,
+    start: u32,
+    end: u32,
 }
 
 #[cfg(test)]
