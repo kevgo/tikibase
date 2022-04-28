@@ -36,11 +36,10 @@ pub fn scan(doc: &Document, issues: &mut Vec<Issue>) {
 
 #[cfg(test)]
 mod tests {
-    use indoc::indoc;
-    use std::path::PathBuf;
-
     use crate::check::{Issue, Location};
     use crate::database::Document;
+    use indoc::indoc;
+    use std::path::PathBuf;
 
     #[test]
     fn missing_footnote_definition() {
