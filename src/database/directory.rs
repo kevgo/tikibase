@@ -9,6 +9,7 @@ use std::fs;
 use std::path::{Path, PathBuf};
 
 pub struct Directory {
+    pub relative_path: PathBuf,
     pub config: Config,
     pub dirs: AHashMap<OsString, Directory>,
     pub docs: AHashMap<OsString, Document>,
@@ -52,14 +53,13 @@ impl Directory {
     /// check phase 2
     pub fn check_2(
         &self,
-        relative_path: &Path,
         linked_resources: &[PathBuf],
         issues: &mut Vec<Issue>,
         cap_outliers: &AHashMap<String, section_capitalization::OutlierInfo>,
         level_outliers: &AHashMap<String, section_level::OutlierInfo>,
     ) {
         for (name, doc) in &self.docs {
-            let doc_path = relative_path.join(name);
+            let doc_path = self.relative_path.join(name);
             doc.check_2(issues, cap_outliers, level_outliers);
             if let Some(bidi_links) = self.config.bidi_links {
                 if let Some(old_occurrences_section) = &doc.old_occurrences_section {
@@ -90,7 +90,7 @@ impl Directory {
             }
         }
         for resource in self.resources.keys() {
-            let full_path = relative_path.join(resource);
+            let full_path = self.relative_path.join(resource);
             if !linked_resources.contains(&full_path) {
                 issues.push(Issue::OrphanedResource {
                     location: Location {
@@ -102,14 +102,8 @@ impl Directory {
                 });
             }
         }
-        for (name, dir) in &self.dirs {
-            dir.check_2(
-                &relative_path.join(&name),
-                linked_resources,
-                issues,
-                cap_outliers,
-                level_outliers,
-            );
+        for dir in self.dirs.values() {
+            dir.check_2(linked_resources, issues, cap_outliers, level_outliers);
         }
     }
 
@@ -128,9 +122,14 @@ impl Directory {
         self.resources.contains_key(path.as_ref())
     }
 
-    /// provides a Tikibase instance for the given directory
-    pub fn load(dir: &Path, mut parent_config: Config) -> Result<Directory, Vec<Issue>> {
-        let config = match config::load(dir) {
+    /// provides a Directory instance for the given directory
+    pub fn load(
+        root: &Path,
+        relative_path: PathBuf,
+        mut parent_config: Config,
+    ) -> Result<Directory, Vec<Issue>> {
+        let abs_path = root.join(&relative_path);
+        let config = match config::load(&abs_path) {
             LoadResult::Loaded(config) => {
                 parent_config.merge(config);
                 parent_config
@@ -142,7 +141,7 @@ impl Directory {
         let mut dirs = AHashMap::new();
         let mut resources = AHashMap::new();
         let mut errors = Vec::new();
-        for entry in fs::read_dir(dir).unwrap() {
+        for entry in fs::read_dir(abs_path).unwrap() {
             let entry = entry.unwrap();
             let entry_path = entry.path();
             let entry_name = entry.file_name();
@@ -158,12 +157,16 @@ impl Directory {
                 }
                 EntryType::Configuration | EntryType::Ignored => continue,
                 EntryType::Directory => {
-                    dirs.insert(entry_name, Directory::load(&entry_path, config.clone())?);
+                    dirs.insert(
+                        entry_name,
+                        Directory::load(root, entry_path, config.clone())?,
+                    );
                 }
             }
         }
         if errors.is_empty() {
             Ok(Directory {
+                relative_path,
                 config,
                 dirs,
                 docs,
@@ -245,7 +248,7 @@ mod tests {
     #[test]
     fn empty() {
         let dir = test::tmp_dir();
-        let dir = Directory::load(&dir, Config::default()).unwrap();
+        let dir = Directory::load(&dir, PathBuf::from(""), Config::default()).unwrap();
         assert_eq!(dir.docs.len(), 0);
         assert_eq!(dir.resources.len(), 0);
     }
@@ -272,12 +275,13 @@ mod tests {
     mod get_doc {
         use crate::database::Directory;
         use crate::{test, Config};
+        use std::path::PathBuf;
 
         #[test]
         fn exists() {
             let dir = test::tmp_dir();
             test::create_file("one.md", "# test doc", &dir);
-            let dir = Directory::load(&dir, Config::default()).unwrap();
+            let dir = Directory::load(&dir, PathBuf::from(""), Config::default()).unwrap();
             let doc = dir.get_doc("one.md").unwrap();
             assert_eq!(doc.title_section.title_line.text, "# test doc");
         }
@@ -285,7 +289,7 @@ mod tests {
         #[test]
         fn missing() {
             let dir = test::tmp_dir();
-            let dir = Directory::load(&dir, Config::default()).unwrap();
+            let dir = Directory::load(&dir, PathBuf::from(""), Config::default()).unwrap();
             assert!(dir.get_doc("zonk.md").is_none());
         }
     }
@@ -293,12 +297,13 @@ mod tests {
     mod get_doc_mut {
         use crate::database::Directory;
         use crate::{test, Config};
+        use std::path::PathBuf;
 
         #[test]
         fn exists() {
             let dir = test::tmp_dir();
             test::create_file("one.md", "# test doc", &dir);
-            let mut dir = Directory::load(&dir, Config::default()).unwrap();
+            let mut dir = Directory::load(&dir, PathBuf::from(""), Config::default()).unwrap();
             let doc = dir.get_doc_mut("one.md").unwrap();
             assert_eq!(doc.title_section.title_line.text, "# test doc");
         }
@@ -306,7 +311,7 @@ mod tests {
         #[test]
         fn missing() {
             let dir = test::tmp_dir();
-            let mut dir = Directory::load(&dir, Config::default()).unwrap();
+            let mut dir = Directory::load(&dir, PathBuf::from(""), Config::default()).unwrap();
             assert!(dir.get_doc_mut("zonk.md").is_none());
         }
     }
@@ -328,11 +333,12 @@ mod tests {
     mod has_resource {
         use crate::database::Directory;
         use crate::{test, Config};
+        use std::path::PathBuf;
 
         #[test]
         fn empty() {
             let dir = test::tmp_dir();
-            let dir = Directory::load(&dir, Config::default()).unwrap();
+            let dir = Directory::load(&dir, PathBuf::from(""), Config::default()).unwrap();
             assert!(!dir.has_resource("foo.png"));
         }
 
@@ -340,7 +346,7 @@ mod tests {
         fn matching_resource() {
             let dir = test::tmp_dir();
             test::create_file("foo.png", "content", &dir);
-            let dir = Directory::load(&dir, Config::default()).unwrap();
+            let dir = Directory::load(&dir, PathBuf::from(""), Config::default()).unwrap();
             assert!(dir.has_resource("foo.png"));
         }
     }
@@ -358,7 +364,7 @@ mod tests {
             foo
             "};
         test::create_file("file.md", content, &dir);
-        let dir = Directory::load(&dir, Config::default()).unwrap();
+        let dir = Directory::load(&dir, PathBuf::from(""), Config::default()).unwrap();
         // make sure we can load existing documents
         let _doc = &dir.get_doc("file.md").unwrap();
     }
@@ -367,7 +373,7 @@ mod tests {
     fn load_hidden_file() {
         let dir = test::tmp_dir();
         test::create_file(".hidden", "content", &dir);
-        let dir = Directory::load(&dir, Config::default()).unwrap();
+        let dir = Directory::load(&dir, PathBuf::from(""), Config::default()).unwrap();
         assert_eq!(dir.resources.len(), 0);
     }
 }

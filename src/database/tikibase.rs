@@ -32,7 +32,6 @@ impl Tikibase {
         let level_outliers = section_level::process(level_variants);
         // round 2
         self.dir.check_2(
-            &PathBuf::from(""),
             &linked_resources,
             &mut issues,
             &title_outliers,
@@ -43,7 +42,7 @@ impl Tikibase {
     }
 
     pub fn load(root: PathBuf) -> Result<Tikibase, Vec<Issue>> {
-        let dir = Directory::load(&root, Config::default())?;
+        let dir = Directory::load(&root, PathBuf::from(""), Config::default())?;
         Ok(Tikibase { root, dir })
     }
 
