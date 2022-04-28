@@ -5,7 +5,6 @@ use std::path::{Path, PathBuf};
 /// populates the given issues list with all link issues in this document
 pub fn scan(
     doc: &Document,
-    path: &Path,
     dir: &Path,
     issues: &mut Vec<Issue>,
     linked_resources: &mut Vec<PathBuf>,
@@ -15,7 +14,7 @@ pub fn scan(
     if doc.references.is_empty() {
         issues.push(Issue::DocumentWithoutLinks {
             location: Location {
-                file: path.into(),
+                file: doc.relative_path.clone(),
                 line: 0,
                 start: 0,
                 end: 0,
@@ -33,7 +32,7 @@ pub fn scan(
                 if target.is_empty() {
                     issues.push(Issue::LinkWithoutTarget {
                         location: Location {
-                            file: path.into(),
+                            file: doc.relative_path.clone(),
                             line: line.to_owned(),
                             start: start.to_owned(),
                             end: end.to_owned(),
@@ -49,11 +48,11 @@ pub fn scan(
                     Some((base, anchor)) => (base.to_string(), format!("#{}", anchor)),
                     None => (target.clone(), "".to_string()),
                 };
-                let path_str = path.to_string_lossy();
+                let path_str = doc.relative_path.to_string_lossy();
                 if target_file == path_str {
                     issues.push(Issue::LinkToSameDocument {
                         location: Location {
-                            file: path.into(),
+                            file: doc.relative_path.clone(),
                             line: line.to_owned(),
                             start: start.to_owned(),
                             end: end.to_owned(),
@@ -69,7 +68,7 @@ pub fn scan(
                 {
                     issues.push(Issue::LinkToNonExistingAnchorInCurrentDocument {
                         location: Location {
-                            file: path.into(),
+                            file: doc.relative_path.clone(),
                             line: line.to_owned(),
                             start: start.to_owned(),
                             end: end.to_owned(),
@@ -84,7 +83,7 @@ pub fn scan(
                             if !target_anchor.is_empty() && !other_doc.has_anchor(&target_anchor) {
                                 issues.push(Issue::LinkToNonExistingAnchorInExistingDocument {
                                     location: Location {
-                                        file: path.into(),
+                                        file: doc.relative_path.clone(),
                                         line: line.to_owned(),
                                         start: start.to_owned(),
                                         end: end.to_owned(),
@@ -96,7 +95,9 @@ pub fn scan(
                             }
                             // check for backlink from doc to us
                             if let Some(bidi_links) = config.bidi_links {
-                                if bidi_links && !other_doc.contains_reference_to(path) {
+                                if bidi_links
+                                    && !other_doc.contains_reference_to(&doc.relative_path)
+                                {
                                     issues.push(Issue::MissingLink {
                                         location: Location {
                                             file: PathBuf::from(target_file),
@@ -104,7 +105,7 @@ pub fn scan(
                                             start: 0,
                                             end: 0,
                                         },
-                                        path: path.into(),
+                                        path: doc.relative_path.clone(),
                                         title: doc.human_title().into(),
                                     });
                                 }
@@ -112,7 +113,7 @@ pub fn scan(
                         } else {
                             issues.push(Issue::LinkToNonExistingFile {
                                 location: Location {
-                                    file: path.into(),
+                                    file: doc.relative_path.clone(),
                                     line: line.to_owned(),
                                     start: start.to_owned(),
                                     end: end.to_owned(),
@@ -126,7 +127,7 @@ pub fn scan(
                         if !root.has_resource(&target_file) {
                             issues.push(Issue::LinkToNonExistingFile {
                                 location: Location {
-                                    file: path.into(),
+                                    file: doc.relative_path.clone(),
                                     line: line.to_owned(),
                                     start: start.to_owned(),
                                     end: end.to_owned(),
@@ -153,7 +154,7 @@ pub fn scan(
                 if !root.has_resource(&src) {
                     issues.push(Issue::BrokenImage {
                         location: Location {
-                            file: path.into(),
+                            file: doc.relative_path.clone(),
                             line: line.to_owned(),
                             start: start.to_owned(),
                             end: end.to_owned(),
@@ -185,7 +186,6 @@ mod tests {
         let mut linked_resources = vec![];
         super::scan(
             doc,
-            &PathBuf::from("one.md"),
             &PathBuf::from(""),
             &mut issues,
             &mut linked_resources,
@@ -216,7 +216,6 @@ mod tests {
         let mut linked_resources = vec![];
         super::scan(
             doc,
-            &PathBuf::from("1.md"),
             &PathBuf::from(""),
             &mut issues,
             &mut linked_resources,
@@ -247,7 +246,6 @@ mod tests {
         let mut linked_resources = vec![];
         super::scan(
             doc,
-            &PathBuf::from("1.md"),
             &PathBuf::from(""),
             &mut issues,
             &mut linked_resources,
@@ -281,7 +279,6 @@ mod tests {
         let mut linked_resources = vec![];
         super::scan(
             doc,
-            &PathBuf::from("1.md"),
             &PathBuf::from(""),
             &mut issues,
             &mut linked_resources,
@@ -319,7 +316,6 @@ mod tests {
         let mut linked_resources = vec![];
         super::scan(
             doc,
-            &PathBuf::from("1.md"),
             &PathBuf::from(""),
             &mut issues,
             &mut linked_resources,
@@ -340,7 +336,6 @@ mod tests {
         let mut linked_resources = vec![];
         super::scan(
             doc,
-            &PathBuf::from("one.md"),
             &PathBuf::from(""),
             &mut issues,
             &mut linked_resources,
@@ -378,7 +373,6 @@ mod tests {
         let mut linked_resources = vec![];
         super::scan(
             doc,
-            &PathBuf::from("one.md"),
             &PathBuf::from(""),
             &mut issues,
             &mut linked_resources,
@@ -400,7 +394,6 @@ mod tests {
         let mut linked_resources = vec![];
         super::scan(
             doc,
-            &PathBuf::from("one.md"),
             &PathBuf::from(""),
             &mut issues,
             &mut linked_resources,
@@ -421,7 +414,6 @@ mod tests {
         let mut linked_resources = vec![];
         super::scan(
             doc,
-            &PathBuf::from("1.md"),
             &PathBuf::from(""),
             &mut issues,
             &mut linked_resources,
@@ -452,7 +444,6 @@ mod tests {
         let mut linked_resources = vec![];
         super::scan(
             doc,
-            &PathBuf::from("1.md"),
             &PathBuf::from(""),
             &mut issues,
             &mut linked_resources,
