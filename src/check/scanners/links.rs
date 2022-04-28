@@ -115,7 +115,6 @@ pub fn scan(
                                 },
                                 target: target.into(),
                             });
-                            continue;
                         };
                     }
                     EntryType::Resource => {
