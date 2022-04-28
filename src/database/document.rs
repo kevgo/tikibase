@@ -28,7 +28,6 @@ impl Document {
     // populates the given issues list with all issues in this document
     pub fn check_1(
         &self,
-        path: &Path,
         dir: &Path,
         config: &Config,
         issues: &mut Vec<Issue>,
@@ -41,12 +40,12 @@ impl Document {
         unordered_sections::scan(self, config, issues);
         footnotes::scan(self, issues);
         links::scan(self, dir, issues, linked_resources, root, config);
-        empty_section_title::scan(&self.title_section, path, issues);
+        empty_section_title::scan(&self.title_section, &self.relative_path, issues);
         for content_section in &self.content_sections {
-            empty_section_content::scan(content_section, path, issues);
-            empty_section_title::scan(content_section, path, issues);
+            empty_section_content::scan(content_section, &self.relative_path, issues);
+            empty_section_title::scan(content_section, &self.relative_path, issues);
             if config.sections.is_some() {
-                illegal_sections::scan(content_section, path, config, issues);
+                illegal_sections::scan(content_section, &self.relative_path, config, issues);
             } else {
                 section_capitalization::phase_1(content_section, title_variants);
                 section_level::phase_1(content_section, level_variants);

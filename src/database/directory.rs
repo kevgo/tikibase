@@ -26,9 +26,8 @@ impl Directory {
         level_variants: &mut AHashMap<String, AHashMap<u8, u32>>,
         root: &Directory,
     ) {
-        for (filename, doc) in &self.docs {
+        for (_filename, doc) in &self.docs {
             doc.check_1(
-                &parent.join(filename),
                 parent,
                 &self.config,
                 issues,
