@@ -2,7 +2,7 @@ mod dir_1;
 mod dir_2;
 mod doc_1;
 mod doc_2;
-pub(crate) mod issue;
+mod issue;
 mod location;
 pub(crate) mod scanners;
 mod state_1;
