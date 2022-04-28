@@ -90,26 +90,20 @@ pub struct OutlierInfo {
 /// provides the most common variant within the given capitalization variants
 fn find_common_capitalization(variants: &AHashMap<String, u32>) -> Option<String> {
     let mut max_count = 0;
-    let mut max_variant = "".to_string();
-    let mut unique = true;
+    let mut max_variant = Some("".to_string());
     for (variant, count) in variants {
         match count.cmp(&max_count) {
             Greater => {
                 max_count = count.to_owned();
-                max_variant = variant.into();
-                unique = true;
+                max_variant = Some(variant.into());
             }
             Equal => {
-                unique = false;
+                max_variant = None;
             }
             Less => {}
         }
     }
-    if unique {
-        Some(max_variant)
-    } else {
-        None
-    }
+    max_variant
 }
 
 #[cfg(test)]
