@@ -3,7 +3,7 @@ use crate::database::Directory;
 use ahash::AHashMap;
 use std::path::PathBuf;
 
-/// mutable state accumulated in check phase 1
+/// mutable state that gets accumulated in phase 1 of the check process
 pub struct State1<'a> {
     /// issues found in phase 1
     pub issues: Vec<Issue>,
