@@ -118,7 +118,9 @@ pub fn scan(
                         };
                     }
                     EntryType::Resource => {
-                        if !root.has_resource(&target_file) {
+                        if root.has_resource(&target_file) {
+                            linked_resources.push(dir.join(&target_file));
+                        } else {
                             issues.push(Issue::LinkToNonExistingFile {
                                 location: Location {
                                     file: doc.relative_path.clone(),
@@ -128,9 +130,7 @@ pub fn scan(
                                 },
                                 target: target.into(),
                             });
-                            continue;
                         }
-                        linked_resources.push(dir.join(&target_file));
                     }
                     EntryType::Configuration | EntryType::Ignored => {}
                     EntryType::Directory => todo!(),
