@@ -38,7 +38,7 @@ impl Document {
         root: &Directory,
     ) {
         duplicate_sections::scan(self, issues);
-        unordered_sections::scan(self, path, config, issues);
+        unordered_sections::scan(self, config, issues);
         footnotes::scan(self, path, issues);
         links::scan(self, path, dir, issues, linked_resources, root, config);
         empty_section_title::scan(&self.title_section, path, issues);

@@ -1,8 +1,7 @@
 use crate::{Config, Document, Issue, Location};
-use std::path::Path;
 
 /// populates the given issues list with all sections in this document that don't match the configured order
-pub fn scan(doc: &Document, path: &Path, config: &Config, issues: &mut Vec<Issue>) {
+pub fn scan(doc: &Document, config: &Config, issues: &mut Vec<Issue>) {
     let schema_titles = match &config.sections {
         None => return,
         Some(sections) => sections,
@@ -25,7 +24,7 @@ pub fn scan(doc: &Document, path: &Path, config: &Config, issues: &mut Vec<Issue
                 // end of schema reached but there are still unchecked sections in the document --> those are out of order
                 issues.push(Issue::UnorderedSections {
                     location: Location {
-                        file: path.into(),
+                        file: doc.relative_path.clone(),
                         line: doc_section.line_number,
                         start: 0,
                         end: doc_section.title_line.text.len() as u32,
@@ -78,7 +77,7 @@ mod tests {
             ..Config::default()
         };
         let mut issues = vec![];
-        super::scan(&doc, &PathBuf::from("test.md"), &config, &mut issues);
+        super::scan(&doc, &config, &mut issues);
         let want = vec![Issue::UnorderedSections {
             location: Location {
                 file: PathBuf::from("test.md"),
@@ -106,7 +105,7 @@ mod tests {
             ..Config::default()
         };
         let mut issues = vec![];
-        super::scan(&doc, &PathBuf::from("test.md"), &config, &mut issues);
+        super::scan(&doc, &config, &mut issues);
         let want = vec![];
         assert_eq!(issues, want);
     }
@@ -127,7 +126,7 @@ mod tests {
             ..Config::default()
         };
         let mut issues = vec![];
-        super::scan(&doc, &PathBuf::from("test.md"), &config, &mut issues);
+        super::scan(&doc, &config, &mut issues);
         let want = vec![];
         assert_eq!(issues, want);
     }
@@ -148,7 +147,7 @@ mod tests {
             ..Config::default()
         };
         let mut issues = vec![];
-        super::scan(&doc, &PathBuf::from("test.md"), &config, &mut issues);
+        super::scan(&doc, &config, &mut issues);
         let want = vec![];
         assert_eq!(issues, want);
     }
