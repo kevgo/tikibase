@@ -2,7 +2,7 @@ use super::{Line, Reference};
 use heck::ToKebabCase;
 
 /// a section in a document, from one heading to above the next heading
-#[derive(Debug, Eq, Hash, PartialEq)]
+#[derive(Debug, Default, Eq, Hash, PartialEq)]
 pub struct Section {
     /// the line number at which this section starts, 0-based
     pub line_number: u32,
@@ -25,6 +25,11 @@ impl Section {
     /// provides the link anchor for this section, in GitHub format
     pub fn anchor(&self) -> String {
         format!("#{}", self.human_title().to_kebab_case())
+    }
+
+    /// indicates whether this section contains any content
+    pub fn is_empty(&self) -> bool {
+        self.body.iter().all(|line| line.text.is_empty())
     }
 
     /// provides the cursor column at which the title text ends,
@@ -192,6 +197,37 @@ mod tests {
         for (give, want) in tests {
             let section = Section::with_title(give);
             assert_eq!(section.anchor(), want);
+        }
+    }
+
+    mod is_empty {
+        use crate::database::{Line, Section};
+
+        #[test]
+        fn completely_empty() {
+            let section = Section {
+                body: vec![],
+                ..Section::default()
+            };
+            assert!(section.is_empty());
+        }
+
+        #[test]
+        fn empty_lines() {
+            let section = Section {
+                body: vec![Line::from(""), Line::from("")],
+                ..Section::default()
+            };
+            assert!(section.is_empty());
+        }
+
+        #[test]
+        fn with_content() {
+            let section = Section {
+                body: vec![Line::from("text"), Line::from("")],
+                ..Section::default()
+            };
+            assert!(!section.is_empty());
         }
     }
 

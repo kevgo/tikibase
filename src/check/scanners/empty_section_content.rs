@@ -4,7 +4,7 @@ use std::path::Path;
 
 /// populates the given issues list if this section has no content
 pub fn scan(section: &Section, path: &Path, issues: &mut Vec<Issue>) {
-    if section.body.iter().all(|line| line.text.is_empty()) {
+    if section.is_empty() {
         issues.push(Issue::EmptySection {
             location: Location {
                 file: path.into(),
