@@ -47,7 +47,7 @@ mod tests {
     use std::path::PathBuf;
 
     #[test]
-    fn with_duplicate_sections() {
+    fn has_duplicate_sections() {
         let content = indoc! {"
             # test document
 
@@ -78,6 +78,23 @@ mod tests {
                 title: "One".into(),
             },
         ];
+        pretty::assert_eq!(have, want);
+    }
+
+    #[test]
+    fn no_duplicate_sections() {
+        let content = indoc! {"
+            # test document
+
+            ### One
+            content
+
+            ### Two
+            content"};
+        let doc = Document::from_str("test.md", content).unwrap();
+        let mut have = vec![];
+        super::scan(&doc, &mut have);
+        let want = vec![];
         pretty::assert_eq!(have, want);
     }
 }
