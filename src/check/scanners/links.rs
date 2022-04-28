@@ -61,12 +61,7 @@ pub fn scan(
                     });
                     continue;
                 }
-                if target.starts_with('#')
-                    && !doc
-                        .content_sections
-                        .iter()
-                        .any(|section| &section.anchor() == target)
-                {
+                if target.starts_with('#') && !doc.has_anchor(target) {
                     issues.push(Issue::LinkToNonExistingAnchorInCurrentDocument {
                         location: Location {
                             file: doc.relative_path.clone(),
