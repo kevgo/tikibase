@@ -12,16 +12,16 @@ pub fn scan(doc: &Document, config: &Config, issues: &mut Vec<Issue>) {
         // document has 0 or 1 sections --> order always matches
         return;
     }
-    let mut doc_iter = doc.content_sections.iter();
-    let mut doc_section_option = doc_iter.next();
+    let mut sections_iter = doc.content_sections.iter();
+    let mut section_option = sections_iter.next();
     let mut schema_iter = schema_titles.iter();
-    let mut schema_title_option = schema_iter.next();
+    let mut schema_option = schema_iter.next();
     loop {
-        let doc_section = match doc_section_option {
+        let doc_section = match section_option {
             None => return, // we reached the end of the actual list --> actual matches schema
             Some(section) => section,
         };
-        let schema_title = match schema_title_option {
+        let schema_title = match schema_option {
             None => {
                 // end of schema reached but there are still unchecked sections in the document --> those are out of order
                 issues.push(Issue::UnorderedSections {
@@ -32,7 +32,7 @@ pub fn scan(doc: &Document, config: &Config, issues: &mut Vec<Issue>) {
                         end: doc_section.title_line.text.len() as u32,
                     },
                 });
-                doc_section_option = doc_iter.next();
+                section_option = sections_iter.next();
                 continue;
             }
             Some(value) => value,
@@ -40,19 +40,19 @@ pub fn scan(doc: &Document, config: &Config, issues: &mut Vec<Issue>) {
         let doc_section_title = doc_section.human_title();
         if doc_section_title == schema_title {
             // elements match --> advance both pointers
-            doc_section_option = doc_iter.next();
-            schema_title_option = schema_iter.next();
+            section_option = sections_iter.next();
+            schema_option = schema_iter.next();
             continue;
         }
         // HACK: see https://github.com/rust-lang/rust/issues/42671
         if !schema_titles.iter().any(|st| st == doc_section_title) {
             // unknown element in actual --> ignore here (there is a separate check for this)
-            doc_section_option = doc_iter.next();
+            section_option = sections_iter.next();
             continue;
         }
         // elements don't match --> advance the schema
         // (because schema might contain elements that are not in actual)
-        schema_title_option = schema_iter.next();
+        schema_option = schema_iter.next();
     }
 }
 
