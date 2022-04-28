@@ -7,7 +7,7 @@ use crate::Config;
 pub fn scan(doc: &Document, config: &Config, issues: &mut Vec<Issue>) {
     if let Some(bidi_links) = config.bidi_links {
         if let Some(old_occurrences_section) = &doc.old_occurrences_section {
-            if bidi_links && !has_missing_link_with_path(issues, &doc.relative_path) {
+            if bidi_links && !has_missing_links_with_path(issues, &doc.relative_path) {
                 issues.push(Issue::ObsoleteOccurrencesSection {
                     location: Location {
                         file: doc.relative_path.clone(),
@@ -22,7 +22,7 @@ pub fn scan(doc: &Document, config: &Config, issues: &mut Vec<Issue>) {
 }
 
 /// indicates whether the given issue list contains a `MissingLink` issue with the given path
-fn has_missing_link_with_path(issues: &[Issue], path: &Path) -> bool {
+fn has_missing_links_with_path(issues: &[Issue], path: &Path) -> bool {
     issues
         .iter()
         .any(|issue| is_missing_link_with_path(issue, path))
