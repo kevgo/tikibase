@@ -14,7 +14,7 @@ pub fn phase_1(section: &Section, level_variants: &mut AHashMap<String, AHashMap
 }
 
 /// converts the input to full tite --> `OutlierInfo`
-pub fn process(input: AHashMap<String, AHashMap<u8, u32>>) -> AHashMap<String, OutlierInfo> {
+pub fn find_outliers(input: AHashMap<String, AHashMap<u8, u32>>) -> AHashMap<String, OutlierInfo> {
     let mut result = AHashMap::new();
     for (title, variants) in input {
         let mut all: Vec<u8> = variants.keys().map(ToOwned::to_owned).collect();
@@ -221,7 +221,7 @@ mod tests {
                 }
             }
             // stage 2
-            let outliers = super::super::process(title_variants);
+            let outliers = super::super::find_outliers(title_variants);
             // stage 3
             let mut issues = vec![];
             for (name, doc) in base.dir.docs {

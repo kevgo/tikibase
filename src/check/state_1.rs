@@ -6,6 +6,6 @@ use std::path::PathBuf;
 pub struct State1 {
     pub issues: Vec<Issue>,
     pub linked_resources: Vec<PathBuf>,
-    pub title_variants: AHashMap<String, u32>,
+    pub capitalization_variants: AHashMap<String, u32>,
     pub level_variants: AHashMap<String, AHashMap<u8, u32>>,
 }

@@ -1,6 +1,6 @@
 use super::Outcome;
 use crate::check::scanners::{section_capitalization, section_level};
-use crate::check::{check_dir_1, check_dir_2, State1};
+use crate::check::{check_dir_1, check_dir_2, State1, State2};
 use crate::Tikibase;
 use ahash::AHashMap;
 use std::path::PathBuf;
@@ -9,21 +9,24 @@ pub fn check(base: &Tikibase) -> Outcome {
     let mut state_1 = State1 {
         issues: vec![],
         linked_resources: vec![],
-        title_variants: AHashMap::new(),
+        capitalization_variants: AHashMap::new(),
         level_variants: AHashMap::new(),
     };
     // round 1
     check_dir_1(&base.dir, &PathBuf::from(""), &mut state_1, &base.dir);
     // analyze
-    let title_outliers = section_capitalization::process(state_1.title_variants);
-    let level_outliers = section_level::process(state_1.level_variants);
+    let state_2 = State2 {
+        capitalization_outliers: section_capitalization::find_outliers(
+            state_1.capitalization_variants,
+        ),
+        level_outliers: section_level::find_outliers(state_1.level_variants),
+    };
     // round 2
     check_dir_2(
         &base.dir,
         &state_1.linked_resources,
         &mut state_1.issues,
-        &title_outliers,
-        &level_outliers,
+        &state_2,
     );
     state_1.issues.sort();
     Outcome {

@@ -1,7 +1,5 @@
-use super::scanners::{section_capitalization, section_level};
-use super::{check_doc_2, Issue, Location};
+use super::{check_doc_2, Issue, Location, State2};
 use crate::database::Directory;
-use ahash::AHashMap;
 use std::path::PathBuf;
 
 /// check phase 2
@@ -9,12 +7,11 @@ pub(crate) fn check_dir_2(
     dir: &Directory,
     linked_resources: &[PathBuf],
     issues: &mut Vec<Issue>,
-    cap_outliers: &AHashMap<String, section_capitalization::OutlierInfo>,
-    level_outliers: &AHashMap<String, section_level::OutlierInfo>,
+    state_2: &State2,
 ) {
     for (name, doc) in &dir.docs {
         let doc_path = dir.relative_path.join(name);
-        check_doc_2(doc, issues, cap_outliers, level_outliers);
+        check_doc_2(doc, issues, state_2);
         if let Some(bidi_links) = dir.config.bidi_links {
             if let Some(old_occurrences_section) = &doc.old_occurrences_section {
                 if bidi_links
@@ -57,6 +54,6 @@ pub(crate) fn check_dir_2(
         }
     }
     for dir in dir.dirs.values() {
-        check_dir_2(dir, linked_resources, issues, cap_outliers, level_outliers);
+        check_dir_2(dir, linked_resources, issues, state_2);
     }
 }

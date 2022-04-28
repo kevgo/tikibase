@@ -11,7 +11,7 @@ pub(crate) fn phase_1(section: &Section, title_variants: &mut AHashMap<String, u
     *entry += 1;
 }
 
-pub(crate) fn process(mut input: AHashMap<String, u32>) -> AHashMap<String, OutlierInfo> {
+pub(crate) fn find_outliers(mut input: AHashMap<String, u32>) -> AHashMap<String, OutlierInfo> {
     // step 1: group related variants together
     // normalized variant --> variant --> count
     let mut grouped: AHashMap<String, AHashMap<String, u32>> = AHashMap::new();
@@ -232,7 +232,7 @@ mod tests {
             }
         }
         // stage 2
-        let outliers = super::process(title_variants);
+        let outliers = super::find_outliers(title_variants);
         // stage 3
         let mut issues = vec![];
         for (name, doc) in base.dir.docs {

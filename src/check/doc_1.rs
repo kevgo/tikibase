@@ -39,7 +39,7 @@ pub(crate) fn check_doc_1(
                 &mut state_1.issues,
             );
         } else {
-            section_capitalization::phase_1(content_section, &mut state_1.title_variants);
+            section_capitalization::phase_1(content_section, &mut state_1.capitalization_variants);
             section_level::phase_1(content_section, &mut state_1.level_variants);
         }
     }
