@@ -16,18 +16,19 @@ pub fn check(base: &Tikibase) -> Outcome {
     // round 1
     check_dir_1(&base.dir, &PathBuf::from(""), &mut state_1);
     // analyze
-    let state_2 = State2 {
+    let mut state_2 = State2 {
         capitalization_outliers: section_capitalization::find_outliers(
             state_1.capitalization_variants,
         ),
         level_outliers: section_level::find_outliers(state_1.level_variants),
         linked_resources: state_1.linked_resources,
+        issues: state_1.issues,
     };
     // round 2
-    check_dir_2(&base.dir, &mut state_1.issues, &state_2);
-    state_1.issues.sort();
+    check_dir_2(&base.dir, &mut state_2);
+    state_2.issues.sort();
     Outcome {
-        issues: state_1.issues,
+        issues: state_2.issues,
         fixes: vec![],
     }
 }
