@@ -27,7 +27,7 @@ impl Section {
         format!("#{}", self.human_title().to_kebab_case())
     }
 
-    /// indicates whether this section contains any content
+    /// indicates whether this section contains no content
     pub fn is_empty(&self) -> bool {
         self.body.iter().all(|line| line.text.is_empty())
     }
