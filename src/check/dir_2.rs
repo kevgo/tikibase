@@ -3,14 +3,14 @@ use crate::database::Directory;
 use std::path::PathBuf;
 
 // phase 2 `Directory` check
-pub(crate) fn check_dir_2(dir: &Directory, state_2: &mut State2) {
+pub(crate) fn check_dir_2(dir: &Directory, state: &mut State2) {
     for (name, doc) in &dir.docs {
         let doc_path = dir.relative_path.join(name);
-        check_doc_2(doc, state_2);
+        check_doc_2(doc, state);
         if let Some(bidi_links) = dir.config.bidi_links {
             if let Some(old_occurrences_section) = &doc.old_occurrences_section {
                 if bidi_links
-                    && !state_2.issues.iter().any(|issue| {
+                    && !state.issues.iter().any(|issue| {
                         if let Issue::MissingLink {
                             location,
                             path: _,
@@ -23,7 +23,7 @@ pub(crate) fn check_dir_2(dir: &Directory, state_2: &mut State2) {
                         }
                     })
                 {
-                    state_2.issues.push(Issue::ObsoleteOccurrencesSection {
+                    state.issues.push(Issue::ObsoleteOccurrencesSection {
                         location: Location {
                             file: doc_path,
                             line: old_occurrences_section.line_number,
@@ -37,8 +37,8 @@ pub(crate) fn check_dir_2(dir: &Directory, state_2: &mut State2) {
     }
     for resource in dir.resources.keys() {
         let full_path = dir.relative_path.join(resource);
-        if !state_2.linked_resources.contains(&full_path) {
-            state_2.issues.push(Issue::OrphanedResource {
+        if !state.linked_resources.contains(&full_path) {
+            state.issues.push(Issue::OrphanedResource {
                 location: Location {
                     file: PathBuf::from(resource),
                     line: 0,
@@ -49,6 +49,6 @@ pub(crate) fn check_dir_2(dir: &Directory, state_2: &mut State2) {
         }
     }
     for dir in dir.dirs.values() {
-        check_dir_2(dir, state_2);
+        check_dir_2(dir, state);
     }
 }

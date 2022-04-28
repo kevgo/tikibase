@@ -13,9 +13,7 @@ pub fn check(base: &Tikibase) -> Outcome {
         level_variants: AHashMap::new(),
         base_dir: &base.dir,
     };
-    // round 1
     check_dir_1(&base.dir, &PathBuf::from(""), &mut state_1);
-    // analyze
     let mut state_2 = State2 {
         capitalization_outliers: section_capitalization::find_outliers(
             state_1.capitalization_variants,
@@ -24,7 +22,6 @@ pub fn check(base: &Tikibase) -> Outcome {
         linked_resources: state_1.linked_resources,
         issues: state_1.issues,
     };
-    // round 2
     check_dir_2(&base.dir, &mut state_2);
     state_2.issues.sort();
     Outcome {
