@@ -87,7 +87,7 @@ pub struct OutlierInfo {
     pub all: Vec<String>,
 }
 
-/// provides the most common key
+/// provides the most common variant within the given capitalization variants
 fn find_common_capitalization(variants: &AHashMap<String, u32>) -> Option<String> {
     let mut max_count = 0;
     let mut max_variant = "".to_string();
