@@ -211,8 +211,7 @@ impl Document {
         content_sections: Vec<Section>,
         old_occurrences_section: Option<Section>,
     ) -> Document {
-        let mut references = vec![];
-        Document::references(&title_section, &content_sections, &mut references);
+        let references = Document::references(&title_section, &content_sections);
         Document {
             relative_path: path,
             title_section,
@@ -222,15 +221,13 @@ impl Document {
         }
     }
 
-    pub fn references(
-        title_section: &Section,
-        content_sections: &[Section],
-        acc: &mut Vec<Reference>,
-    ) {
-        title_section.references(acc);
+    pub fn references(title_section: &Section, content_sections: &[Section]) -> Vec<Reference> {
+        let mut result = vec![];
+        title_section.references(&mut result);
         for section in content_sections {
-            section.references(acc);
+            section.references(&mut result);
         }
+        result
     }
 
     /// persists the changes made to this document to disk
@@ -781,8 +778,7 @@ mod tests {
             an image: ![two](2.png)
             "};
         let doc = Document::from_str("test.md", text).unwrap();
-        let mut have = vec![];
-        Document::references(&doc.title_section, &doc.content_sections, &mut have);
+        let have = Document::references(&doc.title_section, &doc.content_sections);
         let want = vec![
             Reference::Link {
                 target: "1.md".into(),
