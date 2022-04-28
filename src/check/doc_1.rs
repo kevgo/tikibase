@@ -21,7 +21,6 @@ pub(crate) fn check_doc_1(doc: &Document, dir: &Path, config: &Config, state: &m
         config,
     );
     empty_section_title::scan(&doc.title_section, &doc.relative_path, &mut state.issues);
-
     for content_section in &doc.content_sections {
         empty_section_content::scan(content_section, &doc.relative_path, &mut state.issues);
         empty_section_title::scan(content_section, &doc.relative_path, &mut state.issues);
