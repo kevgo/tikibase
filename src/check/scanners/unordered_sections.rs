@@ -37,15 +37,15 @@ pub fn scan(doc: &Document, config: &Config, issues: &mut Vec<Issue>) {
             }
             Some(value) => value,
         };
-        let doc_section_title = doc_section.human_title();
-        if doc_section_title == schema_title {
+        let section_title = doc_section.human_title();
+        if section_title == schema_title {
             // elements match --> advance both pointers
             section_option = sections_iter.next();
             schema_option = schema_iter.next();
             continue;
         }
         // HACK: see https://github.com/rust-lang/rust/issues/42671
-        if !schema_titles.iter().any(|st| st == doc_section_title) {
+        if !schema_titles.iter().any(|st| st == section_title) {
             // unknown element in actual --> ignore here (there is a separate check for this)
             section_option = sections_iter.next();
             continue;
