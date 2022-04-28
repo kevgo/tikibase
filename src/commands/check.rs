@@ -1,9 +1,8 @@
-use ahash::AHashMap;
-use std::path::PathBuf;
-
 use crate::database::Tikibase;
 use crate::scan::{section_capitalization, section_level};
 use crate::Outcome;
+use ahash::AHashMap;
+use std::path::PathBuf;
 
 pub fn check(base: &Tikibase) -> Outcome {
     let mut issues = vec![];
