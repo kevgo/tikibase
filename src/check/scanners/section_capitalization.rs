@@ -108,7 +108,6 @@ fn find_common_capitalization(variants: &AHashMap<String, u32>) -> Option<String
 
 #[cfg(test)]
 mod tests {
-
     use crate::check::{Issue, Location};
     use crate::{test, Tikibase};
     use ahash::AHashMap;
@@ -116,7 +115,7 @@ mod tests {
     use std::path::PathBuf;
 
     #[test]
-    fn outlier_capitalization() {
+    fn has_common_capitalization() {
         // create files
         let dir = test::tmp_dir();
         let content1 = indoc! {"
