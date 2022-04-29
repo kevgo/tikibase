@@ -51,7 +51,7 @@ impl Directory {
         let mut errors = Vec::new();
         for entry in fs::read_dir(abs_path).unwrap() {
             let entry = entry.unwrap();
-            let entry_path = entry.path().to_string_lossy().to_string();
+            let entry_path = entry.path();
             let entry_name = entry.file_name().to_string_lossy().to_string();
             match EntryType::from_direntry(&entry, &config) {
                 EntryType::Document => match Document::load(&entry_path, entry_name.clone()) {
@@ -67,7 +67,11 @@ impl Directory {
                 EntryType::Directory => {
                     dirs.insert(
                         entry_name,
-                        Directory::load(root, entry_path, config.clone())?,
+                        Directory::load(
+                            root,
+                            entry_path.to_string_lossy().to_string(),
+                            config.clone(),
+                        )?,
                     );
                 }
             }
