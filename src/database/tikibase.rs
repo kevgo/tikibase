@@ -16,7 +16,7 @@ impl Tikibase {
     }
 
     pub fn get_doc<P: AsRef<OsStr>>(&self, relative_path: P) -> Option<&Document> {
-        self.dir.get_doc(relative_path)
+        self.dir.get_doc(relative_path.as_ref())
     }
 
     /// provides the document with the given relative filename as a mutable reference
@@ -36,5 +36,6 @@ mod tests {
         let dir = test::tmp_dir();
         test::create_file("sub1/one.md", "# test doc", &dir);
         let base = Tikibase::load(dir).unwrap();
+        base.get_doc("sub1/one.md").unwrap();
     }
 }
