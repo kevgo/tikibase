@@ -21,7 +21,6 @@ mod tests {
     use crate::check::{Issue, Location};
     use crate::database::Document;
     use indoc::indoc;
-    use std::path::PathBuf;
 
     #[test]
     fn empty_title() {
@@ -35,12 +34,12 @@ mod tests {
         let doc = Document::from_str("test.md", content).unwrap();
         let mut have = vec![];
         for section in doc.sections() {
-            super::scan(section, &PathBuf::from("test.md"), &mut have);
+            super::scan(section, "test.md", &mut have);
         }
         let want = vec![
             Issue::SectionWithoutHeader {
                 location: Location {
-                    file: PathBuf::from("test.md"),
+                    file: "test.md".into(),
                     line: 2,
                     start: 0,
                     end: 3,
@@ -48,7 +47,7 @@ mod tests {
             },
             Issue::SectionWithoutHeader {
                 location: Location {
-                    file: PathBuf::from("test.md"),
+                    file: "test.md".into(),
                     line: 4,
                     start: 0,
                     end: 3,

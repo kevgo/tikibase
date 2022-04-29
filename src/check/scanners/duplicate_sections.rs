@@ -44,7 +44,6 @@ mod tests {
     use crate::check::{Issue, Location};
     use crate::database::Document;
     use indoc::indoc;
-    use std::path::PathBuf;
 
     #[test]
     fn has_duplicate_sections() {
@@ -61,7 +60,7 @@ mod tests {
         let want = vec![
             Issue::DuplicateSection {
                 location: Location {
-                    file: PathBuf::from("test.md"),
+                    file: "test.md".into(),
                     line: 2,
                     start: 4,
                     end: 7,
@@ -70,7 +69,7 @@ mod tests {
             },
             Issue::DuplicateSection {
                 location: Location {
-                    file: PathBuf::from("test.md"),
+                    file: "test.md".into(),
                     line: 4,
                     start: 4,
                     end: 7,

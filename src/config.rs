@@ -5,7 +5,7 @@ use schemars::JsonSchema;
 use serde::Deserialize;
 use std::fs::File;
 use std::io::ErrorKind;
-use std::path::{Path, PathBuf};
+use std::path::Path;
 
 /// Tikibase configuration data
 #[derive(Clone, Deserialize, Debug, Default, JsonSchema, Merge, PartialEq)]
@@ -46,7 +46,7 @@ impl Config {
                 Err(err) => Err(Issue::InvalidTitleRegex {
                     regex: text.into(),
                     problem: err.to_string(),
-                    file: PathBuf::from("tikibase.json"),
+                    file: "tikibase.json".into(),
                 }),
             },
             None => Ok(None),
@@ -76,7 +76,7 @@ pub fn load<P: AsRef<Path>>(dir: P) -> LoadResult {
                 return LoadResult::Error(Issue::CannotReadConfigurationFile {
                     message: e.to_string(),
                     location: Location {
-                        file: PathBuf::from("tikibase.json"),
+                        file: "tikibase.json".into(),
                         line: 0,
                         start: 0,
                         end: 0,
@@ -90,7 +90,7 @@ pub fn load<P: AsRef<Path>>(dir: P) -> LoadResult {
         Err(e) => LoadResult::Error(Issue::InvalidConfigurationFile {
             message: e.to_string(),
             location: Location {
-                file: PathBuf::from("tikibase.json"),
+                file: "tikibase.json".into(),
                 line: e.line() as u32,
                 start: e.column() as u32,
                 end: e.column() as u32,
@@ -121,16 +121,6 @@ mod tests {
             assert!(config.ignore("Makefile"));
         }
 
-        // #[test]
-        // fn glob_match() {
-        //     let config = Config {
-        //         ignore: Some(vec!["!**/Makefile".into()]),
-        //         ..Config::default()
-        //     };
-        //     let have = config.ignore(PathBuf::from("foo/bar/Makefile"));
-        //     assert!(!have);
-        // }
-
         #[test]
         fn no_match() {
             let config = Config {
@@ -155,7 +145,6 @@ mod tests {
         use crate::check::{Issue, Location};
         use crate::config::LoadResult;
         use crate::test;
-        use std::path::PathBuf;
 
         #[test]
         fn no_config_file() {
@@ -214,7 +203,7 @@ mod tests {
             let want = LoadResult::Error(Issue::InvalidConfigurationFile {
                 message: "unknown field `foo`, expected one of `bidiLinks`, `ignore`, `sections`, `titleRegEx`, `$schema` at line 3 column 20".into(),
                 location: Location {
-                    file: PathBuf::from("tikibase.json"),
+                    file: "tikibase.json".into(),
                     line: 3,
                     start: 20,
                     end: 20,
@@ -235,7 +224,7 @@ mod tests {
             let want = LoadResult::Error(Issue::InvalidConfigurationFile {
                 message: "expected value at line 3 column 1".into(),
                 location: Location {
-                    file: PathBuf::from("tikibase.json"),
+                    file: "tikibase.json".into(),
                     line: 3,
                     start: 1,
                     end: 1,

@@ -2,20 +2,19 @@ use ahash::AHashMap;
 use async_trait::async_trait;
 use cucumber::{gherkin::Step, given, then, when, World, WorldInit};
 use std::convert::Infallible;
-use std::path::PathBuf;
 use tikibase::input::Command;
 use tikibase::{self, test, Messages};
 
 #[derive(Debug, WorldInit)]
 pub struct MyWorld {
     /// the directory in which the Tikibase under test is located
-    pub dir: PathBuf,
+    pub dir: String,
 
     /// the result of the Tikibase run
     pub output: Messages,
 
     /// content of the files before the Tikibase command ran
-    pub original_contents: AHashMap<PathBuf, String>,
+    pub original_contents: AHashMap<String, String>,
 }
 
 #[async_trait(?Send)]
@@ -37,7 +36,7 @@ fn file_with_content(world: &mut MyWorld, step: &Step, filename: String) {
     test::create_file(&filename, &content, &world.dir);
     world
         .original_contents
-        .insert(PathBuf::from(filename), content.into());
+        .insert(String::from(filename), content.into());
 }
 
 #[given(regex = r#"^file "(.*)"$"#)]
@@ -47,22 +46,22 @@ fn file(world: &mut MyWorld, filename: String) {
 
 #[when("checking")]
 fn checking(world: &mut MyWorld) {
-    world.output = tikibase::run(&Command::Check, world.dir.clone());
+    world.output = tikibase::run(&Command::Check, &world.dir.clone());
 }
 
 #[when("doing a pitstop")]
 fn doing_a_pitstop(world: &mut MyWorld) {
-    world.output = tikibase::run(&Command::P, world.dir.clone());
+    world.output = tikibase::run(&Command::P, &world.dir.clone());
 }
 
 #[when("fixing")]
 fn fixing(world: &mut MyWorld) {
-    world.output = tikibase::run(&Command::Fix, world.dir.clone());
+    world.output = tikibase::run(&Command::Fix, &world.dir.clone());
 }
 
 #[when("initializing")]
 fn initializing(world: &mut MyWorld) {
-    world.output = tikibase::run(&Command::Init, world.dir.clone());
+    world.output = tikibase::run(&Command::Init, &world.dir.clone());
 }
 
 #[then("all files are unchanged")]
@@ -76,10 +75,7 @@ fn all_files_unchanged(world: &mut MyWorld) {
 #[then(regex = r#"^file "(.*)" is unchanged$"#)]
 fn file_is_unchanged(world: &mut MyWorld, filename: String) {
     let have = test::load_file(&filename, &world.dir);
-    let want = world
-        .original_contents
-        .get(&PathBuf::from(filename))
-        .unwrap();
+    let want = world.original_contents.get(&filename).unwrap();
     assert_eq!(have.trim(), want);
 }
 

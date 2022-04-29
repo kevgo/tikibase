@@ -107,7 +107,6 @@ mod tests {
         use crate::{test, Tikibase};
         use ahash::AHashMap;
         use indoc::indoc;
-        use std::path::PathBuf;
 
         #[test]
         fn has_outlier() {
@@ -130,10 +129,10 @@ mod tests {
                 ### section
                 content"};
             test::create_file("3.md", content3, &dir);
-            let have = run(dir);
+            let have = run(&dir);
             let want = vec![Issue::InconsistentHeadingLevel {
                 location: Location {
-                    file: PathBuf::from("2.md"),
+                    file: "2.md",
                     line: 2,
                     start: 0,
                     end: 13,
@@ -161,11 +160,11 @@ mod tests {
                 ##### section
                 content"};
             test::create_file("2.md", content2, &dir);
-            let have = run(dir);
+            let have = run(&dir);
             let want = vec![
                 Issue::InconsistentHeadingLevel {
                     location: Location {
-                        file: PathBuf::from("1.md"),
+                        file: "1.md",
                         line: 2,
                         start: 0,
                         end: 11,
@@ -177,7 +176,7 @@ mod tests {
                 },
                 Issue::InconsistentHeadingLevel {
                     location: Location {
-                        file: PathBuf::from("2.md"),
+                        file: "2.md",
                         line: 2,
                         start: 0,
                         end: 13,
@@ -206,12 +205,12 @@ mod tests {
                 ### section
                 content"};
             test::create_file("2.md", content2, &dir);
-            let have = run(dir);
+            let have = run(&dir);
             let want = vec![];
             pretty::assert_eq!(have, want);
         }
 
-        fn run(dir: PathBuf) -> Vec<Issue> {
+        fn run(dir: &str) -> Vec<Issue> {
             let base = Tikibase::load(dir).unwrap();
             // stage 1
             let mut title_variants = AHashMap::new();
@@ -226,12 +225,7 @@ mod tests {
             let mut issues = vec![];
             for (name, doc) in base.dir.docs {
                 for section in doc.content_sections {
-                    super::super::phase_2(
-                        &section,
-                        &PathBuf::new().join(&name),
-                        &mut issues,
-                        &outliers,
-                    );
+                    super::super::phase_2(&section, name, &mut issues, &outliers);
                 }
             }
             issues.sort();

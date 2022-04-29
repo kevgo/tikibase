@@ -337,7 +337,7 @@ mod tests {
     mod sanitize_code_segments {
         use super::super::sanitize_code_segments;
         use crate::check::{Issue, Location};
-        use std::path::{Path, PathBuf};
+        use std::path::Path;
 
         #[test]
         fn with_code_blocks() {
@@ -358,7 +358,7 @@ mod tests {
             let give = "one `unclosed";
             let want = Err(Issue::UnclosedBacktick {
                 location: Location {
-                    file: PathBuf::from(""),
+                    file: String::from(""),
                     line: 12,
                     start: 4,
                     end: 13,

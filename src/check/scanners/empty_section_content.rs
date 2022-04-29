@@ -22,7 +22,6 @@ mod tests {
     use crate::check::{Issue, Location};
     use crate::database::Document;
     use indoc::indoc;
-    use std::path::PathBuf;
 
     #[test]
     fn empty_section() {
@@ -36,11 +35,11 @@ mod tests {
         let doc = Document::from_str("test.md", content).unwrap();
         let mut have = vec![];
         for section in doc.content_sections {
-            super::scan(&section, &PathBuf::from("test.md"), &mut have);
+            super::scan(&section, "test.md", &mut have);
         }
         let want = vec![Issue::EmptySection {
             location: Location {
-                file: PathBuf::from("test.md"),
+                file: "test.md".into(),
                 line: 2,
                 start: 0,
                 end: 17,
@@ -63,11 +62,11 @@ mod tests {
         let doc = Document::from_str("test.md", content).unwrap();
         let mut have = vec![];
         for section in doc.content_sections {
-            super::scan(&section, &PathBuf::from("test.md"), &mut have);
+            super::scan(&section, "test.md", &mut have);
         }
         let want = vec![Issue::EmptySection {
             location: Location {
-                file: PathBuf::from("test.md"),
+                file: "test.md".into(),
                 line: 2,
                 start: 0,
                 end: 17,
@@ -88,7 +87,7 @@ mod tests {
         let doc = Document::from_str("test.md", content).unwrap();
         let mut have = vec![];
         for section in doc.content_sections {
-            super::scan(&section, &PathBuf::from("test.md"), &mut have);
+            super::scan(&section, "test.md".into(), &mut have);
         }
         assert!(have.is_empty());
     }

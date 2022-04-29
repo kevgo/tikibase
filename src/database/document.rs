@@ -2,12 +2,12 @@ use super::{section, Footnotes, Line, Reference, Section};
 use crate::check::{Issue, Location};
 use std::fs::{self, File};
 use std::io::{prelude::*, BufReader};
-use std::path::{Path, PathBuf};
+use std::path::Path;
 
 #[derive(Debug, Eq, Hash, PartialEq)]
 pub struct Document {
     /// the path relative to the Tikibase root directory
-    pub relative_path: PathBuf,
+    pub relative_path: String,
     pub title_section: Section,
     pub content_sections: Vec<Section>,
     /// The old "occurrences" section that was filtered out when loading the document.
@@ -57,7 +57,7 @@ impl Document {
     }
 
     /// provides a Document instance containing the given text
-    pub fn from_lines<T, P: Into<PathBuf>>(lines: T, relative_path: P) -> Result<Document, Issue>
+    pub fn from_lines<T, P: Into<String>>(lines: T, relative_path: P) -> Result<Document, Issue>
     where
         T: Iterator<Item = String>,
     {
@@ -133,17 +133,14 @@ impl Document {
     }
 
     /// provides the Document contained in the file with the given path
-    pub fn from_reader<R: BufRead, P: Into<PathBuf>>(
-        reader: R,
-        path: P,
-    ) -> Result<Document, Issue> {
+    pub fn from_reader<R: BufRead, P: Into<String>>(reader: R, path: P) -> Result<Document, Issue> {
         let lines = reader.lines().map(Result::unwrap);
         Document::from_lines(lines, path)
     }
 
     #[cfg(test)]
     /// provides Document instances in tests
-    pub fn from_str<P: Into<PathBuf>>(path: P, text: &str) -> Result<Document, Issue> {
+    pub fn from_str<P: Into<String>>(path: P, text: &str) -> Result<Document, Issue> {
         Document::from_lines(text.lines().map(std::string::ToString::to_string), path)
     }
 
@@ -205,7 +202,7 @@ impl Document {
     }
 
     pub fn new(
-        path: PathBuf,
+        path: String,
         title_section: Section,
         content_sections: Vec<Section>,
         old_occurrences_section: Option<Section>,
@@ -427,7 +424,6 @@ mod tests {
         use crate::check::{Issue, Location};
         use crate::database::{Line, Section};
         use indoc::indoc;
-        use std::path::PathBuf;
 
         #[test]
         fn valid() {
@@ -437,7 +433,7 @@ mod tests {
                 content"};
             let have = Document::from_str("one.md", give);
             let want = Ok(Document {
-                relative_path: PathBuf::from("one.md"),
+                relative_path: String::from("one.md"),
                 title_section: Section {
                     line_number: 0,
                     title_line: Line::from("# test"),
@@ -463,7 +459,7 @@ mod tests {
             let have = Document::from_str("one.md", "no title");
             let want = Err(Issue::NoTitleSection {
                 location: Location {
-                    file: PathBuf::from("one.md"),
+                    file: String::from("one.md"),
                     line: 0,
                     start: 0,
                     end: 8,
@@ -483,7 +479,7 @@ mod tests {
                 "};
             let have = Document::from_str("test.md", give);
             let want = Ok(Document {
-                relative_path: PathBuf::from("test.md"),
+                relative_path: String::from("test.md"),
                 title_section: Section {
                     line_number: 0,
                     title_line: Line::from("# test"),
@@ -514,7 +510,7 @@ mod tests {
             let have = Document::from_str("test.md", give);
             let want = Err(Issue::UnclosedFence {
                 location: Location {
-                    file: PathBuf::from("test.md"),
+                    file: String::from("test.md"),
                     line: 1,
                     start: 0,
                     end: 0,
@@ -535,7 +531,7 @@ mod tests {
                 - link 1"};
             let have = Document::from_str("one.md", give);
             let want = Ok(Document {
-                relative_path: PathBuf::from("one.md"),
+                relative_path: String::from("one.md"),
                 title_section: Section {
                     line_number: 0,
                     title_line: Line::from("# test"),

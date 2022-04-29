@@ -39,7 +39,6 @@ mod tests {
     use crate::check::{Issue, Location};
     use crate::database::Document;
     use indoc::indoc;
-    use std::path::PathBuf;
 
     #[test]
     fn missing_footnote_definition() {
@@ -63,7 +62,7 @@ mod tests {
         super::scan(&doc, &mut have);
         let want = vec![Issue::MissingFootnote {
             location: Location {
-                file: PathBuf::from("test.md"),
+                file: "test.md".into(),
                 line: 2,
                 start: 14,
                 end: 22,
@@ -95,7 +94,7 @@ mod tests {
         super::scan(&doc, &mut have);
         let want = vec![Issue::UnusedFootnote {
             location: Location {
-                file: PathBuf::from("test.md"),
+                file: String::from("test.md"),
                 line: 12,
                 start: 0,
                 end: 10,

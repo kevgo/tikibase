@@ -2,13 +2,13 @@ use super::Outcome;
 use crate::check::Issue;
 use indoc::indoc;
 use std::fs;
-use std::path::{Path, PathBuf};
+use std::path::Path;
 
 pub fn init(dir: &Path) -> Outcome {
     match fs::write(dir.join("tikibase.json"), template()) {
         Ok(_) => Outcome::default(),
         Err(err) => Outcome::from_issue(Issue::CannotWriteConfigFile {
-            file: PathBuf::from("tikibase.json"),
+            file: "tikibase.json".into(),
             message: err.to_string(),
         }),
     }

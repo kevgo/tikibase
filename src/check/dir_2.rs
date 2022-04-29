@@ -8,7 +8,7 @@ pub(crate) fn check_dir_2(dir: &Directory, state: &mut State2) {
         check_doc_2(doc, &dir.config, state);
     }
     for resource in dir.resources.keys() {
-        orphaned_resource::scan(dir.relative_path.join(resource), state);
+        orphaned_resource::scan(&format!("{}/{}", dir.relative_path, resource), state);
     }
     for dir in dir.dirs.values() {
         check_dir_2(dir, state);

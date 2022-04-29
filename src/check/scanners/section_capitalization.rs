@@ -112,7 +112,6 @@ mod tests {
     use crate::{test, Tikibase};
     use ahash::AHashMap;
     use indoc::indoc;
-    use std::path::PathBuf;
 
     #[test]
     fn has_common_capitalization() {
@@ -136,10 +135,10 @@ mod tests {
             ### alpha
             [1](1.md)"};
         test::create_file("3.md", content3, &dir);
-        let have = run(dir);
+        let have = run(&dir);
         let want = vec![Issue::MixCapSection {
             location: Location {
-                file: PathBuf::from("2.md"),
+                file: "2.md".into(),
                 line: 2,
                 start: 4,
                 end: 9,
@@ -167,11 +166,11 @@ mod tests {
             ### Alpha
             [1](1.md)"};
         test::create_file("2.md", content2, &dir);
-        let have = run(dir);
+        let have = run(&dir);
         let want = vec![
             Issue::MixCapSection {
                 location: Location {
-                    file: PathBuf::from("1.md"),
+                    file: "1.md".into(),
                     line: 2,
                     start: 4,
                     end: 9,
@@ -183,7 +182,7 @@ mod tests {
             },
             Issue::MixCapSection {
                 location: Location {
-                    file: PathBuf::from("2.md"),
+                    file: "2.md".into(),
                     line: 2,
                     start: 4,
                     end: 9,
@@ -212,12 +211,12 @@ mod tests {
             ### alpha
             [1](1.md)"};
         test::create_file("2.md", content2, &dir);
-        let have = run(dir);
+        let have = run(&dir);
         let want = vec![];
         pretty::assert_eq!(have, want);
     }
 
-    fn run(dir: PathBuf) -> Vec<Issue> {
+    fn run(dir: &str) -> Vec<Issue> {
         let base = Tikibase::load(dir).unwrap();
         // stage 1
         let mut title_variants = AHashMap::new();
@@ -232,12 +231,7 @@ mod tests {
         let mut issues = vec![];
         for (name, doc) in base.dir.docs {
             for section in doc.content_sections {
-                super::phase_2(
-                    &PathBuf::new().join(&name),
-                    &section,
-                    &mut issues,
-                    &outliers,
-                );
+                super::phase_2(name, &section, &mut issues, &outliers);
             }
         }
         issues.sort();

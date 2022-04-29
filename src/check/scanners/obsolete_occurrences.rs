@@ -46,22 +46,21 @@ fn is_missing_link_with_path(issue: &Issue, path: &Path) -> bool {
 mod tests {
 
     mod is_missing_link_with_path {
-        use std::path::PathBuf;
 
         use crate::check::{Issue, Location};
 
         #[test]
         fn matching() {
             let location = Location {
-                file: PathBuf::from("file.md"),
+                file: "file.md".into(),
                 ..Location::default()
             };
             let issue = Issue::MissingLink {
                 location,
-                path: PathBuf::from("missing.md"),
+                path: "missing.md",
                 title: "title".into(),
             };
-            let have = super::super::is_missing_link_with_path(&issue, &PathBuf::from("file.md"));
+            let have = super::super::is_missing_link_with_path(&issue, "file.md");
             let want = true;
             assert_eq!(have, want);
         }
@@ -69,15 +68,15 @@ mod tests {
         #[test]
         fn mismatching_filename() {
             let location = Location {
-                file: PathBuf::from("file.md"),
+                file: "file.md".into(),
                 ..Location::default()
             };
             let issue = Issue::MissingLink {
                 location,
-                path: PathBuf::from("missing.md"),
+                path: "missing.md",
                 title: "title".into(),
             };
-            let have = super::super::is_missing_link_with_path(&issue, &PathBuf::from("other.md"));
+            let have = super::super::is_missing_link_with_path(&issue, "other.md");
             let want = false;
             assert_eq!(have, want);
         }
@@ -85,14 +84,14 @@ mod tests {
         #[test]
         fn mismatching_enum_variant() {
             let location = Location {
-                file: PathBuf::from("file.md"),
+                file: "file.md".into(),
                 ..Location::default()
             };
             let issue = Issue::BrokenImage {
                 location,
                 target: "foo.png".into(),
             };
-            let have = super::super::is_missing_link_with_path(&issue, &PathBuf::from("other.md"));
+            let have = super::super::is_missing_link_with_path(&issue, "other.md".into());
             let want = false;
             assert_eq!(have, want);
         }
