@@ -24,3 +24,17 @@ impl Tikibase {
         self.dir.get_doc_mut(path)
     }
 }
+
+#[cfg(test)]
+mod tests {
+
+    use crate::database::Tikibase;
+    use crate::test;
+
+    #[test]
+    fn subdirectories() {
+        let dir = test::tmp_dir();
+        test::create_file("sub1/one.md", "# test doc", &dir);
+        let base = Tikibase::load(dir).unwrap();
+    }
+}
