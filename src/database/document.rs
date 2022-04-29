@@ -1,6 +1,5 @@
 use super::{section, Footnotes, Line, Reference, Section};
 use crate::check::{Issue, Location};
-use std::ffi::OsString;
 use std::fs::{self, File};
 use std::io::{prelude::*, BufReader};
 use std::path::{Path, PathBuf};
@@ -200,7 +199,7 @@ impl Document {
             .last_line_abs()
     }
 
-    pub fn load<P: AsRef<Path>>(path: P, name: OsString) -> Result<Document, Issue> {
+    pub fn load<P: AsRef<Path>>(path: P, name: String) -> Result<Document, Issue> {
         let file = File::open(path.as_ref()).unwrap();
         Document::from_reader(BufReader::new(file), name)
     }

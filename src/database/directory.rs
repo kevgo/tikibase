@@ -4,31 +4,30 @@ use crate::config::LoadResult;
 use crate::{config, Config};
 use ahash::AHashMap;
 use merge::Merge;
-use std::ffi::{OsStr, OsString};
 use std::fs;
 use std::path::{Path, PathBuf};
 
 pub struct Directory {
     pub relative_path: PathBuf,
     pub config: Config,
-    pub dirs: AHashMap<OsString, Directory>,
-    pub docs: AHashMap<OsString, Document>,
-    pub resources: AHashMap<OsString, ()>,
+    pub dirs: AHashMap<String, Directory>,
+    pub docs: AHashMap<String, Document>,
+    pub resources: AHashMap<String, ()>,
 }
 
 impl Directory {
     /// provides the document with the given relative filename
-    pub fn get_doc<OS: AsRef<OsStr>>(&self, relative_path: OS) -> Option<&Document> {
+    pub fn get_doc<OS: AsRef<str>>(&self, relative_path: OS) -> Option<&Document> {
         self.docs.get(relative_path.as_ref())
     }
 
     /// provides the document with the given relative filename as a mutable reference
-    pub fn get_doc_mut<OS: AsRef<OsStr>>(&mut self, relative_path: OS) -> Option<&mut Document> {
+    pub fn get_doc_mut<OS: AsRef<str>>(&mut self, relative_path: OS) -> Option<&mut Document> {
         self.docs.get_mut(relative_path.as_ref())
     }
 
     /// indicates whether this Tikibase contains a resource with the given path
-    pub fn has_resource<P: AsRef<OsStr>>(&self, path: P) -> bool {
+    pub fn has_resource<P: AsRef<str>>(&self, path: P) -> bool {
         self.resources.contains_key(path.as_ref())
     }
 
@@ -54,7 +53,7 @@ impl Directory {
         for entry in fs::read_dir(abs_path).unwrap() {
             let entry = entry.unwrap();
             let entry_path = entry.path();
-            let entry_name = entry.file_name();
+            let entry_name = entry.file_name().to_string_lossy().to_string();
             match EntryType::from_direntry(&entry, &config) {
                 EntryType::Document => match Document::load(&entry_path, entry_name.clone()) {
                     Ok(doc) => {
