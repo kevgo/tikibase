@@ -159,11 +159,10 @@ fn has_extension(path: &str, given_ext: &str) -> bool {
 
 /// provides the lowest subdirectory portion of the given path
 /// If a subdir was found, removes it from the given path.
-fn lowest_subdir<OS: AsRef<OsStr>>(path: OS) -> Option<OS> {
-    let path = path.as_ref();
-    match path.('/') {
-        Some(_) => todo!(),
-        None => todo!(),
+fn lowest_subdir(path: &str) -> Option<&str> {
+    match path.find('/') {
+        Some(index) => Some(&path[0..index]),
+        None => None,
     }
 }
 
