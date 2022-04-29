@@ -34,9 +34,7 @@ impl World for MyWorld {
 fn file_with_content(world: &mut MyWorld, step: &Step, filename: String) {
     let content = step.docstring.as_ref().unwrap().trim();
     test::create_file(&filename, &content, &world.dir);
-    world
-        .original_contents
-        .insert(filename, content.into());
+    world.original_contents.insert(filename, content.into());
 }
 
 #[given(regex = r#"^file "(.*)"$"#)]
