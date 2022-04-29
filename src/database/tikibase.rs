@@ -9,7 +9,7 @@ pub struct Tikibase {
 
 impl Tikibase {
     pub fn load(root: String) -> Result<Tikibase, Vec<Issue>> {
-        let dir = Directory::load(&root, String::from(""), Config::default())?;
+        let dir = Directory::load(&root, "".into(), Config::default())?;
         Ok(Tikibase { root, dir })
     }
 

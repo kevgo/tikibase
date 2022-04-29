@@ -94,7 +94,7 @@ mod tests {
         super::scan(&doc, &mut have);
         let want = vec![Issue::UnusedFootnote {
             location: Location {
-                file: String::from("test.md"),
+                file: "test.md".into(),
                 line: 12,
                 start: 0,
                 end: 10,

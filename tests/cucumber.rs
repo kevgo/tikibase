@@ -36,7 +36,7 @@ fn file_with_content(world: &mut MyWorld, step: &Step, filename: String) {
     test::create_file(&filename, &content, &world.dir);
     world
         .original_contents
-        .insert(String::from(filename), content.into());
+        .insert(filename, content.into());
 }
 
 #[given(regex = r#"^file "(.*)"$"#)]

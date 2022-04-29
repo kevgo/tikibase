@@ -433,7 +433,7 @@ mod tests {
                 content"};
             let have = Document::from_str("one.md", give);
             let want = Ok(Document {
-                relative_path: String::from("one.md"),
+                relative_path: "one.md".into(),
                 title_section: Section {
                     line_number: 0,
                     title_line: Line::from("# test"),
@@ -459,7 +459,7 @@ mod tests {
             let have = Document::from_str("one.md", "no title");
             let want = Err(Issue::NoTitleSection {
                 location: Location {
-                    file: String::from("one.md"),
+                    file: "one.md".into(),
                     line: 0,
                     start: 0,
                     end: 8,
@@ -479,7 +479,7 @@ mod tests {
                 "};
             let have = Document::from_str("test.md", give);
             let want = Ok(Document {
-                relative_path: String::from("test.md"),
+                relative_path: "test.md".into(),
                 title_section: Section {
                     line_number: 0,
                     title_line: Line::from("# test"),
@@ -510,7 +510,7 @@ mod tests {
             let have = Document::from_str("test.md", give);
             let want = Err(Issue::UnclosedFence {
                 location: Location {
-                    file: String::from("test.md"),
+                    file: "test.md".into(),
                     line: 1,
                     start: 0,
                     end: 0,
@@ -531,7 +531,7 @@ mod tests {
                 - link 1"};
             let have = Document::from_str("one.md", give);
             let want = Ok(Document {
-                relative_path: String::from("one.md"),
+                relative_path: "one.md".into(),
                 title_section: Section {
                     line_number: 0,
                     title_line: Line::from("# test"),

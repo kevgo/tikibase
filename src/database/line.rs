@@ -355,7 +355,7 @@ mod tests {
             let give = "one `unclosed";
             let want = Err(Issue::UnclosedBacktick {
                 location: Location {
-                    file: String::from(""),
+                    file: "".into(),
                     line: 12,
                     start: 4,
                     end: 13,
