@@ -1,5 +1,3 @@
-use std::path::Path;
-
 use crate::check::{Issue, Location};
 use crate::database::Document;
 use crate::Config;
@@ -22,14 +20,14 @@ pub fn scan(doc: &Document, config: &Config, issues: &mut Vec<Issue>) {
 }
 
 /// indicates whether the given issue list contains a `MissingLink` issue with the given path
-fn has_missing_links_with_path(issues: &[Issue], path: &Path) -> bool {
+fn has_missing_links_with_path(issues: &[Issue], path: &str) -> bool {
     issues
         .iter()
         .any(|issue| is_missing_link_with_path(issue, path))
 }
 
 /// indicates whether the given issue is a `MissingLink` issue with the given path
-fn is_missing_link_with_path(issue: &Issue, path: &Path) -> bool {
+fn is_missing_link_with_path(issue: &Issue, path: &str) -> bool {
     if let Issue::MissingLink {
         location,
         path: _,
@@ -57,7 +55,7 @@ mod tests {
             };
             let issue = Issue::MissingLink {
                 location,
-                path: "missing.md",
+                path: "missing.md".into(),
                 title: "title".into(),
             };
             let have = super::super::is_missing_link_with_path(&issue, "file.md");
@@ -73,7 +71,7 @@ mod tests {
             };
             let issue = Issue::MissingLink {
                 location,
-                path: "missing.md",
+                path: "missing.md".into(),
                 title: "title".into(),
             };
             let have = super::super::is_missing_link_with_path(&issue, "other.md");

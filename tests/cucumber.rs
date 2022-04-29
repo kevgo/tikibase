@@ -46,22 +46,22 @@ fn file(world: &mut MyWorld, filename: String) {
 
 #[when("checking")]
 fn checking(world: &mut MyWorld) {
-    world.output = tikibase::run(&Command::Check, &world.dir.clone());
+    world.output = tikibase::run(&Command::Check, &world.dir);
 }
 
 #[when("doing a pitstop")]
 fn doing_a_pitstop(world: &mut MyWorld) {
-    world.output = tikibase::run(&Command::P, &world.dir.clone());
+    world.output = tikibase::run(&Command::P, &world.dir);
 }
 
 #[when("fixing")]
 fn fixing(world: &mut MyWorld) {
-    world.output = tikibase::run(&Command::Fix, &world.dir.clone());
+    world.output = tikibase::run(&Command::Fix, &world.dir);
 }
 
 #[when("initializing")]
 fn initializing(world: &mut MyWorld) {
-    world.output = tikibase::run(&Command::Init, &world.dir.clone());
+    world.output = tikibase::run(&Command::Init, &world.dir);
 }
 
 #[then("all files are unchanged")]

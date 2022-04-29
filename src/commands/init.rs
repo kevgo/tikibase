@@ -1,11 +1,11 @@
 use super::Outcome;
 use crate::check::Issue;
+use crate::database::paths;
 use indoc::indoc;
 use std::fs;
-use std::path::Path;
 
-pub fn init(dir: &Path) -> Outcome {
-    match fs::write(dir.join("tikibase.json"), template()) {
+pub fn init(dir: &str) -> Outcome {
+    match fs::write(paths::join(dir, "tikibase.json"), template()) {
         Ok(_) => Outcome::default(),
         Err(err) => Outcome::from_issue(Issue::CannotWriteConfigFile {
             file: "tikibase.json".into(),

@@ -109,7 +109,7 @@ impl Message {
             Issue::CannotReadConfigurationFile { location, message } => Message {
                 text: format!(
                     "cannot read configuration file \"{}\": {}",
-                    location.file.to_string_lossy(),
+                    location.file,
                     message
                 ),
                 file: location.file,
@@ -268,7 +268,7 @@ impl Message {
             },
             Issue::MissingLink { location, path, title: _ } => {
                 Message {
-                    text: format!("missing link to {}", path.to_string_lossy()),
+                    text: format!("missing link to {}", path),
                     file: location.file,
                     line: Some(location.line),
                     start: Some(location.start),

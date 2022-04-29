@@ -24,7 +24,7 @@ pub fn run(command: &input::Command, dir: &str) -> Messages {
     if command == &Command::JsonSchema {
         return Messages::from_outcome(commands::json_schema());
     }
-    let mut base = match Tikibase::load(dir) {
+    let mut base = match Tikibase::load(dir.into()) {
         Ok(base) => base,
         Err(issues) => return Messages::from_issues(issues),
     };

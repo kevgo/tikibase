@@ -2,7 +2,6 @@ use crate::check::{Issue, Location};
 use crate::database::Section;
 use ahash::AHashMap;
 use std::cmp::Ordering::{Equal, Greater, Less};
-use std::path::Path;
 
 pub(crate) fn phase_1(section: &Section, title_variants: &mut AHashMap<String, u32>) {
     let entry = title_variants
@@ -57,7 +56,7 @@ pub(crate) fn find_outliers(mut input: AHashMap<String, u32>) -> AHashMap<String
 }
 
 pub(crate) fn phase_2(
-    path: &Path,
+    path: &str,
     section: &Section,
     issues: &mut Vec<Issue>,
     outliers: &AHashMap<String, OutlierInfo>,
@@ -135,7 +134,7 @@ mod tests {
             ### alpha
             [1](1.md)"};
         test::create_file("3.md", content3, &dir);
-        let have = run(&dir);
+        let have = run(dir);
         let want = vec![Issue::MixCapSection {
             location: Location {
                 file: "2.md".into(),
@@ -166,7 +165,7 @@ mod tests {
             ### Alpha
             [1](1.md)"};
         test::create_file("2.md", content2, &dir);
-        let have = run(&dir);
+        let have = run(dir);
         let want = vec![
             Issue::MixCapSection {
                 location: Location {
@@ -211,12 +210,12 @@ mod tests {
             ### alpha
             [1](1.md)"};
         test::create_file("2.md", content2, &dir);
-        let have = run(&dir);
+        let have = run(dir);
         let want = vec![];
         pretty::assert_eq!(have, want);
     }
 
-    fn run(dir: &str) -> Vec<Issue> {
+    fn run(dir: String) -> Vec<Issue> {
         let base = Tikibase::load(dir).unwrap();
         // stage 1
         let mut title_variants = AHashMap::new();
@@ -231,7 +230,7 @@ mod tests {
         let mut issues = vec![];
         for (name, doc) in base.dir.docs {
             for section in doc.content_sections {
-                super::phase_2(name, &section, &mut issues, &outliers);
+                super::phase_2(&name, &section, &mut issues, &outliers);
             }
         }
         issues.sort();

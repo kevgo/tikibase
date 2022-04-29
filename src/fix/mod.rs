@@ -40,7 +40,7 @@ pub fn fix(issue: Issue, base: &mut Tikibase) -> Result {
             location,
             path,
             title,
-        } => missing_links::add_occurrences(base, location, &path, &title),
+        } => missing_links::add_occurrences(base, location, path, &title),
         Issue::MixCapSection {
             location,
             all_variants: _,

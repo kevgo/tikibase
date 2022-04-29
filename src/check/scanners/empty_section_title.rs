@@ -1,9 +1,8 @@
 use crate::check::{Issue, Location};
 use crate::database::Section;
-use std::path::Path;
 
 /// populates the given issues list if this section has an empty title
-pub fn scan(section: &Section, path: &Path, issues: &mut Vec<Issue>) {
+pub fn scan(section: &Section, path: &str, issues: &mut Vec<Issue>) {
     if section.human_title().is_empty() {
         issues.push(Issue::SectionWithoutHeader {
             location: Location {

@@ -1,4 +1,4 @@
-use super::{section, Footnotes, Line, Reference, Section};
+use super::{paths, section, Footnotes, Line, Reference, Section};
 use crate::check::{Issue, Location};
 use std::fs::{self, File};
 use std::io::{prelude::*, BufReader};
@@ -227,8 +227,8 @@ impl Document {
     }
 
     /// persists the changes made to this document to disk
-    pub fn save(&self, root: &Path) {
-        let mut file = fs::File::create(root.join(&self.relative_path)).unwrap();
+    pub fn save(&self, root: &str) {
+        let mut file = fs::File::create(paths::join(root, &self.relative_path)).unwrap();
         file.write_all(self.text().as_bytes()).unwrap();
     }
 

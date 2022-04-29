@@ -1,9 +1,8 @@
 use crate::check::{Issue, Location};
 use crate::database::Section;
-use std::path::Path;
 
 /// populates the given issues list if this section has no content
-pub fn scan(section: &Section, path: &Path, issues: &mut Vec<Issue>) {
+pub fn scan(section: &Section, path: &str, issues: &mut Vec<Issue>) {
     if section.is_empty() {
         issues.push(Issue::EmptySection {
             location: Location {

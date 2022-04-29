@@ -1,12 +1,11 @@
 use crate::check::{Issue, Location};
-use crate::database::{Directory, Document, EntryType, Reference};
+use crate::database::{paths, Directory, Document, EntryType, Reference};
 use crate::Config;
-use std::path::Path;
 
 /// populates the given issues list with all link issues in this document
 pub fn scan(
     doc: &Document,
-    dir: &Path,
+    dir: &str,
     issues: &mut Vec<Issue>,
     linked_resources: &mut Vec<String>,
     root: &Directory,
@@ -49,8 +48,7 @@ pub fn scan(
                     Some((base, anchor)) => (base.to_string(), format!("#{}", anchor)),
                     None => (target.clone(), "".to_string()),
                 };
-                let path_str = doc.relative_path.to_string_lossy();
-                if target_file == path_str {
+                if target_file == doc.relative_path {
                     issues.push(Issue::LinkToSameDocument {
                         location: Location {
                             file: doc.relative_path.clone(),
@@ -119,7 +117,7 @@ pub fn scan(
                     }
                     EntryType::Resource => {
                         if root.has_resource(&target_file) {
-                            linked_resources.push(dir.join(&target_file));
+                            linked_resources.push(paths::join(dir, &target_file));
                         } else {
                             issues.push(Issue::LinkToNonExistingFile {
                                 location: Location {
@@ -146,7 +144,7 @@ pub fn scan(
                     continue;
                 }
                 if root.has_resource(&src) {
-                    linked_resources.push(dir.join(src));
+                    linked_resources.push(paths::join(dir, src));
                 } else {
                     issues.push(Issue::BrokenImage {
                         location: Location {

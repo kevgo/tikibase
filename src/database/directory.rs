@@ -1,11 +1,10 @@
-use super::Document;
+use super::{paths, Document};
 use crate::check::Issue;
 use crate::config::LoadResult;
 use crate::{config, Config};
 use ahash::AHashMap;
 use merge::Merge;
 use std::fs;
-use std::path::Path;
 
 pub struct Directory {
     pub relative_path: String,
@@ -33,11 +32,11 @@ impl Directory {
 
     /// provides a Directory instance for the given directory
     pub fn load(
-        root: &Path,
+        root: &str,
         relative_path: String,
         mut parent_config: Config,
     ) -> Result<Directory, Vec<Issue>> {
-        let abs_path = root.join(&relative_path);
+        let abs_path = paths::join(root, &relative_path);
         let config = match config::load(&abs_path) {
             LoadResult::Loaded(config) => {
                 parent_config.merge(config);
@@ -52,7 +51,7 @@ impl Directory {
         let mut errors = Vec::new();
         for entry in fs::read_dir(abs_path).unwrap() {
             let entry = entry.unwrap();
-            let entry_path = entry.path();
+            let entry_path = entry.path().to_string_lossy().to_string();
             let entry_name = entry.file_name().to_string_lossy().to_string();
             match EntryType::from_direntry(&entry, &config) {
                 EntryType::Document => match Document::load(&entry_path, entry_name.clone()) {
@@ -157,7 +156,7 @@ mod tests {
     #[test]
     fn empty() {
         let dir = test::tmp_dir();
-        let dir = Directory::load(&dir, "", Config::default()).unwrap();
+        let dir = Directory::load(&dir, "".into(), Config::default()).unwrap();
         assert_eq!(dir.docs.len(), 0);
         assert_eq!(dir.resources.len(), 0);
     }
@@ -197,7 +196,7 @@ mod tests {
         #[test]
         fn missing() {
             let dir = test::tmp_dir();
-            let dir = Directory::load(&dir, "", Config::default()).unwrap();
+            let dir = Directory::load(&dir, "".into(), Config::default()).unwrap();
             assert!(dir.get_doc("zonk.md").is_none());
         }
     }
@@ -210,7 +209,7 @@ mod tests {
         fn exists() {
             let dir = test::tmp_dir();
             test::create_file("one.md", "# test doc", &dir);
-            let mut dir = Directory::load(&dir, "", Config::default()).unwrap();
+            let mut dir = Directory::load(&dir, "".into(), Config::default()).unwrap();
             let doc = dir.get_doc_mut("one.md").unwrap();
             assert_eq!(doc.title_section.title_line.text, "# test doc");
         }
@@ -218,7 +217,7 @@ mod tests {
         #[test]
         fn missing() {
             let dir = test::tmp_dir();
-            let mut dir = Directory::load(&dir, "", Config::default()).unwrap();
+            let mut dir = Directory::load(&dir, "".into(), Config::default()).unwrap();
             assert!(dir.get_doc_mut("zonk.md").is_none());
         }
     }
@@ -244,7 +243,7 @@ mod tests {
         #[test]
         fn empty() {
             let dir = test::tmp_dir();
-            let dir = Directory::load(&dir, "", Config::default()).unwrap();
+            let dir = Directory::load(&dir, "".into(), Config::default()).unwrap();
             assert!(!dir.has_resource("foo.png"));
         }
 
@@ -252,7 +251,7 @@ mod tests {
         fn matching_resource() {
             let dir = test::tmp_dir();
             test::create_file("foo.png", "content", &dir);
-            let dir = Directory::load(&dir, "", Config::default()).unwrap();
+            let dir = Directory::load(&dir, "".into(), Config::default()).unwrap();
             assert!(dir.has_resource("foo.png"));
         }
     }
@@ -270,7 +269,7 @@ mod tests {
             foo
             "};
         test::create_file("file.md", content, &dir);
-        let dir = Directory::load(&dir, "", Config::default()).unwrap();
+        let dir = Directory::load(&dir, "".into(), Config::default()).unwrap();
         // make sure we can load existing documents
         let _doc = &dir.get_doc("file.md").unwrap();
     }
@@ -279,7 +278,7 @@ mod tests {
     fn load_hidden_file() {
         let dir = test::tmp_dir();
         test::create_file(".hidden", "content", &dir);
-        let dir = Directory::load(&dir, "", Config::default()).unwrap();
+        let dir = Directory::load(&dir, "".into(), Config::default()).unwrap();
         assert_eq!(dir.resources.len(), 0);
     }
 }
