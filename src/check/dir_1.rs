@@ -1,5 +1,5 @@
 use super::{check_doc_1, State1};
-use crate::database::Directory;
+use crate::database::{paths, Directory};
 
 // phase 1 `Directory` check
 pub(crate) fn check_dir_1(dir: &Directory, parent: &str, state: &mut State1) {
@@ -7,6 +7,6 @@ pub(crate) fn check_dir_1(dir: &Directory, parent: &str, state: &mut State1) {
         check_doc_1(doc, &dir.relative_path, &dir.config, state);
     }
     for (dirname, dir) in &dir.dirs {
-        check_dir_1(dir, &format!("{}/{}", parent, dirname), state);
+        check_dir_1(dir, &paths::join(parent, dirname), state);
     }
 }

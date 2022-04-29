@@ -89,7 +89,7 @@ mod tests {
                 location,
                 target: "foo.png".into(),
             };
-            let have = super::super::is_missing_link_with_path(&issue, "other.md".into());
+            let have = super::super::is_missing_link_with_path(&issue, "other.md");
             let want = false;
             assert_eq!(have, want);
         }

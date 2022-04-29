@@ -93,7 +93,7 @@ pub fn scan(
                                 {
                                     issues.push(Issue::MissingLink {
                                         location: Location {
-                                            file: String::from(target_file),
+                                            file: target_file,
                                             line: other_doc.lines_count(),
                                             start: 0,
                                             end: 0,
@@ -270,7 +270,7 @@ mod tests {
         let mut linked_resources = vec![];
         super::scan(
             doc,
-            "".into(),
+            "",
             &mut issues,
             &mut linked_resources,
             &base.dir,

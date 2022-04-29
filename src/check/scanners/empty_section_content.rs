@@ -86,7 +86,7 @@ mod tests {
         let doc = Document::from_str("test.md", content).unwrap();
         let mut have = vec![];
         for section in doc.content_sections {
-            super::scan(&section, "test.md".into(), &mut have);
+            super::scan(&section, "test.md", &mut have);
         }
         assert!(have.is_empty());
     }
