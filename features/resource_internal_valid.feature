@@ -1,4 +1,3 @@
-@this
 Feature: accept valid images
 
   Background:
