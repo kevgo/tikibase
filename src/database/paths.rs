@@ -13,11 +13,10 @@ pub fn normalize(path: &str) -> Result<String, ()> {
     let mut last_slash_pos: usize = 0;
     for (i, current_char) in path.chars().enumerate() {
         if current_char == '/' {
-            let start = match last_slash_pos {
-                0 => 0,
-                other => other + 1,
+            if last_slash_pos > 0 {
+                last_slash_pos += 1;
             };
-            match &path[start..i] {
+            match &path[last_slash_pos..i] {
                 "." => {}
                 ".." => uppers += 1,
                 current_segment => {
