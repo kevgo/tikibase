@@ -77,10 +77,6 @@ pub fn fix(issue: Issue, base: &mut Tikibase) -> Result {
             file: _,
             message: _,
         }
-        | Issue::LinkToNonExistingFile {
-            location: _,
-            target: _,
-        }
         | Issue::CannotReadConfigurationFile {
             message: _,
             location: _,
@@ -114,6 +110,10 @@ pub fn fix(issue: Issue, base: &mut Tikibase) -> Result {
             target_file: _,
             anchor: _,
         }
+        | Issue::LinkToNonExistingFile {
+            location: _,
+            target: _,
+        }
         | Issue::MissingFootnote {
             location: _,
             identifier: _,
@@ -122,6 +122,10 @@ pub fn fix(issue: Issue, base: &mut Tikibase) -> Result {
         | Issue::LinkWithoutTarget { location: _ }
         | Issue::NoTitleSection { location: _ }
         | Issue::OrphanedResource { location: _ }
+        | Issue::PathEscapesRoot {
+            path: _,
+            location: _,
+        }
         | Issue::SectionWithoutHeader { location: _ }
         | Issue::TitleRegexNoCaptures { regex: _ }
         | Issue::TitleRegexTooManyCaptures {

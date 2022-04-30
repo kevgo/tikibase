@@ -338,6 +338,14 @@ impl Message {
                 end: Some(location.end),
                 fixable: false,
             },
+            Issue::PathEscapesRoot { path, location } => Message {
+                text: format!("The path \"{}\" goes above the root directory", path),
+                file: location.file,
+                line: Some(location.line),
+                start: Some(location.start),
+                end: Some(location.end),
+                fixable: false,
+            },
             Issue::SectionWithoutHeader { location } => Message {
                 text: "section with empty title".into(),
                 file: location.file,
