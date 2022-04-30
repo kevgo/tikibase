@@ -1,5 +1,4 @@
 use super::Location;
-use std::path::PathBuf;
 
 /// the issues that this linter can find
 #[derive(Clone, Debug, Eq, Ord, PartialEq, PartialOrd)]
@@ -14,10 +13,10 @@ pub enum Issue {
     },
     CannotWriteConfigFile {
         message: String,
-        file: PathBuf,
+        file: String,
     },
     CannotWriteJsonSchemaFile {
-        file: PathBuf,
+        file: String,
         message: String,
     },
     DocumentWithoutLinks {
@@ -28,7 +27,7 @@ pub enum Issue {
         title: String,
     },
     EmptyDocument {
-        path: PathBuf,
+        path: String,
     },
     EmptySection {
         location: Location,
@@ -57,7 +56,7 @@ pub enum Issue {
     InvalidTitleRegex {
         regex: String,
         problem: String,
-        file: PathBuf,
+        file: String,
     },
     LinkToNonExistingAnchorInCurrentDocument {
         location: Location,
@@ -87,7 +86,7 @@ pub enum Issue {
     },
     MissingLink {
         location: Location,
-        path: PathBuf,
+        path: String,
         title: String,
     },
     MixCapSection {

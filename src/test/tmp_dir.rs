@@ -1,10 +1,9 @@
 use rand::Rng;
 use std::fs;
-use std::path::PathBuf;
 use std::time::{SystemTime, UNIX_EPOCH};
 
 /// creates a temporary directory
-pub fn tmp_dir() -> PathBuf {
+pub fn tmp_dir() -> String {
     let timestamp = SystemTime::now()
         .duration_since(UNIX_EPOCH)
         .unwrap()
@@ -14,7 +13,7 @@ pub fn tmp_dir() -> PathBuf {
         .take(3)
         .map(char::from)
         .collect();
-    let dir = PathBuf::from(format!("./tmp/{}-{}", timestamp, rand));
+    let dir = format!("./tmp/{}-{}", timestamp, rand);
     fs::create_dir_all(&dir).unwrap();
     dir
 }

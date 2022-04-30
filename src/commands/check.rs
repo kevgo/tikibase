@@ -3,7 +3,6 @@ use crate::check::scanners::{section_capitalization, section_level};
 use crate::check::{check_dir_1, check_dir_2, State1, State2};
 use crate::Tikibase;
 use ahash::AHashMap;
-use std::path::PathBuf;
 
 pub fn check(base: &Tikibase) -> Outcome {
     let mut state_1 = State1 {
@@ -13,7 +12,7 @@ pub fn check(base: &Tikibase) -> Outcome {
         level_variants: AHashMap::new(),
         base_dir: &base.dir,
     };
-    check_dir_1(&base.dir, &PathBuf::from(""), &mut state_1);
+    check_dir_1(&base.dir, "", &mut state_1);
     let mut state_2 = State2 {
         capitalization_outliers: section_capitalization::find_outliers(
             state_1.capitalization_variants,

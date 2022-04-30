@@ -3,13 +3,12 @@
 use clap::StructOpt;
 use input::Format::{Json, Text};
 use std::io;
-use std::path::PathBuf;
 use tikibase::input::Command;
 use tikibase::{input, run, Message, Messages};
 
 fn main() {
     let args = input::Arguments::parse();
-    let messages = run(&args.command, PathBuf::from("."));
+    let messages = run(&args.command, ".");
     let exit_code = messages.exit_code;
     match args.format {
         Text => print_text(&messages, &args.command),

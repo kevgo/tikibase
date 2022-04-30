@@ -1,10 +1,9 @@
 use crate::check::{Issue, Location};
 use crate::database::Section;
 use crate::Config;
-use std::path::Path;
 
 /// populates the given issues list with all sections in this document that don't match the configured sections
-pub fn scan(section: &Section, path: &Path, config: &Config, issues: &mut Vec<Issue>) {
+pub fn scan(section: &Section, path: &str, config: &Config, issues: &mut Vec<Issue>) {
     let section_title = section.human_title();
     if !config.matching_title(section_title) {
         issues.push(Issue::UnknownSection {

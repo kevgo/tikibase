@@ -2,7 +2,6 @@ use crate::check::{Issue, Location};
 use crate::database::{Footnote, Footnotes, Reference};
 use once_cell::sync::Lazy;
 use regex::Regex;
-use std::path::Path;
 
 #[derive(Debug, Default, Eq, Hash, PartialEq)]
 pub struct Line {
@@ -22,7 +21,7 @@ impl Line {
     pub fn add_footnotes_to(
         &self,
         result: &mut Footnotes,
-        file: &Path,
+        file: &str,
         line: u32,
     ) -> Result<(), Issue> {
         let sanitized = sanitize_code_segments(&self.text, file, line)?;
@@ -98,7 +97,7 @@ impl<IS: Into<String>> From<IS> for Line {
 }
 
 /// non-destructively overwrites areas inside backticks in the given string with spaces
-fn sanitize_code_segments(text: &str, file: &Path, line: u32) -> Result<String, Issue> {
+fn sanitize_code_segments(text: &str, file: &str, line: u32) -> Result<String, Issue> {
     let mut result = String::with_capacity(text.len());
     let mut code_block_start: Option<u32> = None;
     for (i, c) in text.char_indices() {
@@ -133,13 +132,12 @@ mod tests {
 
     mod add_footnotes_to {
         use crate::database::{Footnote, Footnotes, Line};
-        use std::path::Path;
 
         #[test]
         fn no_footnotes() {
             let line = Line::from("text");
             let mut have = Footnotes::default();
-            line.add_footnotes_to(&mut have, Path::new(""), 0).unwrap();
+            line.add_footnotes_to(&mut have, "", 0).unwrap();
             let want = Footnotes::default();
             pretty::assert_eq!(have, want);
         }
@@ -148,7 +146,7 @@ mod tests {
         fn with_footnote_references() {
             let line = Line::from("- text [^1] [^2]");
             let mut have = Footnotes::default();
-            line.add_footnotes_to(&mut have, Path::new(""), 0).unwrap();
+            line.add_footnotes_to(&mut have, "", 0).unwrap();
             let want = Footnotes {
                 definitions: vec![],
                 references: vec![
@@ -173,7 +171,7 @@ mod tests {
         fn with_footnote_definitions() {
             let line = Line::from("[^1]: the one\nother");
             let mut have = Footnotes::default();
-            line.add_footnotes_to(&mut have, Path::new(""), 0).unwrap();
+            line.add_footnotes_to(&mut have, "", 0).unwrap();
             let want = Footnotes {
                 definitions: vec![Footnote {
                     identifier: "1".into(),
@@ -190,7 +188,7 @@ mod tests {
         fn ignore_code_looking_like_footnotes() {
             let line = Line::from("the code `map[^0]`");
             let mut have = Footnotes::default();
-            line.add_footnotes_to(&mut have, Path::new(""), 0).unwrap();
+            line.add_footnotes_to(&mut have, "", 0).unwrap();
             let want = Footnotes::default();
             pretty::assert_eq!(have, want);
         }
@@ -337,20 +335,19 @@ mod tests {
     mod sanitize_code_segments {
         use super::super::sanitize_code_segments;
         use crate::check::{Issue, Location};
-        use std::path::{Path, PathBuf};
 
         #[test]
         fn with_code_blocks() {
             let give = "one `map[0]` two `more code` three";
             let want = "one `      ` two `         ` three".to_string();
-            assert_eq!(sanitize_code_segments(give, Path::new(""), 0), Ok(want));
+            assert_eq!(sanitize_code_segments(give, "", 0), Ok(want));
         }
 
         #[test]
         fn empty_string() {
             let give = "";
             let want = "".to_string();
-            assert_eq!(sanitize_code_segments(give, Path::new(""), 0), Ok(want));
+            assert_eq!(sanitize_code_segments(give, "", 0), Ok(want));
         }
 
         #[test]
@@ -358,13 +355,13 @@ mod tests {
             let give = "one `unclosed";
             let want = Err(Issue::UnclosedBacktick {
                 location: Location {
-                    file: PathBuf::from(""),
+                    file: "".into(),
                     line: 12,
                     start: 4,
                     end: 13,
                 },
             });
-            let have = sanitize_code_segments(give, Path::new(""), 12);
+            let have = sanitize_code_segments(give, "", 12);
             assert_eq!(have, want);
         }
     }

@@ -1,14 +1,13 @@
 use crate::check::{Issue, Location};
-use crate::database::{Directory, Document, EntryType, Reference};
+use crate::database::{paths, Directory, Document, EntryType, Reference};
 use crate::Config;
-use std::path::{Path, PathBuf};
 
 /// populates the given issues list with all link issues in this document
 pub fn scan(
     doc: &Document,
-    dir: &Path,
+    dir: &str,
     issues: &mut Vec<Issue>,
-    linked_resources: &mut Vec<PathBuf>,
+    linked_resources: &mut Vec<String>,
     root: &Directory,
     config: &Config,
 ) {
@@ -49,8 +48,7 @@ pub fn scan(
                     Some((base, anchor)) => (base.to_string(), format!("#{}", anchor)),
                     None => (target.clone(), "".to_string()),
                 };
-                let path_str = doc.relative_path.to_string_lossy();
-                if target_file == path_str {
+                if target_file == doc.relative_path {
                     issues.push(Issue::LinkToSameDocument {
                         location: Location {
                             file: doc.relative_path.clone(),
@@ -95,7 +93,7 @@ pub fn scan(
                                 {
                                     issues.push(Issue::MissingLink {
                                         location: Location {
-                                            file: PathBuf::from(target_file),
+                                            file: target_file,
                                             line: other_doc.lines_count(),
                                             start: 0,
                                             end: 0,
@@ -119,7 +117,7 @@ pub fn scan(
                     }
                     EntryType::Resource => {
                         if root.has_resource(&target_file) {
-                            linked_resources.push(dir.join(&target_file));
+                            linked_resources.push(paths::join(dir, &target_file));
                         } else {
                             issues.push(Issue::LinkToNonExistingFile {
                                 location: Location {
@@ -146,7 +144,7 @@ pub fn scan(
                     continue;
                 }
                 if root.has_resource(&src) {
-                    linked_resources.push(dir.join(src));
+                    linked_resources.push(paths::join(dir, src));
                 } else {
                     issues.push(Issue::BrokenImage {
                         location: Location {
@@ -168,7 +166,6 @@ mod tests {
     use crate::check::{Issue, Location};
     use crate::{test, Config, Tikibase};
     use indoc::indoc;
-    use std::path::PathBuf;
 
     #[test]
     fn link_to_non_existing_file() {
@@ -180,7 +177,7 @@ mod tests {
         let mut linked_resources = vec![];
         super::scan(
             doc,
-            &PathBuf::from(""),
+            "",
             &mut issues,
             &mut linked_resources,
             &base.dir,
@@ -196,7 +193,7 @@ mod tests {
             target: "non-existing.md".into(),
         }];
         pretty::assert_eq!(issues, want);
-        assert_eq!(linked_resources, Vec::<PathBuf>::new());
+        assert_eq!(linked_resources, Vec::<String>::new());
     }
 
     #[test]
@@ -210,7 +207,7 @@ mod tests {
         let mut linked_resources = vec![];
         super::scan(
             doc,
-            &PathBuf::from(""),
+            "",
             &mut issues,
             &mut linked_resources,
             &base.dir,
@@ -227,7 +224,7 @@ mod tests {
             anchor: "#zonk".into(),
         }];
         pretty::assert_eq!(issues, want);
-        assert_eq!(linked_resources, Vec::<PathBuf>::new());
+        assert_eq!(linked_resources, Vec::<String>::new());
     }
 
     #[test]
@@ -240,7 +237,7 @@ mod tests {
         let mut linked_resources = vec![];
         super::scan(
             doc,
-            &PathBuf::from(""),
+            "",
             &mut issues,
             &mut linked_resources,
             &base.dir,
@@ -256,7 +253,7 @@ mod tests {
             anchor: "#zonk".into(),
         }];
         pretty::assert_eq!(issues, want);
-        assert_eq!(linked_resources, Vec::<PathBuf>::new());
+        assert_eq!(linked_resources, Vec::<String>::new());
     }
 
     #[test]
@@ -273,7 +270,7 @@ mod tests {
         let mut linked_resources = vec![];
         super::scan(
             doc,
-            &PathBuf::from(""),
+            "",
             &mut issues,
             &mut linked_resources,
             &base.dir,
@@ -289,7 +286,7 @@ mod tests {
             target: "2.md#foo".into(),
         }];
         pretty::assert_eq!(issues, want);
-        assert_eq!(linked_resources, Vec::<PathBuf>::new());
+        assert_eq!(linked_resources, Vec::<String>::new());
     }
 
     #[test]
@@ -310,14 +307,14 @@ mod tests {
         let mut linked_resources = vec![];
         super::scan(
             doc,
-            &PathBuf::from(""),
+            "",
             &mut issues,
             &mut linked_resources,
             &base.dir,
             &Config::default(),
         );
         pretty::assert_eq!(issues, vec![]);
-        assert_eq!(linked_resources, Vec::<PathBuf>::new());
+        assert_eq!(linked_resources, Vec::<String>::new());
     }
 
     #[test]
@@ -330,7 +327,7 @@ mod tests {
         let mut linked_resources = vec![];
         super::scan(
             doc,
-            &PathBuf::from(""),
+            "",
             &mut issues,
             &mut linked_resources,
             &base.dir,
@@ -347,7 +344,7 @@ mod tests {
                 }
             }]
         );
-        assert_eq!(linked_resources, Vec::<PathBuf>::new());
+        assert_eq!(linked_resources, Vec::<String>::new());
     }
 
     #[test]
@@ -367,14 +364,14 @@ mod tests {
         let mut linked_resources = vec![];
         super::scan(
             doc,
-            &PathBuf::from(""),
+            "",
             &mut issues,
             &mut linked_resources,
             &base.dir,
             &Config::default(),
         );
         assert!(issues.is_empty());
-        assert_eq!(linked_resources, Vec::<PathBuf>::new());
+        assert_eq!(linked_resources, Vec::<String>::new());
     }
 
     #[test]
@@ -388,14 +385,14 @@ mod tests {
         let mut linked_resources = vec![];
         super::scan(
             doc,
-            &PathBuf::from(""),
+            "",
             &mut issues,
             &mut linked_resources,
             &base.dir,
             &Config::default(),
         );
         assert!(issues.is_empty());
-        assert_eq!(linked_resources, vec![PathBuf::from("foo.png")]);
+        assert_eq!(linked_resources, vec!["foo.png".to_string()]);
     }
 
     #[test]
@@ -408,7 +405,7 @@ mod tests {
         let mut linked_resources = vec![];
         super::scan(
             doc,
-            &PathBuf::from(""),
+            "",
             &mut issues,
             &mut linked_resources,
             &base.dir,
@@ -424,7 +421,7 @@ mod tests {
             target: "zonk.png".into(),
         }];
         pretty::assert_eq!(issues, want);
-        assert_eq!(linked_resources, Vec::<PathBuf>::new());
+        assert_eq!(linked_resources, Vec::<String>::new());
     }
 
     #[test]
@@ -438,13 +435,13 @@ mod tests {
         let mut linked_resources = vec![];
         super::scan(
             doc,
-            &PathBuf::from(""),
+            "",
             &mut issues,
             &mut linked_resources,
             &base.dir,
             &Config::default(),
         );
         pretty::assert_eq!(issues, vec![]);
-        assert_eq!(linked_resources, vec![PathBuf::from("docs.pdf")]);
+        assert_eq!(linked_resources, vec!["docs.pdf"]);
     }
 }

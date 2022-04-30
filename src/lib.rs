@@ -15,17 +15,16 @@ pub use fix::Fix;
 use database::Tikibase;
 use input::Command;
 pub use output::{Message, Messages};
-use std::path::PathBuf;
 
 /// runs the given Command in the given directory, returns structured data
-pub fn run(command: &input::Command, dir: PathBuf) -> Messages {
+pub fn run(command: &input::Command, dir: &str) -> Messages {
     if command == &Command::Init {
-        return Messages::from_outcome(commands::init(&dir));
+        return Messages::from_outcome(commands::init(dir));
     }
     if command == &Command::JsonSchema {
         return Messages::from_outcome(commands::json_schema());
     }
-    let mut base = match Tikibase::load(dir) {
+    let mut base = match Tikibase::load(dir.into()) {
         Ok(base) => base,
         Err(issues) => return Messages::from_issues(issues),
     };

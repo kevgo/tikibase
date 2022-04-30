@@ -4,13 +4,12 @@ use crate::check::Issue;
 use crate::commands::Outcome;
 use crate::Fix;
 use serde::Serialize;
-use std::path::PathBuf;
 
 /// human-readable summary of running a single command
 #[derive(Debug, Default, PartialEq, Serialize)]
 pub struct Message {
     pub text: String,
-    pub file: PathBuf,
+    pub file: String,
     pub line: Option<u32>,
     pub start: Option<u32>,
     pub end: Option<u32>,
@@ -21,14 +20,9 @@ impl Message {
     /// provides the CLI text format for this Message
     pub fn to_text(&self) -> String {
         if let Some(line) = self.line {
-            format!(
-                "{}:{}  {}",
-                self.file.to_string_lossy(),
-                line + 1,
-                self.text
-            )
+            format!("{}:{}  {}", self.file, line + 1, self.text)
         } else {
-            format!("{}  {}", self.file.to_string_lossy(), self.text)
+            format!("{}  {}", self.file, self.text)
         }
     }
 
@@ -115,7 +109,7 @@ impl Message {
             Issue::CannotReadConfigurationFile { location, message } => Message {
                 text: format!(
                     "cannot read configuration file \"{}\": {}",
-                    location.file.to_string_lossy(),
+                    location.file,
                     message
                 ),
                 file: location.file,
@@ -274,7 +268,7 @@ impl Message {
             },
             Issue::MissingLink { location, path, title: _ } => {
                 Message {
-                    text: format!("missing link to {}", path.to_string_lossy()),
+                    text: format!("missing link to {}", path),
                     file: location.file,
                     line: Some(location.line),
                     start: Some(location.start),
@@ -354,7 +348,7 @@ impl Message {
             },
             Issue::TitleRegexNoCaptures { regex } => Message {
                 text: format!("The regular expression in the \"titleRegEx\" entry ({}) doesn't contain a capture group", regex),
-                file: PathBuf::from("tikibase.json"),
+                file: "tikibase.json".into(),
                 line: None,
                 start: None,
                 end: None,
@@ -362,7 +356,7 @@ impl Message {
             },
             Issue::TitleRegexTooManyCaptures { regex, captures } => Message{
                 text: format!("The regular expression in the \"titleRegEx\" entry ({}) should have only one capture group but has {}", regex, captures),
-                file: PathBuf::from("tikibase.json"),
+                file: "tikibase.json".into(),
                 line: None,
                 start: None,
                 end: None,

@@ -4,6 +4,7 @@ mod directory;
 pub(crate) mod document;
 mod footnotes;
 mod line;
+pub(crate) mod paths;
 mod reference;
 pub(crate) mod section;
 mod tikibase;

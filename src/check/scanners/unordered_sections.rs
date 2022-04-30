@@ -62,7 +62,6 @@ mod tests {
     use crate::database::Document;
     use crate::Config;
     use indoc::indoc;
-    use std::path::PathBuf;
 
     #[test]
     fn mismatching() {
@@ -83,7 +82,7 @@ mod tests {
         super::scan(&doc, &config, &mut issues);
         let want = vec![Issue::UnorderedSections {
             location: Location {
-                file: PathBuf::from("test.md"),
+                file: "test.md".into(),
                 line: 5,
                 start: 0,
                 end: 7,

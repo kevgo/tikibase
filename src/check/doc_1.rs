@@ -5,10 +5,9 @@ use super::scanners::{
 use super::State1;
 use crate::database::Document;
 use crate::Config;
-use std::path::Path;
 
 // phase 1 `Document` check
-pub(crate) fn check_doc_1(doc: &Document, dir: &Path, config: &Config, state: &mut State1) {
+pub(crate) fn check_doc_1(doc: &Document, dir: &str, config: &Config, state: &mut State1) {
     duplicate_sections::scan(doc, &mut state.issues);
     unordered_sections::scan(doc, config, &mut state.issues);
     footnotes::scan(doc, &mut state.issues);
