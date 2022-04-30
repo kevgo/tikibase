@@ -8,12 +8,11 @@ use once_cell::sync::Lazy;
 use regex::{Captures, Regex};
 use section::Section;
 use std::borrow::Cow;
-use std::path::Path;
 
 pub fn add_occurrences(
     base: &mut Tikibase,
     location: Location,
-    path: &Path,
+    path: String,
     title: &str,
 ) -> fix::Result {
     let base_dir = base.root.clone();
@@ -44,9 +43,8 @@ pub fn add_occurrences(
             ExtractShortcutResult::Failed(issue) => return Failed(issue),
         },
     };
-    let path_str = path.to_string_lossy().to_string();
     occurrences_section.body.push(Line {
-        text: format!("- [{}]({})", title, path_str),
+        text: format!("- [{}]({})", title, &path),
     });
 
     let line = occurrences_section.line_number;
@@ -59,7 +57,7 @@ pub fn add_occurrences(
             start: 0,
             end,
         },
-        target: path_str,
+        target: path,
     })
 }
 

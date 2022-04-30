@@ -1,15 +1,11 @@
 use super::trim_end;
+use crate::database::paths;
 use std::fs;
-use std::path::Path;
 
-pub fn load_file<P: AsRef<Path>>(filename: P, dir: &Path) -> String {
-    let mut result = match fs::read_to_string(dir.join(filename.as_ref())) {
+pub fn load_file(filename: &str, dir: &str) -> String {
+    let mut result = match fs::read_to_string(paths::join(dir, filename)) {
         Ok(text) => text,
-        Err(err) => panic!(
-            "cannot open file \"{}\": {}",
-            filename.as_ref().to_string_lossy(),
-            err
-        ),
+        Err(err) => panic!("cannot open file \"{}\": {}", filename, err),
     };
     trim_end(&mut result);
     result.push('\n');
