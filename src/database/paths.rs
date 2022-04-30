@@ -9,22 +9,16 @@ pub fn join(path1: &str, path2: &str) -> String {
 /// removes elements like "../" and "./" from the given string
 pub fn normalize(path: &str) -> Result<String, ()> {
     let mut segments: Vec<&str> = vec![];
-    let mut uppers: u16 = 0;
+    let mut parents: u16 = 0;
     let mut segment_start: usize = 0;
     for (i, current_char) in path.chars().enumerate() {
         if current_char == '/' {
             match segment(path, segment_start, i) {
                 "." => {}
-                ".." => uppers += 1,
-                segment => {
-                    while uppers > 0 {
-                        if segments.is_empty() {
-                            return Err(());
-                        }
-                        segments.pop();
-                        uppers -= 1;
-                    }
-                    segments.push(segment);
+                ".." => parents += 1,
+                current_segment => {
+                    pop_parents(&mut segments, &mut parents)?;
+                    segments.push(current_segment);
                 }
             }
             segment_start = i;
@@ -32,26 +26,31 @@ pub fn normalize(path: &str) -> Result<String, ()> {
     }
     match segment(path, segment_start, path.len()) {
         "." => {}
-        ".." => uppers += 1,
-        segment => {
-            while uppers > 0 {
-                if segments.is_empty() {
-                    return Err(());
-                }
-                segments.pop();
-                uppers -= 1;
-            }
-            segments.push(segment);
+        ".." => parents += 1,
+        last_segment => {
+            pop_parents(&mut segments, &mut parents)?;
+            segments.push(last_segment);
         }
     }
-    while uppers > 0 {
+    while parents > 0 {
         if segments.is_empty() {
             return Err(());
         }
         segments.pop();
-        uppers -= 1;
+        parents -= 1;
     }
     Ok(segments.join("/"))
+}
+
+fn pop_parents(segments: &mut Vec<&str>, uppers: &mut u16) -> Result<(), ()> {
+    while *uppers > 0 {
+        if segments.is_empty() {
+            return Err(());
+        }
+        segments.pop();
+        *uppers -= 1;
+    }
+    Ok(())
 }
 
 fn segment(path: &str, start: usize, end: usize) -> &str {
