@@ -19,9 +19,8 @@ pub struct Document {
 }
 
 impl Document {
-    pub fn contains_reference_to<P: AsRef<Path>>(&self, path: P) -> bool {
-        let path_str = path.as_ref().to_string_lossy();
-        self.references.iter().any(|r| r.points_to(&path_str))
+    pub fn contains_reference_to(&self, path: &str) -> bool {
+        self.references.iter().any(|r| r.points_to(path))
     }
 
     /// provides all the footnotes that this document defines and references
@@ -334,6 +333,31 @@ mod tests {
     use super::Document;
     use crate::database::Reference;
     use indoc::indoc;
+
+    mod contains_reference_to {
+        use crate::database::Tikibase;
+        use crate::test;
+
+        #[test]
+        fn to_subdir() {
+            let dir = test::tmp_dir();
+            test::create_file("one.md", "# One\n[two](sub/two.md)", &dir);
+            test::create_file("sub/two.md", "# Two\n[one](../one.md)", &dir);
+            let base = Tikibase::load(dir).unwrap();
+            let doc = base.get_doc("one.md").unwrap();
+            assert!(doc.contains_reference_to("sub/two.md"));
+        }
+
+        #[test]
+        fn to_parent_dir() {
+            let dir = test::tmp_dir();
+            test::create_file("one.md", "# One\n[two](sub/two.md)", &dir);
+            test::create_file("sub/two.md", "# Two\n[one](../one.md)", &dir);
+            let base = Tikibase::load(dir).unwrap();
+            let doc = base.get_doc("sub/two.md").unwrap();
+            assert!(doc.contains_reference_to("../one.md"));
+        }
+    }
 
     mod footnotes {
         use crate::database::{Document, Footnote, Footnotes};

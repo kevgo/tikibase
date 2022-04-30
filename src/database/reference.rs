@@ -17,20 +17,20 @@ pub enum Reference {
 
 impl Reference {
     /// indicates whether this Reference instance has the given path as its target or src
-    pub fn points_to<P: AsRef<str>>(&self, path: P) -> bool {
+    pub fn points_to(&self, path: &str) -> bool {
         match self {
             Reference::Link {
                 target,
                 line: _,
                 start: _,
                 end: _,
-            } => target == path.as_ref(),
+            } => target == path,
             Reference::Image {
                 src,
                 line: _,
                 start: _,
                 end: _,
-            } => src == path.as_ref(),
+            } => src == path,
         }
     }
 }
