@@ -17,7 +17,6 @@ pub struct Directory {
 impl Directory {
     /// provides the document with the given relative filename
     pub fn get_doc(&self, relative_path: &str) -> Option<&Document> {
-        let relative_path = relative_path.as_ref();
         match lowest_subdir(relative_path) {
             Some((subdir, remaining_path)) => match self.dirs.get(subdir) {
                 Some(dir) => dir.get_doc(remaining_path),
@@ -158,10 +157,8 @@ fn has_extension(path: &str, given_ext: &str) -> bool {
 /// provides the lowest subdirectory portion of the given path
 /// If a subdir was found, removes it from the given path.
 fn lowest_subdir(path: &str) -> Option<(&str, &str)> {
-    match path.find('/') {
-        Some(index) => Some((&path[..index], &path[index + 1..])),
-        None => None,
-    }
+    path.find('/')
+        .map(|index| (&path[..index], &path[index + 1..]))
 }
 
 #[cfg(test)]
