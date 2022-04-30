@@ -48,6 +48,7 @@ pub fn scan(
                     Some((base, anchor)) => (base.to_string(), format!("#{}", anchor)),
                     None => (target.clone(), "".to_string()),
                 };
+                let target_file = paths::join(dir, &target_file);
                 if target_file == doc.relative_path {
                     issues.push(Issue::LinkToSameDocument {
                         location: Location {
@@ -308,6 +309,27 @@ mod tests {
         super::scan(
             doc,
             "",
+            &mut issues,
+            &mut linked_resources,
+            &base.dir,
+            &Config::default(),
+        );
+        pretty::assert_eq!(issues, vec![]);
+        assert_eq!(linked_resources, Vec::<String>::new());
+    }
+
+    #[test]
+    fn link_within_subdir() {
+        let dir = test::tmp_dir();
+        test::create_file("sub/1.md", "# One\n[two](2.md)", &dir);
+        test::create_file("sub/2.md", "# Two\n[one](1.md)", &dir);
+        let base = Tikibase::load(dir).unwrap();
+        let doc = base.get_doc("sub/1.md").unwrap();
+        let mut issues = vec![];
+        let mut linked_resources = vec![];
+        super::scan(
+            doc,
+            "sub",
             &mut issues,
             &mut linked_resources,
             &base.dir,
