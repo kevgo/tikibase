@@ -10,16 +10,13 @@ pub fn join(path1: &str, path2: &str) -> String {
 pub fn normalize(path: &str) -> Result<String, ()> {
     let mut segments: Vec<&str> = vec![];
     let mut uppers: u16 = 0;
-    let mut last_slash_pos: usize = 0;
+    let mut segment_start: usize = 0;
     for (i, current_char) in path.chars().enumerate() {
         if current_char == '/' {
-            if last_slash_pos > 0 {
-                last_slash_pos += 1;
-            }
-            match &path[last_slash_pos..i] {
+            match segment(path, segment_start, i) {
                 "." => {}
                 ".." => uppers += 1,
-                current_segment => {
+                segment => {
                     while uppers > 0 {
                         if segments.is_empty() {
                             return Err(());
@@ -27,19 +24,16 @@ pub fn normalize(path: &str) -> Result<String, ()> {
                         segments.pop();
                         uppers -= 1;
                     }
-                    segments.push(current_segment);
+                    segments.push(segment);
                 }
             }
-            last_slash_pos = i;
+            segment_start = i;
         }
     }
-    if last_slash_pos > 1 {
-        last_slash_pos += 1;
-    }
-    match &path[last_slash_pos..] {
+    match segment(path, segment_start, path.len()) {
         "." => {}
         ".." => uppers += 1,
-        last_segment => {
+        segment => {
             while uppers > 0 {
                 if segments.is_empty() {
                     return Err(());
@@ -47,7 +41,7 @@ pub fn normalize(path: &str) -> Result<String, ()> {
                 segments.pop();
                 uppers -= 1;
             }
-            segments.push(last_segment);
+            segments.push(segment);
         }
     }
     while uppers > 0 {
@@ -58,6 +52,14 @@ pub fn normalize(path: &str) -> Result<String, ()> {
         uppers -= 1;
     }
     Ok(segments.join("/"))
+}
+
+fn segment(path: &str, start: usize, end: usize) -> &str {
+    if start > 0 {
+        &path[start + 1..end]
+    } else {
+        &path[..end]
+    }
 }
 
 #[cfg(test)]
