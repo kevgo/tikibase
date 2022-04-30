@@ -10,9 +10,8 @@ pub fn join(path1: &str, path2: &str) -> String {
 pub fn normalize(path: &str) -> Result<String, ()> {
     let mut segments: Vec<&str> = vec![];
     let mut uppers: u16 = 0;
-    let mut chars = path.chars().enumerate();
     let mut last_slash_pos: usize = 0;
-    while let Some((i, current_char)) = chars.next() {
+    for (i, current_char) in path.chars().enumerate() {
         if current_char == '/' {
             let start = match last_slash_pos {
                 0 => 0,
