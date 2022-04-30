@@ -48,9 +48,10 @@ pub fn scan(
                     Some((base, anchor)) => (base.to_string(), format!("#{}", anchor)),
                     None => (target.clone(), "".to_string()),
                 };
-                let target_file = match paths::normalize(paths::join(dir, &target_file)) {
-                    Ok(target) => target,
-                    Err(_) => {
+                let target_file =
+                    if let Ok(target) = paths::normalize(&paths::join(dir, &target_file)) {
+                        target
+                    } else {
                         issues.push(Issue::PathEscapesRoot {
                             path: paths::join(dir, &target_file),
                             location: Location {
@@ -61,8 +62,7 @@ pub fn scan(
                             },
                         });
                         continue;
-                    }
-                };
+                    };
                 if target_file == doc.relative_path {
                     issues.push(Issue::LinkToSameDocument {
                         location: Location {

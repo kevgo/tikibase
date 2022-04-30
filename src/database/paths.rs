@@ -7,7 +7,7 @@ pub fn join(path1: &str, path2: &str) -> String {
 }
 
 /// removes elements like "../" and "./" from the given string
-pub fn normalize(path: String) -> Result<String, ()> {
+pub fn normalize(path: &str) -> Result<String, ()> {
     let mut segments: Vec<&str> = vec![];
     let mut uppers: u16 = 0;
     let mut chars = path.chars().enumerate();
@@ -93,7 +93,7 @@ mod tests {
 
         #[test]
         fn parent_placeholders() {
-            let give = "one/three/../two/three/../../new.md".to_string();
+            let give = "one/three/../two/three/../../new.md";
             let want = Ok("one/new.md".to_string());
             let have = super::super::normalize(give);
             assert_eq!(have, want);
@@ -101,7 +101,7 @@ mod tests {
 
         #[test]
         fn trailing_parent_placeholder() {
-            let give = "one/two/three/../..".to_string();
+            let give = "one/two/three/../..";
             let want = Ok("one".to_string());
             let have = super::super::normalize(give);
             assert_eq!(have, want);
@@ -109,7 +109,7 @@ mod tests {
 
         #[test]
         fn current_placeholders() {
-            let give = "./one/./././two/./three.md".to_string();
+            let give = "./one/./././two/./three.md";
             let want = Ok("one/two/three.md".to_string());
             let have = super::super::normalize(give);
             assert_eq!(have, want);
@@ -117,7 +117,7 @@ mod tests {
 
         #[test]
         fn single_segment() {
-            let give = "2.md".to_string();
+            let give = "2.md";
             let want = Ok("2.md".to_string());
             let have = super::super::normalize(give);
             assert_eq!(have, want);
@@ -125,7 +125,7 @@ mod tests {
 
         #[test]
         fn no_placeholders() {
-            let give = "one/two/2.md".to_string();
+            let give = "one/two/2.md";
             let want = Ok("one/two/2.md".to_string());
             let have = super::super::normalize(give);
             assert_eq!(have, want);
@@ -133,7 +133,7 @@ mod tests {
 
         #[test]
         fn go_above_root() {
-            let give = "one/../../1.md".to_string();
+            let give = "one/../../1.md";
             let want = Err(());
             let have = super::super::normalize(give);
             assert_eq!(have, want);
