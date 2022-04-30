@@ -26,14 +26,16 @@ impl Tikibase {
 #[cfg(test)]
 mod tests {
 
-    use crate::database::Tikibase;
-    use crate::test;
+    mod get_doc {
+        use crate::database::Tikibase;
+        use crate::test;
 
-    #[test]
-    fn subdirectories() {
-        let dir = test::tmp_dir();
-        test::create_file("sub1/one.md", "# test doc", &dir);
-        let base = Tikibase::load(dir).unwrap();
-        base.get_doc("sub1/one.md").unwrap();
+        #[test]
+        fn subdirectories() {
+            let dir = test::tmp_dir();
+            test::create_file("sub1/one.md", "# test doc", &dir);
+            let base = Tikibase::load(dir).unwrap();
+            base.get_doc("sub1/one.md").unwrap();
+        }
     }
 }
