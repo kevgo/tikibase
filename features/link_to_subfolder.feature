@@ -1,4 +1,3 @@
-@this
 Feature: links to a file in a subfolder
 
   Background:
