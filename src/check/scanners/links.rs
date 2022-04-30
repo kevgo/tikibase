@@ -102,19 +102,21 @@ pub fn scan(
                             }
                             // check for backlink from doc to us
                             if let Some(bidi_links) = dir.config.bidi_links {
-                                if bidi_links
-                                    && !other_doc.contains_reference_to(&doc.relative_path)
-                                {
-                                    issues.push(Issue::MissingLink {
-                                        location: Location {
-                                            file: target_file,
-                                            line: other_doc.lines_count(),
-                                            start: 0,
-                                            end: 0,
-                                        },
-                                        path: doc.relative_path.clone(),
-                                        title: doc.human_title().into(),
-                                    });
+                                if bidi_links {
+                                    let link_from_other_to_doc =
+                                        paths::relative(other_doc.relative_path, doc.relative_path);
+                                    if !other_doc.contains_reference_to(link_from_other_to_doc) {
+                                        issues.push(Issue::MissingLink {
+                                            location: Location {
+                                                file: target_file,
+                                                line: other_doc.lines_count(),
+                                                start: 0,
+                                                end: 0,
+                                            },
+                                            path: doc.relative_path.clone(),
+                                            title: doc.human_title().into(),
+                                        });
+                                    }
                                 }
                             }
                         } else {
@@ -296,6 +298,34 @@ mod tests {
             target: "2.md#foo".into(),
         }];
         pretty::assert_eq!(issues, want);
+        assert_eq!(linked_resources, Vec::<String>::new());
+    }
+
+    #[test]
+    fn link_to_existing_file_bidi() {
+        let dir = test::tmp_dir();
+        test::create_file("tikibase.json", "{ \"bidiLinks\": true }", &dir);
+        let content = indoc! {"
+                # One
+                working link to [Two](two/2.md)
+                ### section
+                working link to [Three](three/3.md)
+                "};
+        test::create_file("1.md", content, &dir);
+        test::create_file("two/2.md", "# Two\n[One](../1.md)", &dir);
+        test::create_file("three/3.md", "# Three\n[One](../2.md)", &dir);
+        let base = Tikibase::load(dir).unwrap();
+        let doc = base.get_doc("1.md").unwrap();
+        let mut issues = vec![];
+        let mut linked_resources = vec![];
+        super::scan(
+            doc,
+            &base.dir,
+            &mut issues,
+            &mut linked_resources,
+            &base.dir,
+        );
+        pretty::assert_eq!(issues, vec![]);
         assert_eq!(linked_resources, Vec::<String>::new());
     }
 
