@@ -16,9 +16,9 @@ pub fn normalize(path: &str) -> Result<String, ()> {
             match segment(path, segment_start, i) {
                 "." => {}
                 ".." => parents += 1,
-                current_segment => {
+                segment => {
                     pop_parents(&mut segments, &mut parents)?;
-                    segments.push(current_segment);
+                    segments.push(segment);
                 }
             }
             segment_start = i;
@@ -27,9 +27,9 @@ pub fn normalize(path: &str) -> Result<String, ()> {
     match segment(path, segment_start, path.len()) {
         "." => {}
         ".." => parents += 1,
-        last_segment => {
+        segment => {
             pop_parents(&mut segments, &mut parents)?;
-            segments.push(last_segment);
+            segments.push(segment);
         }
     }
     while parents > 0 {
@@ -42,13 +42,13 @@ pub fn normalize(path: &str) -> Result<String, ()> {
     Ok(segments.join("/"))
 }
 
-fn pop_parents(segments: &mut Vec<&str>, uppers: &mut u16) -> Result<(), ()> {
-    while *uppers > 0 {
+fn pop_parents(segments: &mut Vec<&str>, parents: &mut u16) -> Result<(), ()> {
+    while *parents > 0 {
         if segments.is_empty() {
             return Err(());
         }
         segments.pop();
-        *uppers -= 1;
+        *parents -= 1;
     }
     Ok(())
 }
