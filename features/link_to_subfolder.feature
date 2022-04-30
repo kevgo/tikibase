@@ -12,7 +12,6 @@ Feature: links to a file in a subfolder
       [One](../../1.md)
       """
 
-  @this
   Scenario: check
     When checking
     Then it finds no issues
