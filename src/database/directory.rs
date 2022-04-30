@@ -19,8 +19,8 @@ impl Directory {
     pub fn get_doc(&self, relative_path: &str) -> Option<&Document> {
         let relative_path = relative_path.as_ref();
         match lowest_subdir(relative_path) {
-            Some(subdir) => match self.dirs.get(subdir) {
-                Some(dir) => dir.get_doc(relative_path),
+            Some((subdir, remaining_path)) => match self.dirs.get(subdir) {
+                Some(dir) => dir.get_doc(remaining_path),
                 None => None,
             },
             None => self.docs.get(relative_path),
@@ -157,9 +157,9 @@ fn has_extension(path: &str, given_ext: &str) -> bool {
 
 /// provides the lowest subdirectory portion of the given path
 /// If a subdir was found, removes it from the given path.
-fn lowest_subdir(path: &str) -> Option<&str> {
+fn lowest_subdir(path: &str) -> Option<(&str, &str)> {
     match path.find('/') {
-        Some(index) => Some(&path[0..index]),
+        Some(index) => Some((&path[..index], &path[index + 1..])),
         None => None,
     }
 }
@@ -312,7 +312,7 @@ mod tests {
         #[test]
         fn subdir() {
             let give = "sub1/foo.md";
-            let want = Some("sub1");
+            let want = Some(("sub1", "foo.md"));
             let have = super::super::lowest_subdir(give);
             assert_eq!(have, want);
         }
@@ -320,7 +320,7 @@ mod tests {
         #[test]
         fn nested_subdir() {
             let give = "sub1/sub2/foo.md";
-            let want = Some("sub1");
+            let want = Some(("sub1", "sub2/foo.md"));
             let have = super::super::lowest_subdir(give);
             assert_eq!(have, want);
         }
