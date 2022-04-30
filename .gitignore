@@ -1,3 +1,4 @@
 target/
 tmp/
 tools/actionlint
+tools/actionlint.exe
