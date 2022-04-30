@@ -15,7 +15,7 @@ pub fn normalize(path: &str) -> Result<String, ()> {
         if current_char == '/' {
             if last_slash_pos > 0 {
                 last_slash_pos += 1;
-            };
+            }
             match &path[last_slash_pos..i] {
                 "." => {}
                 ".." => uppers += 1,
@@ -33,11 +33,10 @@ pub fn normalize(path: &str) -> Result<String, ()> {
             last_slash_pos = i;
         }
     }
-    let start = match last_slash_pos {
-        0 => 0,
-        other => other + 1,
-    };
-    match &path[start..] {
+    if last_slash_pos > 1 {
+        last_slash_pos += 1;
+    }
+    match &path[last_slash_pos..] {
         "." => {}
         ".." => uppers += 1,
         last_segment => {
