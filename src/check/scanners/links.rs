@@ -103,9 +103,11 @@ pub fn scan(
                             // check for backlink from doc to us
                             if let Some(bidi_links) = dir.config.bidi_links {
                                 if bidi_links {
-                                    let link_from_other_to_doc =
-                                        paths::relative(other_doc.relative_path, doc.relative_path);
-                                    if !other_doc.contains_reference_to(link_from_other_to_doc) {
+                                    let link_from_other_to_doc = paths::relative(
+                                        &other_doc.relative_path,
+                                        &doc.relative_path,
+                                    );
+                                    if !other_doc.contains_reference_to(&link_from_other_to_doc) {
                                         issues.push(Issue::MissingLink {
                                             location: Location {
                                                 file: target_file,

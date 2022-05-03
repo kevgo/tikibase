@@ -1,3 +1,29 @@
+/// provides the largest common ancestor for the two given paths
+fn common_anchestor<'a, 'b>(path1: &'a str, path2: &'b str) -> &'a str {
+    let mut path1_chars = path1.char_indices();
+    let mut path2_chars = path2.chars();
+    let mut slash_pos: usize = 0;
+    loop {
+        match (path1_chars.next(), path2_chars.next()) {
+            (Some((pos, seg1)), Some(seg2)) if seg1 == seg2 => {
+                if seg1 == '/' {
+                    slash_pos = pos;
+                }
+            }
+            (None, None) => return path1.into(),
+            _ => return &path1[..slash_pos],
+        }
+    }
+}
+
+/// provides the directory of the given file path
+// pub fn dirname(path: &str) -> &str {
+//     match path.rfind('/') {
+//         Some(pos) => &path[..pos],
+//         None => path,
+//     }
+// }
+
 pub fn join(path1: &str, path2: &str) -> String {
     if path1.is_empty() || path2.is_empty() {
         format!("{}{}", path1, path2)
@@ -6,7 +32,7 @@ pub fn join(path1: &str, path2: &str) -> String {
     }
 }
 
-/// removes elements like "../" and "./" from the given string
+/// resolves elements like "../" and "./" in the given string
 pub fn normalize(path: &str) -> Result<String, ()> {
     let mut segments: Vec<&str> = vec![];
     let mut parents: u16 = 0;
@@ -54,6 +80,9 @@ fn pop_parents(segments: &mut Vec<&str>, parents: &mut u16) -> Result<(), ()> {
 }
 
 pub fn relative(source: &str, target: &str) -> String {
+    let ancestor = common_anchestor(source, target);
+    let pos = ancestor.len();
+
     // example: source = "one/two/three/four/five.md"
     //          target = "one/two/alpha/beta.md"
     // determine highest common directory
@@ -69,6 +98,7 @@ pub fn relative(source: &str, target: &str) -> String {
     // add the path segments from the highest common parent to the target directory
     //   - example: to get from parent ("one/two/") to target dir, we have to add "alpha" to result
     // the relative path from "one/two/three/four/" to "one/two/alpha" is "../../alpha"
+    "".into()
 }
 
 fn segment(path: &str, start: usize, end: usize) -> &str {
@@ -81,6 +111,36 @@ fn segment(path: &str, start: usize, end: usize) -> &str {
 
 #[cfg(test)]
 mod tests {
+
+    mod common_anchestor {
+
+        #[test]
+        fn has_ancestors() {
+            let path1 = "one/two/three";
+            let path2 = "one/two/throw";
+            let have = super::super::common_anchestor(path1, path2);
+            let want = "one/two";
+            assert_eq!(have, want);
+        }
+
+        #[test]
+        fn no_common_ancestors() {
+            let path1 = "one/two/three";
+            let path2 = "alpha/beta";
+            let have = super::super::common_anchestor(path1, path2);
+            let want = "";
+            assert_eq!(have, want);
+        }
+
+        #[test]
+        fn identical() {
+            let path1 = "one/two/three";
+            let path2 = "one/two/three";
+            let have = super::super::common_anchestor(path1, path2);
+            let want = "one/two/three";
+            assert_eq!(have, want);
+        }
+    }
 
     mod join {
         #[test]
