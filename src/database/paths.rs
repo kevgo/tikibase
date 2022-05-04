@@ -68,6 +68,7 @@ pub fn normalize(path: &str) -> Result<String, ()> {
     Ok(segments.join("/"))
 }
 
+/// part of normalize
 fn pop_parents(segments: &mut Vec<&str>, parents: &mut u16) -> Result<(), ()> {
     while *parents > 0 {
         if segments.is_empty() {
@@ -101,6 +102,7 @@ pub fn relative(source: &str, target: &str) -> String {
     "".into()
 }
 
+/// part of `normalize`
 fn segment(path: &str, start: usize, end: usize) -> &str {
     if start > 0 {
         &path[start + 1..end]
@@ -115,9 +117,9 @@ mod tests {
     mod common_anchestor {
 
         #[test]
-        fn has_ancestors() {
-            let path1 = "one/two/three";
-            let path2 = "one/two/throw";
+        fn has_common_ancestors() {
+            let path1 = "one/two/three/file.md";
+            let path2 = "one/two/throw/file.md";
             let have = super::super::common_anchestor(path1, path2);
             let want = "one/two";
             assert_eq!(have, want);
@@ -125,8 +127,8 @@ mod tests {
 
         #[test]
         fn no_common_ancestors() {
-            let path1 = "one/two/three";
-            let path2 = "alpha/beta";
+            let path1 = "one/two/three/file.md";
+            let path2 = "alpha/beta/file.md";
             let have = super::super::common_anchestor(path1, path2);
             let want = "";
             assert_eq!(have, want);
@@ -134,10 +136,10 @@ mod tests {
 
         #[test]
         fn identical() {
-            let path1 = "one/two/three";
-            let path2 = "one/two/three";
+            let path1 = "one/two/three/file.md";
+            let path2 = "one/two/three/file.md";
             let have = super::super::common_anchestor(path1, path2);
-            let want = "one/two/three";
+            let want = "one/two/three/file.md";
             assert_eq!(have, want);
         }
     }
@@ -210,8 +212,37 @@ mod tests {
         #[test]
         fn go_above_root() {
             let give = "one/../../1.md";
-            let want = Err(());
             let have = super::super::normalize(give);
+            assert_eq!(have, want);
+        }
+    }
+
+    mod relative {
+
+        #[test]
+        fn has_common_ancestors() {
+            let path1 = "one/two/three/file.md";
+            let path2 = "one/two/throw/file.md";
+            let have = super::super::relative(path1, path2);
+            let want = "../throw/file.md";
+            assert_eq!(have, want);
+        }
+
+        #[test]
+        fn no_common_ancestors() {
+            let path1 = "one/two/three/file.md";
+            let path2 = "alpha/beta/file.md";
+            let have = super::super::common_anchestor(path1, path2);
+            let want = "../../../alpha/beta/file.md";
+            assert_eq!(have, want);
+        }
+
+        #[test]
+        fn same_dir() {
+            let path1 = "one/two/three/file.md";
+            let path2 = "one/two/three/other.md";
+            let have = super::super::common_anchestor(path1, path2);
+            let want = "other.md";
             assert_eq!(have, want);
         }
     }
