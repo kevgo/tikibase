@@ -14,7 +14,6 @@ Feature: accept links to existing directories
       [one](../1.md)
       """
 
-  @this
   Scenario: check
     When checking
     Then it finds no issues
