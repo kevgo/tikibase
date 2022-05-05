@@ -432,11 +432,10 @@ mod tests {
         let mut linked_resources = vec![];
         super::scan(
             doc,
-            "",
+            &base.dir,
             &mut issues,
             &mut linked_resources,
             &base.dir,
-            &Config::default(),
         );
         pretty::assert_eq!(issues, vec![]);
         assert_eq!(linked_resources, Vec::<String>::new());
@@ -456,11 +455,10 @@ mod tests {
         let mut linked_resources = vec![];
         super::scan(
             doc,
-            "",
+            &base.dir,
             &mut issues,
             &mut linked_resources,
             &base.dir,
-            &Config::default(),
         );
         pretty::assert_eq!(
             issues,
