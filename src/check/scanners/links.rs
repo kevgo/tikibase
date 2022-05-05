@@ -59,16 +59,18 @@ pub fn scan(
                     });
                     continue;
                 }
-                if target.starts_with('#') && !doc.has_anchor(target) {
-                    issues.push(Issue::LinkToNonExistingAnchorInCurrentDocument {
-                        location: Location {
-                            file: doc.relative_path.clone(),
-                            line: line.to_owned(),
-                            start: start.to_owned(),
-                            end: end.to_owned(),
-                        },
-                        anchor: target.clone(),
-                    });
+                if target.starts_with('#') {
+                    if !doc.has_anchor(target) {
+                        issues.push(Issue::LinkToNonExistingAnchorInCurrentDocument {
+                            location: Location {
+                                file: doc.relative_path.clone(),
+                                line: line.to_owned(),
+                                start: start.to_owned(),
+                                end: end.to_owned(),
+                            },
+                            anchor: target.clone(),
+                        });
+                    }
                     continue;
                 }
                 match EntryType::from_str(&target_file) {
@@ -252,6 +254,31 @@ mod tests {
             },
             anchor: "#zonk".into(),
         }];
+        pretty::assert_eq!(issues, want);
+        assert_eq!(linked_resources, Vec::<String>::new());
+    }
+
+    #[test]
+    fn link_to_existing_anchor_in_current_file() {
+        let dir = test::tmp_dir();
+        test::create_file(
+            "1.md",
+            "# One\n[existing anchor](#section)\n### section\ntext",
+            &dir,
+        );
+        let base = Tikibase::load(dir).unwrap();
+        let doc = base.get_doc("1.md").unwrap();
+        let mut issues = vec![];
+        let mut linked_resources = vec![];
+        super::scan(
+            doc,
+            "",
+            &mut issues,
+            &mut linked_resources,
+            &base.dir,
+            &Config::default(),
+        );
+        let want = vec![];
         pretty::assert_eq!(issues, want);
         assert_eq!(linked_resources, Vec::<String>::new());
     }

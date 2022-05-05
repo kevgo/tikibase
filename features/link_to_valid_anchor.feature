@@ -1,4 +1,3 @@
-@this
 Feature: link to valid anchor
 
   Background:
