@@ -242,7 +242,7 @@ impl Message {
                 end: Some(location.end),
                 fixable: false,
             },
-            Issue::LinkToNonExistingDir { location, target} => Message{
+            Issue::LinkToNonExistingDir { location, target} => Message {
                 text: format!("link to non-existing directory \"{}\"", target),
                 file: location.file,
                 line: Some(location.line),
