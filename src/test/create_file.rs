@@ -1,8 +1,13 @@
-use std::fs::File;
+use std::fs::{self, File};
 use std::io::prelude::*;
 use std::path::Path;
 
-pub fn create_file<P: AsRef<Path>>(filename: &str, content: &str, dir: P) {
-    let mut file = File::create(dir.as_ref().join(filename)).unwrap();
+pub fn create_file<P1: AsRef<Path>, P2: AsRef<Path>>(filename: P1, content: &str, dir: P2) {
+    let filename = filename.as_ref();
+    let dir = dir.as_ref();
+    if let Some(parent) = filename.parent() {
+        fs::create_dir_all(&dir.join(parent)).unwrap();
+    }
+    let mut file = File::create(&dir.join(filename)).unwrap();
     file.write_all(content.as_bytes()).unwrap();
 }
