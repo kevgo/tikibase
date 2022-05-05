@@ -134,7 +134,8 @@ pub fn scan(
                     }
                     EntryType::Configuration | EntryType::Ignored => {}
                     EntryType::Directory => {
-                        if !root.has_dir(&target_file[..target_file.len() - 1]) {
+                        let target_dir = &target_file[..target_file.len() - 1];
+                        if !root.has_dir(target_dir) {
                             issues.push(Issue::LinkToNonExistingDir {
                                 location: Location {
                                     file: doc.relative_path.clone(),
@@ -142,7 +143,7 @@ pub fn scan(
                                     start: start.to_owned(),
                                     end: end.to_owned(),
                                 },
-                                target: target.into(),
+                                target: target_dir.into(),
                             });
                         }
                     }
@@ -378,6 +379,41 @@ mod tests {
             &Config::default(),
         );
         pretty::assert_eq!(issues, vec![]);
+        assert_eq!(linked_resources, Vec::<String>::new());
+    }
+
+    #[test]
+    fn link_to_non_existing_dir() {
+        let dir = test::tmp_dir();
+        let content = indoc! {"
+                # One
+                link to non-existing dir [zonk](zonk/)
+                "};
+        test::create_file("1.md", content, &dir);
+        let base = Tikibase::load(dir).unwrap();
+        let doc = base.get_doc("1.md").unwrap();
+        let mut issues = vec![];
+        let mut linked_resources = vec![];
+        super::scan(
+            doc,
+            "",
+            &mut issues,
+            &mut linked_resources,
+            &base.dir,
+            &Config::default(),
+        );
+        pretty::assert_eq!(
+            issues,
+            vec![Issue::LinkToNonExistingDir {
+                location: Location {
+                    file: "1.md".into(),
+                    line: 1,
+                    start: 25,
+                    end: 38,
+                },
+                target: "zonk".into(),
+            }]
+        );
         assert_eq!(linked_resources, Vec::<String>::new());
     }
 
