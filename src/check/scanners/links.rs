@@ -287,11 +287,10 @@ mod tests {
         let mut linked_resources = vec![];
         super::scan(
             doc,
-            "",
+            &base.dir,
             &mut issues,
             &mut linked_resources,
             &base.dir,
-            &Config::default(),
         );
         let want = vec![];
         pretty::assert_eq!(issues, want);

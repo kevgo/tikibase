@@ -17,12 +17,12 @@ fn common_anchestor<'a, 'b>(path1: &'a str, path2: &'b str) -> &'a str {
 }
 
 /// provides the directory of the given file path
-// pub fn dirname(path: &str) -> &str {
-//     match path.rfind('/') {
-//         Some(pos) => &path[..pos],
-//         None => path,
-//     }
-// }
+pub fn dirname(path: &str) -> &str {
+    match path.rfind('/') {
+        Some(pos) => &path[..pos],
+        None => path,
+    }
+}
 
 pub fn join(path1: &str, path2: &str) -> String {
     if path1.is_empty() || path2.is_empty() {
@@ -82,8 +82,12 @@ fn pop_parents(segments: &mut Vec<&str>, parents: &mut u16) -> Result<(), ()> {
 
 pub fn relative(source: &str, target: &str) -> String {
     let common_ancestor = common_anchestor(source, target);
-    let source_ups = source[common_ancestor.len()..].matches('/').count();
+    let source_dir = dirname(source);
+    // let target_dir = dirname(target);
+    let source_ups = source_dir[common_ancestor.len()..].matches('/').count();
     let mut result = "../".repeat(source_ups);
+    result += subpath(target, common_ancestor.len());
+    result
 
     // example: source = "one/two/three/four/five.md"
     //          target = "one/two/alpha/beta.md"
@@ -100,7 +104,6 @@ pub fn relative(source: &str, target: &str) -> String {
     // add the path segments from the highest common parent to the target directory
     //   - example: to get from parent ("one/two/") to target dir, we have to add "alpha" to result
     // the relative path from "one/two/three/four/" to "one/two/alpha" is "../../alpha"
-    result
 }
 
 /// part of `normalize`
@@ -141,6 +144,33 @@ mod tests {
             let path2 = "one/two/three/file.md";
             let have = super::super::common_anchestor(path1, path2);
             let want = "one/two/three/file.md";
+            assert_eq!(have, want);
+        }
+    }
+
+    mod dirname {
+
+        #[test]
+        fn normal() {
+            let give = "one/two/file.md";
+            let want = "one/two";
+            let have = super::super::dirname(give);
+            assert_eq!(have, want);
+        }
+
+        #[test]
+        fn file_only() {
+            let give = "file.md";
+            let want = "";
+            let have = super::super::dirname(give);
+            assert_eq!(have, want);
+        }
+
+        #[test]
+        fn dir_already() {
+            let give = "one/two/";
+            let want = "one/two/";
+            let have = super::super::dirname(give);
             assert_eq!(have, want);
         }
     }
@@ -234,7 +264,7 @@ mod tests {
         fn no_common_ancestors() {
             let path1 = "one/two/three/file.md";
             let path2 = "alpha/beta/file.md";
-            let have = super::super::common_anchestor(path1, path2);
+            let have = super::super::relative(path1, path2);
             let want = "../../../alpha/beta/file.md";
             assert_eq!(have, want);
         }
@@ -243,7 +273,7 @@ mod tests {
         fn same_dir() {
             let path1 = "one/two/three/file.md";
             let path2 = "one/two/three/other.md";
-            let have = super::super::common_anchestor(path1, path2);
+            let have = super::super::relative(path1, path2);
             let want = "other.md";
             assert_eq!(have, want);
         }
