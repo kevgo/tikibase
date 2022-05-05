@@ -70,6 +70,10 @@ pub enum Issue {
         /// the non-existing anchor in that file
         anchor: String,
     },
+    LinkToNonExistingDir {
+        location: Location,
+        target: String,
+    },
     LinkToNonExistingFile {
         location: Location,
         target: String,

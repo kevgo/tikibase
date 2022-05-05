@@ -31,6 +31,11 @@ impl Directory {
         self.docs.get_mut(relative_path.as_ref())
     }
 
+    /// indicates whether this Tikibase contains a directory with the given name
+    pub fn has_dir<P: AsRef<str>>(&self, path: P) -> bool {
+        self.dirs.contains_key(path.as_ref())
+    }
+
     /// indicates whether this Tikibase contains a resource with the given path
     pub fn has_resource<P: AsRef<str>>(&self, path: P) -> bool {
         self.resources.contains_key(path.as_ref())
@@ -74,7 +79,7 @@ impl Directory {
                 EntryType::Directory => {
                     dirs.insert(
                         entry_name,
-                        Directory::load(root, entry_rel_path, config.clone())?,
+                        Directory::load(root, entry_name, config.clone())?,
                     );
                 }
             }
@@ -144,6 +149,9 @@ impl EntryType {
         if has_extension(path, "md") {
             return EntryType::Document;
         }
+        if path.ends_with('/') {
+            return EntryType::Directory;
+        }
         EntryType::Resource
     }
 }
@@ -186,6 +194,7 @@ mod tests {
                 ("foo.png", EntryType::Resource),
                 ("foo.pdf", EntryType::Resource),
                 (".testconfig.json", EntryType::Ignored),
+                ("dir/", EntryType::Directory),
             ];
             for (give, want) in tests {
                 let have = EntryType::from_str(give);

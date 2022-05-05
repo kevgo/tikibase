@@ -1,13 +1,13 @@
-use crate::database::paths;
 use std::fs::{self, File};
 use std::io::prelude::*;
-use std::path::PathBuf;
+use std::path::Path;
 
-pub fn create_file(filename: &str, content: &str, workspace: &str) {
-    let file_path = paths::join(workspace, filename);
-    let file_path = PathBuf::from(file_path);
-    let parent_dir = file_path.parent().unwrap();
-    fs::create_dir_all(parent_dir).unwrap();
-    let mut file = File::create(file_path).unwrap();
+pub fn create_file<P1: AsRef<Path>, P2: AsRef<Path>>(filename: P1, content: &str, dir: P2) {
+    let filename = filename.as_ref();
+    let dir = dir.as_ref();
+    if let Some(parent) = filename.parent() {
+        fs::create_dir_all(&dir.join(parent)).unwrap();
+    }
+    let mut file = File::create(&dir.join(filename)).unwrap();
     file.write_all(content.as_bytes()).unwrap();
 }
