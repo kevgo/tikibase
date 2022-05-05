@@ -81,8 +81,9 @@ fn pop_parents(segments: &mut Vec<&str>, parents: &mut u16) -> Result<(), ()> {
 }
 
 pub fn relative(source: &str, target: &str) -> String {
-    let ancestor = common_anchestor(source, target);
-    let pos = ancestor.len();
+    let common_ancestor = common_anchestor(source, target);
+    let source_ups = source[common_ancestor.len()..].matches('/').count();
+    let mut result = "../".repeat(source_ups);
 
     // example: source = "one/two/three/four/five.md"
     //          target = "one/two/alpha/beta.md"
@@ -99,7 +100,7 @@ pub fn relative(source: &str, target: &str) -> String {
     // add the path segments from the highest common parent to the target directory
     //   - example: to get from parent ("one/two/") to target dir, we have to add "alpha" to result
     // the relative path from "one/two/three/four/" to "one/two/alpha" is "../../alpha"
-    "".into()
+    result
 }
 
 /// part of `normalize`
@@ -213,6 +214,7 @@ mod tests {
         fn go_above_root() {
             let give = "one/../../1.md";
             let have = super::super::normalize(give);
+            let want = Err(());
             assert_eq!(have, want);
         }
     }
@@ -222,9 +224,9 @@ mod tests {
         #[test]
         fn has_common_ancestors() {
             let path1 = "one/two/three/file.md";
-            let path2 = "one/two/throw/file.md";
+            let path2 = "one/two/tralala/file.md";
             let have = super::super::relative(path1, path2);
-            let want = "../throw/file.md";
+            let want = "../tralala/file.md";
             assert_eq!(have, want);
         }
 
