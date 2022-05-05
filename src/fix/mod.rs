@@ -114,6 +114,10 @@ pub fn fix(issue: Issue, base: &mut Tikibase) -> Result {
             target_file: _,
             anchor: _,
         }
+        | Issue::LinkToNonExistingDir {
+            location: _,
+            target: _,
+        }
         | Issue::MissingFootnote {
             location: _,
             identifier: _,

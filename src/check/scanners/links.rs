@@ -133,7 +133,19 @@ pub fn scan(
                         }
                     }
                     EntryType::Configuration | EntryType::Ignored => {}
-                    EntryType::Directory => todo!(),
+                    EntryType::Directory => {
+                        if !root.has_dir(&target_file[..target_file.len() - 1]) {
+                            issues.push(Issue::LinkToNonExistingDir {
+                                location: Location {
+                                    file: doc.relative_path.clone(),
+                                    line: line.to_owned(),
+                                    start: start.to_owned(),
+                                    end: end.to_owned(),
+                                },
+                                target: target.into(),
+                            });
+                        }
+                    }
                 }
             }
             Reference::Image {
@@ -328,6 +340,31 @@ mod tests {
         test::create_file("1.md", content, &dir);
         test::create_file("2.md", "# Two\n[1](1.md)", &dir);
         test::create_file("3.md", "# Three\n[1](1.md)", &dir);
+        let base = Tikibase::load(dir).unwrap();
+        let doc = base.get_doc("1.md").unwrap();
+        let mut issues = vec![];
+        let mut linked_resources = vec![];
+        super::scan(
+            doc,
+            "",
+            &mut issues,
+            &mut linked_resources,
+            &base.dir,
+            &Config::default(),
+        );
+        pretty::assert_eq!(issues, vec![]);
+        assert_eq!(linked_resources, Vec::<String>::new());
+    }
+
+    #[test]
+    fn link_to_existing_dir() {
+        let dir = test::tmp_dir();
+        let content = indoc! {"
+                # One
+                working link to [dir](dir/)
+                "};
+        test::create_file("1.md", content, &dir);
+        test::create_file("dir/2.md", "# Two", &dir);
         let base = Tikibase::load(dir).unwrap();
         let doc = base.get_doc("1.md").unwrap();
         let mut issues = vec![];
