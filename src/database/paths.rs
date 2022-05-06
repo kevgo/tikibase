@@ -24,6 +24,10 @@ pub fn dirname(path: &str) -> &str {
     }
 }
 
+pub fn dirs_between(path: &str, start: usize, end: usize) -> usize {
+    path[start..end].matches('/').count() - 1
+}
+
 pub fn join(path1: &str, path2: &str) -> String {
     if path1.is_empty() || path2.is_empty() {
         format!("{}{}", path1, path2)
@@ -84,9 +88,9 @@ pub fn relative(source: &str, target: &str) -> String {
     let common_ancestor = common_anchestor(source, target);
     let source_dir = dirname(source);
     // let target_dir = dirname(target);
-    let source_ups = source_dir[common_ancestor.len()..].matches('/').count();
+    let source_ups = dirs_between(source_dir, common_ancestor.len(), source_dir.len());
     let mut result = "../".repeat(source_ups);
-    result += subpath(target, common_ancestor.len());
+    result += subpath(target, common_ancestor.len(), target.len());
     result
 
     // example: source = "one/two/three/four/five.md"
@@ -113,6 +117,10 @@ fn segment(path: &str, start: usize, end: usize) -> &str {
     } else {
         &path[..end]
     }
+}
+
+fn subpath(path: &str, start: usize, end: usize) -> &str {
+    path
 }
 
 #[cfg(test)]
@@ -171,6 +179,33 @@ mod tests {
             let give = "one/two/";
             let want = "one/two/";
             let have = super::super::dirname(give);
+            assert_eq!(have, want);
+        }
+    }
+
+    mod dirs_between {
+
+        #[test]
+        fn normal() {
+            let text = "one/two/three/four/five/";
+            let have = super::super::dirs_between(text, 7, 24);
+            let want = 3;
+            assert_eq!(have, want);
+        }
+
+        #[test]
+        fn full() {
+            let text = "one/two/three/four/five/";
+            let have = super::super::dirs_between(text, 0, 24);
+            let want = 5;
+            assert_eq!(have, want);
+        }
+
+        #[test]
+        fn none() {
+            let text = "one/two/three/four/five/";
+            let have = super::super::dirs_between(text, 24, 24);
+            let want = 0;
             assert_eq!(have, want);
         }
     }

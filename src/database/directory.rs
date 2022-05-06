@@ -78,7 +78,7 @@ impl Directory {
                 EntryType::Configuration | EntryType::Ignored => continue,
                 EntryType::Directory => {
                     dirs.insert(
-                        entry_name,
+                        entry_name.clone(),
                         Directory::load(root, entry_name, config.clone())?,
                     );
                 }
