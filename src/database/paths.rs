@@ -92,7 +92,8 @@ pub fn relative(source: &str, target: &str) -> String {
     let common_ancestor = common_anchestor(source, target);
     let source_dir = dirname(source);
     let source_ups = dirs_between(source_dir, common_ancestor.len());
-    format!("{}{}", go_up(source_ups), &target[common_ancestor.len()..])
+    let target_part = segments_after(target, common_ancestor);
+    format!("{}{}", go_up(source_ups), target_part)
 }
 
 /// part of `normalize`
@@ -106,6 +107,14 @@ fn segment(path: &str, start: usize, end: usize) -> &str {
         &path[start + 1..end]
     } else {
         &path[..end]
+    }
+}
+
+fn segments_after<'a, 'b>(path: &'a str, ancestor: &'b str) -> &'a str {
+    match ancestor.len() {
+        0 => path,
+        len if len == path.len() => "",
+        len => &path[len + 1..],
     }
 }
 
@@ -313,6 +322,36 @@ mod tests {
             let path2 = "one/two/three/other.md";
             let have = super::super::relative(path1, path2);
             let want = "other.md";
+            assert_eq!(have, want);
+        }
+    }
+
+    mod segments_after {
+
+        #[test]
+        fn none() {
+            let path = "one/two/three/four/five";
+            let ancestor = "";
+            let have = super::super::segments_after(path, ancestor);
+            let want = "one/two/three/four/five";
+            assert_eq!(have, want);
+        }
+
+        #[test]
+        fn some() {
+            let path = "one/two/three/four/five";
+            let ancestor = "one/two";
+            let have = super::super::segments_after(path, ancestor);
+            let want = "three/four/five";
+            assert_eq!(have, want);
+        }
+
+        #[test]
+        fn full() {
+            let path = "one/two/three/four/five";
+            let ancestor = "one/two/three/four/five";
+            let have = super::super::segments_after(path, ancestor);
+            let want = "";
             assert_eq!(have, want);
         }
     }
