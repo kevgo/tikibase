@@ -20,12 +20,16 @@ fn common_anchestor<'a, 'b>(path1: &'a str, path2: &'b str) -> &'a str {
 pub fn dirname(path: &str) -> &str {
     match path.rfind('/') {
         Some(pos) => &path[..pos],
-        None => path,
+        None => "",
     }
 }
 
-pub fn dirs_between(path: &str, start: usize, end: usize) -> usize {
-    path[start..end].matches('/').count() - 1
+pub fn dirs_between(path: &str, start: usize) -> usize {
+    if start == 0 {
+        return path.matches('/').count() + 1;
+    } else {
+        path[start..].matches('/').count()
+    }
 }
 
 pub fn join(path1: &str, path2: &str) -> String {
@@ -87,27 +91,13 @@ fn pop_parents(segments: &mut Vec<&str>, parents: &mut u16) -> Result<(), ()> {
 pub fn relative(source: &str, target: &str) -> String {
     let common_ancestor = common_anchestor(source, target);
     let source_dir = dirname(source);
-    // let target_dir = dirname(target);
-    let source_ups = dirs_between(source_dir, common_ancestor.len(), source_dir.len());
-    let mut result = "../".repeat(source_ups);
-    result += subpath(target, common_ancestor.len(), target.len());
-    result
+    let source_ups = dirs_between(source_dir, common_ancestor.len());
+    format!("{}{}", go_up(source_ups), &target[common_ancestor.len()..])
+}
 
-    // example: source = "one/two/three/four/five.md"
-    //          target = "one/two/alpha/beta.md"
-    // determine highest common directory
-    //   - iterate path segments from the root upwards while both source and target have the same segments
-    //   - example: highest common parent is "one/two/""
-    // determine source and target directories
-    //   - cut off the last path segment
-    //   - example: source dir is "one/two/three/four/"
-    //              parent dir is "one/two/alpha"
-    // go down from the source directory to the highest common parent directory
-    //   - for each directory between the source directory and the highest common parent, add ".." to the result
-    //   - example: we have to go two directories up to get from the source dir to parent --> result = "../../"
-    // add the path segments from the highest common parent to the target directory
-    //   - example: to get from parent ("one/two/") to target dir, we have to add "alpha" to result
-    // the relative path from "one/two/three/four/" to "one/two/alpha" is "../../alpha"
+/// part of `normalize`
+fn go_up(count: usize) -> String {
+    "../".repeat(count)
 }
 
 /// part of `normalize`
@@ -117,10 +107,6 @@ fn segment(path: &str, start: usize, end: usize) -> &str {
     } else {
         &path[..end]
     }
-}
-
-fn subpath(path: &str, start: usize, end: usize) -> &str {
-    path
 }
 
 #[cfg(test)]
@@ -177,7 +163,7 @@ mod tests {
         #[test]
         fn dir_already() {
             let give = "one/two/";
-            let want = "one/two/";
+            let want = "one/two";
             let have = super::super::dirname(give);
             assert_eq!(have, want);
         }
@@ -187,25 +173,42 @@ mod tests {
 
         #[test]
         fn normal() {
-            let text = "one/two/three/four/five/";
-            let have = super::super::dirs_between(text, 7, 24);
+            let text = "one/two/three/four/five";
+            let have = super::super::dirs_between(text, 7);
             let want = 3;
             assert_eq!(have, want);
         }
 
         #[test]
         fn full() {
-            let text = "one/two/three/four/five/";
-            let have = super::super::dirs_between(text, 0, 24);
+            let text = "one/two/three/four/five";
+            let have = super::super::dirs_between(text, 0);
             let want = 5;
             assert_eq!(have, want);
         }
 
         #[test]
         fn none() {
-            let text = "one/two/three/four/five/";
-            let have = super::super::dirs_between(text, 24, 24);
+            let text = "one/two/three/four/five";
+            let have = super::super::dirs_between(text, 23);
             let want = 0;
+            assert_eq!(have, want);
+        }
+    }
+
+    mod go_up {
+
+        #[test]
+        fn zero() {
+            let have = super::super::go_up(0);
+            let want = "".to_string();
+            assert_eq!(have, want);
+        }
+
+        #[test]
+        fn some() {
+            let have = super::super::go_up(3);
+            let want = "../../../".to_string();
             assert_eq!(have, want);
         }
     }

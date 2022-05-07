@@ -64,7 +64,6 @@ impl Directory {
             let entry = entry.unwrap();
             let entry_name = entry.file_name().to_string_lossy().to_string();
             let entry_abs_path = entry.path();
-            let entry_rel_path = paths::join(&relative_path, &entry_name);
             match EntryType::from_direntry(&entry, &config) {
                 EntryType::Document => match Document::load(&entry_abs_path, entry_name.clone()) {
                     Ok(doc) => {
