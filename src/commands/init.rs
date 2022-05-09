@@ -1,8 +1,8 @@
 use super::Outcome;
 use crate::check::Issue;
 use crate::database::paths;
+use fs_err as fs;
 use indoc::indoc;
-use std::fs;
 
 pub fn init(dir: &str) -> Outcome {
     match fs::write(paths::join(dir, "tikibase.json"), template()) {

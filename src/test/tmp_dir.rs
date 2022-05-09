@@ -1,5 +1,5 @@
+use fs_err as fs;
 use rand::Rng;
-use std::fs;
 use std::time::{SystemTime, UNIX_EPOCH};
 
 /// creates a temporary directory

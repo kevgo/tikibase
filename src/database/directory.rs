@@ -3,8 +3,8 @@ use crate::check::Issue;
 use crate::config::LoadResult;
 use crate::{config, Config};
 use ahash::AHashMap;
+use fs_err as fs;
 use merge::Merge;
-use std::fs;
 
 pub struct Directory {
     pub relative_path: String,
