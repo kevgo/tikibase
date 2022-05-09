@@ -21,13 +21,16 @@ help:  # shows all available Make commands
 install:  # installs the binary in the system
 	cargo install --path .
 
-lint:  # checks formatting
+lint: lint-std-fs  # checks formatting
 	dprint check
 	cargo clippy --all-targets --all-features -- -W clippy::pedantic -A clippy::cast_possible_wrap -A clippy::cast_possible_truncation -A clippy::missing_panics_doc -A clippy::must_use_candidate -A clippy::missing_errors_doc -A clippy::too-many-lines
 	cargo fmt -- --check
 # cargo udeps   # requires nightly
 	git diff --check
 	tools/actionlint
+
+lint-std-fs:  # checks for occurrences of "std::fs", should use "fs_err" instead
+	! grep -rn --include '*.rs' 'std::fs'
 
 test: unit cuke lint update-json-schema  # runs all tests
 
