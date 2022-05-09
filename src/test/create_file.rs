@@ -1,4 +1,5 @@
-use std::fs::{self, File};
+use fs_err as fs;
+use fs_err::File;
 use std::io::prelude::*;
 use std::path::Path;
 

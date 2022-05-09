@@ -2,8 +2,8 @@ use super::Outcome;
 use crate::check::Issue;
 use crate::config;
 use colored::Colorize;
+use fs_err::File;
 use schemars::schema_for;
-use std::fs::File;
 
 /// exports the JSON Schema for the configuration file
 pub fn json_schema() -> Outcome {

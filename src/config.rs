@@ -1,9 +1,9 @@
 use crate::check::{Issue, Location};
+use fs_err::File;
 use merge::Merge;
 use regex::Regex;
 use schemars::JsonSchema;
 use serde::Deserialize;
-use std::fs::File;
 use std::io::ErrorKind;
 use std::path::Path;
 
