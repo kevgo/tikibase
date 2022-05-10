@@ -118,6 +118,14 @@ impl Message {
                 end: Some(location.end),
                 fixable: false,
             },
+            Issue::CannotReadDirectory { path, err } => Message{
+                text: format!("cannot read directory: {}", err),
+                file: path,
+                line: None,
+                start: None,
+                end: None,
+                fixable: false
+            },
             Issue::CannotWriteConfigFile { file, message } => Message {
                 text: format!("cannot create configuration file: {}", message),
                 file,

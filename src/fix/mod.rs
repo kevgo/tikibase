@@ -69,6 +69,7 @@ pub fn fix(issue: Issue, base: &mut Tikibase) -> Result {
             location: _,
             target: _,
         }
+        | Issue::CannotReadDirectory { path: _, err: _ }
         | Issue::CannotWriteConfigFile {
             file: _,
             message: _,

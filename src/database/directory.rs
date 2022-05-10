@@ -54,7 +54,16 @@ impl Directory {
         let mut dirs = AHashMap::new();
         let mut resources = AHashMap::new();
         let mut errors = Vec::new();
-        for entry in fs::read_dir(abs_path).unwrap() {
+        let entries = match fs::read_dir(&abs_path) {
+            Ok(entries) => entries,
+            Err(err) => {
+                return Err(vec![Issue::CannotReadDirectory {
+                    path: abs_path,
+                    err: err.to_string(),
+                }])
+            }
+        };
+        for entry in entries {
             let entry = entry.unwrap();
             let entry_path = entry.path();
             let entry_name = entry.file_name().to_string_lossy().to_string();
@@ -72,7 +81,11 @@ impl Directory {
                 EntryType::Directory => {
                     dirs.insert(
                         entry_name.clone(),
-                        Directory::load(root, entry_name, config.clone())?,
+                        Directory::load(
+                            root,
+                            paths::join(&relative_path, &entry_name),
+                            config.clone(),
+                        )?,
                     );
                 }
             }
@@ -111,12 +124,12 @@ impl EntryType {
         let entry_type = entry.file_type().unwrap();
         let entry_filename_os = entry.file_name();
         let entry_filename = entry_filename_os.to_string_lossy();
+        if entry_filename.starts_with('.') {
+            return EntryType::Ignored;
+        }
         if entry_type.is_file() {
             if entry_filename == "tikibase.json" {
                 return EntryType::Configuration;
-            }
-            if entry_filename.starts_with('.') {
-                return EntryType::Ignored;
             }
             if config.ignore(&entry_filename) {
                 return EntryType::Ignored;
