@@ -278,6 +278,12 @@ dependencies = [
 ]
 
 [[package]]
+name = "fs-err"
+version = "2.7.0"
+source = "registry+https://github.com/rust-lang/crates.io-index"
+checksum = "5bd79fa345a495d3ae89fb7165fec01c0e72f41821d642dda363a1e97975652e"
+
+[[package]]
 name = "futures"
 version = "0.3.21"
 source = "registry+https://github.com/rust-lang/crates.io-index"
@@ -1099,6 +1105,7 @@ dependencies = [
  "clap",
  "colored",
  "cucumber",
+ "fs-err",
  "futures",
  "heck 0.4.0",
  "ignore",

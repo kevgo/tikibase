@@ -11,6 +11,10 @@ pub enum Issue {
         location: Location,
         message: String,
     },
+    CannotReadDirectory {
+        path: String,
+        err: String,
+    },
     CannotWriteConfigFile {
         message: String,
         file: String,

@@ -1,6 +1,7 @@
 use super::{paths, section, Footnotes, Line, Reference, Section};
 use crate::check::{Issue, Location};
-use std::fs::{self, File};
+use fs_err as fs;
+use fs_err::File;
 use std::io::{prelude::*, BufReader};
 use std::path::Path;
 
