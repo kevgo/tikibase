@@ -24,6 +24,7 @@ pub fn dirname(path: &str) -> &str {
     }
 }
 
+/// provides the number of path segments between the given position in the given path and its end
 pub fn dirs_between(path: &str, start: usize) -> usize {
     if start == 0 {
         if path.is_empty() {
