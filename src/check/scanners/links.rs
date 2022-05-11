@@ -117,7 +117,7 @@ pub fn scan(
                                                 start: 0,
                                                 end: 0,
                                             },
-                                            path: doc.relative_path.clone(),
+                                            path: link_from_other_to_doc,
                                             title: doc.human_title().into(),
                                         });
                                     }
@@ -394,6 +394,46 @@ mod tests {
             &base.dir,
         );
         pretty::assert_eq!(issues, vec![]);
+        assert_eq!(linked_resources, Vec::<String>::new());
+    }
+
+    #[test]
+    fn missing_backlink() {
+        let dir = test::tmp_dir();
+        test::create_file("tikibase.json", "{ \"bidiLinks\": true }", &dir);
+        let content = indoc! {"
+                # One
+                working link to [Two](two/2.md)
+                ### section
+                working link to [Three](three/3.md)
+                "};
+        test::create_file("1.md", content, &dir);
+        test::create_file("two/2.md", "# Two\n[One](../1.md)", &dir);
+        test::create_file("three/3.md", "# Three", &dir);
+        let base = Tikibase::load(dir).unwrap();
+        let doc = base.get_doc("1.md").unwrap();
+        let mut issues = vec![];
+        let mut linked_resources = vec![];
+        super::scan(
+            doc,
+            &base.dir,
+            &mut issues,
+            &mut linked_resources,
+            &base.dir,
+        );
+        pretty::assert_eq!(
+            issues,
+            vec![Issue::MissingLink {
+                location: Location {
+                    file: "three/3.md".into(),
+                    line: 0,
+                    start: 0,
+                    end: 0,
+                },
+                path: "../1.md".into(),
+                title: "One".into(),
+            }]
+        );
         assert_eq!(linked_resources, Vec::<String>::new());
     }
 

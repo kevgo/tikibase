@@ -26,7 +26,11 @@ pub fn dirname(path: &str) -> &str {
 
 pub fn dirs_between(path: &str, start: usize) -> usize {
     if start == 0 {
-        return path.matches('/').count() + 1;
+        if path == "" {
+            return 0;
+        } else {
+            return path.matches('/').count() + 1;
+        }
     } else {
         path[start..].matches('/').count()
     }
@@ -203,6 +207,20 @@ mod tests {
             let want = 0;
             assert_eq!(have, want);
         }
+
+        #[test]
+        fn empty() {
+            let have = super::super::dirs_between("", 0);
+            let want = 0;
+            assert_eq!(have, want);
+        }
+
+        #[test]
+        fn subdir() {
+            let have = super::super::dirs_between("", 0);
+            let want = 0;
+            assert_eq!(have, want);
+        }
     }
 
     mod go_up {
@@ -322,6 +340,33 @@ mod tests {
             let path2 = "one/two/three/other.md";
             let have = super::super::relative(path1, path2);
             let want = "other.md";
+            assert_eq!(have, want);
+        }
+
+        #[test]
+        fn root_dir() {
+            let path1 = "file.md";
+            let path2 = "other.md";
+            let have = super::super::relative(path1, path2);
+            let want = "other.md";
+            assert_eq!(have, want);
+        }
+
+        #[test]
+        fn from_subdir() {
+            let path1 = "sub/file.md";
+            let path2 = "other.md";
+            let have = super::super::relative(path1, path2);
+            let want = "../other.md";
+            assert_eq!(have, want);
+        }
+
+        #[test]
+        fn into_subdir() {
+            let path1 = "file.md";
+            let path2 = "sub/other.md";
+            let have = super::super::relative(path1, path2);
+            let want = "sub/other.md";
             assert_eq!(have, want);
         }
     }
