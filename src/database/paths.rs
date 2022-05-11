@@ -69,13 +69,7 @@ pub fn normalize(path: &str) -> Result<String, ()> {
             segments.push(segment);
         }
     }
-    while parents > 0 {
-        if segments.is_empty() {
-            return Err(());
-        }
-        segments.pop();
-        parents -= 1;
-    }
+    pop_segments(&mut segments, &mut parents)?;
     Ok(segments.join("/"))
 }
 
