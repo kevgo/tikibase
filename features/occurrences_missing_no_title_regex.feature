@@ -13,7 +13,7 @@ Feature: add occurrence sections without a title regex
 
       ### section
 
-      [Four](4.md)
+      [Four](four/4.md)
       """
     And file "2.md" with content:
       """
@@ -25,11 +25,11 @@ Feature: add occurrence sections without a title regex
 
       [One](1.md#section)
       """
-    And file "4.md" with content:
+    And file "four/4.md" with content:
       """
       # Four
 
-      [One](1.md)
+      [One](../1.md)
       """
 
   Scenario: check
@@ -54,7 +54,7 @@ Feature: add occurrence sections without a title regex
 
       ### section
 
-      [Four](4.md)
+      [Four](four/4.md)
 
       ### occurrences
 
@@ -78,7 +78,7 @@ Feature: add occurrence sections without a title regex
 
       ### section
 
-      [Four](4.md)
+      [Four](four/4.md)
 
       ### occurrences
 

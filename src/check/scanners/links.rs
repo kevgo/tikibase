@@ -1,15 +1,13 @@
 use crate::check::{Issue, Location};
 use crate::database::{paths, Directory, Document, EntryType, Reference};
-use crate::Config;
 
 /// populates the given issues list with all link issues in this document
 pub fn scan(
     doc: &Document,
-    dir: &str,
+    dir: &Directory,
     issues: &mut Vec<Issue>,
     linked_resources: &mut Vec<String>,
     root: &Directory,
-    config: &Config,
 ) {
     if doc.references.is_empty() {
         issues.push(Issue::DocumentWithoutLinks {
@@ -48,7 +46,22 @@ pub fn scan(
                     Some((base, anchor)) => (base.to_string(), format!("#{}", anchor)),
                     None => (target.clone(), "".to_string()),
                 };
-                if target_file == doc.relative_path {
+                let target_relative_path = paths::join(&dir.relative_path, &target_file);
+                let target_relative_path = if let Ok(p) = paths::normalize(&target_relative_path) {
+                    p
+                } else {
+                    issues.push(Issue::PathEscapesRoot {
+                        path: target_relative_path,
+                        location: Location {
+                            file: doc.relative_path.clone(),
+                            line: line.to_owned(),
+                            start: start.to_owned(),
+                            end: end.to_owned(),
+                        },
+                    });
+                    continue;
+                };
+                if target_relative_path == doc.relative_path {
                     issues.push(Issue::LinkToSameDocument {
                         location: Location {
                             file: doc.relative_path.clone(),
@@ -75,7 +88,7 @@ pub fn scan(
                 }
                 match EntryType::from_str(&target_file) {
                     EntryType::Document => {
-                        if let Some(other_doc) = root.get_doc(&target_file) {
+                        if let Some(other_doc) = root.get_doc(&target_relative_path) {
                             if !target_anchor.is_empty() && !other_doc.has_anchor(&target_anchor) {
                                 issues.push(Issue::LinkToNonExistingAnchorInExistingDocument {
                                     location: Location {
@@ -84,25 +97,29 @@ pub fn scan(
                                         start: start.to_owned(),
                                         end: end.to_owned(),
                                     },
-                                    target_file: target_file.clone(),
+                                    target_file: target_relative_path.clone(),
                                     anchor: target_anchor,
                                 });
                             }
                             // check for backlink from doc to us
-                            if let Some(bidi_links) = config.bidi_links {
-                                if bidi_links
-                                    && !other_doc.contains_reference_to(&doc.relative_path)
-                                {
-                                    issues.push(Issue::MissingLink {
-                                        location: Location {
-                                            file: target_file,
-                                            line: other_doc.lines_count(),
-                                            start: 0,
-                                            end: 0,
-                                        },
-                                        path: doc.relative_path.clone(),
-                                        title: doc.human_title().into(),
-                                    });
+                            if let Some(bidi_links) = dir.config.bidi_links {
+                                if bidi_links {
+                                    let link_from_other_to_doc = paths::relative(
+                                        &other_doc.relative_path,
+                                        &doc.relative_path,
+                                    );
+                                    if !other_doc.contains_reference_to(&link_from_other_to_doc) {
+                                        issues.push(Issue::MissingLink {
+                                            location: Location {
+                                                file: target_relative_path,
+                                                line: other_doc.lines_count(),
+                                                start: 0,
+                                                end: 0,
+                                            },
+                                            path: link_from_other_to_doc,
+                                            title: doc.human_title().into(),
+                                        });
+                                    }
                                 }
                             }
                         } else {
@@ -118,8 +135,8 @@ pub fn scan(
                         };
                     }
                     EntryType::Resource => {
-                        if root.has_resource(&target_file) {
-                            linked_resources.push(paths::join(dir, &target_file));
+                        if root.has_resource(&target_relative_path) {
+                            linked_resources.push(target_relative_path);
                         } else {
                             issues.push(Issue::LinkToNonExistingFile {
                                 location: Location {
@@ -134,7 +151,7 @@ pub fn scan(
                     }
                     EntryType::Configuration | EntryType::Ignored => {}
                     EntryType::Directory => {
-                        let target_dir = &target_file[..target_file.len() - 1];
+                        let target_dir = &target_relative_path[..target_relative_path.len() - 1];
                         if !root.has_dir(target_dir) {
                             issues.push(Issue::LinkToNonExistingDir {
                                 location: Location {
@@ -159,7 +176,7 @@ pub fn scan(
                     continue;
                 }
                 if root.has_resource(&src) {
-                    linked_resources.push(paths::join(dir, src));
+                    linked_resources.push(paths::join(&dir.relative_path, src));
                 } else {
                     issues.push(Issue::BrokenImage {
                         location: Location {
@@ -179,7 +196,7 @@ pub fn scan(
 #[cfg(test)]
 mod tests {
     use crate::check::{Issue, Location};
-    use crate::{test, Config, Tikibase};
+    use crate::{test, Tikibase};
     use indoc::indoc;
 
     #[test]
@@ -192,11 +209,10 @@ mod tests {
         let mut linked_resources = vec![];
         super::scan(
             doc,
-            "",
+            &base.dir,
             &mut issues,
             &mut linked_resources,
             &base.dir,
-            &Config::default(),
         );
         let want = vec![Issue::LinkToNonExistingFile {
             location: Location {
@@ -222,11 +238,10 @@ mod tests {
         let mut linked_resources = vec![];
         super::scan(
             doc,
-            "",
+            &base.dir,
             &mut issues,
             &mut linked_resources,
             &base.dir,
-            &Config::default(),
         );
         let want = vec![Issue::LinkToNonExistingAnchorInExistingDocument {
             location: Location {
@@ -252,11 +267,10 @@ mod tests {
         let mut linked_resources = vec![];
         super::scan(
             doc,
-            "",
+            &base.dir,
             &mut issues,
             &mut linked_resources,
             &base.dir,
-            &Config::default(),
         );
         let want = vec![Issue::LinkToNonExistingAnchorInCurrentDocument {
             location: Location {
@@ -285,11 +299,10 @@ mod tests {
         let mut linked_resources = vec![];
         super::scan(
             doc,
-            "",
+            &base.dir,
             &mut issues,
             &mut linked_resources,
             &base.dir,
-            &Config::default(),
         );
         let want = vec![];
         pretty::assert_eq!(issues, want);
@@ -310,11 +323,10 @@ mod tests {
         let mut linked_resources = vec![];
         super::scan(
             doc,
-            "",
+            &base.dir,
             &mut issues,
             &mut linked_resources,
             &base.dir,
-            &Config::default(),
         );
         let want = vec![Issue::LinkToNonExistingFile {
             location: Location {
@@ -330,28 +342,112 @@ mod tests {
     }
 
     #[test]
-    fn link_to_existing_file() {
+    fn link_to_existing_file_bidi() {
         let dir = test::tmp_dir();
+        test::create_file("tikibase.json", "{ \"bidiLinks\": true }", &dir);
         let content = indoc! {"
                 # One
-                working link to [Two](2.md)
+                working link to [Two](two/2.md)
                 ### section
-                working link to [Three](3.md)
+                working link to [Three](three/3.md)
                 "};
         test::create_file("1.md", content, &dir);
-        test::create_file("2.md", "# Two\n[1](1.md)", &dir);
-        test::create_file("3.md", "# Three\n[1](1.md)", &dir);
+        test::create_file("two/2.md", "# Two\n[One](../1.md)", &dir);
+        test::create_file("three/3.md", "# Three\n[One](../1.md)", &dir);
         let base = Tikibase::load(dir).unwrap();
         let doc = base.get_doc("1.md").unwrap();
         let mut issues = vec![];
         let mut linked_resources = vec![];
         super::scan(
             doc,
-            "",
+            &base.dir,
             &mut issues,
             &mut linked_resources,
             &base.dir,
-            &Config::default(),
+        );
+        pretty::assert_eq!(issues, vec![]);
+        assert_eq!(linked_resources, Vec::<String>::new());
+    }
+
+    #[test]
+    fn link_to_existing_file_no_bidi() {
+        let dir = test::tmp_dir();
+        let content = indoc! {"
+                # One
+                working link to [Two](two/2.md)
+                "};
+        test::create_file("1.md", content, &dir);
+        test::create_file("two/2.md", "# Two\n[One](../1.md)", &dir);
+        let base = Tikibase::load(dir).unwrap();
+        let doc = base.get_doc("1.md").unwrap();
+        let mut issues = vec![];
+        let mut linked_resources = vec![];
+        super::scan(
+            doc,
+            &base.dir,
+            &mut issues,
+            &mut linked_resources,
+            &base.dir,
+        );
+        pretty::assert_eq!(issues, vec![]);
+        assert_eq!(linked_resources, Vec::<String>::new());
+    }
+
+    #[test]
+    fn missing_backlink() {
+        let dir = test::tmp_dir();
+        test::create_file("tikibase.json", "{ \"bidiLinks\": true }", &dir);
+        let content = indoc! {"
+                # One
+                working link to [Two](two/2.md)
+                ### section
+                working link to [Three](three/3.md)
+                "};
+        test::create_file("1.md", content, &dir);
+        test::create_file("two/2.md", "# Two\n[One](../1.md)", &dir);
+        test::create_file("three/3.md", "# Three", &dir);
+        let base = Tikibase::load(dir).unwrap();
+        let doc = base.get_doc("1.md").unwrap();
+        let mut issues = vec![];
+        let mut linked_resources = vec![];
+        super::scan(
+            doc,
+            &base.dir,
+            &mut issues,
+            &mut linked_resources,
+            &base.dir,
+        );
+        pretty::assert_eq!(
+            issues,
+            vec![Issue::MissingLink {
+                location: Location {
+                    file: "three/3.md".into(),
+                    line: 0,
+                    start: 0,
+                    end: 0,
+                },
+                path: "../1.md".into(),
+                title: "One".into(),
+            }]
+        );
+        assert_eq!(linked_resources, Vec::<String>::new());
+    }
+
+    #[test]
+    fn link_within_subdir() {
+        let dir = test::tmp_dir();
+        test::create_file("sub/1.md", "# One\n[two](2.md)", &dir);
+        test::create_file("sub/2.md", "# Two\n[one](1.md)", &dir);
+        let base = Tikibase::load(dir).unwrap();
+        let doc = base.get_doc("sub/1.md").unwrap();
+        let mut issues = vec![];
+        let mut linked_resources = vec![];
+        super::scan(
+            doc,
+            base.dir.dirs.get("sub").unwrap(),
+            &mut issues,
+            &mut linked_resources,
+            &base.dir,
         );
         pretty::assert_eq!(issues, vec![]);
         assert_eq!(linked_resources, Vec::<String>::new());
@@ -372,11 +468,10 @@ mod tests {
         let mut linked_resources = vec![];
         super::scan(
             doc,
-            "",
+            &base.dir,
             &mut issues,
             &mut linked_resources,
             &base.dir,
-            &Config::default(),
         );
         pretty::assert_eq!(issues, vec![]);
         assert_eq!(linked_resources, Vec::<String>::new());
@@ -396,11 +491,10 @@ mod tests {
         let mut linked_resources = vec![];
         super::scan(
             doc,
-            "",
+            &base.dir,
             &mut issues,
             &mut linked_resources,
             &base.dir,
-            &Config::default(),
         );
         pretty::assert_eq!(
             issues,
@@ -427,11 +521,10 @@ mod tests {
         let mut linked_resources = vec![];
         super::scan(
             doc,
-            "",
+            &base.dir,
             &mut issues,
             &mut linked_resources,
             &base.dir,
-            &Config::default(),
         );
         pretty::assert_eq!(
             issues,
@@ -464,11 +557,10 @@ mod tests {
         let mut linked_resources = vec![];
         super::scan(
             doc,
-            "",
+            &base.dir,
             &mut issues,
             &mut linked_resources,
             &base.dir,
-            &Config::default(),
         );
         assert!(issues.is_empty());
         assert_eq!(linked_resources, Vec::<String>::new());
@@ -485,11 +577,10 @@ mod tests {
         let mut linked_resources = vec![];
         super::scan(
             doc,
-            "",
+            &base.dir,
             &mut issues,
             &mut linked_resources,
             &base.dir,
-            &Config::default(),
         );
         assert!(issues.is_empty());
         assert_eq!(linked_resources, vec!["foo.png".to_string()]);
@@ -505,11 +596,10 @@ mod tests {
         let mut linked_resources = vec![];
         super::scan(
             doc,
-            "",
+            &base.dir,
             &mut issues,
             &mut linked_resources,
             &base.dir,
-            &Config::default(),
         );
         let want = vec![Issue::BrokenImage {
             location: Location {
@@ -535,11 +625,10 @@ mod tests {
         let mut linked_resources = vec![];
         super::scan(
             doc,
-            "",
+            &base.dir,
             &mut issues,
             &mut linked_resources,
             &base.dir,
-            &Config::default(),
         );
         pretty::assert_eq!(issues, vec![]);
         assert_eq!(linked_resources, vec!["docs.pdf"]);

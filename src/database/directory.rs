@@ -16,8 +16,14 @@ pub struct Directory {
 
 impl Directory {
     /// provides the document with the given relative filename
-    pub fn get_doc<OS: AsRef<str>>(&self, relative_path: OS) -> Option<&Document> {
-        self.docs.get(relative_path.as_ref())
+    pub fn get_doc(&self, relative_path: &str) -> Option<&Document> {
+        match lowest_subdir(relative_path) {
+            Some((subdir, remaining_path)) => match self.dirs.get(subdir) {
+                Some(dir) => dir.get_doc(remaining_path),
+                None => None,
+            },
+            None => self.docs.get(relative_path),
+        }
     }
 
     /// provides the document with the given relative filename as a mutable reference
@@ -65,15 +71,18 @@ impl Directory {
         };
         for entry in entries {
             let entry = entry.unwrap();
-            let entry_path = entry.path();
             let entry_name = entry.file_name().to_string_lossy().to_string();
+            let entry_abs_path = entry.path();
             match EntryType::from_direntry(&entry, &config) {
-                EntryType::Document => match Document::load(&entry_path, entry_name.clone()) {
-                    Ok(doc) => {
-                        docs.insert(entry_name, doc);
+                EntryType::Document => {
+                    let doc_relative_path = paths::join(&relative_path, &entry_name);
+                    match Document::load(&entry_abs_path, doc_relative_path) {
+                        Ok(doc) => {
+                            docs.insert(entry_name, doc);
+                        }
+                        Err(err) => errors.push(err),
                     }
-                    Err(err) => errors.push(err),
-                },
+                }
                 EntryType::Resource => {
                     resources.insert(entry_name, ());
                 }
@@ -166,6 +175,13 @@ impl EntryType {
 fn has_extension(path: &str, given_ext: &str) -> bool {
     let path_ext = path.rsplit('.').next().unwrap();
     path_ext.eq_ignore_ascii_case(given_ext)
+}
+
+/// provides the lowest subdirectory portion of the given path
+/// If a subdir was found, removes it from the given path.
+fn lowest_subdir(path: &str) -> Option<(&str, &str)> {
+    path.find('/')
+        .map(|index| (&path[..index], &path[index + 1..]))
 }
 
 #[cfg(test)]
@@ -302,5 +318,32 @@ mod tests {
         test::create_file(".hidden", "content", &dir);
         let dir = Directory::load(&dir, "".into(), Config::default()).unwrap();
         assert_eq!(dir.resources.len(), 0);
+    }
+
+    mod lowest_subdir {
+
+        #[test]
+        fn top_level() {
+            let give = "foo.md";
+            let want = None;
+            let have = super::super::lowest_subdir(give);
+            assert_eq!(have, want);
+        }
+
+        #[test]
+        fn subdir() {
+            let give = "sub1/foo.md";
+            let want = Some(("sub1", "foo.md"));
+            let have = super::super::lowest_subdir(give);
+            assert_eq!(have, want);
+        }
+
+        #[test]
+        fn nested_subdir() {
+            let give = "sub1/sub2/foo.md";
+            let want = Some(("sub1", "sub2/foo.md"));
+            let have = super::super::lowest_subdir(give);
+            assert_eq!(have, want);
+        }
     }
 }

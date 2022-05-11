@@ -66,7 +66,7 @@ fn initializing(world: &mut MyWorld) {
 fn all_files_unchanged(world: &mut MyWorld) {
     for (filename, original_content) in &world.original_contents {
         let current_content = test::load_file(filename, &world.dir);
-        assert_eq!(&current_content.trim(), original_content);
+        pretty::assert_eq!(&current_content.trim(), original_content);
     }
 }
 
@@ -74,14 +74,14 @@ fn all_files_unchanged(world: &mut MyWorld) {
 fn file_is_unchanged(world: &mut MyWorld, filename: String) {
     let have = test::load_file(&filename, &world.dir);
     let want = world.original_contents.get(&filename).unwrap();
-    assert_eq!(have.trim(), want);
+    pretty::assert_eq!(have.trim(), want);
 }
 
 #[then(regex = r#"^file "(.*)" should contain:$"#)]
 fn file_should_contain(world: &mut MyWorld, step: &Step, filename: String) {
     let want = step.docstring.as_ref().unwrap();
     let have = test::load_file(&filename, &world.dir);
-    assert_eq!(have.trim(), want.trim());
+    pretty::assert_eq!(have.trim(), want.trim());
 }
 
 #[then("it prints:")]

@@ -20,9 +20,8 @@ pub struct Document {
 }
 
 impl Document {
-    pub fn contains_reference_to<P: AsRef<Path>>(&self, path: P) -> bool {
-        let path_str = path.as_ref().to_string_lossy();
-        self.references.iter().any(|r| r.points_to(&path_str))
+    pub fn contains_reference_to(&self, path: &str) -> bool {
+        self.references.iter().any(|r| r.points_to(path))
     }
 
     /// provides all the footnotes that this document defines and references
@@ -134,9 +133,12 @@ impl Document {
     }
 
     /// provides the Document contained in the file with the given path
-    pub fn from_reader<R: BufRead, P: Into<String>>(reader: R, path: P) -> Result<Document, Issue> {
+    pub fn from_reader<R: BufRead, P: Into<String>>(
+        reader: R,
+        relative_path: P,
+    ) -> Result<Document, Issue> {
         let lines = reader.lines().map(Result::unwrap);
-        Document::from_lines(lines, path)
+        Document::from_lines(lines, relative_path)
     }
 
     #[cfg(test)]
@@ -197,9 +199,12 @@ impl Document {
             .last_line_abs()
     }
 
-    pub fn load<P: AsRef<Path>>(path: P, name: String) -> Result<Document, Issue> {
-        let file = File::open(path.as_ref()).unwrap();
-        Document::from_reader(BufReader::new(file), name)
+    pub fn load<P: AsRef<Path>>(
+        absolute_path: P,
+        relative_path: String,
+    ) -> Result<Document, Issue> {
+        let file = File::open(absolute_path.as_ref()).unwrap();
+        Document::from_reader(BufReader::new(file), relative_path)
     }
 
     pub fn new(
@@ -335,6 +340,31 @@ mod tests {
     use super::Document;
     use crate::database::Reference;
     use indoc::indoc;
+
+    mod contains_reference_to {
+        use crate::database::Tikibase;
+        use crate::test;
+
+        #[test]
+        fn to_subdir() {
+            let dir = test::tmp_dir();
+            test::create_file("one.md", "# One\n[two](sub/two.md)", &dir);
+            test::create_file("sub/two.md", "# Two\n[one](../one.md)", &dir);
+            let base = Tikibase::load(dir).unwrap();
+            let doc = base.get_doc("one.md").unwrap();
+            assert!(doc.contains_reference_to("sub/two.md"));
+        }
+
+        #[test]
+        fn to_parent_dir() {
+            let dir = test::tmp_dir();
+            test::create_file("one.md", "# One\n[two](sub/two.md)", &dir);
+            test::create_file("sub/two.md", "# Two\n[one](../one.md)", &dir);
+            let base = Tikibase::load(dir).unwrap();
+            let doc = base.get_doc("sub/two.md").unwrap();
+            assert!(doc.contains_reference_to("../one.md"));
+        }
+    }
 
     mod footnotes {
         use crate::database::{Document, Footnote, Footnotes};
