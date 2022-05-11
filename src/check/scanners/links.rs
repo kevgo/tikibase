@@ -46,13 +46,12 @@ pub fn scan(
                     Some((base, anchor)) => (base.to_string(), format!("#{}", anchor)),
                     None => (target.clone(), "".to_string()),
                 };
-                let target_file = if let Ok(target) =
-                    paths::normalize(&paths::join(&dir.relative_path, &target_file))
-                {
-                    target
+                let target_relative_path = paths::join(&dir.relative_path, &target_file);
+                let target_relative_path = if let Ok(p) = paths::normalize(&target_relative_path) {
+                    p
                 } else {
                     issues.push(Issue::PathEscapesRoot {
-                        path: paths::join(&dir.relative_path, &target_file),
+                        path: target_relative_path,
                         location: Location {
                             file: doc.relative_path.clone(),
                             line: line.to_owned(),
@@ -62,7 +61,7 @@ pub fn scan(
                     });
                     continue;
                 };
-                if target_file == doc.relative_path {
+                if target_relative_path == doc.relative_path {
                     issues.push(Issue::LinkToSameDocument {
                         location: Location {
                             file: doc.relative_path.clone(),
@@ -87,9 +86,9 @@ pub fn scan(
                     }
                     continue;
                 }
-                match EntryType::from_str(&target_file) {
+                match EntryType::from_str(&target_relative_path) {
                     EntryType::Document => {
-                        if let Some(other_doc) = root.get_doc(&target_file) {
+                        if let Some(other_doc) = root.get_doc(&target_relative_path) {
                             if !target_anchor.is_empty() && !other_doc.has_anchor(&target_anchor) {
                                 issues.push(Issue::LinkToNonExistingAnchorInExistingDocument {
                                     location: Location {
@@ -98,7 +97,7 @@ pub fn scan(
                                         start: start.to_owned(),
                                         end: end.to_owned(),
                                     },
-                                    target_file: target_file.clone(),
+                                    target_file: target_relative_path.clone(),
                                     anchor: target_anchor,
                                 });
                             }
@@ -112,7 +111,7 @@ pub fn scan(
                                     if !other_doc.contains_reference_to(&link_from_other_to_doc) {
                                         issues.push(Issue::MissingLink {
                                             location: Location {
-                                                file: target_file,
+                                                file: target_relative_path,
                                                 line: other_doc.lines_count(),
                                                 start: 0,
                                                 end: 0,
@@ -136,8 +135,8 @@ pub fn scan(
                         };
                     }
                     EntryType::Resource => {
-                        if root.has_resource(&target_file) {
-                            linked_resources.push(paths::join(&dir.relative_path, &target_file));
+                        if root.has_resource(&target_relative_path) {
+                            linked_resources.push(target_relative_path);
                         } else {
                             issues.push(Issue::LinkToNonExistingFile {
                                 location: Location {
@@ -152,7 +151,7 @@ pub fn scan(
                     }
                     EntryType::Configuration | EntryType::Ignored => {}
                     EntryType::Directory => {
-                        let target_dir = &target_file[..target_file.len() - 1];
+                        let target_dir = &target_relative_path[..target_relative_path.len() - 1];
                         if !root.has_dir(target_dir) {
                             issues.push(Issue::LinkToNonExistingDir {
                                 location: Location {

@@ -133,9 +133,12 @@ impl Document {
     }
 
     /// provides the Document contained in the file with the given path
-    pub fn from_reader<R: BufRead, P: Into<String>>(reader: R, path: P) -> Result<Document, Issue> {
+    pub fn from_reader<R: BufRead, P: Into<String>>(
+        reader: R,
+        relative_path: P,
+    ) -> Result<Document, Issue> {
         let lines = reader.lines().map(Result::unwrap);
-        Document::from_lines(lines, path)
+        Document::from_lines(lines, relative_path)
     }
 
     #[cfg(test)]
@@ -196,9 +199,12 @@ impl Document {
             .last_line_abs()
     }
 
-    pub fn load<P: AsRef<Path>>(path: P, name: String) -> Result<Document, Issue> {
-        let file = File::open(path.as_ref()).unwrap();
-        Document::from_reader(BufReader::new(file), name)
+    pub fn load<P: AsRef<Path>>(
+        absolute_path: P,
+        relative_path: String,
+    ) -> Result<Document, Issue> {
+        let file = File::open(absolute_path.as_ref()).unwrap();
+        Document::from_reader(BufReader::new(file), relative_path)
     }
 
     pub fn new(

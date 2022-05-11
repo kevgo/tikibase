@@ -74,12 +74,15 @@ impl Directory {
             let entry_name = entry.file_name().to_string_lossy().to_string();
             let entry_abs_path = entry.path();
             match EntryType::from_direntry(&entry, &config) {
-                EntryType::Document => match Document::load(&entry_abs_path, entry_name.clone()) {
-                    Ok(doc) => {
-                        docs.insert(entry_name, doc);
+                EntryType::Document => {
+                    let doc_relative_path = paths::join(&relative_path, &entry_name);
+                    match Document::load(&entry_abs_path, doc_relative_path) {
+                        Ok(doc) => {
+                            docs.insert(entry_name, doc);
+                        }
+                        Err(err) => errors.push(err),
                     }
-                    Err(err) => errors.push(err),
-                },
+                }
                 EntryType::Resource => {
                     resources.insert(entry_name, ());
                 }
