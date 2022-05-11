@@ -10,7 +10,7 @@ fn common_anchestor<'a, 'b>(path1: &'a str, path2: &'b str) -> &'a str {
                     slash_pos = pos;
                 }
             }
-            (None, None) => return path1.into(),
+            (None, None) => return path1,
             _ => return &path1[..slash_pos],
         }
     }
@@ -26,14 +26,12 @@ pub fn dirname(path: &str) -> &str {
 
 pub fn dirs_between(path: &str, start: usize) -> usize {
     if start == 0 {
-        if path == "" {
+        if path.is_empty() {
             return 0;
-        } else {
-            return path.matches('/').count() + 1;
         }
-    } else {
-        path[start..].matches('/').count()
+        return path.matches('/').count() + 1;
     }
+    path[start..].matches('/').count()
 }
 
 pub fn join(path1: &str, path2: &str) -> String {

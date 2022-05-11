@@ -86,7 +86,7 @@ pub fn scan(
                     }
                     continue;
                 }
-                match EntryType::from_str(&target_relative_path) {
+                match EntryType::from_str(&target_file) {
                     EntryType::Document => {
                         if let Some(other_doc) = root.get_doc(&target_relative_path) {
                             if !target_anchor.is_empty() && !other_doc.has_anchor(&target_anchor) {
@@ -447,7 +447,7 @@ mod tests {
         let mut linked_resources = vec![];
         super::scan(
             doc,
-            &base.dir.dirs.get("sub").unwrap(),
+            base.dir.dirs.get("sub").unwrap(),
             &mut issues,
             &mut linked_resources,
             &base.dir,
