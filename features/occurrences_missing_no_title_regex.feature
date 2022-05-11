@@ -32,7 +32,6 @@ Feature: add occurrence sections without a title regex
       [One](../1.md)
       """
 
-  @this
   Scenario: check
     When checking
     Then it prints:
@@ -55,7 +54,7 @@ Feature: add occurrence sections without a title regex
 
       ### section
 
-      [Four](4.md)
+      [Four](four/4.md)
 
       ### occurrences
 
@@ -66,6 +65,7 @@ Feature: add occurrence sections without a title regex
     And file "3.md" is unchanged
     And the exit code is 0
 
+  @this
   Scenario: pitstop
     When doing a pitstop
     Then it prints:
@@ -79,7 +79,7 @@ Feature: add occurrence sections without a title regex
 
       ### section
 
-      [Four](4.md)
+      [Four](four/4.md)
 
       ### occurrences
 
