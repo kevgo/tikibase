@@ -88,8 +88,7 @@ fn pop_segments(segments: &mut Vec<&str>, parents: &mut u16) -> Result<(), ()> {
 /// provides the relative path from within given source file to the given target file
 pub fn relative(source: &str, target: &str) -> String {
     let common_ancestor = common_anchestor(source, target);
-    let source_dir = dirname(source);
-    let source_ups = dirs_between(source_dir, common_ancestor.len());
+    let source_ups = dirs_between(dirname(source), common_ancestor.len());
     let target_part = segments_after(target, common_ancestor);
     format!("{}{}", go_up(source_ups), target_part)
 }
