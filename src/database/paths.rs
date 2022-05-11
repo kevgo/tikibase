@@ -89,7 +89,7 @@ fn pop_segments(segments: &mut Vec<&str>, parents: &mut u16) -> Result<(), ()> {
 pub fn relative(source: &str, target: &str) -> String {
     let common_ancestor = common_anchestor(source, target);
     let source_ups = dirs_between(dirname(source), common_ancestor.len());
-    let target_part = segments_after(target, common_ancestor);
+    let target_part = path_after(target, common_ancestor.len());
     format!("{}{}", go_up(source_ups), target_part)
 }
 
@@ -107,8 +107,10 @@ fn segment(path: &str, start: usize, end: usize) -> &str {
     }
 }
 
-fn segments_after<'a, 'b>(path: &'a str, ancestor: &'b str) -> &'a str {
-    match ancestor.len() {
+/// part of `relative`
+/// provides the part of the given path after the given prefix
+fn path_after(path: &str, pos: usize) -> &str {
+    match pos {
         0 => path,
         len if len == path.len() => "",
         len => &path[len + 1..],
@@ -370,7 +372,7 @@ mod tests {
         fn none() {
             let path = "one/two/three/four/five";
             let ancestor = "";
-            let have = super::super::segments_after(path, ancestor);
+            let have = super::super::path_after(path, ancestor.len());
             let want = "one/two/three/four/five";
             assert_eq!(have, want);
         }
@@ -379,7 +381,7 @@ mod tests {
         fn some() {
             let path = "one/two/three/four/five";
             let ancestor = "one/two";
-            let have = super::super::segments_after(path, ancestor);
+            let have = super::super::path_after(path, ancestor.len());
             let want = "three/four/five";
             assert_eq!(have, want);
         }
@@ -388,7 +390,7 @@ mod tests {
         fn full() {
             let path = "one/two/three/four/five";
             let ancestor = "one/two/three/four/five";
-            let have = super::super::segments_after(path, ancestor);
+            let have = super::super::path_after(path, ancestor.len());
             let want = "";
             assert_eq!(have, want);
         }
