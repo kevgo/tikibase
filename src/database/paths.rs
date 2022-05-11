@@ -209,13 +209,6 @@ mod tests {
             let want = 0;
             assert_eq!(have, want);
         }
-
-        #[test]
-        fn subdir() {
-            let have = super::super::dirs_between("", 0);
-            let want = 0;
-            assert_eq!(have, want);
-        }
     }
 
     mod go_up {
