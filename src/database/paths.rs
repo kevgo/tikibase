@@ -85,6 +85,7 @@ fn pop_segments(segments: &mut Vec<&str>, parents: &mut u16) -> Result<(), ()> {
     Ok(())
 }
 
+/// provides the relative path from within given source file to the given target file
 pub fn relative(source: &str, target: &str) -> String {
     let common_ancestor = common_anchestor(source, target);
     let source_dir = dirname(source);
