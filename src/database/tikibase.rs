@@ -31,7 +31,7 @@ mod tests {
         use crate::test;
 
         #[test]
-        fn subdirectories() {
+        fn subdirectory() {
             let dir = test::tmp_dir();
             test::create_file("sub1/one.md", "# test doc", &dir);
             let base = Tikibase::load(dir).unwrap();
