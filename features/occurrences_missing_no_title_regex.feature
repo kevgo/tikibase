@@ -65,7 +65,6 @@ Feature: add occurrence sections without a title regex
     And file "3.md" is unchanged
     And the exit code is 0
 
-  @this
   Scenario: pitstop
     When doing a pitstop
     Then it prints:
