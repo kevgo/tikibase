@@ -375,12 +375,9 @@ mod tests {
         let content = indoc! {"
                 # One
                 working link to [Two](two/2.md)
-                ### section
-                working link to [Three](three/3.md)
                 "};
         test::create_file("1.md", content, &dir);
         test::create_file("two/2.md", "# Two\n[One](../1.md)", &dir);
-        test::create_file("three/3.md", "# Three\n[One](../1.md)", &dir);
         let base = Tikibase::load(dir).unwrap();
         let doc = base.get_doc("1.md").unwrap();
         let mut issues = vec![];
