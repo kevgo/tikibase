@@ -1,7 +1,7 @@
 # Tikibase developer documentation
 
 - see the [Makefile](Makefile) for available development commands
-- run a single Cucumber scenario: name the scenario `this`, then run
+- run a single Cucumber scenario: add a `@this` tag to the scenario and run
   `make cukethis`
 
 ### Architecture
