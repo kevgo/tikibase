@@ -27,6 +27,9 @@ pub struct Config {
     /// link to the JSON-Schema definition for this file
     #[serde(rename(deserialize = "$schema"))]
     pub schema: Option<String>,
+
+    /// whether documents without links are allowed
+    pub standalone_docs: Option<bool>,
 }
 
 impl Config {
@@ -164,6 +167,7 @@ mod tests {
                 ignore: None,
                 schema: None,
                 title_reg_ex: None,
+                standalone_docs: None,
             });
             pretty::assert_eq!(have, want);
         }
@@ -186,6 +190,7 @@ mod tests {
                 ignore: Some(vec!["foo".into()]),
                 schema: None,
                 title_reg_ex: None,
+                standalone_docs: None,
             });
             pretty::assert_eq!(have, want);
         }
@@ -201,7 +206,7 @@ mod tests {
             test::create_file("tikibase.json", give, &dir);
             let have = load(&dir);
             let want = LoadResult::Error(Issue::InvalidConfigurationFile {
-                message: "unknown field `foo`, expected one of `bidiLinks`, `ignore`, `sections`, `titleRegEx`, `$schema` at line 3 column 20".into(),
+                message: "unknown field `foo`, expected one of `bidiLinks`, `ignore`, `sections`, `titleRegEx`, `$schema`, `standaloneDocs` at line 3 column 20".into(),
                 location: Location {
                     file: "tikibase.json".into(),
                     line: 3,
@@ -277,6 +282,7 @@ mod tests {
                 sections: Some(vec!["hello".into(), "bye".into()]),
                 title_reg_ex: Some("config2regex".into()),
                 schema: Some("config2schema".into()),
+                standalone_docs: Some(true),
             };
             let config2 = Config::default();
             let old_config_1 = config1.clone();
@@ -293,6 +299,7 @@ mod tests {
                 sections: Some(vec!["hello".into(), "bye".into()]),
                 title_reg_ex: Some("config2regex".into()),
                 schema: Some("config2schema".into()),
+                standalone_docs: Some(true),
             };
             config1.merge(config2.clone());
             assert_eq!(config1, config2);
@@ -306,6 +313,7 @@ mod tests {
                 sections: Some(vec!["hello".into(), "bye".into()]),
                 title_reg_ex: Some("config2regex".into()),
                 schema: Some("config2schema".into()),
+                standalone_docs: Some(true),
             };
             let config2 = Config {
                 bidi_links: Some(true),
@@ -313,6 +321,7 @@ mod tests {
                 sections: Some(vec!["hello".into(), "bye".into()]),
                 title_reg_ex: Some("config2regex".into()),
                 schema: Some("config2schema".into()),
+                standalone_docs: Some(true),
             };
             config1.merge(config2.clone());
             assert_eq!(config1, config2);
