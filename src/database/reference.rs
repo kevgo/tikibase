@@ -24,7 +24,10 @@ impl Reference {
                 line: _,
                 start: _,
                 end: _,
-            } => target == path,
+            } => match target.split_once('#') {
+                Some((base, _anchor)) => base == path,
+                None => target == path,
+            },
             Reference::Image {
                 src,
                 line: _,
@@ -83,6 +86,17 @@ mod tests {
                 end: 0,
             };
             assert!(!img.points_to("other.md"));
+        }
+
+        #[test]
+        fn with_anchor() {
+            let img = Reference::Link {
+                target: "ok.md#foo".into(),
+                line: 0,
+                start: 0,
+                end: 0,
+            };
+            assert!(img.points_to("ok.md"));
         }
     }
 }

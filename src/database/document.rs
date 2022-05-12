@@ -364,6 +364,24 @@ mod tests {
             let doc = base.get_doc("sub/two.md").unwrap();
             assert!(doc.contains_reference_to("../one.md"));
         }
+
+        #[test]
+        fn with_anchor() {
+            let dir = test::tmp_dir();
+            test::create_file(
+                "one.md",
+                "# One\n###section\n[two](sub/two.md#section)",
+                &dir,
+            );
+            test::create_file(
+                "sub/two.md",
+                "# Two\n### section\n[one](../one.md#section)",
+                &dir,
+            );
+            let base = Tikibase::load(dir).unwrap();
+            let doc = base.get_doc("one.md").unwrap();
+            assert!(doc.contains_reference_to("sub/two.md"));
+        }
     }
 
     mod footnotes {
