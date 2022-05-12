@@ -3,6 +3,10 @@
 build:  # builds the release binary
 	cargo build --release --target x86_64-unknown-linux-musl
 
+build-release:  # builds a release version of the binary
+	docker run --rm --user "$(id -u)":"$(id -g)" -v "$(PWD)":/usr/src/myapp -w /usr/src/myapp rust cargo build --release
+	(cd target/release && tar -czvf "../../tikibase_linux_64.tar.gz" tikibase)
+
 cuke:  # runs the integration tests
 	rm -rf ./tmp
 	cargo test --test cucumber
