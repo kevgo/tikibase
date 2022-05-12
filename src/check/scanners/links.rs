@@ -9,7 +9,7 @@ pub fn scan(
     linked_resources: &mut Vec<String>,
     root: &Directory,
 ) {
-    if doc.references.is_empty() {
+    if dir.config.check_standalone_docs() && doc.references.is_empty() {
         issues.push(Issue::DocumentWithoutLinks {
             location: Location {
                 file: doc.relative_path.clone(),

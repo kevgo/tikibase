@@ -38,6 +38,13 @@
         "type": "string"
       }
     },
+    "standaloneDocs": {
+      "description": "whether documents without links are allowed",
+      "type": [
+        "boolean",
+        "null"
+      ]
+    },
     "titleRegEx": {
       "description": "regex with a single capture group to extract a shorter title for links to notes",
       "type": [
