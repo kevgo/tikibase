@@ -41,6 +41,25 @@ impl Config {
         }
     }
 
+    /// indicates whether the given title matches one of the allowed titles
+    pub fn matching_title(&self, title: &str) -> bool {
+        match &self.sections {
+            // HACK: see https://github.com/rust-lang/rust/issues/42671
+            Some(sections) => sections
+                .iter()
+                .any(|config_section| config_section == title),
+            None => true,
+        }
+    }
+
+    /// indicates whether Tikibase should check for standalone documents
+    pub fn check_standalone_docs(&self) -> bool {
+        match self.standalone_docs {
+            Some(flag) => !flag,
+            None => true,
+        }
+    }
+
     /// provides the regular expression as a proper Regex instance
     pub fn title_regex(&self) -> Result<Option<Regex>, Issue> {
         match &self.title_reg_ex {
@@ -53,17 +72,6 @@ impl Config {
                 }),
             },
             None => Ok(None),
-        }
-    }
-
-    /// indicates whether the given title matches one of the allowed titles
-    pub fn matching_title(&self, title: &str) -> bool {
-        match &self.sections {
-            // HACK: see https://github.com/rust-lang/rust/issues/42671
-            Some(sections) => sections
-                .iter()
-                .any(|config_section| config_section == title),
-            None => true,
         }
     }
 }
@@ -111,6 +119,37 @@ pub enum LoadResult {
 
 #[cfg(test)]
 mod tests {
+
+    mod check_standalone_docs {
+        use crate::Config;
+
+        #[test]
+        fn none() {
+            let config = Config {
+                standalone_docs: None,
+                ..Config::default()
+            };
+            assert!(config.check_standalone_docs());
+        }
+
+        #[test]
+        fn enabled() {
+            let config = Config {
+                standalone_docs: Some(true),
+                ..Config::default()
+            };
+            assert!(!config.check_standalone_docs());
+        }
+
+        #[test]
+        fn disabled() {
+            let config = Config {
+                standalone_docs: Some(false),
+                ..Config::default()
+            };
+            assert!(config.check_standalone_docs());
+        }
+    }
 
     mod ignore {
         use crate::Config;
