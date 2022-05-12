@@ -1,12 +1,12 @@
-Feature: link to wrong anchor
+Feature: link to non-existing anchor in the same document
 
   Background:
     Given file "1.md" with content:
       """
       # One
 
-      [wrong anchor, existing file](2.md#zonk)
-      <a href="2.md#zonk">wrong anchor, existing file</a>
+      [wrong anchor](#zonk)
+      <a href="#zonk">wrong anchor, existing file</a>
       """
     And file "2.md" with content:
       """
@@ -19,8 +19,8 @@ Feature: link to wrong anchor
     When checking
     Then it prints:
       """
-      1.md:3  link to non-existing anchor "#zonk" in "2.md"
-      1.md:4  link to non-existing anchor "#zonk" in "2.md"
+      1.md:3  link to non-existing anchor "#zonk" in current file
+      1.md:4  link to non-existing anchor "#zonk" in current file
       """
     And all files are unchanged
     And the exit code is 2
@@ -34,8 +34,8 @@ Feature: link to wrong anchor
     When doing a pitstop
     Then it prints:
       """
-      1.md:3  link to non-existing anchor "#zonk" in "2.md"
-      1.md:4  link to non-existing anchor "#zonk" in "2.md"
+      1.md:3  link to non-existing anchor "#zonk" in current file
+      1.md:4  link to non-existing anchor "#zonk" in current file
       """
     And all files are unchanged
     And the exit code is 2
