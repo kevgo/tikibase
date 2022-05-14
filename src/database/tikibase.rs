@@ -22,7 +22,7 @@ impl Tikibase {
     }
 
     /// provides the document with the given relative filename as a mutable reference
-    pub fn get_doc_mut<P: AsRef<str>>(&mut self, path: P) -> Option<&mut Document> {
+    pub fn get_doc_mut(&mut self, path: &str) -> Option<&mut Document> {
         self.dir.get_doc_mut(path)
     }
 }

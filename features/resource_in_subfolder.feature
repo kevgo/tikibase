@@ -1,4 +1,3 @@
-@this
 Feature: Resource referenced in a subfolder
 
   Background:
@@ -11,6 +10,7 @@ Feature: Resource referenced in a subfolder
       """
     And file "sub/existing.png"
 
+  @this
   Scenario: check
     When checking
     Then it finds no issues

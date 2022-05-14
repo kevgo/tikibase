@@ -631,7 +631,7 @@ mod tests {
             &base.dir,
         );
         pretty::assert_eq!(issues, vec![]);
-        assert_eq!(linked_resources, vec!["docs.pdf"]);
+        assert_eq!(linked_resources, vec!["doc.pdf"]);
     }
 
     #[test]
@@ -646,6 +646,6 @@ mod tests {
         let subdir = base.get_dir("sub").unwrap();
         super::scan(doc, &subdir, &mut issues, &mut linked_resources, &base.dir);
         pretty::assert_eq!(issues, vec![]);
-        assert_eq!(linked_resources, vec!["docs.pdf"]);
+        assert_eq!(linked_resources, vec!["sub/doc.pdf"]);
     }
 }

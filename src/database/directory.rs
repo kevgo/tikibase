@@ -38,13 +38,25 @@ impl Directory {
     }
 
     /// provides the document with the given relative filename as a mutable reference
-    pub fn get_doc_mut<OS: AsRef<str>>(&mut self, relative_path: OS) -> Option<&mut Document> {
-        self.docs.get_mut(relative_path.as_ref())
+    pub fn get_doc_mut(&mut self, relative_path: &str) -> Option<&mut Document> {
+        match lowest_subdir(relative_path) {
+            Some((subdir, remaining_path)) => match self.dirs.get_mut(subdir) {
+                Some(dir) => dir.get_doc_mut(remaining_path),
+                None => None,
+            },
+            None => self.docs.get_mut(relative_path),
+        }
     }
 
     /// indicates whether this Tikibase contains a directory with the given name
-    pub fn has_dir<P: AsRef<str>>(&self, path: P) -> bool {
-        self.dirs.contains_key(path.as_ref())
+    pub fn has_dir(&self, path: &str) -> bool {
+        match lowest_subdir(path) {
+            Some((subdir, remaining_path)) => match self.dirs.get(subdir) {
+                Some(dir) => dir.has_dir(remaining_path),
+                None => false,
+            },
+            None => self.dirs.contains_key(path),
+        }
     }
 
     /// indicates whether this Tikibase contains a resource with the given path
