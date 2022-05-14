@@ -130,8 +130,7 @@ pub fn scan(
                                     start: start.to_owned(),
                                     end: end.to_owned(),
                                 },
-                                // TODO: use target_relative_path here
-                                target: target.into(),
+                                target: target_relative_path,
                             });
                         };
                     }
@@ -351,7 +350,7 @@ mod tests {
                 start: 0,
                 end: 39,
             },
-            target: "2.md#foo".into(),
+            target: "2.md".into(),
         }];
         pretty::assert_eq!(issues, want);
         assert_eq!(linked_resources, Vec::<String>::new());
