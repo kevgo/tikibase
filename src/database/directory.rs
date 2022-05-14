@@ -333,14 +333,14 @@ mod tests {
         fn mismatch() {
             let dir = test::tmp_dir();
             let dir = Directory::load(&dir, "".into(), Config::default()).unwrap();
-            assert!(!dir.has_resource("foo.png"));
+            assert!(!dir.has_resource("zonk.png"));
         }
 
         #[test]
         fn matching() {
-            let dir = test::tmp_dir();
-            test::create_file("one/two/foo.png", "content", &dir);
-            let dir = Directory::load(&dir, "".into(), Config::default()).unwrap();
+            let root = test::tmp_dir();
+            test::create_file("one/two/foo.png", "content", &root);
+            let dir = Directory::load(&root, "".into(), Config::default()).unwrap();
             assert!(dir.has_resource("one/two/foo.png"));
         }
     }
