@@ -130,6 +130,7 @@ pub fn scan(
                                     start: start.to_owned(),
                                     end: end.to_owned(),
                                 },
+                                // TODO: use target_relative_path here
                                 target: target.into(),
                             });
                         };
@@ -145,7 +146,7 @@ pub fn scan(
                                     start: start.to_owned(),
                                     end: end.to_owned(),
                                 },
-                                target: target.into(),
+                                target: target_relative_path,
                             });
                         }
                     }
@@ -175,8 +176,23 @@ pub fn scan(
                 if src.starts_with("http") {
                     continue;
                 }
-                if root.has_resource(&src) {
-                    linked_resources.push(paths::join(&dir.relative_path, src));
+                let target_relative_path = paths::join(&dir.relative_path, src);
+                let target_relative_path = if let Ok(p) = paths::normalize(&target_relative_path) {
+                    p
+                } else {
+                    issues.push(Issue::PathEscapesRoot {
+                        path: target_relative_path,
+                        location: Location {
+                            file: doc.relative_path.clone(),
+                            line: line.to_owned(),
+                            start: start.to_owned(),
+                            end: end.to_owned(),
+                        },
+                    });
+                    continue;
+                };
+                if root.has_resource(&target_relative_path) {
+                    linked_resources.push(target_relative_path);
                 } else {
                     issues.push(Issue::BrokenImage {
                         location: Location {
@@ -567,6 +583,21 @@ mod tests {
     }
 
     #[test]
+    fn imagelink_to_existing_image_in_subdir() {
+        let dir = test::tmp_dir();
+        test::create_file("one/two/1.md", "# One\n\n![image](foo.png)\n", &dir);
+        test::create_file("one/two/foo.png", "image content", &dir);
+        let base = Tikibase::load(dir).unwrap();
+        let doc = base.get_doc("one/two/1.md").unwrap();
+        let dir = base.get_dir("one/two").unwrap();
+        let mut issues = vec![];
+        let mut linked_resources = vec![];
+        super::scan(doc, dir, &mut issues, &mut linked_resources, &base.dir);
+        assert!(issues.is_empty());
+        assert_eq!(linked_resources, vec!["one/two/foo.png".to_string()]);
+    }
+
+    #[test]
     fn imagelink_to_existing_image() {
         let dir = test::tmp_dir();
         test::create_file("1.md", "# One\n\n![image](foo.png)\n", &dir);
@@ -617,8 +648,8 @@ mod tests {
     #[test]
     fn link_to_existing_resource() {
         let dir = test::tmp_dir();
-        test::create_file("1.md", "# One\n\n[docs](docs.pdf)\n", &dir);
-        test::create_file("docs.pdf", "PDF content", &dir);
+        test::create_file("1.md", "# One\n\n[doc](doc.pdf)\n", &dir);
+        test::create_file("doc.pdf", "PDF content", &dir);
         let base = Tikibase::load(dir).unwrap();
         let doc = base.get_doc("1.md").unwrap();
         let mut issues = vec![];
@@ -631,6 +662,21 @@ mod tests {
             &base.dir,
         );
         pretty::assert_eq!(issues, vec![]);
-        assert_eq!(linked_resources, vec!["docs.pdf"]);
+        assert_eq!(linked_resources, vec!["doc.pdf"]);
+    }
+
+    #[test]
+    fn link_to_existing_resource_in_subfolder() {
+        let dir = test::tmp_dir();
+        test::create_file("sub/1.md", "# One\n\n[doc](doc.pdf)\n", &dir);
+        test::create_file("sub/doc.pdf", "PDF content", &dir);
+        let base = Tikibase::load(dir).unwrap();
+        let doc = base.get_doc("sub/1.md").unwrap();
+        let mut issues = vec![];
+        let mut linked_resources = vec![];
+        let subdir = base.get_dir("sub").unwrap();
+        super::scan(doc, subdir, &mut issues, &mut linked_resources, &base.dir);
+        pretty::assert_eq!(issues, vec![]);
+        assert_eq!(linked_resources, vec!["sub/doc.pdf"]);
     }
 }

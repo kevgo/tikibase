@@ -13,12 +13,16 @@ impl Tikibase {
         Ok(Tikibase { root, dir })
     }
 
+    pub fn get_dir(&self, relative_path: &str) -> Option<&Directory> {
+        self.dir.get_dir(relative_path)
+    }
+
     pub fn get_doc(&self, relative_path: &str) -> Option<&Document> {
         self.dir.get_doc(relative_path)
     }
 
     /// provides the document with the given relative filename as a mutable reference
-    pub fn get_doc_mut<P: AsRef<str>>(&mut self, path: P) -> Option<&mut Document> {
+    pub fn get_doc_mut(&mut self, path: &str) -> Option<&mut Document> {
         self.dir.get_doc_mut(path)
     }
 }

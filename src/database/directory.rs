@@ -15,6 +15,17 @@ pub struct Directory {
 }
 
 impl Directory {
+    /// provides the directory with the given relative filename
+    pub fn get_dir(&self, relative_path: &str) -> Option<&Directory> {
+        match lowest_subdir(relative_path) {
+            Some((subdir, remaining_path)) => match self.dirs.get(subdir) {
+                Some(dir) => dir.get_dir(remaining_path),
+                None => None,
+            },
+            None => self.dirs.get(relative_path),
+        }
+    }
+
     /// provides the document with the given relative filename
     pub fn get_doc(&self, relative_path: &str) -> Option<&Document> {
         match lowest_subdir(relative_path) {
@@ -27,18 +38,36 @@ impl Directory {
     }
 
     /// provides the document with the given relative filename as a mutable reference
-    pub fn get_doc_mut<OS: AsRef<str>>(&mut self, relative_path: OS) -> Option<&mut Document> {
-        self.docs.get_mut(relative_path.as_ref())
+    pub fn get_doc_mut(&mut self, relative_path: &str) -> Option<&mut Document> {
+        match lowest_subdir(relative_path) {
+            Some((subdir, remaining_path)) => match self.dirs.get_mut(subdir) {
+                Some(dir) => dir.get_doc_mut(remaining_path),
+                None => None,
+            },
+            None => self.docs.get_mut(relative_path),
+        }
     }
 
     /// indicates whether this Tikibase contains a directory with the given name
-    pub fn has_dir<P: AsRef<str>>(&self, path: P) -> bool {
-        self.dirs.contains_key(path.as_ref())
+    pub fn has_dir(&self, path: &str) -> bool {
+        match lowest_subdir(path) {
+            Some((subdir, remaining_path)) => match self.dirs.get(subdir) {
+                Some(dir) => dir.has_dir(remaining_path),
+                None => false,
+            },
+            None => self.dirs.contains_key(path),
+        }
     }
 
     /// indicates whether this Tikibase contains a resource with the given path
-    pub fn has_resource<P: AsRef<str>>(&self, path: P) -> bool {
-        self.resources.contains_key(path.as_ref())
+    pub fn has_resource(&self, path: &str) -> bool {
+        match lowest_subdir(path) {
+            Some((subdir, remaining_path)) => match self.dirs.get(subdir) {
+                Some(dir) => dir.has_resource(remaining_path),
+                None => false,
+            },
+            None => self.resources.contains_key(path),
+        }
     }
 
     /// provides a Directory instance for the given directory
@@ -179,6 +208,7 @@ fn has_extension(path: &str, given_ext: &str) -> bool {
 
 /// provides the lowest subdirectory portion of the given path
 /// If a subdir was found, removes it from the given path.
+// TODO: return the tuple without an option
 fn lowest_subdir(path: &str) -> Option<(&str, &str)> {
     path.find('/')
         .map(|index| (&path[..index], &path[index + 1..]))
@@ -215,6 +245,27 @@ mod tests {
                 let have = EntryType::from_str(give);
                 assert_eq!(have, want);
             }
+        }
+    }
+
+    mod get_dir {
+        use crate::database::Directory;
+        use crate::{test, Config};
+
+        #[test]
+        fn exists() {
+            let dir = test::tmp_dir();
+            test::create_file("one/two/one.md", "# test doc", &dir);
+            let root = Directory::load(&dir, "".into(), Config::default()).unwrap();
+            let have = root.get_dir("one/two").unwrap();
+            assert_eq!(have.relative_path, "one/two");
+        }
+
+        #[test]
+        fn missing() {
+            let dir = test::tmp_dir();
+            let dir = Directory::load(&dir, "".into(), Config::default()).unwrap();
+            assert!(dir.get_dir("zonk").is_none());
         }
     }
 
@@ -279,18 +330,18 @@ mod tests {
         use crate::{test, Config};
 
         #[test]
-        fn empty() {
+        fn mismatch() {
             let dir = test::tmp_dir();
             let dir = Directory::load(&dir, "".into(), Config::default()).unwrap();
-            assert!(!dir.has_resource("foo.png"));
+            assert!(!dir.has_resource("zonk.png"));
         }
 
         #[test]
-        fn matching_resource() {
-            let dir = test::tmp_dir();
-            test::create_file("foo.png", "content", &dir);
-            let dir = Directory::load(&dir, "".into(), Config::default()).unwrap();
-            assert!(dir.has_resource("foo.png"));
+        fn matching() {
+            let root = test::tmp_dir();
+            test::create_file("one/two/foo.png", "content", &root);
+            let dir = Directory::load(&root, "".into(), Config::default()).unwrap();
+            assert!(dir.has_resource("one/two/foo.png"));
         }
     }
 
