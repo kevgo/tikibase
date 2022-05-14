@@ -15,6 +15,17 @@ pub struct Directory {
 }
 
 impl Directory {
+    /// provides the directory with the given relative filename
+    pub fn get_dir(&self, relative_path: &str) -> Option<&Directory> {
+        match lowest_subdir(relative_path) {
+            Some((subdir, remaining_path)) => match self.dirs.get(subdir) {
+                Some(dir) => dir.get_doc(remaining_path),
+                None => None,
+            },
+            None => self.docs.get(relative_path),
+        }
+    }
+
     /// provides the document with the given relative filename
     pub fn get_doc(&self, relative_path: &str) -> Option<&Document> {
         match lowest_subdir(relative_path) {

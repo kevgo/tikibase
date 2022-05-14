@@ -13,6 +13,10 @@ impl Tikibase {
         Ok(Tikibase { root, dir })
     }
 
+    pub fn get_dir(&self, relative_path: &str) -> Option<&Directory> {
+        self.dir.get_dir(relative_path)
+    }
+
     pub fn get_doc(&self, relative_path: &str) -> Option<&Document> {
         self.dir.get_doc(relative_path)
     }

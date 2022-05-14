@@ -617,12 +617,33 @@ mod tests {
     #[test]
     fn link_to_existing_resource() {
         let dir = test::tmp_dir();
-        test::create_file("1.md", "# One\n\n[docs](docs.pdf)\n", &dir);
-        test::create_file("docs.pdf", "PDF content", &dir);
+        test::create_file("1.md", "# One\n\n[doc](doc.pdf)\n", &dir);
+        test::create_file("doc.pdf", "PDF content", &dir);
         let base = Tikibase::load(dir).unwrap();
         let doc = base.get_doc("1.md").unwrap();
         let mut issues = vec![];
         let mut linked_resources = vec![];
+        super::scan(
+            doc,
+            &base.dir,
+            &mut issues,
+            &mut linked_resources,
+            &base.dir,
+        );
+        pretty::assert_eq!(issues, vec![]);
+        assert_eq!(linked_resources, vec!["docs.pdf"]);
+    }
+
+    #[test]
+    fn link_to_existing_resource_in_subfolder() {
+        let dir = test::tmp_dir();
+        test::create_file("sub/1.md", "# One\n\n[doc](doc.pdf)\n", &dir);
+        test::create_file("sub/doc.pdf", "PDF content", &dir);
+        let base = Tikibase::load(dir).unwrap();
+        let doc = base.get_doc("sub/1.md").unwrap();
+        let mut issues = vec![];
+        let mut linked_resources = vec![];
+        let subdir = base.get_dir("sub").unwrap();
         super::scan(
             doc,
             &base.dir,
