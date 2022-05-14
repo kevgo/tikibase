@@ -18,55 +18,55 @@ impl Directory {
     /// provides the directory with the given relative filename
     pub fn get_dir(&self, relative_path: &str) -> Option<&Directory> {
         match lowest_subdir(relative_path) {
-            Some((subdir, remaining_path)) => match self.dirs.get(subdir) {
+            ("", filename) => self.dirs.get(filename),
+            (subdir, remaining_path) => match self.dirs.get(subdir) {
                 Some(dir) => dir.get_dir(remaining_path),
                 None => None,
             },
-            None => self.dirs.get(relative_path),
         }
     }
 
     /// provides the document with the given relative filename
     pub fn get_doc(&self, relative_path: &str) -> Option<&Document> {
         match lowest_subdir(relative_path) {
-            Some((subdir, remaining_path)) => match self.dirs.get(subdir) {
+            ("", filename) => self.docs.get(filename),
+            (subdir, remaining_path) => match self.dirs.get(subdir) {
                 Some(dir) => dir.get_doc(remaining_path),
                 None => None,
             },
-            None => self.docs.get(relative_path),
         }
     }
 
     /// provides the document with the given relative filename as a mutable reference
     pub fn get_doc_mut(&mut self, relative_path: &str) -> Option<&mut Document> {
         match lowest_subdir(relative_path) {
-            Some((subdir, remaining_path)) => match self.dirs.get_mut(subdir) {
+            ("", filename) => self.docs.get_mut(filename),
+            (subdir, remaining_path) => match self.dirs.get_mut(subdir) {
                 Some(dir) => dir.get_doc_mut(remaining_path),
                 None => None,
             },
-            None => self.docs.get_mut(relative_path),
         }
     }
 
     /// indicates whether this Tikibase contains a directory with the given name
     pub fn has_dir(&self, path: &str) -> bool {
         match lowest_subdir(path) {
-            Some((subdir, remaining_path)) => match self.dirs.get(subdir) {
+            ("", filename) => self.dirs.contains_key(filename),
+            (subdir, remaining_path) => match self.dirs.get(subdir) {
                 Some(dir) => dir.has_dir(remaining_path),
                 None => false,
             },
-            None => self.dirs.contains_key(path),
         }
     }
 
     /// indicates whether this Tikibase contains a resource with the given path
     pub fn has_resource(&self, path: &str) -> bool {
         match lowest_subdir(path) {
-            Some((subdir, remaining_path)) => match self.dirs.get(subdir) {
+            ("", filename) => self.resources.contains_key(filename),
+            (subdir, remaining_path) => match self.dirs.get(subdir) {
                 Some(dir) => dir.has_resource(remaining_path),
                 None => false,
             },
-            None => self.resources.contains_key(path),
         }
     }
 
@@ -208,10 +208,11 @@ fn has_extension(path: &str, given_ext: &str) -> bool {
 
 /// provides the lowest subdirectory portion of the given path
 /// If a subdir was found, removes it from the given path.
-// TODO: return the tuple without an option
-fn lowest_subdir(path: &str) -> Option<(&str, &str)> {
-    path.find('/')
-        .map(|index| (&path[..index], &path[index + 1..]))
+fn lowest_subdir(path: &str) -> (&str, &str) {
+    match path.find('/') {
+        Some(idx) => (&path[..idx], &path[idx + 1..]),
+        None => ("", path),
+    }
 }
 
 #[cfg(test)]
@@ -376,7 +377,7 @@ mod tests {
         #[test]
         fn top_level() {
             let give = "foo.md";
-            let want = None;
+            let want = ("", "foo.md");
             let have = super::super::lowest_subdir(give);
             assert_eq!(have, want);
         }
@@ -384,7 +385,7 @@ mod tests {
         #[test]
         fn subdir() {
             let give = "sub1/foo.md";
-            let want = Some(("sub1", "foo.md"));
+            let want = ("sub1", "foo.md");
             let have = super::super::lowest_subdir(give);
             assert_eq!(have, want);
         }
@@ -392,7 +393,7 @@ mod tests {
         #[test]
         fn nested_subdir() {
             let give = "sub1/sub2/foo.md";
-            let want = Some(("sub1", "sub2/foo.md"));
+            let want = ("sub1", "sub2/foo.md");
             let have = super::super::lowest_subdir(give);
             assert_eq!(have, want);
         }
