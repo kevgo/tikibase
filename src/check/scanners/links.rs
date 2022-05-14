@@ -644,13 +644,7 @@ mod tests {
         let mut issues = vec![];
         let mut linked_resources = vec![];
         let subdir = base.get_dir("sub").unwrap();
-        super::scan(
-            doc,
-            &base.dir,
-            &mut issues,
-            &mut linked_resources,
-            &base.dir,
-        );
+        super::scan(doc, &subdir, &mut issues, &mut linked_resources, &base.dir);
         pretty::assert_eq!(issues, vec![]);
         assert_eq!(linked_resources, vec!["docs.pdf"]);
     }

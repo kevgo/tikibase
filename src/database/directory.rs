@@ -19,10 +19,10 @@ impl Directory {
     pub fn get_dir(&self, relative_path: &str) -> Option<&Directory> {
         match lowest_subdir(relative_path) {
             Some((subdir, remaining_path)) => match self.dirs.get(subdir) {
-                Some(dir) => dir.get_doc(remaining_path),
+                Some(dir) => dir.get_dir(remaining_path),
                 None => None,
             },
-            None => self.docs.get(relative_path),
+            None => self.dirs.get(relative_path),
         }
     }
 
@@ -48,8 +48,14 @@ impl Directory {
     }
 
     /// indicates whether this Tikibase contains a resource with the given path
-    pub fn has_resource<P: AsRef<str>>(&self, path: P) -> bool {
-        self.resources.contains_key(path.as_ref())
+    pub fn has_resource(&self, path: &str) -> bool {
+        match lowest_subdir(path) {
+            Some((subdir, remaining_path)) => match self.dirs.get(subdir) {
+                Some(dir) => dir.has_resource(remaining_path),
+                None => false,
+            },
+            None => self.resources.contains_key(path),
+        }
     }
 
     /// provides a Directory instance for the given directory
@@ -190,6 +196,7 @@ fn has_extension(path: &str, given_ext: &str) -> bool {
 
 /// provides the lowest subdirectory portion of the given path
 /// If a subdir was found, removes it from the given path.
+// TODO: return the tuple without an option
 fn lowest_subdir(path: &str) -> Option<(&str, &str)> {
     path.find('/')
         .map(|index| (&path[..index], &path[index + 1..]))
@@ -226,6 +233,27 @@ mod tests {
                 let have = EntryType::from_str(give);
                 assert_eq!(have, want);
             }
+        }
+    }
+
+    mod get_dir {
+        use crate::database::Directory;
+        use crate::{test, Config};
+
+        #[test]
+        fn exists() {
+            let dir = test::tmp_dir();
+            test::create_file("one/two/one.md", "# test doc", &dir);
+            let root = Directory::load(&dir, "".into(), Config::default()).unwrap();
+            let have = root.get_dir("one/two").unwrap();
+            assert_eq!(have.relative_path, "one/two");
+        }
+
+        #[test]
+        fn missing() {
+            let dir = test::tmp_dir();
+            let dir = Directory::load(&dir, "".into(), Config::default()).unwrap();
+            assert!(dir.get_dir("zonk").is_none());
         }
     }
 
@@ -290,18 +318,18 @@ mod tests {
         use crate::{test, Config};
 
         #[test]
-        fn empty() {
+        fn mismatch() {
             let dir = test::tmp_dir();
             let dir = Directory::load(&dir, "".into(), Config::default()).unwrap();
             assert!(!dir.has_resource("foo.png"));
         }
 
         #[test]
-        fn matching_resource() {
+        fn matching() {
             let dir = test::tmp_dir();
-            test::create_file("foo.png", "content", &dir);
+            test::create_file("one/two/foo.png", "content", &dir);
             let dir = Directory::load(&dir, "".into(), Config::default()).unwrap();
-            assert!(dir.has_resource("foo.png"));
+            assert!(dir.has_resource("one/two/foo.png"));
         }
     }
 
