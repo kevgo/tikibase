@@ -9,7 +9,7 @@ Feature: PDF resources
       """
     And file "foo.pdf"
 
-  Scenario: this
+  Scenario: check
     When checking
     Then it finds no issues
     And all files are unchanged
