@@ -15,3 +15,15 @@ pub struct State1<'a> {
     /// link to the root directory of the Tikibase
     pub base_dir: &'a Directory,
 }
+
+impl<'a> State1<'a> {
+    pub fn empty(base_dir: &'a Directory) -> State1<'a> {
+        State1 {
+            issues: vec![],
+            linked_resources: vec![],
+            capitalization_variants: AHashMap::new(),
+            level_variants: AHashMap::new(),
+            base_dir,
+        }
+    }
+}
