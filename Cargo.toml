@@ -3,7 +3,6 @@ name = "tikibase"
 version = "0.5.1"
 authors = ["Kevin Goslar <kevin.goslar@gmail.com>"]
 edition = "2021"
-rust-version = "1.59"
 
 [dependencies]
 ahash = "0.7.6"
