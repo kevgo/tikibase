@@ -1095,7 +1095,7 @@ dependencies = [
 
 [[package]]
 name = "tikibase"
-version = "0.5.1"
+version = "0.6.0"
 dependencies = [
  "ahash",
  "async-trait",
