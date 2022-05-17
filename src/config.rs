@@ -63,7 +63,7 @@ impl Config {
                         return Some(&section_title);
                     }
                 }
-                return None;
+                None
             }
             None => None,
         }
