@@ -13,8 +13,6 @@ pub fn normalize_outliers(
 ) -> fix::Result {
     let base_dir = base.root.clone();
     let doc = base.get_doc_mut(&location.file).unwrap();
-    println!("{:?}", doc);
-    println!("{}", &section_human_title);
     let section = doc
         .section_with_human_title_mut(&section_human_title)
         .unwrap();
