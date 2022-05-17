@@ -75,7 +75,7 @@ mod tests {
             text"};
         let doc = Document::from_str("test.md", content).unwrap();
         let config = Config {
-            sections: Some(vec!["one".into(), "two".into(), "three".into()]),
+            sections: Some(vec!["### one".into(), "### two".into(), "### three".into()]),
             ..Config::default()
         };
         let mut issues = vec![];
