@@ -53,6 +53,7 @@ impl Config {
         }
     }
 
+    /// provides the configured section title corresponding to the given human title
     pub fn section_with_human_title(&self, human_title: &str) -> Option<&str> {
         if let Some(sections) = &self.sections {
             for section_title in sections {
