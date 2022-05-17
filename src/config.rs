@@ -54,19 +54,16 @@ impl Config {
     }
 
     pub fn section_with_human_title(&self, human_title: &str) -> Option<&str> {
-        match &self.sections {
-            Some(sections) => {
-                for section_title in sections {
-                    let (_level, start) = Section::parse_title(section_title);
-                    let section_human_title = &section_title[start..];
-                    if section_human_title == human_title {
-                        return Some(&section_title);
-                    }
+        if let Some(sections) = &self.sections {
+            for section_title in sections {
+                let (_level, start) = Section::parse_title(section_title);
+                let section_human_title = &section_title[start..];
+                if section_human_title == human_title {
+                    return Some(section_title);
                 }
-                None
             }
-            None => None,
         }
+        None
     }
 
     /// indicates whether Tikibase should check for standalone documents
