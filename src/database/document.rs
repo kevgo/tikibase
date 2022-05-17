@@ -273,7 +273,7 @@ impl Document {
     pub fn section_with_title_mut(&mut self, title: &str) -> Option<&mut Section> {
         self.content_sections
             .iter_mut()
-            .find(|section| &section.title_line.text == title)
+            .find(|section| section.title_line.text == title)
     }
 
     /// provides the complete textual content of this document
