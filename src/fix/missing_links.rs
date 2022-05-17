@@ -23,7 +23,8 @@ pub fn add_occurrences(
     let doc = base.get_doc_mut(&location.file).unwrap();
 
     // check for existing occurrences section
-    let occurrences_section = if let Some(section) = doc.section_with_title_mut("occurrences") {
+    let occurrences_section = if let Some(section) = doc.section_with_human_title_mut("occurrences")
+    {
         section
     } else {
         // append a newline to the section before
@@ -32,7 +33,7 @@ pub fn add_occurrences(
         // insert occurrences section
         let occurrences_section = Section::new(doc.lines_count() + 1, "### occurrences", vec![""]);
         doc.content_sections.push(occurrences_section);
-        doc.section_with_title_mut("occurrences").unwrap()
+        doc.section_with_human_title_mut("occurrences").unwrap()
     };
     let stripped_title = &strip_links(title);
     let title = match &title_regex {
