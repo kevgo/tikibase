@@ -20,7 +20,7 @@ pub fn normalize_outliers(
     doc.save(&base_dir);
     Fixed(NormalizedSectionLevel {
         location,
-        section_title: section_human_title,
+        section_human_title,
         old_level,
         new_level,
     })
@@ -41,7 +41,7 @@ pub fn set_to_configured_section_level(
     doc.save(&base_dir);
     Fixed(NormalizedSectionLevel {
         location,
-        section_title: actual_title,
+        section_human_title: actual_title,
         old_level: actual_level,
         new_level: configured_level,
     })

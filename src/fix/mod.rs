@@ -179,7 +179,7 @@ pub enum Fix {
     },
     NormalizedSectionLevel {
         location: Location,
-        section_title: String,
+        section_human_title: String,
         old_level: u8,
         new_level: u8,
     },

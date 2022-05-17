@@ -62,13 +62,13 @@ impl Message {
             },
             Fix::NormalizedSectionLevel {
                 location,
-                section_title,
+                section_human_title,
                 old_level,
                 new_level,
             } => Message {
                 text: format!(
                     r#"normalized section "{}" from <h{}> to <h{}>"#,
-                    section_title, old_level, new_level
+                    section_human_title, old_level, new_level
                 ),
                 file: location.file,
                 line: Some(location.line),
