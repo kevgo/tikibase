@@ -20,7 +20,7 @@ fn reorder(sections: &mut Vec<Section>, schema: &[String]) -> Vec<Section> {
     for schema_element in schema.iter() {
         let pos = sections
             .iter()
-            .position(|section| section.human_title() == schema_element);
+            .position(|section| &section.title_line.text == schema_element);
         match pos {
             None => continue,
             Some(pos) => result.push(sections.remove(pos)),

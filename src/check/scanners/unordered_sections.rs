@@ -37,7 +37,7 @@ pub fn scan(doc: &Document, config: &Config, issues: &mut Vec<Issue>) {
             }
             Some(value) => value,
         };
-        let section_title = doc_section.human_title();
+        let section_title = &doc_section.title_line.text;
         if section_title == schema_title {
             // elements match --> advance both pointers
             section_option = sections_iter.next();

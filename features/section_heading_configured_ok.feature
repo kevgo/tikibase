@@ -24,7 +24,6 @@ Feature: verify the configured section headings
       [back](1.md)
       """
 
-  @this
   Scenario: check
     When checking
     Then it finds no issues
