@@ -39,9 +39,10 @@ pub enum Issue {
     },
     HeadingLevelDifferentThanConfigured {
         location: Location,
-        section_title: String,
-        configured: u8,
-        actual: u8,
+        configured_level: u8,
+        configured_title: String,
+        actual_level: u8,
+        actual_title: String,
     },
     InconsistentHeadingLevel {
         location: Location,

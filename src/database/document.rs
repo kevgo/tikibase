@@ -256,17 +256,24 @@ impl Document {
     }
 
     /// provides the section with the given title
-    pub fn section_with_human_title(&self, title: &str) -> Option<&Section> {
+    pub fn section_with_human_title(&self, human_title: &str) -> Option<&Section> {
         self.content_sections
             .iter()
-            .find(|section| section.human_title() == title)
+            .find(|section| section.human_title() == human_title)
     }
 
     /// provides the section with the given title
-    pub fn section_with_human_title_mut(&mut self, title: &str) -> Option<&mut Section> {
+    pub fn section_with_human_title_mut(&mut self, human_title: &str) -> Option<&mut Section> {
         self.content_sections
             .iter_mut()
-            .find(|section| section.human_title() == title)
+            .find(|section| section.human_title() == human_title)
+    }
+
+    /// provides the section with the given title
+    pub fn section_with_title_mut(&mut self, title: &str) -> Option<&mut Section> {
+        self.content_sections
+            .iter_mut()
+            .find(|section| &section.title_line.text == title)
     }
 
     /// provides the complete textual content of this document

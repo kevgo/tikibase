@@ -31,12 +31,11 @@ Feature: recognize sections with heading levels different from the configured on
       """
     And the exit code is 1
 
-  @this
   Scenario: fix
     When fixing
     Then it prints:
       """
-      2.md:3  normalized section "alpha" from <h5> to <h3>
+      2.md:2  normalized section "##### alpha" from <h5> to <h3>
       """
     And file "2.md" should contain:
       """
@@ -49,7 +48,7 @@ Feature: recognize sections with heading levels different from the configured on
     When doing a pitstop
     Then it prints:
       """
-      2.md:3  normalized section "alpha" from <h5> to <h3>
+      2.md:2  normalized section "##### alpha" from <h5> to <h3>
       """
     And file "2.md" should contain:
       """

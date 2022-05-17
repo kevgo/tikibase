@@ -174,8 +174,8 @@ impl Message {
                 end: Some(location.end),
                 fixable: true,
             },
-            Issue::HeadingLevelDifferentThanConfigured { location, section_title, configured, actual} => Message{
-                text: format!("heading level (<h{}>) of \"{}\" differs from configured level (<h{}>)", actual, section_title, configured),
+            Issue::HeadingLevelDifferentThanConfigured { location, configured_level, configured_title: _, actual_level, actual_title} => Message{
+                text: format!("heading level (<h{}>) of \"{}\" differs from configured level (<h{}>)", actual_level, actual_title, configured_level),
                 file: location.file,
                 line: Some(location.line),
                 start: Some(location.start),

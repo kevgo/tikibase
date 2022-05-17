@@ -19,15 +19,17 @@ pub fn fix(issue: Issue, base: &mut Tikibase) -> Result {
         }
         Issue::HeadingLevelDifferentThanConfigured {
             location,
-            section_title,
-            configured,
-            actual,
-        } => inconsistent_levels::normalize_outliers(
+            configured_level,
+            configured_title,
+            actual_level,
+            actual_title,
+        } => inconsistent_levels::set_to_configured_section_level(
             base,
             location,
-            section_title,
-            actual,
-            configured,
+            actual_level,
+            actual_title,
+            configured_level,
+            configured_title,
         ),
         Issue::InconsistentHeadingLevel {
             location,

@@ -16,9 +16,10 @@ pub fn scan(section: &Section, path: &str, config: &Config, issues: &mut Vec<Iss
                         start: section.title_text_start as u32,
                         end: section.title_text_end(),
                     },
-                    section_title: section.title_line.text.clone(),
-                    configured: configured_level,
-                    actual: actual_level,
+                    configured_level,
+                    configured_title: configured_title.into(),
+                    actual_level,
+                    actual_title: section.title_line.text.clone(),
                 });
             }
             None => {
