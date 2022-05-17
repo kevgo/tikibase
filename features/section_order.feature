@@ -5,9 +5,9 @@ Feature: verify the ordering of content sections
       """
       {
         "sections": [
-          "one",
-          "two",
-          "three"
+          "### one",
+          "### two",
+          "### three"
         ]
       }
       """

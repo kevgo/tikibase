@@ -37,7 +37,7 @@ pub fn scan(doc: &Document, config: &Config, issues: &mut Vec<Issue>) {
             }
             Some(value) => value,
         };
-        let section_title = doc_section.human_title();
+        let section_title = &doc_section.title_line.text;
         if section_title == schema_title {
             // elements match --> advance both pointers
             section_option = sections_iter.next();
@@ -75,7 +75,7 @@ mod tests {
             text"};
         let doc = Document::from_str("test.md", content).unwrap();
         let config = Config {
-            sections: Some(vec!["one".into(), "two".into(), "three".into()]),
+            sections: Some(vec!["### one".into(), "### two".into(), "### three".into()]),
             ..Config::default()
         };
         let mut issues = vec![];

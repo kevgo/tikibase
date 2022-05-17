@@ -20,7 +20,7 @@ fn reorder(sections: &mut Vec<Section>, schema: &[String]) -> Vec<Section> {
     for schema_element in schema.iter() {
         let pos = sections
             .iter()
-            .position(|section| section.human_title() == schema_element);
+            .position(|section| &section.title_line.text == schema_element);
         match pos {
             None => continue,
             Some(pos) => result.push(sections.remove(pos)),
@@ -36,47 +36,71 @@ mod tests {
 
     #[test]
     fn perfect_match() {
-        let schema = vec!["one".to_string(), "two".to_string()];
+        let schema = vec!["### one".to_string(), "### two".to_string()];
         let mut give: Vec<Section> = vec![
             Section::with_title("### one"),
             Section::with_title("### two"),
         ];
         let have = reorder(&mut give, &schema);
-        let have: Vec<&str> = have.iter().map(Section::human_title).collect();
-        assert_eq!(have, vec!["one", "two"]);
+        let have: Vec<&String> = have
+            .iter()
+            .map(|section| &section.title_line.text)
+            .collect();
+        assert_eq!(have, vec!["### one", "### two"]);
     }
 
     #[test]
     fn match_but_missing() {
-        let schema = vec!["one".to_string(), "two".to_string(), "three".to_string()];
+        let schema = vec![
+            "### one".to_string(),
+            "### two".to_string(),
+            "### three".to_string(),
+        ];
         let mut give: Vec<Section> = vec![
             Section::with_title("### one"),
             Section::with_title("### three"),
         ];
         let have = reorder(&mut give, &schema);
-        let have: Vec<&str> = have.iter().map(Section::human_title).collect();
-        assert_eq!(have, vec!["one", "three"]);
+        let have: Vec<&String> = have
+            .iter()
+            .map(|section| &section.title_line.text)
+            .collect();
+        assert_eq!(have, vec!["### one", "### three"]);
     }
 
     #[test]
     fn wrong_order() {
-        let schema = vec!["one".to_string(), "two".to_string(), "three".to_string()];
+        let schema = vec![
+            "### one".to_string(),
+            "### two".to_string(),
+            "### three".to_string(),
+        ];
         let mut give: Vec<Section> = vec![
             Section::with_title("### three"),
             Section::with_title("### two"),
             Section::with_title("### one"),
         ];
         let have = reorder(&mut give, &schema);
-        let have: Vec<&str> = have.iter().map(Section::human_title).collect();
-        assert_eq!(have, vec!["one", "two", "three"]);
+        let have: Vec<&String> = have
+            .iter()
+            .map(|section| &section.title_line.text)
+            .collect();
+        assert_eq!(have, vec!["### one", "### two", "### three"]);
     }
 
     #[test]
     fn single_section() {
-        let schema = vec!["one".to_string(), "two".to_string(), "three".to_string()];
+        let schema = vec![
+            "### one".to_string(),
+            "### two".to_string(),
+            "### three".to_string(),
+        ];
         let mut give: Vec<Section> = vec![Section::with_title("### three")];
         let have = reorder(&mut give, &schema);
-        let have: Vec<&str> = have.iter().map(Section::human_title).collect();
-        assert_eq!(have, vec!["three"]);
+        let have: Vec<&String> = have
+            .iter()
+            .map(|section| &section.title_line.text)
+            .collect();
+        assert_eq!(have, vec!["### three"]);
     }
 }

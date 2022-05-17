@@ -4,17 +4,36 @@ use crate::Config;
 
 /// populates the given issues list with all sections in this document that don't match the configured sections
 pub fn scan(section: &Section, path: &str, config: &Config, issues: &mut Vec<Issue>) {
-    let section_title = section.human_title();
-    if !config.matching_title(section_title) {
-        issues.push(Issue::UnknownSection {
-            location: Location {
-                file: path.into(),
-                line: section.line_number,
-                start: section.title_text_start as u32,
-                end: section.title_text_end(),
-            },
-            title: section_title.into(),
-            allowed_titles: config.sections.clone().unwrap(),
-        });
+    if !config.matching_title(&section.title_line.text) {
+        let (actual_level, _start) = Section::parse_title(&section.title_line.text);
+        match config.section_with_human_title(section.human_title()) {
+            Some(configured_title) => {
+                let (configured_level, _start) = Section::parse_title(configured_title);
+                issues.push(Issue::HeadingLevelDifferentThanConfigured {
+                    location: Location {
+                        file: path.into(),
+                        line: section.line_number,
+                        start: section.title_text_start as u32,
+                        end: section.title_text_end(),
+                    },
+                    configured_level,
+                    configured_title: configured_title.into(),
+                    actual_level,
+                    actual_title: section.title_line.text.clone(),
+                });
+            }
+            None => {
+                issues.push(Issue::UnknownSection {
+                    location: Location {
+                        file: path.into(),
+                        line: section.line_number,
+                        start: section.title_text_start as u32,
+                        end: section.title_text_end(),
+                    },
+                    title: section.title_line.text.clone(),
+                    allowed_titles: config.sections.clone().unwrap(),
+                });
+            }
+        }
     }
 }

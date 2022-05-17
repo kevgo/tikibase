@@ -5,8 +5,8 @@ Feature: verify section titles
       """
       {
         "sections": [
-          "what is it",
-          "links"
+          "### what is it",
+          "### links"
         ]
       }
       """
@@ -30,9 +30,9 @@ Feature: verify section titles
     When checking
     Then it prints:
       """
-      1.md:6  section "zonk" isn't listed in tikibase.json, allowed sections:
-        - what is it
-        - links
+      1.md:6  section "### zonk" isn't listed in tikibase.json, allowed sections:
+        - ### what is it
+        - ### links
       """
     And the exit code is 1
 
@@ -45,9 +45,9 @@ Feature: verify section titles
     When doing a pitstop
     Then it prints:
       """
-      1.md:6  section "zonk" isn't listed in tikibase.json, allowed sections:
-        - what is it
-        - links
+      1.md:6  section "### zonk" isn't listed in tikibase.json, allowed sections:
+        - ### what is it
+        - ### links
       """
     And all files are unchanged
     And the exit code is 1

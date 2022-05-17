@@ -62,13 +62,13 @@ impl Message {
             },
             Fix::NormalizedSectionLevel {
                 location,
-                section_title,
+                section_human_title,
                 old_level,
                 new_level,
             } => Message {
                 text: format!(
                     r#"normalized section "{}" from <h{}> to <h{}>"#,
-                    section_title, old_level, new_level
+                    section_human_title, old_level, new_level
                 ),
                 file: location.file,
                 line: Some(location.line),
@@ -168,6 +168,14 @@ impl Message {
             },
             Issue::EmptySection { location, title } => Message {
                 text: format!("section \"{}\" has no content", title),
+                file: location.file,
+                line: Some(location.line),
+                start: Some(location.start),
+                end: Some(location.end),
+                fixable: true,
+            },
+            Issue::HeadingLevelDifferentThanConfigured { location, configured_level, configured_title: _, actual_level, actual_title} => Message{
+                text: format!("heading level (<h{}>) of \"{}\" differs from configured level (<h{}>)", actual_level, actual_title, configured_level),
                 file: location.file,
                 line: Some(location.line),
                 start: Some(location.start),

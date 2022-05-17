@@ -67,6 +67,18 @@ impl Section {
 
     pub fn new<IS: Into<String>>(line_number: u32, title: IS, body: Vec<IS>) -> Section {
         let title: String = title.into();
+        let (level, start) = Section::parse_title(&title);
+        Section {
+            line_number,
+            title_line: Line::from(title),
+            title_text_start: start,
+            level: level as u8,
+            body: body.into_iter().map(Line::from).collect(),
+        }
+    }
+
+    /// provides the level and start position of the human title portion within the given section title
+    pub fn parse_title(title: &str) -> (u8, usize) {
         let mut chars = title.char_indices();
         let mut level = 0;
         for (i, c) in chars.by_ref() {
@@ -85,13 +97,10 @@ impl Section {
                 break;
             }
         }
-        Section {
-            line_number,
-            title_line: Line::from(title),
-            title_text_start: start,
-            level: level as u8,
-            body: body.into_iter().map(Line::from).collect(),
+        if start == level {
+            start = title.len();
         }
+        (level as u8, start)
     }
 
     /// adds a new line with the given text to this section
@@ -304,6 +313,34 @@ mod tests {
         let line = have.next().expect("expected body line 1");
         assert_eq!(line.text, "title content");
         assert!(have.next().is_none(), "unexpected line");
+    }
+
+    mod parse_title {
+        use crate::database::Section;
+
+        #[test]
+        fn normal() {
+            let give = "### title";
+            let want = (3, 4);
+            let have = Section::parse_title(give);
+            assert_eq!(have, want);
+        }
+
+        #[test]
+        fn extra_space() {
+            let give = "###   title";
+            let want = (3, 6);
+            let have = Section::parse_title(give);
+            assert_eq!(have, want);
+        }
+
+        #[test]
+        fn missing_title() {
+            let give = "###   ";
+            let want = (3, 6);
+            let have = Section::parse_title(give);
+            assert_eq!(have, want);
+        }
     }
 
     mod push_line {

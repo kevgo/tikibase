@@ -17,6 +17,20 @@ pub fn fix(issue: Issue, base: &mut Tikibase) -> Result {
         Issue::EmptySection { location, title } => {
             empty_section::remove_section(base, title, location)
         }
+        Issue::HeadingLevelDifferentThanConfigured {
+            location,
+            configured_level,
+            configured_title,
+            actual_level,
+            actual_title,
+        } => inconsistent_levels::set_to_configured_section_level(
+            base,
+            location,
+            actual_level,
+            actual_title,
+            configured_level,
+            configured_title,
+        ),
         Issue::InconsistentHeadingLevel {
             location,
             common_level,
@@ -165,7 +179,7 @@ pub enum Fix {
     },
     NormalizedSectionLevel {
         location: Location,
-        section_title: String,
+        section_human_title: String,
         old_level: u8,
         new_level: u8,
     },

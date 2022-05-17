@@ -1,4 +1,5 @@
 use crate::check::{Issue, Location};
+use crate::database::Section;
 use fs_err::File;
 use merge::Merge;
 use regex::Regex;
@@ -50,6 +51,20 @@ impl Config {
                 .any(|config_section| config_section == title),
             None => true,
         }
+    }
+
+    /// provides the configured section title corresponding to the given human title
+    pub fn section_with_human_title(&self, human_title: &str) -> Option<&str> {
+        if let Some(sections) = &self.sections {
+            for section_title in sections {
+                let (_level, start) = Section::parse_title(section_title);
+                let section_human_title = &section_title[start..];
+                if section_human_title == human_title {
+                    return Some(section_title);
+                }
+            }
+        }
+        None
     }
 
     /// indicates whether Tikibase should check for standalone documents
