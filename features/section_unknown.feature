@@ -1,4 +1,3 @@
-@this
 Feature: verify section titles
 
   Background:

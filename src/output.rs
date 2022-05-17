@@ -174,6 +174,14 @@ impl Message {
                 end: Some(location.end),
                 fixable: true,
             },
+            Issue::HeadingLevelDifferentThanConfigured { location, section_title, configured, actual} => Message{
+                text: format!("heading level (<h{}>) of \"{}\" differs from configured level (<h{}>)", actual, section_title, configured),
+                file: location.file,
+                line: Some(location.line),
+                start: Some(location.start),
+                end: Some(location.end),
+                fixable: true,
+            },
             Issue::InconsistentHeadingLevel { location, section_title, common_level: common_variant, this_level: this_variant, all_levels: all_variants } => {
                 if let Some(common_variant) = common_variant {
                     Message {

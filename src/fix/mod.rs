@@ -17,6 +17,18 @@ pub fn fix(issue: Issue, base: &mut Tikibase) -> Result {
         Issue::EmptySection { location, title } => {
             empty_section::remove_section(base, title, location)
         }
+        Issue::HeadingLevelDifferentThanConfigured {
+            location,
+            section_title,
+            configured,
+            actual,
+        } => inconsistent_levels::normalize_outliers(
+            base,
+            location,
+            section_title,
+            actual,
+            configured,
+        ),
         Issue::InconsistentHeadingLevel {
             location,
             common_level,

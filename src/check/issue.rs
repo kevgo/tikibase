@@ -37,6 +37,12 @@ pub enum Issue {
         location: Location,
         title: String,
     },
+    HeadingLevelDifferentThanConfigured {
+        location: Location,
+        section_title: String,
+        configured: u8,
+        actual: u8,
+    },
     InconsistentHeadingLevel {
         location: Location,
         /// human-readable section title
