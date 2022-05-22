@@ -495,9 +495,10 @@ impl Messages {
     }
 
     pub fn from_outcome(outcome: Outcome) -> Messages {
-        let mut messages = Messages::from_issues(outcome.issues);
-        messages.fixes = outcome.fixes.into_iter().map(Message::from_fix).collect();
-        messages
+        Messages {
+            fixes: outcome.fixes.into_iter().map(Message::from_fix).collect(),
+            ..Messages::from_issues(outcome.issues)
+        }
     }
 
     /// indicates whether there are both issues and fixes
