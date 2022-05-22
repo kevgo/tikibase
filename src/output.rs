@@ -495,15 +495,9 @@ impl Messages {
     }
 
     pub fn from_outcome(outcome: Outcome) -> Messages {
-        let exit_code = outcome.issues.len() as i32;
         Messages {
-            issues: outcome
-                .issues
-                .into_iter()
-                .map(Message::from_issue)
-                .collect(),
             fixes: outcome.fixes.into_iter().map(Message::from_fix).collect(),
-            exit_code,
+            ..Messages::from_issues(outcome.issues)
         }
     }
 
