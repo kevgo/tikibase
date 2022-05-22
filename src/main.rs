@@ -3,10 +3,11 @@
 use clap::StructOpt;
 use input::Format::{Json, Text};
 use std::io;
+use std::process::ExitCode;
 use tikibase::input::Command;
 use tikibase::{input, run, Message, Messages};
 
-fn main() {
+fn main() -> ExitCode {
     let args = input::Arguments::parse();
     let messages = run(&args.command, ".");
     let exit_code = messages.exit_code;
@@ -14,7 +15,7 @@ fn main() {
         Text => print_text(&messages, &args.command),
         Json => print_json(&messages.all()),
     };
-    std::process::exit(exit_code);
+    ExitCode::from(exit_code)
 }
 
 fn print_text(messages: &Messages, command: &Command) {
