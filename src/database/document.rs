@@ -176,8 +176,7 @@ impl Document {
     pub fn last_section_mut(&mut self) -> &mut Section {
         self.content_sections
             .last_mut()
-            .or(Some(&mut self.title_section))
-            .unwrap()
+            .unwrap_or(&mut self.title_section)
     }
 
     /// provides an iterator over all lines in this document
@@ -194,8 +193,7 @@ impl Document {
     pub fn lines_count(&self) -> u32 {
         self.content_sections
             .last()
-            .or(Some(&self.title_section))
-            .unwrap()
+            .unwrap_or(&self.title_section)
             .last_line_abs()
     }
 
