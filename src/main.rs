@@ -9,12 +9,12 @@ use tikibase::{input, run, Message, Messages};
 fn main() {
     let args = input::Arguments::parse();
     let messages = run(&args.command, ".");
-    let exit_code = messages.exit_code;
+    let exit_code = messages.issues.len();
     match args.format {
         Text => print_text(&messages, &args.command),
         Json => print_json(&messages.all()),
     };
-    std::process::exit(exit_code);
+    std::process::exit(exit_code as i32);
 }
 
 fn print_text(messages: &Messages, command: &Command) {

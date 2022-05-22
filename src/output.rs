@@ -461,7 +461,6 @@ pub struct Messages {
     pub issues: Vec<Message>,
     /// messages for fixed issues
     pub fixes: Vec<Message>,
-    pub exit_code: i32,
 }
 
 impl Messages {
@@ -482,20 +481,16 @@ impl Messages {
         Messages {
             issues: vec![Message::from_issue(issue)],
             fixes: vec![],
-            exit_code: 1,
         }
     }
     pub fn from_issues(issues: Vec<Issue>) -> Messages {
-        let exit_code = issues.len() as i32;
         Messages {
             issues: issues.into_iter().map(Message::from_issue).collect(),
             fixes: vec![],
-            exit_code,
         }
     }
 
     pub fn from_outcome(outcome: Outcome) -> Messages {
-        let exit_code = outcome.issues.len() as i32;
         Messages {
             issues: outcome
                 .issues
@@ -503,7 +498,6 @@ impl Messages {
                 .map(Message::from_issue)
                 .collect(),
             fixes: outcome.fixes.into_iter().map(Message::from_fix).collect(),
-            exit_code,
         }
     }
 
