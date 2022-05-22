@@ -110,7 +110,7 @@ fn it_finds_no_issues(world: &mut MyWorld) {
 }
 
 #[then(regex = "^the exit code is (\\d+)$")]
-fn the_exit_code_is(world: &mut MyWorld, exit_code: i32) {
+fn the_exit_code_is(world: &mut MyWorld, exit_code: u8) {
     assert_eq!(world.output.exit_code, exit_code);
 }
 
