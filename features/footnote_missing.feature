@@ -27,7 +27,6 @@ Feature: recognize missing footnote definitions
       [One](1.md)
       """
 
-  @this
   Scenario: check
     When checking
     Then it prints:
