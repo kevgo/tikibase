@@ -9,6 +9,7 @@ Feature: recognize missing footnote definitions
       ### metrics
       - existing footnote[^existing]
       - non-existing footnote[^2]
+      - non-existing footnote[^non-existing]
 
       ```go
       result := map[^0]
@@ -26,11 +27,13 @@ Feature: recognize missing footnote definitions
       [One](1.md)
       """
 
+  @this
   Scenario: check
     When checking
     Then it prints:
       """
       1.md:6  footnote [^2] doesn't exist
+      1.md:7  footnote [^non-existing] doesn't exist
       """
     And all files are unchanged
     And the exit code is 1
@@ -45,6 +48,7 @@ Feature: recognize missing footnote definitions
     Then it prints:
       """
       1.md:6  footnote [^2] doesn't exist
+      1.md:7  footnote [^non-existing] doesn't exist
       """
     And all files are unchanged
     And the exit code is 1
