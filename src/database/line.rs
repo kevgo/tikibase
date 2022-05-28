@@ -11,7 +11,7 @@ pub struct Line {
 static MD_RE: Lazy<Regex> = Lazy::new(|| Regex::new(r#"(!?)\[[^\]]*\]\(([^)]*)\)"#).unwrap());
 static A_HTML_RE: Lazy<Regex> = Lazy::new(|| Regex::new(r#"<a href="(.*)">(.*)</a>"#).unwrap());
 static IMG_HTML_RE: Lazy<Regex> = Lazy::new(|| Regex::new(r#"<img src="([^"]*)"[^>]*>"#).unwrap());
-static FOOTNOTE_RE: Lazy<Regex> = Lazy::new(|| Regex::new(r#"\[\^(\w+)\](:?)"#).unwrap());
+static FOOTNOTE_RE: Lazy<Regex> = Lazy::new(|| Regex::new(r#"\[\^([\w-]+)\](:?)"#).unwrap());
 
 impl Line {
     /// appends all footnote definitions and references to the given result structure
@@ -144,7 +144,7 @@ mod tests {
 
         #[test]
         fn with_footnote_references() {
-            let line = Line::from("- text [^1] [^2]");
+            let line = Line::from("- text [^1] [^number-two]");
             let mut have = Footnotes::default();
             line.add_footnotes_to(&mut have, "", 0).unwrap();
             let want = Footnotes {
@@ -158,9 +158,9 @@ mod tests {
                     },
                     Footnote {
                         line: 0,
-                        identifier: "2".into(),
+                        identifier: "number-two".into(),
                         start: 12,
-                        end: 16,
+                        end: 25,
                     },
                 ],
             };

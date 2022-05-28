@@ -9,6 +9,8 @@ Feature: recognize missing footnote definitions
       ### metrics
       - existing footnote[^existing]
       - non-existing footnote[^2]
+      - non-existing footnote[^non-existing]
+      - non-existing footnote[^this_one_neither]
 
       ```go
       result := map[^0]
@@ -31,9 +33,11 @@ Feature: recognize missing footnote definitions
     Then it prints:
       """
       1.md:6  footnote [^2] doesn't exist
+      1.md:7  footnote [^non-existing] doesn't exist
+      1.md:8  footnote [^this_one_neither] doesn't exist
       """
     And all files are unchanged
-    And the exit code is 1
+    And the exit code is 3
 
   Scenario: fix
     When fixing
@@ -45,6 +49,8 @@ Feature: recognize missing footnote definitions
     Then it prints:
       """
       1.md:6  footnote [^2] doesn't exist
+      1.md:7  footnote [^non-existing] doesn't exist
+      1.md:8  footnote [^this_one_neither] doesn't exist
       """
     And all files are unchanged
-    And the exit code is 1
+    And the exit code is 3

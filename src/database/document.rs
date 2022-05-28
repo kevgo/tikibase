@@ -401,7 +401,7 @@ mod tests {
             let give = indoc! {"
                 # Title
                 reference to [^1]
-                100 tons of [^rust]
+                100 tons of [^rust] in a [^cargo-box]
                 ### links
                 [^1]: first footnote
                 [^second]: second footnote
@@ -434,6 +434,12 @@ mod tests {
                         line: 2,
                         start: 12,
                         end: 19,
+                    },
+                    Footnote {
+                        identifier: "cargo-box".into(),
+                        line: 2,
+                        start: 25,
+                        end: 37,
                     },
                 ],
             });
