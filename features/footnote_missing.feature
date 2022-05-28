@@ -36,7 +36,7 @@ Feature: recognize missing footnote definitions
       1.md:7  footnote [^non-existing] doesn't exist
       """
     And all files are unchanged
-    And the exit code is 1
+    And the exit code is 2
 
   Scenario: fix
     When fixing
@@ -51,4 +51,4 @@ Feature: recognize missing footnote definitions
       1.md:7  footnote [^non-existing] doesn't exist
       """
     And all files are unchanged
-    And the exit code is 1
+    And the exit code is 2
