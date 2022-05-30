@@ -86,7 +86,7 @@ pub fn scan(
                     }
                     continue;
                 }
-                match EntryType::from_str(&target_file) {
+                match EntryType::from_str(&target_relative_path) {
                     EntryType::Document => {
                         if let Some(other_doc) = root.get_doc(&target_relative_path) {
                             if !target_anchor.is_empty() && !other_doc.has_anchor(&target_anchor) {
@@ -465,6 +465,36 @@ mod tests {
             &base.dir,
         );
         pretty::assert_eq!(issues, vec![]);
+        assert_eq!(linked_resources, Vec::<String>::new());
+    }
+
+    #[test]
+    fn link_to_doc_in_parent_dir() {
+        let dir = test::tmp_dir();
+        test::create_file("sub/1.md", "# One\n[two](../zonk.md)", &dir);
+        let base = Tikibase::load(dir).unwrap();
+        let doc = base.get_doc("sub/1.md").unwrap();
+        let mut issues = vec![];
+        let mut linked_resources = vec![];
+        super::scan(
+            doc,
+            base.dir.dirs.get("sub").unwrap(),
+            &mut issues,
+            &mut linked_resources,
+            &base.dir,
+        );
+        pretty::assert_eq!(
+            issues,
+            vec![Issue::LinkToNonExistingFile {
+                location: Location {
+                    file: "sub/1.md".into(),
+                    line: 1,
+                    start: 0,
+                    end: 17,
+                },
+                target: "zonk.md".into()
+            }]
+        );
         assert_eq!(linked_resources, Vec::<String>::new());
     }
 
