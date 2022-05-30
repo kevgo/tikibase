@@ -6,8 +6,8 @@ use crate::Config;
 // phase 2 `Document` check
 pub(crate) fn check_doc_2(doc: &Document, config: &Config, state: &mut State2) {
     obsolete_occurrences::scan(doc, config, &mut state.issues);
-    for content_section in &doc.content_sections {
-        if !config.sections.is_some() {
+    if !config.sections.is_some() {
+        for content_section in &doc.content_sections {
             section_capitalization::phase_2(
                 &doc.relative_path,
                 content_section,
