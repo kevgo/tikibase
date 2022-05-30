@@ -7,17 +7,19 @@ use crate::Config;
 pub(crate) fn check_doc_2(doc: &Document, config: &Config, state: &mut State2) {
     obsolete_occurrences::scan(doc, config, &mut state.issues);
     for content_section in &doc.content_sections {
-        section_capitalization::phase_2(
-            &doc.relative_path,
-            content_section,
-            &mut state.issues,
-            &state.capitalization_outliers,
-        );
-        section_level::phase_2(
-            content_section,
-            &doc.relative_path,
-            &mut state.issues,
-            &state.level_outliers,
-        );
+        if !config.sections.is_some() {
+            section_capitalization::phase_2(
+                &doc.relative_path,
+                content_section,
+                &mut state.issues,
+                &state.capitalization_outliers,
+            );
+            section_level::phase_2(
+                content_section,
+                &doc.relative_path,
+                &mut state.issues,
+                &state.level_outliers,
+            );
+        }
     }
 }
