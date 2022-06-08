@@ -70,14 +70,14 @@ fn all_files_unchanged(world: &mut MyWorld) {
     }
 }
 
-#[then(regex = r#"^file "(.*)" is unchanged$"#)]
+#[then(expr = "file {string} is unchanged")]
 fn file_is_unchanged(world: &mut MyWorld, filename: String) {
     let have = test::load_file(&filename, &world.dir);
     let want = world.original_contents.get(&filename).unwrap();
     pretty::assert_eq!(have.trim(), want);
 }
 
-#[then(regex = r#"^file "(.*)" should contain:$"#)]
+#[then(expr = "file {string} should contain:")]
 fn file_should_contain(world: &mut MyWorld, step: &Step, filename: String) {
     let want = step.docstring.as_ref().unwrap();
     let have = test::load_file(&filename, &world.dir);
