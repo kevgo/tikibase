@@ -30,14 +30,14 @@ impl World for MyWorld {
     }
 }
 
-#[given(regex = r#"^file "(.*)" with content:$"#)]
+#[given(expr = "file {string} with content:")]
 fn file_with_content(world: &mut MyWorld, step: &Step, filename: String) {
     let content = step.docstring.as_ref().unwrap().trim();
     test::create_file(&filename, &content, &world.dir);
     world.original_contents.insert(filename, content.into());
 }
 
-#[given(regex = r#"^file "(.*)"$"#)]
+#[given(expr = "file {string}")]
 fn file(world: &mut MyWorld, filename: String) {
     test::create_file(&filename, "content", &world.dir);
 }
