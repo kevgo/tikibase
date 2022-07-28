@@ -1,5 +1,0 @@
-#!/usr/bin/env bash
-
-curl -s https://raw.githubusercontent.com/rhysd/actionlint/main/scripts/download-actionlint.bash | bash
-mkdir -p tools
-mv actionlint tools
