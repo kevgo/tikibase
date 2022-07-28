@@ -25,7 +25,7 @@ jobs:
         uses: actions/cache@v3
         with:
           path: target
-          key: ${{ runner.os }}-rust-${{ hashFiles('Cargo.lock') }}
+          key: rust-${{ runner.os }}
       - uses: dprint/check@v1.5
       - run: make setup-ci
       - run: make unit
