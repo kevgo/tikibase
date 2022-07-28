@@ -58,7 +58,7 @@ setup: setup-ci  # prepares this codebase
 	echo 4. cargo install dprint
 
 setup-ci:  # prepares the CI server
-	cargo install cargo-udeps --locked
+# cargo install cargo-udeps --locked  # requires nightly
 
 tools/actionlint:
 	curl -s https://raw.githubusercontent.com/rhysd/actionlint/main/scripts/download-actionlint.bash | bash
