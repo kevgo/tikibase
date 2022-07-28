@@ -21,7 +21,11 @@ jobs:
           profile: minimal
           override: true
           components: rustfmt, clippy
-      - uses: Swatinem/rust-cache@v1.2.0
+      - id: cache-rust
+        uses: actions/cache@v3
+        with:
+          path: target
+          key: ${{ runner.os }}-rust-${{ hashFiles('Cargo.lock') }}
       - uses: dprint/check@v1.5
       - run: make setup-ci
       - run: make unit
