@@ -20,7 +20,7 @@ fix:  # auto-corrects issues
 	cargo fix
 
 help:  # shows all available Make commands
-	cat Makefile | grep '^[^ ]*:' | grep -v '.PHONY' | grep -v '.SILENT:' | grep -v help | sed 's/:.*#/#/' | column -s "#" -t
+	cat Makefile | grep '^[^ ]*:' | grep -v '.PHONY' | grep -v '.SILENT:' | grep '#' | grep -v help | sed 's/:.*#/#/' | column -s "#" -t
 
 install:  # installs the binary in the system
 	cargo install --path .
