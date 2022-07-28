@@ -20,12 +20,12 @@ fix:  # auto-corrects issues
 	cargo fix
 
 help:  # shows all available Make commands
-	cat Makefile | grep '^[^ ]*:' | grep -v '.PHONY' | grep -v '.SILENT:' | grep -v help | sed 's/:.*#/#/' | column -s "#" -t
+	cat Makefile | grep '^[^ ]*:' | grep -v '.PHONY' | grep -v '.SILENT:' | grep '#' | grep -v help | sed 's/:.*#/#/' | column -s "#" -t
 
 install:  # installs the binary in the system
 	cargo install --path .
 
-lint: lint-std-fs  # checks formatting
+lint: lint-std-fs tools/actionlint  # checks formatting
 	dprint check
 	cargo clippy --all-targets --all-features -- -W clippy::pedantic -A clippy::cast_possible_wrap -A clippy::cast_possible_truncation -A clippy::missing_panics_doc -A clippy::must_use_candidate -A clippy::missing_errors_doc -A clippy::too-many-lines
 	cargo fmt -- --check
@@ -59,7 +59,11 @@ setup: setup-ci  # prepares this codebase
 
 setup-ci:  # prepares the CI server
 	cargo install cargo-udeps --locked
-	scripts/install_actionlint
+
+tools/actionlint:
+	curl -s https://raw.githubusercontent.com/rhysd/actionlint/main/scripts/download-actionlint.bash | bash
+	mkdir -p tools
+	mv actionlint tools
 
 update:  # updates the dependencies
 	cargo upgrade
