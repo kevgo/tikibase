@@ -26,7 +26,7 @@ pub struct Config {
     pub title_reg_ex: Option<String>,
 
     /// link to the JSON-Schema definition for this file
-    #[serde(rename(deserialize = "$schema"))]
+    #[serde(rename = "$schema")]
     pub schema: Option<String>,
 
     /// whether documents without links are allowed
