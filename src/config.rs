@@ -1,5 +1,6 @@
 use crate::check::{Issue, Location};
 use crate::database::Section;
+use big_s::S;
 use fs_err::File;
 use merge::Merge;
 use regex::Regex;
@@ -83,7 +84,7 @@ impl Config {
                 Err(err) => Err(Issue::InvalidTitleRegex {
                     regex: text.into(),
                     problem: err.to_string(),
-                    file: "tikibase.json".into(),
+                    file: S("tikibase.json"),
                 }),
             },
             None => Ok(None),
@@ -102,7 +103,7 @@ pub fn load<P: AsRef<Path>>(dir: P) -> LoadResult {
                 return LoadResult::Error(Issue::CannotReadConfigurationFile {
                     message: e.to_string(),
                     location: Location {
-                        file: "tikibase.json".into(),
+                        file: S("tikibase.json"),
                         line: 0,
                         start: 0,
                         end: 0,
@@ -116,7 +117,7 @@ pub fn load<P: AsRef<Path>>(dir: P) -> LoadResult {
         Err(e) => LoadResult::Error(Issue::InvalidConfigurationFile {
             message: e.to_string(),
             location: Location {
-                file: "tikibase.json".into(),
+                file: S("tikibase.json"),
                 line: e.line() as u32,
                 start: e.column() as u32,
                 end: e.column() as u32,
@@ -168,11 +169,12 @@ mod tests {
 
     mod ignore {
         use crate::Config;
+        use big_s::S;
 
         #[test]
         fn direct_match() {
             let config = Config {
-                ignore: Some(vec!["Makefile".into()]),
+                ignore: Some(vec![S("Makefile")]),
                 ..Config::default()
             };
             assert!(config.ignore("Makefile"));
@@ -181,7 +183,7 @@ mod tests {
         #[test]
         fn no_match() {
             let config = Config {
-                ignore: Some(vec!["Makefile".into()]),
+                ignore: Some(vec![S("Makefile")]),
                 ..Config::default()
             };
             assert!(!config.ignore("other"));
@@ -198,6 +200,8 @@ mod tests {
     }
 
     mod load {
+        use big_s::S;
+
         use super::super::{load, Config};
         use crate::check::{Issue, Location};
         use crate::config::LoadResult;
@@ -240,8 +244,8 @@ mod tests {
             let have = load(&dir);
             let want = LoadResult::Loaded(Config {
                 bidi_links: Some(true),
-                sections: Some(vec!["one".into(), "two".into()]),
-                ignore: Some(vec!["foo".into()]),
+                sections: Some(vec![S("one"), S("two")]),
+                ignore: Some(vec![S("foo")]),
                 schema: None,
                 title_reg_ex: None,
                 standalone_docs: None,
@@ -260,9 +264,9 @@ mod tests {
             test::create_file("tikibase.json", give, &dir);
             let have = load(&dir);
             let want = LoadResult::Error(Issue::InvalidConfigurationFile {
-                message: "unknown field `foo`, expected one of `bidiLinks`, `ignore`, `sections`, `titleRegEx`, `$schema`, `standaloneDocs` at line 3 column 20".into(),
+                message: S("unknown field `foo`, expected one of `bidiLinks`, `ignore`, `sections`, `titleRegEx`, `$schema`, `standaloneDocs` at line 3 column 20"),
                 location: Location {
-                    file: "tikibase.json".into(),
+                    file: S("tikibase.json"),
                     line: 3,
                     start: 20,
                     end: 20,
@@ -281,9 +285,9 @@ mod tests {
             test::create_file("tikibase.json", give, &dir);
             let have = load(&dir);
             let want = LoadResult::Error(Issue::InvalidConfigurationFile {
-                message: "expected value at line 3 column 1".into(),
+                message: S("expected value at line 3 column 1"),
                 location: Location {
-                    file: "tikibase.json".into(),
+                    file: S("tikibase.json"),
                     line: 3,
                     start: 1,
                     end: 1,
@@ -295,11 +299,12 @@ mod tests {
 
     mod matching_title {
         use crate::Config;
+        use big_s::S;
 
         #[test]
         fn matches() {
             let config = Config {
-                sections: Some(vec!["one".into(), "two".into()]),
+                sections: Some(vec![S("one"), S("two")]),
                 ..Config::default()
             };
             assert!(config.matching_title("two"));
@@ -308,7 +313,7 @@ mod tests {
         #[test]
         fn no_match() {
             let config = Config {
-                sections: Some(vec!["one".into(), "two".into()]),
+                sections: Some(vec![S("one"), S("two")]),
                 ..Config::default()
             };
             assert!(!config.matching_title("three"));
@@ -326,16 +331,17 @@ mod tests {
 
     mod merge {
         use crate::Config;
+        use big_s::S;
         use merge::Merge;
 
         #[test]
         fn merge_default() {
             let mut config1 = Config {
                 bidi_links: Some(true),
-                ignore: Some(vec!["one".into(), "two".into()]),
-                sections: Some(vec!["hello".into(), "bye".into()]),
-                title_reg_ex: Some("config2regex".into()),
-                schema: Some("config2schema".into()),
+                ignore: Some(vec![S("one"), S("two")]),
+                sections: Some(vec![S("hello"), S("bye")]),
+                title_reg_ex: Some(S("config2regex")),
+                schema: Some(S("config2schema")),
                 standalone_docs: Some(true),
             };
             let config2 = Config::default();
@@ -349,10 +355,10 @@ mod tests {
             let mut config1 = Config::default();
             let config2 = Config {
                 bidi_links: Some(true),
-                ignore: Some(vec!["one".into(), "two".into()]),
-                sections: Some(vec!["hello".into(), "bye".into()]),
-                title_reg_ex: Some("config2regex".into()),
-                schema: Some("config2schema".into()),
+                ignore: Some(vec![S("one"), S("two")]),
+                sections: Some(vec![S("hello"), S("bye")]),
+                title_reg_ex: Some(S("config2regex")),
+                schema: Some(S("config2schema")),
                 standalone_docs: Some(true),
             };
             config1.merge(config2.clone());
@@ -363,18 +369,18 @@ mod tests {
         fn both_have_values() {
             let mut config1 = Config {
                 bidi_links: Some(true),
-                ignore: Some(vec!["one".into(), "two".into()]),
-                sections: Some(vec!["hello".into(), "bye".into()]),
-                title_reg_ex: Some("config2regex".into()),
-                schema: Some("config2schema".into()),
+                ignore: Some(vec![S("one"), S("two")]),
+                sections: Some(vec![S("hello"), S("bye")]),
+                title_reg_ex: Some(S("config2regex")),
+                schema: Some(S("config2schema")),
                 standalone_docs: Some(true),
             };
             let config2 = Config {
                 bidi_links: Some(true),
-                ignore: Some(vec!["one".into(), "two".into()]),
-                sections: Some(vec!["hello".into(), "bye".into()]),
-                title_reg_ex: Some("config2regex".into()),
-                schema: Some("config2schema".into()),
+                ignore: Some(vec![S("one"), S("two")]),
+                sections: Some(vec![S("hello"), S("bye")]),
+                title_reg_ex: Some(S("config2regex")),
+                schema: Some(S("config2schema")),
                 standalone_docs: Some(true),
             };
             config1.merge(config2.clone());

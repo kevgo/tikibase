@@ -1,6 +1,7 @@
 use super::Outcome;
 use crate::check::Issue;
 use crate::database::paths;
+use big_s::S;
 use fs_err as fs;
 use indoc::indoc;
 
@@ -8,7 +9,7 @@ pub fn init(dir: &str) -> Outcome {
     match fs::write(paths::join(dir, "tikibase.json"), template()) {
         Ok(_) => Outcome::default(),
         Err(err) => Outcome::from_issue(Issue::CannotWriteConfigFile {
-            file: "tikibase.json".into(),
+            file: S("tikibase.json"),
             message: err.to_string(),
         }),
     }

@@ -43,6 +43,7 @@ struct LocationWithinFile {
 mod tests {
     use crate::check::{Issue, Location};
     use crate::database::Document;
+    use big_s::S;
     use indoc::indoc;
 
     #[test]
@@ -60,21 +61,21 @@ mod tests {
         let want = vec![
             Issue::DuplicateSection {
                 location: Location {
-                    file: "test.md".into(),
+                    file: S("test.md"),
                     line: 2,
                     start: 4,
                     end: 7,
                 },
-                title: "One".into(),
+                title: S("One"),
             },
             Issue::DuplicateSection {
                 location: Location {
-                    file: "test.md".into(),
+                    file: S("test.md"),
                     line: 4,
                     start: 4,
                     end: 7,
                 },
-                title: "One".into(),
+                title: S("One"),
             },
         ];
         pretty::assert_eq!(have, want);

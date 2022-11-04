@@ -20,6 +20,7 @@ pub fn scan(section: &Section, path: &str, issues: &mut Vec<Issue>) {
 mod tests {
     use crate::check::{Issue, Location};
     use crate::database::Document;
+    use big_s::S;
     use indoc::indoc;
 
     #[test]
@@ -38,12 +39,12 @@ mod tests {
         }
         let want = vec![Issue::EmptySection {
             location: Location {
-                file: "test.md".into(),
+                file: S("test.md"),
                 line: 2,
                 start: 0,
                 end: 17,
             },
-            title: "empty section".into(),
+            title: S("empty section"),
         }];
         pretty::assert_eq!(have, want);
     }
@@ -65,12 +66,12 @@ mod tests {
         }
         let want = vec![Issue::EmptySection {
             location: Location {
-                file: "test.md".into(),
+                file: S("test.md"),
                 line: 2,
                 start: 0,
                 end: 17,
             },
-            title: "empty section".into(),
+            title: S("empty section"),
         }];
         pretty::assert_eq!(have, want);
     }

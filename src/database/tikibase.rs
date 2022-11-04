@@ -1,3 +1,5 @@
+use big_s::S;
+
 use super::{Directory, Document};
 use crate::check::Issue;
 use crate::Config;
@@ -9,7 +11,7 @@ pub struct Tikibase {
 
 impl Tikibase {
     pub fn load(root: String) -> Result<Tikibase, Vec<Issue>> {
-        let dir = Directory::load(&root, "".into(), Config::default())?;
+        let dir = Directory::load(&root, S(""), Config::default())?;
         Ok(Tikibase { root, dir })
     }
 
