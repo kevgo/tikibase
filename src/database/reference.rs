@@ -42,9 +42,8 @@ impl Reference {
 mod tests {
 
     mod points_to {
-        use big_s::S;
-
         use crate::database::Reference;
+        use big_s::S;
 
         #[test]
         fn matching_image() {
