@@ -131,9 +131,8 @@ fn sanitize_code_segments(text: &str, file: &str, line: u32) -> Result<String, I
 mod tests {
 
     mod add_footnotes_to {
-        use big_s::S;
-
         use crate::database::{Footnote, Footnotes, Line};
+        use big_s::S;
 
         #[test]
         fn no_footnotes() {
@@ -222,10 +221,9 @@ mod tests {
     }
 
     mod references {
-        use big_s::S;
-
         use super::super::Reference;
         use crate::database::Line;
+        use big_s::S;
 
         #[test]
         fn link_md() {
@@ -337,10 +335,9 @@ mod tests {
     }
 
     mod sanitize_code_segments {
-        use big_s::S;
-
         use super::super::sanitize_code_segments;
         use crate::check::{Issue, Location};
+        use big_s::S;
 
         #[test]
         fn with_code_blocks() {
