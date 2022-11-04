@@ -44,10 +44,8 @@ fn is_missing_link_with_path(issue: &Issue, path: &str) -> bool {
 mod tests {
 
     mod is_missing_link_with_path {
-
-        use big_s::S;
-
         use crate::check::{Issue, Location};
+        use big_s::S;
 
         #[test]
         fn matching() {
