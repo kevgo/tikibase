@@ -219,12 +219,13 @@ fn lowest_subdir(path: &str) -> (&str, &str) {
 mod tests {
     use super::*;
     use crate::test;
+    use big_s::S;
     use indoc::indoc;
 
     #[test]
     fn empty() {
         let dir = test::tmp_dir();
-        let dir = Directory::load(&dir, String::new(), Config::default()).unwrap();
+        let dir = Directory::load(&dir, S(""), Config::default()).unwrap();
         assert_eq!(dir.docs.len(), 0);
         assert_eq!(dir.resources.len(), 0);
     }
@@ -252,12 +253,13 @@ mod tests {
     mod get_dir {
         use crate::database::Directory;
         use crate::{test, Config};
+        use big_s::S;
 
         #[test]
         fn exists() {
             let dir = test::tmp_dir();
             test::create_file("one/two/one.md", "# test doc", &dir);
-            let root = Directory::load(&dir, String::new(), Config::default()).unwrap();
+            let root = Directory::load(&dir, S(""), Config::default()).unwrap();
             let have = root.get_dir("one/two").unwrap();
             assert_eq!(have.relative_path, "one/two");
         }
@@ -265,7 +267,7 @@ mod tests {
         #[test]
         fn missing() {
             let dir = test::tmp_dir();
-            let dir = Directory::load(&dir, String::new(), Config::default()).unwrap();
+            let dir = Directory::load(&dir, S(""), Config::default()).unwrap();
             assert!(dir.get_dir("zonk").is_none());
         }
     }
@@ -273,12 +275,13 @@ mod tests {
     mod get_doc {
         use crate::database::Directory;
         use crate::{test, Config};
+        use big_s::S;
 
         #[test]
         fn exists() {
             let dir = test::tmp_dir();
             test::create_file("one.md", "# test doc", &dir);
-            let dir = Directory::load(&dir, String::new(), Config::default()).unwrap();
+            let dir = Directory::load(&dir, S(""), Config::default()).unwrap();
             let doc = dir.get_doc("one.md").unwrap();
             assert_eq!(doc.title_section.title_line.text, "# test doc");
         }
@@ -286,7 +289,7 @@ mod tests {
         #[test]
         fn missing() {
             let dir = test::tmp_dir();
-            let dir = Directory::load(&dir, String::new(), Config::default()).unwrap();
+            let dir = Directory::load(&dir, S(""), Config::default()).unwrap();
             assert!(dir.get_doc("zonk.md").is_none());
         }
     }
@@ -294,12 +297,13 @@ mod tests {
     mod get_doc_mut {
         use crate::database::Directory;
         use crate::{test, Config};
+        use big_s::S;
 
         #[test]
         fn exists() {
             let dir = test::tmp_dir();
             test::create_file("one.md", "# test doc", &dir);
-            let mut dir = Directory::load(&dir, String::new(), Config::default()).unwrap();
+            let mut dir = Directory::load(&dir, S(""), Config::default()).unwrap();
             let doc = dir.get_doc_mut("one.md").unwrap();
             assert_eq!(doc.title_section.title_line.text, "# test doc");
         }
@@ -307,7 +311,7 @@ mod tests {
         #[test]
         fn missing() {
             let dir = test::tmp_dir();
-            let mut dir = Directory::load(&dir, String::new(), Config::default()).unwrap();
+            let mut dir = Directory::load(&dir, S(""), Config::default()).unwrap();
             assert!(dir.get_doc_mut("zonk.md").is_none());
         }
     }
@@ -329,11 +333,12 @@ mod tests {
     mod has_resource {
         use crate::database::Directory;
         use crate::{test, Config};
+        use big_s::S;
 
         #[test]
         fn mismatch() {
             let dir = test::tmp_dir();
-            let dir = Directory::load(&dir, String::new(), Config::default()).unwrap();
+            let dir = Directory::load(&dir, S(""), Config::default()).unwrap();
             assert!(!dir.has_resource("zonk.png"));
         }
 
@@ -341,7 +346,7 @@ mod tests {
         fn matching() {
             let root = test::tmp_dir();
             test::create_file("one/two/foo.png", "content", &root);
-            let dir = Directory::load(&root, String::new(), Config::default()).unwrap();
+            let dir = Directory::load(&root, S(""), Config::default()).unwrap();
             assert!(dir.has_resource("one/two/foo.png"));
         }
     }
@@ -359,7 +364,7 @@ mod tests {
             foo
             "};
         test::create_file("file.md", content, &dir);
-        let dir = Directory::load(&dir, String::new(), Config::default()).unwrap();
+        let dir = Directory::load(&dir, S(""), Config::default()).unwrap();
         // make sure we can load existing documents
         let _doc = &dir.get_doc("file.md").unwrap();
     }
@@ -368,7 +373,7 @@ mod tests {
     fn load_hidden_file() {
         let dir = test::tmp_dir();
         test::create_file(".hidden", "content", &dir);
-        let dir = Directory::load(&dir, String::new(), Config::default()).unwrap();
+        let dir = Directory::load(&dir, S(""), Config::default()).unwrap();
         assert_eq!(dir.resources.len(), 0);
     }
 

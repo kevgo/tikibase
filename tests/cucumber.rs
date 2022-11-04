@@ -1,5 +1,6 @@
 use ahash::AHashMap;
 use async_trait::async_trait;
+use big_s::S;
 use cucumber::{gherkin::Step, given, then, when, World, WorldInit};
 use std::convert::Infallible;
 use tikibase::input::Command;
@@ -86,7 +87,7 @@ fn file_should_contain(world: &mut MyWorld, step: &Step, filename: String) {
 
 #[then("it prints:")]
 fn it_prints(world: &mut MyWorld, step: &Step) {
-    let mut have = String::new();
+    let mut have = S("");
     for message in &world.output.issues {
         have.push_str(message.to_text().trim());
         have.push_str("\n");
