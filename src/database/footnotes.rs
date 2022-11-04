@@ -51,9 +51,8 @@ pub struct Footnote {
 mod tests {
 
     mod contains_definition {
-        use big_s::S;
-
         use crate::database::{Footnote, Footnotes};
+        use big_s::S;
 
         #[test]
         fn contains() {
@@ -81,9 +80,8 @@ mod tests {
     }
 
     mod contains_reference {
-        use big_s::S;
-
         use crate::database::{Footnote, Footnotes};
+        use big_s::S;
 
         #[test]
         fn contains() {
@@ -111,9 +109,8 @@ mod tests {
     }
 
     mod missing_references {
-        use big_s::S;
-
         use crate::database::{Footnote, Footnotes};
+        use big_s::S;
 
         #[test]
         fn missing() {
@@ -167,9 +164,8 @@ mod tests {
     }
 
     mod unused_definitions {
-        use big_s::S;
-
         use crate::database::{Footnote, Footnotes};
+        use big_s::S;
 
         #[test]
         fn missing() {
