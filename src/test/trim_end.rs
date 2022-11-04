@@ -10,9 +10,8 @@ pub fn trim_end(text: &mut String) {
 mod tests {
 
     mod trim_end {
-        use big_s::S;
-
         use super::super::trim_end;
+        use big_s::S;
 
         #[test]
         fn whitespaces() {
