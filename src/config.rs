@@ -200,12 +200,11 @@ mod tests {
     }
 
     mod load {
-        use big_s::S;
-
         use super::super::{load, Config};
         use crate::check::{Issue, Location};
         use crate::config::LoadResult;
         use crate::test;
+        use big_s::S;
 
         #[test]
         fn no_config_file() {
