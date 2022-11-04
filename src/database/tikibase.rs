@@ -1,8 +1,7 @@
-use big_s::S;
-
 use super::{Directory, Document};
 use crate::check::Issue;
 use crate::Config;
+use big_s::S;
 
 pub struct Tikibase {
     pub root: String,
