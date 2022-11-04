@@ -132,6 +132,7 @@ mod tests {
 
     mod add_footnotes_to {
         use crate::database::{Footnote, Footnotes, Line};
+        use big_s::S;
 
         #[test]
         fn no_footnotes() {
@@ -152,13 +153,13 @@ mod tests {
                 references: vec![
                     Footnote {
                         line: 0,
-                        identifier: "1".into(),
+                        identifier: S("1"),
                         start: 7,
                         end: 11,
                     },
                     Footnote {
                         line: 0,
-                        identifier: "number-two".into(),
+                        identifier: S("number-two"),
                         start: 12,
                         end: 25,
                     },
@@ -174,7 +175,7 @@ mod tests {
             line.add_footnotes_to(&mut have, "", 0).unwrap();
             let want = Footnotes {
                 definitions: vec![Footnote {
-                    identifier: "1".into(),
+                    identifier: S("1"),
                     line: 0,
                     start: 0,
                     end: 5,
@@ -222,6 +223,7 @@ mod tests {
     mod references {
         use super::super::Reference;
         use crate::database::Line;
+        use big_s::S;
 
         #[test]
         fn link_md() {
@@ -232,13 +234,13 @@ mod tests {
             line.references(12, &mut have);
             let want = vec![
                 Reference::Link {
-                    target: "one.md".into(),
+                    target: S("one.md"),
                     line: 12,
                     start: 12,
                     end: 25,
                 },
                 Reference::Link {
-                    target: "two.md#pieces".into(),
+                    target: S("two.md#pieces"),
                     line: 12,
                     start: 48,
                     end: 75,
@@ -253,7 +255,7 @@ mod tests {
             let mut have = vec![];
             line.references(12, &mut have);
             let want = vec![Reference::Link {
-                target: "two.md".into(),
+                target: S("two.md"),
                 line: 12,
                 start: 14,
                 end: 38,
@@ -267,7 +269,7 @@ mod tests {
             let mut have = vec![];
             line.references(12, &mut have);
             let want = vec![Reference::Image {
-                src: "zonk.md".into(),
+                src: S("zonk.md"),
                 line: 12,
                 start: 13,
                 end: 29,
@@ -281,7 +283,7 @@ mod tests {
             let mut have = vec![];
             line.references(12, &mut have);
             let want = vec![Reference::Image {
-                src: "zonk.md".into(),
+                src: S("zonk.md"),
                 line: 12,
                 start: 0,
                 end: 19,
@@ -295,7 +297,7 @@ mod tests {
             let mut have = vec![];
             line.references(12, &mut have);
             let want = vec![Reference::Image {
-                src: "zonk.md".into(),
+                src: S("zonk.md"),
                 line: 12,
                 start: 0,
                 end: 42,
@@ -309,7 +311,7 @@ mod tests {
             let mut have = vec![];
             line.references(12, &mut have);
             let want = vec![Reference::Image {
-                src: "zonk.md".into(),
+                src: S("zonk.md"),
                 line: 12,
                 start: 0,
                 end: 20,
@@ -323,7 +325,7 @@ mod tests {
             let mut have = vec![];
             line.references(12, &mut have);
             let want = vec![Reference::Image {
-                src: "zonk.md".into(),
+                src: S("zonk.md"),
                 line: 12,
                 start: 0,
                 end: 21,
@@ -335,6 +337,7 @@ mod tests {
     mod sanitize_code_segments {
         use super::super::sanitize_code_segments;
         use crate::check::{Issue, Location};
+        use big_s::S;
 
         #[test]
         fn with_code_blocks() {
@@ -355,7 +358,7 @@ mod tests {
             let give = "one `unclosed";
             let want = Err(Issue::UnclosedBacktick {
                 location: Location {
-                    file: "".into(),
+                    file: S(""),
                     line: 12,
                     start: 4,
                     end: 13,

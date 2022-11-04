@@ -111,6 +111,7 @@ mod tests {
     mod extract_shortcut {
         use crate::check::Issue;
         use crate::fix::missing_links::{extract_shortcut, ExtractShortcutResult};
+        use big_s::S;
         use regex::Regex;
 
         #[test]
@@ -135,9 +136,8 @@ mod tests {
         fn regex_without_capture() {
             let regex = Regex::new("123").unwrap();
             let give = "# Example Title (ET)";
-            let want = ExtractShortcutResult::Failed(Issue::TitleRegexNoCaptures {
-                regex: "123".into(),
-            });
+            let want =
+                ExtractShortcutResult::Failed(Issue::TitleRegexNoCaptures { regex: S("123") });
             let have = extract_shortcut(give, &regex);
             assert_eq!(have, want);
         }
@@ -147,7 +147,7 @@ mod tests {
             let regex = Regex::new("(\\w) (\\w)").unwrap();
             let give = "# Example Title";
             let want = ExtractShortcutResult::Failed(Issue::TitleRegexTooManyCaptures {
-                regex: "(\\w) (\\w)".into(),
+                regex: S("(\\w) (\\w)"),
                 captures: 2,
             });
             let have = extract_shortcut(give, &regex);

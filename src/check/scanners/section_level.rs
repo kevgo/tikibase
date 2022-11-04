@@ -105,6 +105,7 @@ mod tests {
         use crate::check::{Issue, Location};
         use crate::{test, Tikibase};
         use ahash::AHashMap;
+        use big_s::S;
         use indoc::indoc;
 
         #[test]
@@ -131,7 +132,7 @@ mod tests {
             let have = run(dir);
             let want = vec![Issue::InconsistentHeadingLevel {
                 location: Location {
-                    file: "2.md".into(),
+                    file: S("2.md"),
                     line: 2,
                     start: 0,
                     end: 13,
@@ -139,7 +140,7 @@ mod tests {
                 common_level: Some(3),
                 this_level: 5u8,
                 all_levels: vec![3, 5],
-                section_title: "section".into(),
+                section_title: S("section"),
             }];
             pretty::assert_eq!(have, want);
         }
@@ -163,7 +164,7 @@ mod tests {
             let want = vec![
                 Issue::InconsistentHeadingLevel {
                     location: Location {
-                        file: "1.md".into(),
+                        file: S("1.md"),
                         line: 2,
                         start: 0,
                         end: 11,
@@ -171,11 +172,11 @@ mod tests {
                     common_level: None,
                     this_level: 3u8,
                     all_levels: vec![3, 5],
-                    section_title: "section".into(),
+                    section_title: S("section"),
                 },
                 Issue::InconsistentHeadingLevel {
                     location: Location {
-                        file: "2.md".into(),
+                        file: S("2.md"),
                         line: 2,
                         start: 0,
                         end: 13,
@@ -183,7 +184,7 @@ mod tests {
                     common_level: None,
                     this_level: 5u8,
                     all_levels: vec![3, 5],
-                    section_title: "section".into(),
+                    section_title: S("section"),
                 },
             ];
             pretty::assert_eq!(have, want);

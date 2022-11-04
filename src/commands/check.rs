@@ -27,6 +27,7 @@ mod tests {
     use crate::check::{Issue, Location};
     use crate::commands::Outcome;
     use crate::{test, Tikibase};
+    use big_s::S;
 
     #[test]
     fn missing_links() {
@@ -41,7 +42,7 @@ mod tests {
             issues: vec![
                 Issue::DocumentWithoutLinks {
                     location: Location {
-                        file: "1.md".into(),
+                        file: S("1.md"),
                         line: 0,
                         start: 0,
                         end: 0,
@@ -49,23 +50,23 @@ mod tests {
                 },
                 Issue::MissingLink {
                     location: Location {
-                        file: "1.md".into(),
+                        file: S("1.md"),
                         line: 2,
                         start: 0,
                         end: 0,
                     },
-                    path: "2.md".into(),
-                    title: "Two".into(),
+                    path: S("2.md"),
+                    title: S("Two"),
                 },
                 Issue::MissingLink {
                     location: Location {
-                        file: "1.md".into(),
+                        file: S("1.md"),
                         line: 2,
                         start: 0,
                         end: 0,
                     },
-                    path: "3.md".into(),
-                    title: "Three".into(),
+                    path: S("3.md"),
+                    title: S("Three"),
                 },
             ],
             fixes: vec![],
@@ -84,7 +85,7 @@ mod tests {
             issues: vec![
                 Issue::DocumentWithoutLinks {
                     location: Location {
-                        file: "1.md".into(),
+                        file: S("1.md"),
                         line: 0,
                         start: 0,
                         end: 0,
@@ -92,7 +93,7 @@ mod tests {
                 },
                 Issue::ObsoleteOccurrencesSection {
                     location: Location {
-                        file: "1.md".into(),
+                        file: S("1.md"),
                         line: 3,
                         start: 4,
                         end: 15,

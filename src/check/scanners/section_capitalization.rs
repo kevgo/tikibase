@@ -110,6 +110,7 @@ mod tests {
     use crate::check::{Issue, Location};
     use crate::{test, Tikibase};
     use ahash::AHashMap;
+    use big_s::S;
     use indoc::indoc;
 
     #[test]
@@ -137,14 +138,14 @@ mod tests {
         let have = run(dir);
         let want = vec![Issue::MixCapSection {
             location: Location {
-                file: "2.md".into(),
+                file: S("2.md"),
                 line: 2,
                 start: 4,
                 end: 9,
             },
-            all_variants: vec!["Alpha".into(), "alpha".into()],
-            this_variant: "Alpha".into(),
-            common_variant: Some("alpha".into()),
+            all_variants: vec![S("Alpha"), S("alpha")],
+            this_variant: S("Alpha"),
+            common_variant: Some(S("alpha")),
             section_level: 3,
         }];
         pretty::assert_eq!(have, want);
@@ -169,25 +170,25 @@ mod tests {
         let want = vec![
             Issue::MixCapSection {
                 location: Location {
-                    file: "1.md".into(),
+                    file: S("1.md"),
                     line: 2,
                     start: 4,
                     end: 9,
                 },
-                all_variants: vec!["Alpha".into(), "alpha".into()],
-                this_variant: "alpha".into(),
+                all_variants: vec![S("Alpha"), S("alpha")],
+                this_variant: S("alpha"),
                 common_variant: None,
                 section_level: 3,
             },
             Issue::MixCapSection {
                 location: Location {
-                    file: "2.md".into(),
+                    file: S("2.md"),
                     line: 2,
                     start: 4,
                     end: 9,
                 },
-                all_variants: vec!["Alpha".into(), "alpha".into()],
-                this_variant: "Alpha".into(),
+                all_variants: vec![S("Alpha"), S("alpha")],
+                this_variant: S("Alpha"),
                 common_variant: None,
                 section_level: 3,
             },

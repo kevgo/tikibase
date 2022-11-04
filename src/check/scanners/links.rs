@@ -212,6 +212,7 @@ pub fn scan(
 mod tests {
     use crate::check::{Issue, Location};
     use crate::{test, Tikibase};
+    use big_s::S;
     use indoc::indoc;
 
     #[test]
@@ -231,12 +232,12 @@ mod tests {
         );
         let want = vec![Issue::LinkToNonExistingFile {
             location: Location {
-                file: "one.md".into(),
+                file: S("one.md"),
                 line: 2,
                 start: 0,
                 end: 26,
             },
-            target: "non-existing.md".into(),
+            target: S("non-existing.md"),
         }];
         pretty::assert_eq!(issues, want);
         assert_eq!(linked_resources, Vec::<String>::new());
@@ -260,13 +261,13 @@ mod tests {
         );
         let want = vec![Issue::LinkToNonExistingAnchorInExistingDocument {
             location: Location {
-                file: "1.md".into(),
+                file: S("1.md"),
                 line: 1,
                 start: 0,
                 end: 32,
             },
-            target_file: "2.md".into(),
-            anchor: "#zonk".into(),
+            target_file: S("2.md"),
+            anchor: S("#zonk"),
         }];
         pretty::assert_eq!(issues, want);
         assert_eq!(linked_resources, Vec::<String>::new());
@@ -289,12 +290,12 @@ mod tests {
         );
         let want = vec![Issue::LinkToNonExistingAnchorInCurrentDocument {
             location: Location {
-                file: "1.md".into(),
+                file: S("1.md"),
                 line: 1,
                 start: 0,
                 end: 28,
             },
-            anchor: "#zonk".into(),
+            anchor: S("#zonk"),
         }];
         pretty::assert_eq!(issues, want);
         assert_eq!(linked_resources, Vec::<String>::new());
@@ -345,12 +346,12 @@ mod tests {
         );
         let want = vec![Issue::LinkToNonExistingFile {
             location: Location {
-                file: "1.md".into(),
+                file: S("1.md"),
                 line: 1,
                 start: 0,
                 end: 39,
             },
-            target: "2.md".into(),
+            target: S("2.md"),
         }];
         pretty::assert_eq!(issues, want);
         assert_eq!(linked_resources, Vec::<String>::new());
@@ -436,13 +437,13 @@ mod tests {
             issues,
             vec![Issue::MissingLink {
                 location: Location {
-                    file: "three/3.md".into(),
+                    file: S("three/3.md"),
                     line: 0,
                     start: 0,
                     end: 0,
                 },
-                path: "../1.md".into(),
-                title: "One".into(),
+                path: S("../1.md"),
+                title: S("One"),
             }]
         );
         assert_eq!(linked_resources, Vec::<String>::new());
@@ -487,12 +488,12 @@ mod tests {
             issues,
             vec![Issue::LinkToNonExistingFile {
                 location: Location {
-                    file: "sub/1.md".into(),
+                    file: S("sub/1.md"),
                     line: 1,
                     start: 0,
                     end: 17,
                 },
-                target: "zonk.md".into()
+                target: S("zonk.md")
             }]
         );
         assert_eq!(linked_resources, Vec::<String>::new());
@@ -545,12 +546,12 @@ mod tests {
             issues,
             vec![Issue::LinkToNonExistingDir {
                 location: Location {
-                    file: "1.md".into(),
+                    file: S("1.md"),
                     line: 1,
                     start: 25,
                     end: 38,
                 },
-                target: "zonk".into(),
+                target: S("zonk"),
             }]
         );
         assert_eq!(linked_resources, Vec::<String>::new());
@@ -575,7 +576,7 @@ mod tests {
             issues,
             vec![Issue::LinkWithoutTarget {
                 location: Location {
-                    file: "one.md".into(),
+                    file: S("one.md"),
                     line: 2,
                     start: 0,
                     end: 11,
@@ -663,12 +664,12 @@ mod tests {
         );
         let want = vec![Issue::BrokenImage {
             location: Location {
-                file: "1.md".into(),
+                file: S("1.md"),
                 line: 2,
                 start: 0,
                 end: 18,
             },
-            target: "zonk.png".into(),
+            target: S("zonk.png"),
         }];
         pretty::assert_eq!(issues, want);
         assert_eq!(linked_resources, Vec::<String>::new());

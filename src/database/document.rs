@@ -344,6 +344,7 @@ struct CodeblockStart {
 mod tests {
     use super::Document;
     use crate::database::Reference;
+    use big_s::S;
     use indoc::indoc;
 
     mod contains_reference_to {
@@ -383,6 +384,7 @@ mod tests {
 
     mod footnotes {
         use crate::database::{Document, Footnote, Footnotes};
+        use big_s::S;
         use indoc::indoc;
 
         #[test]
@@ -410,13 +412,13 @@ mod tests {
             let want = Ok(Footnotes {
                 definitions: vec![
                     Footnote {
-                        identifier: "1".into(),
+                        identifier: S("1"),
                         line: 4,
                         start: 0,
                         end: 5,
                     },
                     Footnote {
-                        identifier: "second".into(),
+                        identifier: S("second"),
                         line: 5,
                         start: 0,
                         end: 10,
@@ -424,19 +426,19 @@ mod tests {
                 ],
                 references: vec![
                     Footnote {
-                        identifier: "1".into(),
+                        identifier: S("1"),
                         line: 1,
                         start: 13,
                         end: 17,
                     },
                     Footnote {
-                        identifier: "rust".into(),
+                        identifier: S("rust"),
                         line: 2,
                         start: 12,
                         end: 19,
                     },
                     Footnote {
-                        identifier: "cargo-box".into(),
+                        identifier: S("cargo-box"),
                         line: 2,
                         start: 25,
                         end: 37,
@@ -475,6 +477,7 @@ mod tests {
         use super::super::Document;
         use crate::check::{Issue, Location};
         use crate::database::{Line, Section};
+        use big_s::S;
         use indoc::indoc;
 
         #[test]
@@ -485,7 +488,7 @@ mod tests {
                 content"};
             let have = Document::from_str("one.md", give);
             let want = Ok(Document {
-                relative_path: "one.md".into(),
+                relative_path: S("one.md"),
                 title_section: Section {
                     line_number: 0,
                     title_line: Line::from("# test"),
@@ -511,7 +514,7 @@ mod tests {
             let have = Document::from_str("one.md", "no title");
             let want = Err(Issue::NoTitleSection {
                 location: Location {
-                    file: "one.md".into(),
+                    file: S("one.md"),
                     line: 0,
                     start: 0,
                     end: 8,
@@ -531,7 +534,7 @@ mod tests {
                 "};
             let have = Document::from_str("test.md", give);
             let want = Ok(Document {
-                relative_path: "test.md".into(),
+                relative_path: S("test.md"),
                 title_section: Section {
                     line_number: 0,
                     title_line: Line::from("# test"),
@@ -562,7 +565,7 @@ mod tests {
             let have = Document::from_str("test.md", give);
             let want = Err(Issue::UnclosedFence {
                 location: Location {
-                    file: "test.md".into(),
+                    file: S("test.md"),
                     line: 1,
                     start: 0,
                     end: 0,
@@ -583,7 +586,7 @@ mod tests {
                 - link 1"};
             let have = Document::from_str("one.md", give);
             let want = Ok(Document {
-                relative_path: "one.md".into(),
+                relative_path: S("one.md"),
                 title_section: Section {
                     line_number: 0,
                     title_line: Line::from("# test"),
@@ -824,13 +827,13 @@ mod tests {
         let have = Document::references(&doc.title_section, &doc.content_sections);
         let want = vec![
             Reference::Link {
-                target: "1.md".into(),
+                target: S("1.md"),
                 line: 1,
                 start: 8,
                 end: 19,
             },
             Reference::Image {
-                src: "2.png".into(),
+                src: S("2.png"),
                 line: 3,
                 start: 10,
                 end: 23,

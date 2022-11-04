@@ -38,6 +38,7 @@ pub fn scan(doc: &Document, issues: &mut Vec<Issue>) {
 mod tests {
     use crate::check::{Issue, Location};
     use crate::database::Document;
+    use big_s::S;
     use indoc::indoc;
 
     #[test]
@@ -62,12 +63,12 @@ mod tests {
         super::scan(&doc, &mut have);
         let want = vec![Issue::MissingFootnote {
             location: Location {
-                file: "test.md".into(),
+                file: S("test.md"),
                 line: 2,
                 start: 14,
                 end: 22,
             },
-            identifier: "other".into(),
+            identifier: S("other"),
         }];
         pretty::assert_eq!(have, want);
     }
@@ -94,12 +95,12 @@ mod tests {
         super::scan(&doc, &mut have);
         let want = vec![Issue::UnusedFootnote {
             location: Location {
-                file: "test.md".into(),
+                file: S("test.md"),
                 line: 12,
                 start: 0,
                 end: 10,
             },
-            identifier: "unused".into(),
+            identifier: S("unused"),
         }];
         pretty::assert_eq!(have, want);
     }

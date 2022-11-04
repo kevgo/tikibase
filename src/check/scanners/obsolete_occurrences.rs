@@ -44,19 +44,19 @@ fn is_missing_link_with_path(issue: &Issue, path: &str) -> bool {
 mod tests {
 
     mod is_missing_link_with_path {
-
         use crate::check::{Issue, Location};
+        use big_s::S;
 
         #[test]
         fn matching() {
             let location = Location {
-                file: "file.md".into(),
+                file: S("file.md"),
                 ..Location::default()
             };
             let issue = Issue::MissingLink {
                 location,
-                path: "missing.md".into(),
-                title: "title".into(),
+                path: S("missing.md"),
+                title: S("title"),
             };
             let have = super::super::is_missing_link_with_path(&issue, "file.md");
             let want = true;
@@ -66,13 +66,13 @@ mod tests {
         #[test]
         fn mismatching_filename() {
             let location = Location {
-                file: "file.md".into(),
+                file: S("file.md"),
                 ..Location::default()
             };
             let issue = Issue::MissingLink {
                 location,
-                path: "missing.md".into(),
-                title: "title".into(),
+                path: S("missing.md"),
+                title: S("title"),
             };
             let have = super::super::is_missing_link_with_path(&issue, "other.md");
             let want = false;
@@ -82,12 +82,12 @@ mod tests {
         #[test]
         fn mismatching_enum_variant() {
             let location = Location {
-                file: "file.md".into(),
+                file: S("file.md"),
                 ..Location::default()
             };
             let issue = Issue::BrokenImage {
                 location,
-                target: "foo.png".into(),
+                target: S("foo.png"),
             };
             let have = super::super::is_missing_link_with_path(&issue, "other.md");
             let want = false;

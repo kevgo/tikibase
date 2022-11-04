@@ -52,12 +52,13 @@ mod tests {
 
     mod contains_definition {
         use crate::database::{Footnote, Footnotes};
+        use big_s::S;
 
         #[test]
         fn contains() {
             let give = Footnotes {
                 definitions: vec![Footnote {
-                    identifier: "f1".into(),
+                    identifier: S("f1"),
                     ..Footnote::default()
                 }],
                 references: vec![],
@@ -69,7 +70,7 @@ mod tests {
         fn does_not_contain() {
             let give = Footnotes {
                 definitions: vec![Footnote {
-                    identifier: "f1".into(),
+                    identifier: S("f1"),
                     ..Footnote::default()
                 }],
                 references: vec![],
@@ -80,13 +81,14 @@ mod tests {
 
     mod contains_reference {
         use crate::database::{Footnote, Footnotes};
+        use big_s::S;
 
         #[test]
         fn contains() {
             let give = Footnotes {
                 definitions: vec![],
                 references: vec![Footnote {
-                    identifier: "f1".into(),
+                    identifier: S("f1"),
                     ..Footnote::default()
                 }],
             };
@@ -98,7 +100,7 @@ mod tests {
             let give = Footnotes {
                 definitions: vec![],
                 references: vec![Footnote {
-                    identifier: "f1".into(),
+                    identifier: S("f1"),
                     ..Footnote::default()
                 }],
             };
@@ -108,21 +110,22 @@ mod tests {
 
     mod missing_references {
         use crate::database::{Footnote, Footnotes};
+        use big_s::S;
 
         #[test]
         fn missing() {
             let give = Footnotes {
                 definitions: vec![Footnote {
-                    identifier: "f2".into(),
+                    identifier: S("f2"),
                     ..Footnote::default()
                 }],
                 references: vec![
                     Footnote {
-                        identifier: "f1".into(),
+                        identifier: S("f1"),
                         ..Footnote::default()
                     },
                     Footnote {
-                        identifier: "f2".into(),
+                        identifier: S("f2"),
                         ..Footnote::default()
                     },
                 ],
@@ -136,21 +139,21 @@ mod tests {
             let give = Footnotes {
                 definitions: vec![
                     Footnote {
-                        identifier: "f1".into(),
+                        identifier: S("f1"),
                         ..Footnote::default()
                     },
                     Footnote {
-                        identifier: "f2".into(),
+                        identifier: S("f2"),
                         ..Footnote::default()
                     },
                 ],
                 references: vec![
                     Footnote {
-                        identifier: "f1".into(),
+                        identifier: S("f1"),
                         ..Footnote::default()
                     },
                     Footnote {
-                        identifier: "f2".into(),
+                        identifier: S("f2"),
                         ..Footnote::default()
                     },
                 ],
@@ -162,22 +165,23 @@ mod tests {
 
     mod unused_definitions {
         use crate::database::{Footnote, Footnotes};
+        use big_s::S;
 
         #[test]
         fn missing() {
             let give = Footnotes {
                 definitions: vec![
                     Footnote {
-                        identifier: "f1".into(),
+                        identifier: S("f1"),
                         ..Footnote::default()
                     },
                     Footnote {
-                        identifier: "f2".into(),
+                        identifier: S("f2"),
                         ..Footnote::default()
                     },
                 ],
                 references: vec![Footnote {
-                    identifier: "f2".into(),
+                    identifier: S("f2"),
                     ..Footnote::default()
                 }],
             };
@@ -191,21 +195,21 @@ mod tests {
             let give = Footnotes {
                 definitions: vec![
                     Footnote {
-                        identifier: "f1".into(),
+                        identifier: S("f1"),
                         ..Footnote::default()
                     },
                     Footnote {
-                        identifier: "f2".into(),
+                        identifier: S("f2"),
                         ..Footnote::default()
                     },
                 ],
                 references: vec![
                     Footnote {
-                        identifier: "f1".into(),
+                        identifier: S("f1"),
                         ..Footnote::default()
                     },
                     Footnote {
-                        identifier: "f2".into(),
+                        identifier: S("f2"),
                         ..Footnote::default()
                     },
                 ],

@@ -43,11 +43,12 @@ mod tests {
 
     mod points_to {
         use crate::database::Reference;
+        use big_s::S;
 
         #[test]
         fn matching_image() {
             let img = Reference::Image {
-                src: "ok.md".into(),
+                src: S("ok.md"),
                 line: 0,
                 start: 0,
                 end: 0,
@@ -58,7 +59,7 @@ mod tests {
         #[test]
         fn matching_link() {
             let img = Reference::Link {
-                target: "ok.md".into(),
+                target: S("ok.md"),
                 line: 0,
                 start: 0,
                 end: 0,
@@ -69,7 +70,7 @@ mod tests {
         #[test]
         fn mismatching_image() {
             let img = Reference::Image {
-                src: "ok.md".into(),
+                src: S("ok.md"),
                 line: 0,
                 start: 0,
                 end: 0,
@@ -80,7 +81,7 @@ mod tests {
         #[test]
         fn mismatching_link() {
             let img = Reference::Link {
-                target: "ok.md".into(),
+                target: S("ok.md"),
                 line: 0,
                 start: 0,
                 end: 0,
@@ -91,7 +92,7 @@ mod tests {
         #[test]
         fn with_anchor() {
             let img = Reference::Link {
-                target: "ok.md#foo".into(),
+                target: S("ok.md#foo"),
                 line: 0,
                 start: 0,
                 end: 0,

@@ -61,6 +61,7 @@ mod tests {
     use crate::check::{Issue, Location};
     use crate::database::Document;
     use crate::Config;
+    use big_s::S;
     use indoc::indoc;
 
     #[test]
@@ -75,14 +76,14 @@ mod tests {
             text"};
         let doc = Document::from_str("test.md", content).unwrap();
         let config = Config {
-            sections: Some(vec!["### one".into(), "### two".into(), "### three".into()]),
+            sections: Some(vec![S("### one"), S("### two"), S("### three")]),
             ..Config::default()
         };
         let mut issues = vec![];
         super::scan(&doc, &config, &mut issues);
         let want = vec![Issue::UnorderedSections {
             location: Location {
-                file: "test.md".into(),
+                file: S("test.md"),
                 line: 5,
                 start: 0,
                 end: 7,
@@ -103,7 +104,7 @@ mod tests {
             text"};
         let doc = Document::from_str("test.md", content).unwrap();
         let config = Config {
-            sections: Some(vec!["one".into(), "two".into(), "three".into()]),
+            sections: Some(vec![S("one"), S("two"), S("three")]),
             ..Config::default()
         };
         let mut issues = vec![];
@@ -124,7 +125,7 @@ mod tests {
             text"};
         let doc = Document::from_str("test.md", content).unwrap();
         let config = Config {
-            sections: Some(vec!["one".into(), "three".into()]),
+            sections: Some(vec![S("one"), S("three")]),
             ..Config::default()
         };
         let mut issues = vec![];

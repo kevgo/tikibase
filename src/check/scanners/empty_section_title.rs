@@ -19,6 +19,7 @@ pub fn scan(section: &Section, path: &str, issues: &mut Vec<Issue>) {
 mod tests {
     use crate::check::{Issue, Location};
     use crate::database::Document;
+    use big_s::S;
     use indoc::indoc;
 
     #[test]
@@ -38,7 +39,7 @@ mod tests {
         let want = vec![
             Issue::SectionWithoutHeader {
                 location: Location {
-                    file: "test.md".into(),
+                    file: S("test.md"),
                     line: 2,
                     start: 0,
                     end: 3,
@@ -46,7 +47,7 @@ mod tests {
             },
             Issue::SectionWithoutHeader {
                 location: Location {
-                    file: "test.md".into(),
+                    file: S("test.md"),
                     line: 4,
                     start: 0,
                     end: 3,

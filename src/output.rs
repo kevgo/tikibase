@@ -3,6 +3,7 @@
 use crate::check::Issue;
 use crate::commands::Outcome;
 use crate::Fix;
+use big_s::S;
 use serde::Serialize;
 
 /// human-readable summary of running a single command
@@ -77,7 +78,7 @@ impl Message {
                 fixable: false,
             },
             Fix::RemovedObsoleteOccurrencesSection { location } => Message {
-                text: "removed obsolete occurrences section".into(),
+                text: S("removed obsolete occurrences section"),
                 file: location.file,
                 line: Some(location.line),
                 start: Some(location.start),
@@ -85,7 +86,7 @@ impl Message {
                 fixable: false,
             },
             Fix::SortedSections { location } => Message {
-                text: "fixed section order".into(),
+                text: S("fixed section order"),
                 file: location.file,
                 line: Some(location.line),
                 start: Some(location.start),
@@ -143,7 +144,7 @@ impl Message {
                 fixable: false,
             },
             Issue::DocumentWithoutLinks { location } => Message {
-                text: "document is not connected to any other documents".into(),
+                text: S("document is not connected to any other documents"),
                 file: location.file,
                 line: Some(location.line),
                 start: Some(location.start),
@@ -159,7 +160,7 @@ impl Message {
                 fixable: false,
             },
             Issue::EmptyDocument { path} => Message{
-                text: "no content".into(),
+                text: S("no content"),
                 file: path,
                 line: None,
                 start: None,
@@ -275,7 +276,7 @@ impl Message {
                 fixable: false,
             },
             Issue::LinkToSameDocument { location } => Message {
-                text: "document contains link to itself".into(),
+                text: S("document contains link to itself"),
                 file: location.file,
                 line: Some(location.line),
                 start: Some(location.start),
@@ -283,7 +284,7 @@ impl Message {
                 fixable: false,
             },
             Issue::LinkWithoutTarget { location } => Message {
-                text: "link without target".into(),
+                text: S("link without target"),
                 file: location.file,
                 line: Some(location.line),
                 start: Some(location.start),
@@ -339,7 +340,7 @@ impl Message {
                 }
             },
             Issue::NoTitleSection { location } => Message {
-                text: "no title section".into(),
+                text: S("no title section"),
                 file: location.file,
                 line: Some(location.line),
                 start: Some(location.start),
@@ -347,7 +348,7 @@ impl Message {
                 fixable: false,
             },
             Issue::ObsoleteOccurrencesSection { location } => Message {
-                text: "obsolete \"occurrences\" section".into(),
+                text: S("obsolete \"occurrences\" section"),
                 file: location.file,
                 line: Some(location.line),
                 start: Some(location.start),
@@ -355,7 +356,7 @@ impl Message {
                 fixable: true,
             },
             Issue::OrphanedResource { location } => Message {
-                text: "file isn't linked to".into(),
+                text: S("file isn't linked to"),
                 file: location.file,
                 line: Some(location.line),
                 start: Some(location.start),
@@ -371,7 +372,7 @@ impl Message {
                 fixable: false,
             },
             Issue::SectionWithoutHeader { location } => Message {
-                text: "section with empty title".into(),
+                text: S("section with empty title"),
                 file: location.file,
                 line: Some(location.line),
                 start: Some(location.start),
@@ -380,7 +381,7 @@ impl Message {
             },
             Issue::TitleRegexNoCaptures { regex } => Message {
                 text: format!("The regular expression in the \"titleRegEx\" entry ({}) doesn't contain a capture group", regex),
-                file: "tikibase.json".into(),
+                file: S("tikibase.json"),
                 line: None,
                 start: None,
                 end: None,
@@ -388,14 +389,14 @@ impl Message {
             },
             Issue::TitleRegexTooManyCaptures { regex, captures } => Message{
                 text: format!("The regular expression in the \"titleRegEx\" entry ({}) should have only one capture group but has {}", regex, captures),
-                file: "tikibase.json".into(),
+                file: S("tikibase.json"),
                 line: None,
                 start: None,
                 end: None,
                 fixable: false,
             },
             Issue::UnclosedBacktick { location } => Message {
-                text: "unclosed backtick".into(),
+                text: S("unclosed backtick"),
                 file: location.file,
                 line: Some(location.line),
                 start: Some(location.start),
@@ -403,7 +404,7 @@ impl Message {
                 fixable: false,
             },
             Issue::UnclosedFence { location } => Message {
-                text: "unclosed fence".into(),
+                text: S("unclosed fence"),
                 file: location.file,
                 line: Some(location.line),
                 start: Some(location.start),
@@ -433,7 +434,7 @@ impl Message {
                 }
             }
             Issue::UnorderedSections { location } => Message {
-                text: "sections occur in different order than specified by tikibase.json".into(),
+                text: S("sections occur in different order than specified by tikibase.json"),
                 file: location.file,
                 line: Some(location.line),
                 start: Some(location.start),
@@ -513,6 +514,7 @@ mod tests {
     mod all {
         use crate::output::Message;
         use crate::Messages;
+        use big_s::S;
 
         #[test]
         fn empty() {
@@ -527,21 +529,21 @@ mod tests {
             let give = Messages {
                 issues: vec![
                     Message {
-                        text: "issue 1".into(),
+                        text: S("issue 1"),
                         ..Message::default()
                     },
                     Message {
-                        text: "issue 2".into(),
+                        text: S("issue 2"),
                         ..Message::default()
                     },
                 ],
                 fixes: vec![
                     Message {
-                        text: "fix 1".into(),
+                        text: S("fix 1"),
                         ..Message::default()
                     },
                     Message {
-                        text: "fix 2".into(),
+                        text: S("fix 2"),
                         ..Message::default()
                     },
                 ],
