@@ -23,7 +23,7 @@ help:  # shows all available Make commands
 	cat Makefile | grep '^[^ ]*:' | grep -v '.PHONY' | grep -v '.SILENT:' | grep '#' | grep -v help | sed 's/:.*#/#/' | column -s "#" -t
 
 install:  # installs the binary in the system
-	cargo install --path .
+	cargo install --locked --path .
 
 lint: lint-std-fs tools/actionlint  # checks formatting
 	dprint check
