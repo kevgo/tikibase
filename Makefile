@@ -1,7 +1,9 @@
 .DEFAULT_GOAL := help
 
+BUILD_ENV := "CARGO_NET_GIT_FETCH_WITH_CLI=true"
+
 build:  # builds the release binary
-	cargo build --release --target x86_64-unknown-linux-musl
+	env $(BUILD_ENV) cargo build --release --target x86_64-unknown-linux-musl
 
 build-release:  # builds a release version of the binary
 	docker run --rm --user "$(id -u)":"$(id -g)" -v "$(PWD)":/usr/src/myapp -w /usr/src/myapp rust cargo build --release
@@ -23,7 +25,7 @@ help:  # shows all available Make commands
 	cat Makefile | grep '^[^ ]*:' | grep -v '.PHONY' | grep -v '.SILENT:' | grep '#' | grep -v help | sed 's/:.*#/#/' | column -s "#" -t
 
 install:  # installs the binary in the system
-	cargo install --locked --path .
+	env $(BUILD_ENV) cargo install --locked --path .
 
 lint: lint-std-fs tools/actionlint  # checks formatting
 	dprint check
