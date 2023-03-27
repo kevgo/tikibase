@@ -72,7 +72,7 @@ impl Section {
             line_number,
             title_line: Line::from(title),
             title_text_start: start,
-            level: level as u8,
+            level,
             body: body.into_iter().map(Line::from).collect(),
         }
     }
