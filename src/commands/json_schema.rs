@@ -8,7 +8,7 @@ use schemars::schema_for;
 /// exports the JSON Schema for the configuration file
 pub fn json_schema() -> Outcome {
     let filename = "tikibase.schema.json";
-    print!("exporting {} ... ", filename);
+    print!("exporting {filename} ... ");
     let file = match File::create(filename) {
         Ok(file) => file,
         Err(err) => {

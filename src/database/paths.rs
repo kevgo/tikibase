@@ -1,5 +1,5 @@
 /// provides the largest common ancestor for the two given paths
-fn common_anchestor<'a, 'b>(path1: &'a str, path2: &'b str) -> &'a str {
+fn common_anchestor<'a>(path1: &'a str, path2: &str) -> &'a str {
     let mut path1_chars = path1.char_indices();
     let mut path2_chars = path2.chars();
     let mut slash_pos: usize = 0;
@@ -37,9 +37,9 @@ pub fn dirs_between(path: &str, start: usize) -> usize {
 
 pub fn join(path1: &str, path2: &str) -> String {
     if path1.is_empty() || path2.is_empty() {
-        format!("{}{}", path1, path2)
+        format!("{path1}{path2}")
     } else {
-        format!("{}/{}", path1, path2)
+        format!("{path1}/{path2}")
     }
 }
 
@@ -216,7 +216,7 @@ mod tests {
         #[test]
         fn zero() {
             let have = super::super::go_up(0);
-            let want = "".to_string();
+            let want = String::new();
             assert_eq!(have, want);
         }
 

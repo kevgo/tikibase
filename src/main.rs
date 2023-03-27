@@ -35,6 +35,6 @@ fn print_text(messages: &Messages, command: &Command) {
 fn print_json(messages: &[Message]) {
     // NOTE: using a buffered writer doesn't seem to improve performance here
     if let Err(err) = serde_json::to_writer_pretty(io::stdout(), messages) {
-        println!("Error serializing JSON: {}", err);
+        println!("Error serializing JSON: {err}");
     }
 }
