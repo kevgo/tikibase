@@ -31,7 +31,7 @@ impl Message {
     pub fn from_fix(fix: Fix) -> Message {
         match fix {
             Fix::RemovedEmptySection { title, location } => Message {
-                text: format!("removed empty section \"{}\"", title),
+                text: format!("removed empty section \"{title}\""),
                 file: location.file,
                 line: Some(location.line),
                 start: Some(location.start),
@@ -39,7 +39,7 @@ impl Message {
                 fixable: false,
             },
             Fix::AddedOccurrencesSection { location, target } => Message {
-                text: format!("added {} to occurrences section", target),
+                text: format!("added {target} to occurrences section"),
                 file: location.file,
                 line: Some(location.line),
                 start: Some(location.start),
@@ -52,8 +52,7 @@ impl Message {
                 new_capitalization,
             } => Message {
                 text: format!(
-                    r#"normalized capitalization of section "{}" to "{}""#,
-                    old_capitalization, new_capitalization
+                    r#"normalized capitalization of section "{old_capitalization}" to "{new_capitalization}""#
                 ),
                 file: location.file,
                 line: Some(location.line),
@@ -68,8 +67,7 @@ impl Message {
                 new_level,
             } => Message {
                 text: format!(
-                    r#"normalized section "{}" from <h{}> to <h{}>"#,
-                    section_human_title, old_level, new_level
+                    r#"normalized section "{section_human_title}" from <h{old_level}> to <h{new_level}>"#
                 ),
                 file: location.file,
                 line: Some(location.line),
@@ -100,7 +98,7 @@ impl Message {
     pub fn from_issue(issue: Issue) -> Message {
         match issue {
             Issue::BrokenImage { location, target } => Message {
-                text: format!("image link to non-existing file \"{}\"", target),
+                text: format!("image link to non-existing file \"{target}\""),
                 file: location.file,
                 line: Some(location.line),
                 start: Some(location.start),
@@ -120,7 +118,7 @@ impl Message {
                 fixable: false,
             },
             Issue::CannotReadDirectory { path, err } => Message{
-                text: format!("cannot read directory: {}", err),
+                text: format!("cannot read directory: {err}"),
                 file: path,
                 line: None,
                 start: None,
@@ -128,7 +126,7 @@ impl Message {
                 fixable: false
             },
             Issue::CannotWriteConfigFile { file, message } => Message {
-                text: format!("cannot create configuration file: {}", message),
+                text: format!("cannot create configuration file: {message}"),
                 file,
                 line: None,
                 start: None,
@@ -136,7 +134,7 @@ impl Message {
                 fixable: false,
             },
             Issue::CannotWriteJsonSchemaFile { file, message } => Message {
-                text: format!("cannot write JSON Schema file: {}", message),
+                text: format!("cannot write JSON Schema file: {message}"),
                 file,
                 line: None,
                 start: None,
@@ -152,7 +150,7 @@ impl Message {
                 fixable: false,
             },
             Issue::DuplicateSection { location, title } => Message {
-                text: format!("document contains multiple \"{}\" sections", title),
+                text: format!("document contains multiple \"{title}\" sections"),
                 file: location.file,
                 line: Some(location.line),
                 start: Some(location.start),
@@ -168,7 +166,7 @@ impl Message {
                 fixable: false
             },
             Issue::EmptySection { location, title } => Message {
-                text: format!("section \"{}\" has no content", title),
+                text: format!("section \"{title}\" has no content"),
                 file: location.file,
                 line: Some(location.line),
                 start: Some(location.start),
@@ -176,7 +174,7 @@ impl Message {
                 fixable: true,
             },
             Issue::HeadingLevelDifferentThanConfigured { location, configured_level, configured_title: _, actual_level, actual_title} => Message{
-                text: format!("heading level (<h{}>) of \"{}\" differs from configured level (<h{}>)", actual_level, actual_title, configured_level),
+                text: format!("heading level (<h{actual_level}>) of \"{actual_title}\" differs from configured level (<h{configured_level}>)"),
                 file: location.file,
                 line: Some(location.line),
                 start: Some(location.start),
@@ -186,7 +184,7 @@ impl Message {
             Issue::InconsistentHeadingLevel { location, section_title, common_level: common_variant, this_level: this_variant, all_levels: all_variants } => {
                 if let Some(common_variant) = common_variant {
                     Message {
-                        text: format!("heading level (<h{}>) is inconsistent with the usual level for \"{}\" (<h{}>)", this_variant, section_title, common_variant),
+                        text: format!("heading level (<h{this_variant}>) is inconsistent with the usual level for \"{section_title}\" (<h{common_variant}>)"),
                         file: location.file,
                         line: Some(location.line),
                         start: Some(location.start),
@@ -194,9 +192,9 @@ impl Message {
                         fixable: true,
                     }
                 } else {
-                    let variants = all_variants.into_iter().map(|e| format!("<h{}>", e)).collect::<Vec<String>>().join(" and ");
+                    let variants = all_variants.into_iter().map(|e| format!("<h{e}>")).collect::<Vec<String>>().join(" and ");
                     Message {
-                        text: format!("inconsistent heading level - section \"{}\" exists as {}", section_title, variants),
+                        text: format!("inconsistent heading level - section \"{section_title}\" exists as {variants}"),
                         file: location.file,
                         line: Some(location.line),
                         start: Some(location.start),
@@ -206,7 +204,7 @@ impl Message {
                 }
             },
             Issue::InvalidConfigurationFile { location, message } => Message {
-                text: format!("invalid configuration file structure: {}", message),
+                text: format!("invalid configuration file structure: {message}"),
                 file: location.file,
                 line: Some(location.line),
                 start: Some(location.start),
@@ -218,7 +216,7 @@ impl Message {
                 glob,
                 message,
             } => Message {
-                text: format!("invalid glob expression \"{}\": {}", glob, message),
+                text: format!("invalid glob expression \"{glob}\": {message}"),
                 file: location.file,
                 line: Some(location.line),
                 start: Some(location.start),
@@ -226,7 +224,7 @@ impl Message {
                 fixable: false,
             },
             Issue::InvalidTitleRegex { regex, problem, file } => Message{
-                text: format!("Invalid regular expression in the \"titleRegEx\" entry ({}): {}", regex, problem),
+                text: format!("Invalid regular expression in the \"titleRegEx\" entry ({regex}): {problem}"),
                 file,
                 line: None,
                 start: None,
@@ -234,10 +232,7 @@ impl Message {
                 fixable: false
             },
             Issue::LinkToNonExistingAnchorInCurrentDocument { location, anchor } => Message {
-                text: format!(
-                    "link to non-existing anchor \"{}\" in current file",
-                    anchor
-                ),
+                text: format!("link to non-existing anchor \"{anchor}\" in current file"),
                 file: location.file,
                 line: Some(location.line),
                 start: Some(location.start),
@@ -249,10 +244,7 @@ impl Message {
                 target_file,
                 anchor,
             } => Message {
-                text: format!(
-                    "link to non-existing anchor \"{}\" in \"{}\"",
-                    anchor, target_file
-                ),
+                text: format!("link to non-existing anchor \"{anchor}\" in \"{target_file}\""),
                 file: location.file,
                 line: Some(location.line),
                 start: Some(location.start),
@@ -260,7 +252,7 @@ impl Message {
                 fixable: false,
             },
             Issue::LinkToNonExistingDir { location, target} => Message {
-                text: format!("link to non-existing directory \"{}\"", target),
+                text: format!("link to non-existing directory \"{target}\""),
                 file: location.file,
                 line: Some(location.line),
                 start: Some(location.start),
@@ -268,7 +260,7 @@ impl Message {
                 fixable: false,
             },
             Issue::LinkToNonExistingFile { location, target } => Message {
-                text: format!("link to non-existing file \"{}\"", target),
+                text: format!("link to non-existing file \"{target}\""),
                 file: location.file,
                 line: Some(location.line),
                 start: Some(location.start),
@@ -293,7 +285,7 @@ impl Message {
             },
             Issue::MissingLink { location, path, title: _ } => {
                 Message {
-                    text: format!("missing link to {}", path),
+                    text: format!("missing link to {path}"),
                     file: location.file,
                     line: Some(location.line),
                     start: Some(location.start),
@@ -305,7 +297,7 @@ impl Message {
                 location,
                 identifier: index,
             } => Message {
-                text: format!("footnote [^{}] doesn't exist", index),
+                text: format!("footnote [^{index}] doesn't exist"),
                 file: location.file,
                 line: Some(location.line),
                 start: Some(location.start),
@@ -315,10 +307,7 @@ impl Message {
             Issue::MixCapSection { location, all_variants, this_variant, common_variant, section_level: _ } => {
                 if let Some(common_variant) = common_variant {
                     Message {
-                        text: format!(
-                            r#"section capitalization ("{}") is inconsistent with the usual form "{}""#,
-                            this_variant, common_variant
-                        ),
+                        text: format!(r#"section capitalization ("{this_variant}") is inconsistent with the usual form "{common_variant}""#),
                         file: location.file,
                         line: Some(location.line),
                         start: Some(location.start),
@@ -364,7 +353,7 @@ impl Message {
                 fixable: false,
             },
             Issue::PathEscapesRoot { path, location } => Message {
-                text: format!("The path \"{}\" goes above the root directory", path),
+                text: format!("The path \"{path}\" goes above the root directory"),
                 file: location.file,
                 line: Some(location.line),
                 start: Some(location.start),
@@ -380,7 +369,7 @@ impl Message {
                 fixable: false,
             },
             Issue::TitleRegexNoCaptures { regex } => Message {
-                text: format!("The regular expression in the \"titleRegEx\" entry ({}) doesn't contain a capture group", regex),
+                text: format!("The regular expression in the \"titleRegEx\" entry ({regex}) doesn't contain a capture group"),
                 file: S("tikibase.json"),
                 line: None,
                 start: None,
@@ -388,7 +377,7 @@ impl Message {
                 fixable: false,
             },
             Issue::TitleRegexTooManyCaptures { regex, captures } => Message{
-                text: format!("The regular expression in the \"titleRegEx\" entry ({}) should have only one capture group but has {}", regex, captures),
+                text: format!("The regular expression in the \"titleRegEx\" entry ({regex}) should have only one capture group but has {captures}"),
                 file: S("tikibase.json"),
                 line: None,
                 start: None,
@@ -418,7 +407,7 @@ impl Message {
             } => {
                 let alloweds: Vec<String> = allowed_types
                     .iter()
-                    .map(|allowed| format!("\n  - {}", allowed))
+                    .map(|allowed| format!("\n  - {allowed}"))
                     .collect();
                 Message {
                     text: format!(
@@ -445,7 +434,7 @@ impl Message {
                 location,
                 identifier,
             } => Message {
-                text: format!("unused footnote [^{}]", identifier),
+                text: format!("unused footnote [^{identifier}]"),
                 file: location.file,
                 line: Some(location.line),
                 start: Some(location.start),
