@@ -1,4 +1,4 @@
-# How to make a new binstall release
+# How to make a new Tikibase release
 
 1. update [CHANGELOG.md](CHANGELOG.md) and commit to `main`
 2. replace all occurrences of `0.6.1` with the new version and commit to `main`
