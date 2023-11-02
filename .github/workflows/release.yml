@@ -1,0 +1,62 @@
+name: Release
+
+permissions:
+  contents: write
+
+on:
+  push:
+    tags:
+      - v[0-9]+.*
+
+jobs:
+  create-release:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: taiki-e/create-gh-release-action@v1
+        with:
+          # (optional) Path to changelog.
+          # changelog: CHANGELOG.md
+          draft: true
+          # (required) GitHub token for creating GitHub Releases.
+          token: ${{ secrets.RELEASE_TOKEN }}
+
+  upload-assets:
+    needs: create-release
+    strategy:
+      matrix:
+        include:
+          - filename: tikibase_linux_arm64
+            target: aarch64-unknown-linux-gnu
+            os: ubuntu-latest
+          - filename: tikibase_linux_intel64
+            target: x86_64-unknown-linux-gnu
+            os: ubuntu-latest
+          - filename: tikibase_macos_arm64
+            target: aarch64-apple-darwin
+            os: macos-latest
+          - filename: tikibase_macos_intel64
+            target: x86_64-apple-darwin
+            os: macos-latest
+          - filename: tikibase_macos_universal
+            target: universal-apple-darwin
+            os: macos-latest
+          - filename: tikibase_windows_intel64
+            target: x86_64-pc-windows-msvc
+            os: windows-latest
+          - filename: tikibase_windows_arm64
+            target: aarch64-pc-windows-msvc
+            os: windows-latest
+    runs-on: ${{ matrix.os }}
+    steps:
+      - uses: actions/checkout@v4
+      - uses: taiki-e/upload-rust-binary-action@v1
+        with:
+          archive: ${{ matrix.filename }}
+          # (required) Comma-separated list of binary names (non-extension portion of filename) to build and upload.
+          # Note that glob pattern is not supported yet.
+          bin: tikibase
+          # (optional) Target triple, default is host triple.
+          target: ${{ matrix.target }}
+          # (required) GitHub token for uploading assets to GitHub Releases.
+          token: ${{ secrets.RELEASE_TOKEN }}
