@@ -143,7 +143,7 @@ impl Directory {
 }
 
 /// filesystem entry types that Tikibase distinguishes
-#[derive(Debug, PartialEq)]
+#[derive(Clone, Copy, Debug, PartialEq)]
 pub enum EntryType {
     /// subdirectory of the current directory
     Directory,

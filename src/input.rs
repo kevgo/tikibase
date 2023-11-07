@@ -16,7 +16,7 @@ pub struct Arguments {
 }
 
 /// possible output formats for the CLI app
-#[derive(clap::ArgEnum, Clone, Debug)]
+#[derive(clap::ArgEnum, Clone, Copy, Debug)]
 pub enum Format {
     Text,
     Json,
@@ -30,7 +30,7 @@ impl Default for Format {
 }
 
 /// the subcommands of the CLI app
-#[derive(clap::Subcommand, Debug, PartialEq)]
+#[derive(clap::Subcommand, Clone, Copy, Debug, PartialEq)]
 pub enum Command {
     /// Prints all issues
     Check,

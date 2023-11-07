@@ -17,11 +17,11 @@ use input::Command;
 pub use output::{Message, Messages};
 
 /// runs the given Command in the given directory, returns structured data
-pub fn run(command: &input::Command, dir: &str) -> Messages {
-    if command == &Command::Init {
+pub fn run(command: input::Command, dir: &str) -> Messages {
+    if command == Command::Init {
         return Messages::from_outcome(commands::init(dir));
     }
-    if command == &Command::JsonSchema {
+    if command == Command::JsonSchema {
         return Messages::from_outcome(commands::json_schema());
     }
     let mut base = match Tikibase::load(dir.into()) {
