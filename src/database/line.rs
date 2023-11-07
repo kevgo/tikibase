@@ -119,7 +119,7 @@ fn sanitize_code_segments(text: &str, file: &str, line: u32) -> Result<String, I
             location: Location {
                 file: file.into(),
                 line,
-                start: code_block_start as u32,
+                start: code_block_start,
                 end: text.len() as u32,
             },
         });
@@ -349,7 +349,7 @@ mod tests {
         #[test]
         fn empty_string() {
             let give = "";
-            let want = "".to_string();
+            let want = String::new();
             assert_eq!(sanitize_code_segments(give, "", 0), Ok(want));
         }
 

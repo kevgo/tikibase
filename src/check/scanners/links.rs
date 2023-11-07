@@ -43,13 +43,11 @@ pub fn scan(
                     continue;
                 }
                 let (target_file, target_anchor) = match target.split_once('#') {
-                    Some((base, anchor)) => (base.to_string(), format!("#{}", anchor)),
-                    None => (target.clone(), "".to_string()),
+                    Some((base, anchor)) => (base.to_string(), format!("#{anchor}")),
+                    None => (target.clone(), String::new()),
                 };
                 let target_relative_path = paths::join(&dir.relative_path, &target_file);
-                let target_relative_path = if let Ok(p) = paths::normalize(&target_relative_path) {
-                    p
-                } else {
+                let Ok(target_relative_path) = paths::normalize(&target_relative_path) else {
                     issues.push(Issue::PathEscapesRoot {
                         path: target_relative_path,
                         location: Location {
@@ -176,9 +174,7 @@ pub fn scan(
                     continue;
                 }
                 let target_relative_path = paths::join(&dir.relative_path, src);
-                let target_relative_path = if let Ok(p) = paths::normalize(&target_relative_path) {
-                    p
-                } else {
+                let Ok(target_relative_path) = paths::normalize(&target_relative_path) else {
                     issues.push(Issue::PathEscapesRoot {
                         path: target_relative_path,
                         location: Location {

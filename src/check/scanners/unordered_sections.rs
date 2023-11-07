@@ -4,9 +4,8 @@ use crate::Config;
 
 /// populates the given issues list with all sections in this document that don't match the configured order
 pub fn scan(doc: &Document, config: &Config, issues: &mut Vec<Issue>) {
-    let schema_titles = match &config.sections {
-        None => return,
-        Some(sections) => sections,
+    let Some(schema_titles) = &config.sections else {
+        return
     };
     if doc.content_sections.len() < 2 {
         // document has 0 or 1 sections --> order always matches
@@ -17,12 +16,10 @@ pub fn scan(doc: &Document, config: &Config, issues: &mut Vec<Issue>) {
     let mut schema_iter = schema_titles.iter();
     let mut schema_option = schema_iter.next();
     loop {
-        let doc_section = match section_option {
-            None => return, // we reached the end of the actual list --> actual matches schema
-            Some(section) => section,
+        let Some(doc_section) = section_option else {
+            return // we reached the end of the actual list --> actual matches schema
         };
-        let schema_title = match schema_option {
-            None => {
+        let Some(schema_title) = schema_option else {
                 // end of schema reached but there are still unchecked sections in the document --> those are out of order
                 issues.push(Issue::UnorderedSections {
                     location: Location {
@@ -34,8 +31,6 @@ pub fn scan(doc: &Document, config: &Config, issues: &mut Vec<Issue>) {
                 });
                 section_option = sections_iter.next();
                 continue;
-            }
-            Some(value) => value,
         };
         let section_title = &doc_section.title_line.text;
         if section_title == schema_title {

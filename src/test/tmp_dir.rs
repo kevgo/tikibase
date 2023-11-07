@@ -13,7 +13,7 @@ pub fn tmp_dir() -> String {
         .take(3)
         .map(char::from)
         .collect();
-    let dir = format!("./tmp/{}-{}", timestamp, rand);
+    let dir = format!("./tmp/{timestamp}-{rand}");
     fs::create_dir_all(&dir).unwrap();
     dir
 }
