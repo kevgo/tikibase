@@ -95,6 +95,7 @@ impl Message {
     }
 
     /// provides a Message instance summarizing the given Issue
+    #[allow(clippy::too_many_lines)]
     pub fn from_issue(issue: Issue) -> Message {
         match issue {
             Issue::BrokenImage { location, target } => Message {

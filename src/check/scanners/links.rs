@@ -26,144 +26,17 @@ pub fn scan(
                 line,
                 start,
                 end,
-            } => {
-                if target.is_empty() {
-                    issues.push(Issue::LinkWithoutTarget {
-                        location: Location {
-                            file: doc.relative_path.clone(),
-                            line: line.to_owned(),
-                            start: start.to_owned(),
-                            end: end.to_owned(),
-                        },
-                    });
-                    continue;
-                }
-                if target.starts_with("http") {
-                    // ignore external links
-                    continue;
-                }
-                let (target_file, target_anchor) = match target.split_once('#') {
-                    Some((base, anchor)) => (base.to_string(), format!("#{anchor}")),
-                    None => (target.clone(), String::new()),
-                };
-                let target_relative_path = paths::join(&dir.relative_path, &target_file);
-                let Ok(target_relative_path) = paths::normalize(&target_relative_path) else {
-                    issues.push(Issue::PathEscapesRoot {
-                        path: target_relative_path,
-                        location: Location {
-                            file: doc.relative_path.clone(),
-                            line: line.to_owned(),
-                            start: start.to_owned(),
-                            end: end.to_owned(),
-                        },
-                    });
-                    continue;
-                };
-                if target_relative_path == doc.relative_path {
-                    issues.push(Issue::LinkToSameDocument {
-                        location: Location {
-                            file: doc.relative_path.clone(),
-                            line: line.to_owned(),
-                            start: start.to_owned(),
-                            end: end.to_owned(),
-                        },
-                    });
-                    continue;
-                }
-                if target.starts_with('#') {
-                    if !doc.has_anchor(target) {
-                        issues.push(Issue::LinkToNonExistingAnchorInCurrentDocument {
-                            location: Location {
-                                file: doc.relative_path.clone(),
-                                line: line.to_owned(),
-                                start: start.to_owned(),
-                                end: end.to_owned(),
-                            },
-                            anchor: target.clone(),
-                        });
-                    }
-                    continue;
-                }
-                match EntryType::from_str(&target_relative_path) {
-                    EntryType::Document => {
-                        if let Some(other_doc) = root.get_doc(&target_relative_path) {
-                            if !target_anchor.is_empty() && !other_doc.has_anchor(&target_anchor) {
-                                issues.push(Issue::LinkToNonExistingAnchorInExistingDocument {
-                                    location: Location {
-                                        file: doc.relative_path.clone(),
-                                        line: line.to_owned(),
-                                        start: start.to_owned(),
-                                        end: end.to_owned(),
-                                    },
-                                    target_file: target_relative_path.clone(),
-                                    anchor: target_anchor,
-                                });
-                            }
-                            // check for backlink from doc to us
-                            if let Some(bidi_links) = dir.config.bidi_links {
-                                if bidi_links {
-                                    let link_from_other_to_doc = paths::relative(
-                                        &other_doc.relative_path,
-                                        &doc.relative_path,
-                                    );
-                                    if !other_doc.contains_reference_to(&link_from_other_to_doc) {
-                                        issues.push(Issue::MissingLink {
-                                            location: Location {
-                                                file: target_relative_path,
-                                                line: other_doc.lines_count(),
-                                                start: 0,
-                                                end: 0,
-                                            },
-                                            path: link_from_other_to_doc,
-                                            title: doc.human_title().into(),
-                                        });
-                                    }
-                                }
-                            }
-                        } else {
-                            issues.push(Issue::LinkToNonExistingFile {
-                                location: Location {
-                                    file: doc.relative_path.clone(),
-                                    line: line.to_owned(),
-                                    start: start.to_owned(),
-                                    end: end.to_owned(),
-                                },
-                                target: target_relative_path,
-                            });
-                        };
-                    }
-                    EntryType::Resource => {
-                        if root.has_resource(&target_relative_path) {
-                            linked_resources.push(target_relative_path);
-                        } else {
-                            issues.push(Issue::LinkToNonExistingFile {
-                                location: Location {
-                                    file: doc.relative_path.clone(),
-                                    line: line.to_owned(),
-                                    start: start.to_owned(),
-                                    end: end.to_owned(),
-                                },
-                                target: target_relative_path,
-                            });
-                        }
-                    }
-                    EntryType::Configuration | EntryType::Ignored => {}
-                    EntryType::Directory => {
-                        let target_dir = &target_relative_path[..target_relative_path.len() - 1];
-                        if !root.has_dir(target_dir) {
-                            issues.push(Issue::LinkToNonExistingDir {
-                                location: Location {
-                                    file: doc.relative_path.clone(),
-                                    line: line.to_owned(),
-                                    start: start.to_owned(),
-                                    end: end.to_owned(),
-                                },
-                                target: target_dir.into(),
-                            });
-                        }
-                    }
-                }
-            }
+            } => check_link(
+                target,
+                *line,
+                *start,
+                *end,
+                issues,
+                doc,
+                dir,
+                root,
+                linked_resources,
+            ),
             Reference::Image {
                 src,
                 line,
@@ -199,6 +72,153 @@ pub fn scan(
                         target: src.clone(),
                     });
                 }
+            }
+        }
+    }
+}
+
+fn check_link(
+    target: &String,
+    line: u32,
+    start: u32,
+    end: u32,
+    issues: &mut Vec<Issue>,
+    doc: &Document,
+    dir: &Directory,
+    root: &Directory,
+    linked_resources: &mut Vec<String>,
+) {
+    if target.is_empty() {
+        issues.push(Issue::LinkWithoutTarget {
+            location: Location {
+                file: doc.relative_path.clone(),
+                line: line.to_owned(),
+                start: start.to_owned(),
+                end: end.to_owned(),
+            },
+        });
+        return;
+    }
+    if target.starts_with("http") {
+        // ignore external links
+        return;
+    }
+    let (target_file, target_anchor) = match target.split_once('#') {
+        Some((base, anchor)) => (base.to_string(), format!("#{anchor}")),
+        None => (target.clone(), String::new()),
+    };
+    let target_relative_path = paths::join(&dir.relative_path, &target_file);
+    let Ok(target_relative_path) = paths::normalize(&target_relative_path) else {
+                    issues.push(Issue::PathEscapesRoot {
+                        path: target_relative_path,
+                        location: Location {
+                            file: doc.relative_path.clone(),
+                            line: line.to_owned(),
+                            start: start.to_owned(),
+                            end: end.to_owned(),
+                        },
+                    });
+                    return;
+                };
+    if target_relative_path == doc.relative_path {
+        issues.push(Issue::LinkToSameDocument {
+            location: Location {
+                file: doc.relative_path.clone(),
+                line: line.to_owned(),
+                start: start.to_owned(),
+                end: end.to_owned(),
+            },
+        });
+        return;
+    }
+    if target.starts_with('#') {
+        if !doc.has_anchor(target) {
+            issues.push(Issue::LinkToNonExistingAnchorInCurrentDocument {
+                location: Location {
+                    file: doc.relative_path.clone(),
+                    line: line.to_owned(),
+                    start: start.to_owned(),
+                    end: end.to_owned(),
+                },
+                anchor: target.clone(),
+            });
+        }
+        return;
+    }
+    match EntryType::from_str(&target_relative_path) {
+        EntryType::Document => {
+            if let Some(other_doc) = root.get_doc(&target_relative_path) {
+                if !target_anchor.is_empty() && !other_doc.has_anchor(&target_anchor) {
+                    issues.push(Issue::LinkToNonExistingAnchorInExistingDocument {
+                        location: Location {
+                            file: doc.relative_path.clone(),
+                            line: line.to_owned(),
+                            start: start.to_owned(),
+                            end: end.to_owned(),
+                        },
+                        target_file: target_relative_path.clone(),
+                        anchor: target_anchor,
+                    });
+                }
+                // check for backlink from doc to us
+                if let Some(bidi_links) = dir.config.bidi_links {
+                    if bidi_links {
+                        let link_from_other_to_doc =
+                            paths::relative(&other_doc.relative_path, &doc.relative_path);
+                        if !other_doc.contains_reference_to(&link_from_other_to_doc) {
+                            issues.push(Issue::MissingLink {
+                                location: Location {
+                                    file: target_relative_path,
+                                    line: other_doc.lines_count(),
+                                    start: 0,
+                                    end: 0,
+                                },
+                                path: link_from_other_to_doc,
+                                title: doc.human_title().into(),
+                            });
+                        }
+                    }
+                }
+            } else {
+                issues.push(Issue::LinkToNonExistingFile {
+                    location: Location {
+                        file: doc.relative_path.clone(),
+                        line: line.to_owned(),
+                        start: start.to_owned(),
+                        end: end.to_owned(),
+                    },
+                    target: target_relative_path,
+                });
+            };
+        }
+        EntryType::Resource => {
+            if root.has_resource(&target_relative_path) {
+                linked_resources.push(target_relative_path);
+            } else {
+                issues.push(Issue::LinkToNonExistingFile {
+                    location: Location {
+                        file: doc.relative_path.clone(),
+                        line: line.to_owned(),
+                        start: start.to_owned(),
+                        end: end.to_owned(),
+                    },
+                    target: target_relative_path,
+                });
+            }
+        }
+        EntryType::Configuration | EntryType::Ignored => {}
+        EntryType::Directory => {
+            let target_dir = &target_relative_path[..target_relative_path.len() - 1];
+            if !root.has_dir(target_dir) {
+                issues.push(Issue::LinkToNonExistingDir {
+                    location: Location {
+                        file: doc.relative_path.clone(),
+                        line: line.to_owned(),
+                        start: start.to_owned(),
+                        end: end.to_owned(),
+                    },
+                    target: target_dir.into(),
+                });
             }
         }
     }

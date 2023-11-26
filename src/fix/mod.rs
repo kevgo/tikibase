@@ -11,6 +11,7 @@ use crate::check::{Issue, Location};
 use crate::Tikibase;
 
 /// fixes the given Issue
+#[allow(clippy::too_many_lines)]
 pub fn fix(issue: Issue, base: &mut Tikibase) -> Result {
     match issue {
         // actual fixes
