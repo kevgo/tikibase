@@ -6,7 +6,7 @@ use std::cmp::Ordering::{Equal, Greater, Less};
 pub fn phase_1(section: &Section, level_variants: &mut AHashMap<String, AHashMap<u8, u32>>) {
     let entry = level_variants
         .entry(section.human_title().to_string())
-        .or_insert_with(AHashMap::new)
+        .or_default()
         .entry(section.level)
         .or_insert(0);
     *entry += 1;

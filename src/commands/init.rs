@@ -7,7 +7,7 @@ use indoc::indoc;
 
 pub fn init(dir: &str) -> Outcome {
     match fs::write(paths::join(dir, "tikibase.json"), template()) {
-        Ok(_) => Outcome::default(),
+        Ok(()) => Outcome::default(),
         Err(err) => Outcome::from_issue(Issue::CannotWriteConfigFile {
             file: S("tikibase.json"),
             message: err.to_string(),
