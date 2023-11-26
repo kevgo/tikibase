@@ -18,6 +18,7 @@ fix:  # auto-corrects issues
 	dprint fmt
 	cargo fmt
 	cargo fix
+	cargo clippy --fix
 
 help:  # shows all available Make commands
 	cat Makefile | grep '^[^ ]*:' | grep -v '.PHONY' | grep -v '.SILENT:' | grep '#' | grep -v help | sed 's/:.*#/#/' | column -s "#" -t
