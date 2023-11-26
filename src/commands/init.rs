@@ -5,6 +5,7 @@ use big_s::S;
 use fs_err as fs;
 use indoc::indoc;
 
+#[must_use]
 pub fn init(dir: &str) -> Outcome {
     match fs::write(paths::join(dir, "tikibase.json"), template()) {
         Ok(()) => Outcome::default(),

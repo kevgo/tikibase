@@ -19,6 +19,7 @@ pub struct Message {
 
 impl Message {
     /// provides the CLI text format for this Message
+    #[must_use]
     pub fn to_text(&self) -> String {
         if let Some(line) = self.line {
             format!("{}:{}  {}", self.file, line + 1, self.text)
@@ -28,6 +29,7 @@ impl Message {
     }
 
     /// provides a Message instance summarizing the given Fix
+    #[must_use]
     pub fn from_fix(fix: Fix) -> Message {
         match fix {
             Fix::RemovedEmptySection { title, location } => Message {
@@ -95,6 +97,7 @@ impl Message {
     }
 
     /// provides a Message instance summarizing the given Issue
+    #[must_use]
     pub fn from_issue(issue: Issue) -> Message {
         match issue {
             Issue::BrokenImage { location, target } => Message {
@@ -456,6 +459,7 @@ pub struct Messages {
 
 impl Messages {
     /// provides the combined set of issues and fixes
+    #[must_use]
     pub fn all(mut self) -> Vec<Message> {
         let mut result = vec![];
         result.append(&mut self.issues);
