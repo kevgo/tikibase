@@ -46,3 +46,4 @@ unsafe_code = "forbid"
 
 [lints.clippy]
 pedantic = "warn"
+cast_possible_truncation = "allow"
