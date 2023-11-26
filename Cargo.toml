@@ -38,3 +38,11 @@ pretty = { package = "pretty_assertions", version = "1.2.1" }
 strip = "symbols"
 lto = true
 panic = 'abort'
+
+[lints.rust]
+unsafe_code = "forbid"
+# We allow warnings here, the Makefile denies them.
+# This way warnings don't hold up development and also don't slip past CI.
+
+[lints.clippy]
+pedantic = "waru"
