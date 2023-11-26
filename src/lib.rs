@@ -17,6 +17,7 @@ use input::Command;
 pub use output::{Message, Messages};
 
 /// runs the given Command in the given directory, returns structured data
+#[must_use]
 pub fn run(command: input::Command, dir: &str) -> Messages {
     if command == Command::Init {
         return Messages::from_outcome(commands::init(dir));

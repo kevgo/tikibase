@@ -464,10 +464,12 @@ impl Messages {
     }
 
     /// indicates whether there are any messages
+    #[must_use]
     pub fn is_empty(&self) -> bool {
         self.issues.is_empty() && self.fixes.is_empty()
     }
 
+    #[must_use]
     pub fn from_issue(issue: Issue) -> Messages {
         Messages {
             issues: vec![Message::from_issue(issue)],
@@ -475,6 +477,8 @@ impl Messages {
             exit_code: 1,
         }
     }
+
+    #[must_use]
     pub fn from_issues(issues: Vec<Issue>) -> Messages {
         let exit_code = issues.len() as u8;
         Messages {
@@ -492,6 +496,7 @@ impl Messages {
     }
 
     /// indicates whether there are both issues and fixes
+    #[must_use]
     pub fn has_issues_and_fixes(&self) -> bool {
         !self.issues.is_empty() && !self.fixes.is_empty()
     }

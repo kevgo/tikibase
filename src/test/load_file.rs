@@ -2,6 +2,7 @@ use super::trim_end;
 use crate::database::paths;
 use fs_err as fs;
 
+#[must_use]
 pub fn load_file(filename: &str, dir: &str) -> String {
     let mut result = match fs::read_to_string(paths::join(dir, filename)) {
         Ok(text) => text,
