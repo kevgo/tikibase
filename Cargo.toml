@@ -45,4 +45,4 @@ unsafe_code = "forbid"
 # This way warnings don't hold up development and also don't slip past CI.
 
 [lints.clippy]
-pedantic = "waru"
+pedantic = "warn"
