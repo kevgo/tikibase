@@ -1,4 +1,4 @@
-use super::{Line, Reference};
+use super::{Image, Line, Link};
 use heck::ToKebabCase;
 
 /// a section in a document, from one heading to above the next heading
@@ -109,10 +109,10 @@ impl Section {
     }
 
     /// populates the given accumulator with all references in this section
-    pub fn references(&self, acc: &mut Vec<Reference>) {
-        self.title_line.references(self.line_number, acc);
+    pub fn references(&self, links: &mut Vec<Link>, images: &mut Vec<Image>) {
+        self.title_line.references(self.line_number, links, images);
         for (i, line) in self.body.iter().enumerate() {
-            line.references(self.line_number + i as u32 + 1, acc);
+            line.references(self.line_number + i as u32 + 1, links, images);
         }
     }
 

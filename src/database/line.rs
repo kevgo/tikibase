@@ -1,5 +1,5 @@
 use crate::check::{Issue, Location};
-use crate::database::{Footnote, Footnotes, Reference};
+use crate::database::{Footnote, Footnotes, Image, Link};
 use once_cell::sync::Lazy;
 use regex::Regex;
 
@@ -48,18 +48,18 @@ impl Line {
     }
 
     /// populates the given accumulator with all links and images in this line
-    pub fn references(&self, line: u32, acc: &mut Vec<Reference>) {
+    pub fn references(&self, line: u32, links: &mut Vec<Link>, images: &mut Vec<Image>) {
         for cap in MD_RE.captures_iter(&self.text) {
             let full_match = cap.get(0).unwrap();
             match &cap[1] {
-                "!" => acc.push(Reference::Image {
+                "!" => images.push(Image {
                     src: cap[2].to_string(),
                     line,
                     start: full_match.start() as u32,
                     end: full_match.end() as u32,
                 }),
                 "" => {
-                    acc.push(Reference::Link {
+                    links.push(Link {
                         target: cap[2].into(),
                         line,
                         start: full_match.start() as u32,
@@ -71,7 +71,7 @@ impl Line {
         }
         for cap in A_HTML_RE.captures_iter(&self.text) {
             let full_match = cap.get(0).unwrap();
-            acc.push(Reference::Link {
+            links.push(Link {
                 target: cap[1].into(),
                 line,
                 start: full_match.start() as u32,
@@ -80,7 +80,7 @@ impl Line {
         }
         for cap in IMG_HTML_RE.captures_iter(&self.text) {
             let full_match = cap.get(0).unwrap();
-            acc.push(Reference::Image {
+            images.push(Image {
                 src: cap[1].to_string(),
                 line,
                 start: full_match.start() as u32,
@@ -221,7 +221,7 @@ mod tests {
     }
 
     mod references {
-        use super::super::Reference;
+        use super::super::{Image, Link};
         use crate::database::Line;
         use big_s::S;
 
@@ -230,107 +230,114 @@ mod tests {
             let line = Line::from(
                 r#"an MD link: [one](one.md) and one to a section: [two pieces](two.md#pieces)!"#,
             );
-            let mut have = vec![];
-            line.references(12, &mut have);
+            let mut images = vec![];
+            let mut links = vec![];
+            line.references(12, &mut links, &mut images);
             let want = vec![
-                Reference::Link {
+                Link {
                     target: S("one.md"),
                     line: 12,
                     start: 12,
                     end: 25,
                 },
-                Reference::Link {
+                Link {
                     target: S("two.md#pieces"),
                     line: 12,
                     start: 48,
                     end: 75,
                 },
             ];
-            pretty::assert_eq!(have, want);
+            pretty::assert_eq!(links, want);
         }
 
         #[test]
         fn link_html() {
             let line = Line::from(r#"an HTML link: <a href="two.md">two</a>"#);
-            let mut have = vec![];
-            line.references(12, &mut have);
-            let want = vec![Reference::Link {
+            let mut images = vec![];
+            let mut links = vec![];
+            line.references(12, &mut links, &mut images);
+            let want = vec![Link {
                 target: S("two.md"),
                 line: 12,
                 start: 14,
                 end: 38,
             }];
-            pretty::assert_eq!(have, want);
+            pretty::assert_eq!(links, want);
         }
 
         #[test]
         fn img_md() {
             let line = Line::from(r#"an MD image: ![zonk](zonk.md)"#);
-            let mut have = vec![];
-            line.references(12, &mut have);
-            let want = vec![Reference::Image {
+            let mut images = vec![];
+            let mut links = vec![];
+            line.references(12, &mut links, &mut images);
+            let want = vec![Image {
                 src: S("zonk.md"),
                 line: 12,
                 start: 13,
                 end: 29,
             }];
-            pretty::assert_eq!(have, want);
+            pretty::assert_eq!(images, want);
         }
 
         #[test]
         fn img_html() {
             let line = Line::from(r#"<img src="zonk.md">"#);
-            let mut have = vec![];
-            line.references(12, &mut have);
-            let want = vec![Reference::Image {
+            let mut images = vec![];
+            let mut links = vec![];
+            line.references(12, &mut links, &mut images);
+            let want = vec![Image {
                 src: S("zonk.md"),
                 line: 12,
                 start: 0,
                 end: 19,
             }];
-            pretty::assert_eq!(have, want);
+            pretty::assert_eq!(images, want);
         }
 
         #[test]
         fn img_html_extra_attributes() {
             let line = Line::from(r#"<img src="zonk.md" width="10" height="10">"#);
-            let mut have = vec![];
-            line.references(12, &mut have);
-            let want = vec![Reference::Image {
+            let mut images = vec![];
+            let mut links = vec![];
+            line.references(12, &mut links, &mut images);
+            let want = vec![Image {
                 src: S("zonk.md"),
                 line: 12,
                 start: 0,
                 end: 42,
             }];
-            pretty::assert_eq!(have, want);
+            pretty::assert_eq!(images, want);
         }
 
         #[test]
         fn img_xml_nospace() {
             let line = Line::from(r#"<img src="zonk.md"/>"#);
-            let mut have = vec![];
-            line.references(12, &mut have);
-            let want = vec![Reference::Image {
+            let mut images = vec![];
+            let mut links = vec![];
+            line.references(12, &mut links, &mut images);
+            let want = vec![Image {
                 src: S("zonk.md"),
                 line: 12,
                 start: 0,
                 end: 20,
             }];
-            pretty::assert_eq!(have, want);
+            pretty::assert_eq!(images, want);
         }
 
         #[test]
         fn img_xml_space() {
             let line = Line::from(r#"<img src="zonk.md" />"#);
-            let mut have = vec![];
-            line.references(12, &mut have);
-            let want = vec![Reference::Image {
+            let mut images = vec![];
+            let mut links = vec![];
+            line.references(12, &mut links, &mut images);
+            let want = vec![Image {
                 src: S("zonk.md"),
                 line: 12,
                 start: 0,
                 end: 21,
             }];
-            pretty::assert_eq!(have, want);
+            pretty::assert_eq!(images, want);
         }
     }
 
