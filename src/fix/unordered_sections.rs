@@ -8,7 +8,7 @@ use crate::Tikibase;
 pub fn sort_sections(base: &mut Tikibase, location: Location) -> fix::Result {
     let base_dir = base.root.clone();
     let sections = base.dir.config.sections.clone().unwrap();
-    let mut doc = base.get_doc_mut(&location.file).unwrap();
+    let doc = base.get_doc_mut(&location.file).unwrap();
     doc.content_sections = reorder(&mut doc.content_sections, &sections);
     doc.save(&base_dir);
     Fixed(SortedSections { location })
@@ -17,7 +17,7 @@ pub fn sort_sections(base: &mut Tikibase, location: Location) -> fix::Result {
 /// drains the given sections vector and provides a new Vector that contains the elements ordered according to schema
 fn reorder(sections: &mut Vec<Section>, schema: &[String]) -> Vec<Section> {
     let mut result: Vec<Section> = Vec::new();
-    for schema_element in schema.iter() {
+    for schema_element in schema {
         let pos = sections
             .iter()
             .position(|section| &section.title_line.text == schema_element);

@@ -6,6 +6,7 @@ use fs_err::File;
 use schemars::schema_for;
 
 /// exports the JSON Schema for the configuration file
+#[must_use]
 pub fn json_schema() -> Outcome {
     let filename = "tikibase.schema.json";
     print!("exporting {filename} ... ");

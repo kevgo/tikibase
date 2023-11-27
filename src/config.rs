@@ -36,6 +36,7 @@ pub struct Config {
 
 impl Config {
     /// indicates whether the given file should be ignored
+    #[must_use]
     pub fn ignore(&self, file_path: &str) -> bool {
         match &self.ignore {
             Some(ignores) => ignores.iter().any(|ignore| ignore == file_path),
@@ -44,6 +45,7 @@ impl Config {
     }
 
     /// indicates whether the given title matches one of the allowed titles
+    #[must_use]
     pub fn matching_title(&self, title: &str) -> bool {
         match &self.sections {
             // HACK: see https://github.com/rust-lang/rust/issues/42671
@@ -55,6 +57,7 @@ impl Config {
     }
 
     /// provides the configured section title corresponding to the given human title
+    #[must_use]
     pub fn section_with_human_title(&self, human_title: &str) -> Option<&str> {
         if let Some(sections) = &self.sections {
             for section_title in sections {
@@ -69,6 +72,7 @@ impl Config {
     }
 
     /// indicates whether Tikibase should check for standalone documents
+    #[must_use]
     pub fn check_standalone_docs(&self) -> bool {
         match self.standalone_docs {
             Some(flag) => !flag,

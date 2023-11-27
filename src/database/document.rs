@@ -326,9 +326,7 @@ impl<'a> Iterator for LinesIterator<'a> {
         if next_line.is_some() {
             return next_line;
         }
-        let Some(next_section) = self.section_iter.next() else {
-            return None
-        };
+        let next_section = self.section_iter.next()?;
         self.lines_iter = next_section.lines();
         self.lines_iter.next()
     }

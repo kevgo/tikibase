@@ -3,6 +3,7 @@ use crate::check::scanners::{section_capitalization, section_level};
 use crate::check::{check_dir_1, check_dir_2, State1, State2};
 use crate::Tikibase;
 
+#[must_use]
 pub fn check(base: &Tikibase) -> Outcome {
     let mut state_1 = State1::empty(&base.dir);
     check_dir_1(&base.dir, "", &mut state_1);

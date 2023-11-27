@@ -8,10 +8,10 @@ pub struct Line {
     pub text: String,
 }
 
-static MD_RE: Lazy<Regex> = Lazy::new(|| Regex::new(r#"(!?)\[[^\]]*\]\(([^)]*)\)"#).unwrap());
+static MD_RE: Lazy<Regex> = Lazy::new(|| Regex::new(r"(!?)\[[^\]]*\]\(([^)]*)\)").unwrap());
 static A_HTML_RE: Lazy<Regex> = Lazy::new(|| Regex::new(r#"<a href="(.*)">(.*)</a>"#).unwrap());
 static IMG_HTML_RE: Lazy<Regex> = Lazy::new(|| Regex::new(r#"<img src="([^"]*)"[^>]*>"#).unwrap());
-static FOOTNOTE_RE: Lazy<Regex> = Lazy::new(|| Regex::new(r#"\[\^([\w-]+)\](:?)"#).unwrap());
+static FOOTNOTE_RE: Lazy<Regex> = Lazy::new(|| Regex::new(r"\[\^([\w-]+)\](:?)").unwrap());
 
 impl Line {
     /// appends all footnote definitions and references to the given result structure
@@ -228,7 +228,7 @@ mod tests {
         #[test]
         fn link_md() {
             let line = Line::from(
-                r#"an MD link: [one](one.md) and one to a section: [two pieces](two.md#pieces)!"#,
+                r"an MD link: [one](one.md) and one to a section: [two pieces](two.md#pieces)!",
             );
             let mut images = vec![];
             let mut links = vec![];
@@ -267,7 +267,7 @@ mod tests {
 
         #[test]
         fn img_md() {
-            let line = Line::from(r#"an MD image: ![zonk](zonk.md)"#);
+            let line = Line::from(r"an MD image: ![zonk](zonk.md)");
             let mut images = vec![];
             let mut links = vec![];
             line.references(12, &mut links, &mut images);
