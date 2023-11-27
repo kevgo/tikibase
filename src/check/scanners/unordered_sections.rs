@@ -5,7 +5,7 @@ use crate::Config;
 /// populates the given issues list with all sections in this document that don't match the configured order
 pub fn scan(doc: &Document, config: &Config, issues: &mut Vec<Issue>) {
     let Some(schema_titles) = &config.sections else {
-        return
+        return;
     };
     if doc.content_sections.len() < 2 {
         // document has 0 or 1 sections --> order always matches
@@ -17,20 +17,20 @@ pub fn scan(doc: &Document, config: &Config, issues: &mut Vec<Issue>) {
     let mut schema_option = schema_iter.next();
     loop {
         let Some(doc_section) = section_option else {
-            return // we reached the end of the actual list --> actual matches schema
+            return; // we reached the end of the actual list --> actual matches schema
         };
         let Some(schema_title) = schema_option else {
-                // end of schema reached but there are still unchecked sections in the document --> those are out of order
-                issues.push(Issue::UnorderedSections {
-                    location: Location {
-                        file: doc.relative_path.clone(),
-                        line: doc_section.line_number,
-                        start: 0,
-                        end: doc_section.title_line.text.len() as u32,
-                    },
-                });
-                section_option = sections_iter.next();
-                continue;
+            // end of schema reached but there are still unchecked sections in the document --> those are out of order
+            issues.push(Issue::UnorderedSections {
+                location: Location {
+                    file: doc.relative_path.clone(),
+                    line: doc_section.line_number,
+                    start: 0,
+                    end: doc_section.title_line.text.len() as u32,
+                },
+            });
+            section_option = sections_iter.next();
+            continue;
         };
         let section_title = &doc_section.title_line.text;
         if section_title == schema_title {

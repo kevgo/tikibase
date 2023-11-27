@@ -19,6 +19,7 @@ pub struct Message {
 
 impl Message {
     /// provides the CLI text format for this Message
+    #[must_use]
     pub fn to_text(&self) -> String {
         if let Some(line) = self.line {
             format!("{}:{}  {}", self.file, line + 1, self.text)
@@ -28,6 +29,7 @@ impl Message {
     }
 
     /// provides a Message instance summarizing the given Fix
+    #[must_use]
     pub fn from_fix(fix: Fix) -> Message {
         match fix {
             Fix::RemovedEmptySection { title, location } => Message {
@@ -96,6 +98,7 @@ impl Message {
 
     /// provides a Message instance summarizing the given Issue
     #[allow(clippy::too_many_lines)]
+    #[must_use]
     pub fn from_issue(issue: Issue) -> Message {
         match issue {
             Issue::BrokenImage { location, target } => Message {
@@ -457,6 +460,7 @@ pub struct Messages {
 
 impl Messages {
     /// provides the combined set of issues and fixes
+    #[must_use]
     pub fn all(mut self) -> Vec<Message> {
         let mut result = vec![];
         result.append(&mut self.issues);
@@ -465,10 +469,12 @@ impl Messages {
     }
 
     /// indicates whether there are any messages
+    #[must_use]
     pub fn is_empty(&self) -> bool {
         self.issues.is_empty() && self.fixes.is_empty()
     }
 
+    #[must_use]
     pub fn from_issue(issue: Issue) -> Messages {
         Messages {
             issues: vec![Message::from_issue(issue)],
@@ -476,6 +482,8 @@ impl Messages {
             exit_code: 1,
         }
     }
+
+    #[must_use]
     pub fn from_issues(issues: Vec<Issue>) -> Messages {
         let exit_code = issues.len() as u8;
         Messages {
@@ -493,6 +501,7 @@ impl Messages {
     }
 
     /// indicates whether there are both issues and fixes
+    #[must_use]
     pub fn has_issues_and_fixes(&self) -> bool {
         !self.issues.is_empty() && !self.fixes.is_empty()
     }
