@@ -1,4 +1,4 @@
-use super::{paths, section, Footnotes, Line, Reference, Section};
+use super::{paths, section, Footnotes, Image, Line, Link, Section};
 use crate::check::{Issue, Location};
 use fs_err as fs;
 use fs_err::File;
@@ -16,12 +16,14 @@ pub struct Document {
 
     /// cache of files this document links to
     // TODO: convert to HashSet and use https://github.com/mcarton/rust-derivative to ignore this when hashing Document
-    pub references: Vec<Reference>,
+    pub links: Vec<Link>,
+    pub images: Vec<Image>,
 }
 
 impl Document {
     pub fn contains_reference_to(&self, path: &str) -> bool {
-        self.references.iter().any(|r| r.points_to(path))
+        self.links.iter().any(|r| r.points_to(path))
+            || self.images.iter().any(|r| r.points_to(path))
     }
 
     /// provides all the footnotes that this document defines and references
@@ -211,23 +213,28 @@ impl Document {
         content_sections: Vec<Section>,
         old_occurrences_section: Option<Section>,
     ) -> Document {
-        let references = Document::references(&title_section, &content_sections);
+        let (links, images) = Document::references(&title_section, &content_sections);
         Document {
             relative_path: path,
             title_section,
             content_sections,
             old_occurrences_section,
-            references,
+            links,
+            images,
         }
     }
 
-    pub fn references(title_section: &Section, content_sections: &[Section]) -> Vec<Reference> {
-        let mut result = vec![];
-        title_section.references(&mut result);
+    pub fn references(
+        title_section: &Section,
+        content_sections: &[Section],
+    ) -> (Vec<Link>, Vec<Image>) {
+        let mut links = vec![];
+        let mut images = vec![];
+        title_section.references(&mut links, &mut images);
         for section in content_sections {
-            section.references(&mut result);
+            section.references(&mut links, &mut images);
         }
-        result
+        (links, images)
     }
 
     /// persists the changes made to this document to disk
@@ -340,7 +347,7 @@ struct CodeblockStart {
 #[cfg(test)]
 mod tests {
     use super::Document;
-    use crate::database::Reference;
+    use crate::database::{Image, Link};
     use big_s::S;
     use indoc::indoc;
 
@@ -501,7 +508,8 @@ mod tests {
                     level: 3,
                 }],
                 old_occurrences_section: None,
-                references: vec![],
+                links: vec![],
+                images: vec![],
             });
             pretty::assert_eq!(have, want);
         }
@@ -546,7 +554,8 @@ mod tests {
                 },
                 content_sections: vec![],
                 old_occurrences_section: None,
-                references: vec![],
+                links: vec![],
+                images: vec![],
             });
             pretty::assert_eq!(have, want);
         }
@@ -614,7 +623,8 @@ mod tests {
                     title_text_start: 4,
                     level: 3,
                 }),
-                references: vec![],
+                links: vec![],
+                images: vec![],
             });
             pretty::assert_eq!(have, want);
         }
@@ -821,22 +831,22 @@ mod tests {
             an image: ![two](2.png)
             "};
         let doc = Document::from_str("test.md", text).unwrap();
-        let have = Document::references(&doc.title_section, &doc.content_sections);
-        let want = vec![
-            Reference::Link {
-                target: S("1.md"),
-                line: 1,
-                start: 8,
-                end: 19,
-            },
-            Reference::Image {
-                src: S("2.png"),
-                line: 3,
-                start: 10,
-                end: 23,
-            },
-        ];
-        pretty::assert_eq!(have, want);
+        let (have_links, have_images) =
+            Document::references(&doc.title_section, &doc.content_sections);
+        let want_links = vec![Link {
+            target: S("1.md"),
+            line: 1,
+            start: 8,
+            end: 19,
+        }];
+        let want_images = vec![Image {
+            src: S("2.png"),
+            line: 3,
+            start: 10,
+            end: 23,
+        }];
+        pretty::assert_eq!(have_links, want_links);
+        pretty::assert_eq!(have_images, want_images);
     }
 
     #[test]
