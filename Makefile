@@ -28,7 +28,7 @@ install:  # installs the binary in the system
 
 lint: lint-std-fs tools/actionlint  # checks formatting
 	dprint check
-	cargo clippy --all-targets --all-features -- --deny=warnings --allow=clippy::too_many_lines
+	cargo clippy --all-targets --all-features -- --deny=warnings
 	cargo fmt -- --check
 # cargo udeps   # requires nightly
 	git diff --check
