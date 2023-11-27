@@ -40,7 +40,7 @@ lto = true
 panic = 'abort'
 
 # We allow warnings here, the Makefile denies them.
-# This way warnings don't hold up running compiling and running tests,
+# This way warnings don't hold up compiling and running tests,
 # and also don't slip past CI.
 
 [workspace.lints.rust]
