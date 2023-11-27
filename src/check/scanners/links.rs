@@ -20,24 +20,24 @@ pub fn scan(
         });
     }
     for link in &doc.links {
-        if target.is_empty() {
+        if link.target.is_empty() {
             issues.push(Issue::LinkWithoutTarget {
                 location: Location {
                     file: doc.relative_path.clone(),
-                    line: line.to_owned(),
-                    start: start.to_owned(),
-                    end: end.to_owned(),
+                    line: link.line.to_owned(),
+                    start: link.start.to_owned(),
+                    end: link.end.to_owned(),
                 },
             });
             continue;
         }
-        if target.starts_with("http") {
+        if link.target.starts_with("http") {
             // ignore external links
             continue;
         }
-        let (target_file, target_anchor) = match target.split_once('#') {
+        let (target_file, target_anchor) = match link.target.split_once('#') {
             Some((base, anchor)) => (base.to_string(), format!("#{anchor}")),
-            None => (target.clone(), String::new()),
+            None => (link.target.clone(), String::new()),
         };
         let target_relative_path = paths::join(&dir.relative_path, &target_file);
         let Ok(target_relative_path) = paths::normalize(&target_relative_path) else {
@@ -45,9 +45,9 @@ pub fn scan(
                 path: target_relative_path,
                 location: Location {
                     file: doc.relative_path.clone(),
-                    line: line.to_owned(),
-                    start: start.to_owned(),
-                    end: end.to_owned(),
+                    line: link.line.to_owned(),
+                    start: link.start.to_owned(),
+                    end: link.end.to_owned(),
                 },
             });
             continue;
@@ -56,23 +56,23 @@ pub fn scan(
             issues.push(Issue::LinkToSameDocument {
                 location: Location {
                     file: doc.relative_path.clone(),
-                    line: line.to_owned(),
-                    start: start.to_owned(),
-                    end: end.to_owned(),
+                    line: link.line.to_owned(),
+                    start: link.start.to_owned(),
+                    end: link.end.to_owned(),
                 },
             });
             continue;
         }
-        if target.starts_with('#') {
-            if !doc.has_anchor(target) {
+        if link.target.starts_with('#') {
+            if !doc.has_anchor(&link.target) {
                 issues.push(Issue::LinkToNonExistingAnchorInCurrentDocument {
                     location: Location {
                         file: doc.relative_path.clone(),
-                        line: line.to_owned(),
-                        start: start.to_owned(),
-                        end: end.to_owned(),
+                        line: link.line.to_owned(),
+                        start: link.start.to_owned(),
+                        end: link.end.to_owned(),
                     },
-                    anchor: target.clone(),
+                    anchor: link.target.clone(),
                 });
             }
             continue;
@@ -84,9 +84,9 @@ pub fn scan(
                         issues.push(Issue::LinkToNonExistingAnchorInExistingDocument {
                             location: Location {
                                 file: doc.relative_path.clone(),
-                                line: line.to_owned(),
-                                start: start.to_owned(),
-                                end: end.to_owned(),
+                                line: link.line.to_owned(),
+                                start: link.start.to_owned(),
+                                end: link.end.to_owned(),
                             },
                             target_file: target_relative_path.clone(),
                             anchor: target_anchor,
@@ -115,9 +115,9 @@ pub fn scan(
                     issues.push(Issue::LinkToNonExistingFile {
                         location: Location {
                             file: doc.relative_path.clone(),
-                            line: line.to_owned(),
-                            start: start.to_owned(),
-                            end: end.to_owned(),
+                            line: link.line.to_owned(),
+                            start: link.start.to_owned(),
+                            end: link.end.to_owned(),
                         },
                         target: target_relative_path,
                     });
@@ -130,9 +130,9 @@ pub fn scan(
                     issues.push(Issue::LinkToNonExistingFile {
                         location: Location {
                             file: doc.relative_path.clone(),
-                            line: line.to_owned(),
-                            start: start.to_owned(),
-                            end: end.to_owned(),
+                            line: link.line.to_owned(),
+                            start: link.start.to_owned(),
+                            end: link.end.to_owned(),
                         },
                         target: target_relative_path,
                     });
@@ -145,9 +145,9 @@ pub fn scan(
                     issues.push(Issue::LinkToNonExistingDir {
                         location: Location {
                             file: doc.relative_path.clone(),
-                            line: line.to_owned(),
-                            start: start.to_owned(),
-                            end: end.to_owned(),
+                            line: link.line.to_owned(),
+                            start: link.start.to_owned(),
+                            end: link.end.to_owned(),
                         },
                         target: target_dir.into(),
                     });
@@ -156,19 +156,19 @@ pub fn scan(
         }
     }
 
-    for image in doc.images() {
-        if src.starts_with("http") {
+    for image in &doc.images {
+        if image.src.starts_with("http") {
             continue;
         }
-        let target_relative_path = paths::join(&dir.relative_path, src);
+        let target_relative_path = paths::join(&dir.relative_path, &image.src);
         let Ok(target_relative_path) = paths::normalize(&target_relative_path) else {
             issues.push(Issue::PathEscapesRoot {
                 path: target_relative_path,
                 location: Location {
                     file: doc.relative_path.clone(),
-                    line: line.to_owned(),
-                    start: start.to_owned(),
-                    end: end.to_owned(),
+                    line: image.line.to_owned(),
+                    start: image.start.to_owned(),
+                    end: image.end.to_owned(),
                 },
             });
             continue;
@@ -179,11 +179,11 @@ pub fn scan(
             issues.push(Issue::BrokenImage {
                 location: Location {
                     file: doc.relative_path.clone(),
-                    line: line.to_owned(),
-                    start: start.to_owned(),
-                    end: end.to_owned(),
+                    line: image.line.to_owned(),
+                    start: image.start.to_owned(),
+                    end: image.end.to_owned(),
                 },
-                target: src.clone(),
+                target: image.src.clone(),
             });
         }
     }
