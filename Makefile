@@ -1,4 +1,7 @@
-.DEFAULT_GOAL := help
+# dev tooling and versions
+ACTIONLINT_VERSION = 1.6.26
+DPRINT_VERSION = 0.43.1
+RUN_THAT_APP_VERSION = 0.5.0
 
 build:  # builds the release binary
 	cargo build --release --target x86_64-unknown-linux-musl
@@ -14,8 +17,8 @@ cuke:  # runs the integration tests
 cukethis:  # tests only the scenario named "this"
 	cargo test --test cucumber -- -t @this
 
-fix:  # auto-corrects issues
-	dprint fmt
+fix: tools/run-that-app@${RUN_THAT_APP_VERSION}  # auto-corrects issues
+	tools/rta dprint@${DPRINT_VERSION} fmt
 	cargo fmt
 	cargo fix
 	cargo clippy --fix
@@ -26,13 +29,13 @@ help:  # shows all available Make commands
 install:  # installs the binary in the system
 	cargo install --locked --path .
 
-lint: lint-std-fs tools/actionlint  # checks formatting
-	dprint check
+lint: lint-std-fs tools/run-that-app@${RUN_THAT_APP_VERSION}  # checks formatting
+	tools/rta dprint@${DPRINT_VERSION} check
 	cargo clippy --all-targets --all-features -- --deny=warnings
 	cargo fmt -- --check
 # cargo udeps   # requires nightly
 	git diff --check
-	tools/actionlint
+	tools/rta actionlint@${ACTIONLINT_VERSION}
 
 lint-std-fs:  # checks for occurrences of "std::fs", should use "fs_err" instead
 	! grep -rn --include '*.rs' 'std::fs'
@@ -45,7 +48,7 @@ unit:  # runs the unit tests
 update-json-schema:  # updates the public JSON Schema for the config file
 	cargo run -- json-schema > /dev/null
 	mv tikibase.schema.json doc
-	dprint fmt > /dev/null
+	tools/rta dprint@${DPRINT_VERSION} fmt > /dev/null
 
 setup: setup-ci  # prepares this codebase
 	cargo install cargo-edit cargo-upgrades --locked
@@ -61,12 +64,18 @@ setup: setup-ci  # prepares this codebase
 setup-ci:  # prepares the CI server
 # cargo install cargo-udeps --locked  # requires nightly
 
-tools/actionlint:
-	curl -s https://raw.githubusercontent.com/rhysd/actionlint/main/scripts/download-actionlint.bash | bash
-	mkdir -p tools
-	mv actionlint tools
-
 update:  # updates the dependencies
 	cargo upgrade
 
+# --- HELPER TARGETS --------------------------------------------------------------------------------------------------------------------------------
+
+tools/run-that-app@${RUN_THAT_APP_VERSION}:
+	@echo "Installing run-that-app ${RUN_THAT_APP_VERSION} ..."
+	@rm -f tools/run-that-app* tools/rta
+	@(cd tools && curl https://raw.githubusercontent.com/kevgo/run-that-app/main/download.sh | sh)
+	@mv tools/run-that-app tools/run-that-app@${RUN_THAT_APP_VERSION}
+	@ln -s run-that-app@${RUN_THAT_APP_VERSION} tools/rta
+
+
 .SILENT:
+.DEFAULT_GOAL := help
