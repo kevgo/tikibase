@@ -103,7 +103,7 @@ fn strip_links(text: &str) -> Cow<str> {
     }
     Cow::Owned(result)
 }
-static SOURCE_RE: Lazy<Regex> = Lazy::new(|| Regex::new(r#"\[([^]]*)\]\([^)]*\)"#).unwrap());
+static SOURCE_RE: Lazy<Regex> = Lazy::new(|| Regex::new(r"\[([^]]*)\]\([^)]*\)").unwrap());
 
 #[cfg(test)]
 mod tests {

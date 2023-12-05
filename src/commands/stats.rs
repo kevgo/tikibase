@@ -2,6 +2,7 @@ use super::Outcome;
 use crate::Tikibase;
 use ahash::AHashMap;
 
+#[must_use]
 pub fn stats(base: &Tikibase) -> Outcome {
     println!("documents: {}", base.dir.docs.len());
     println!("resources: {}", base.dir.resources.len());

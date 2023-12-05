@@ -33,6 +33,7 @@ pub struct Outcome {
 
 impl Outcome {
     /// provides an `Outcome` containing the given `Issue`
+    #[must_use]
     pub fn from_issue(issue: Issue) -> Outcome {
         Outcome {
             issues: vec![issue],

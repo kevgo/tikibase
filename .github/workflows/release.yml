@@ -28,10 +28,10 @@ jobs:
         include:
           - filename: tikibase_linux_arm64
             target: aarch64-unknown-linux-gnu
-            os: ubuntu-latest
+            os: ubuntu-20.04
           - filename: tikibase_linux_intel64
             target: x86_64-unknown-linux-gnu
-            os: ubuntu-latest
+            os: ubuntu-20.04
           - filename: tikibase_macos_arm64
             target: aarch64-apple-darwin
             os: macos-latest

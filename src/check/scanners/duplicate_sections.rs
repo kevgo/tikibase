@@ -9,7 +9,7 @@ pub(crate) fn scan(doc: &Document, issues: &mut Vec<Issue>) {
     for section in doc.sections() {
         sections_lines
             .entry(section.human_title())
-            .or_insert_with(Vec::new)
+            .or_default()
             .push(LocationWithinFile {
                 line: section.line_number,
                 start: section.title_text_start as u32,
