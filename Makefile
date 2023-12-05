@@ -1,6 +1,4 @@
 # dev tooling and versions
-ACTIONLINT_VERSION = 1.6.26
-DPRINT_VERSION = 0.43.1
 RUN_THAT_APP_VERSION = 0.5.0
 
 build:  # builds the release binary
@@ -18,7 +16,7 @@ cukethis:  # tests only the scenario named "this"
 	cargo test --test cucumber -- -t @this
 
 fix: tools/run-that-app@${RUN_THAT_APP_VERSION}  # auto-corrects issues
-	tools/rta dprint@${DPRINT_VERSION} fmt
+	tools/rta dprint fmt
 	cargo fmt
 	cargo fix
 	cargo clippy --fix
@@ -30,12 +28,12 @@ install:  # installs the binary in the system
 	cargo install --locked --path .
 
 lint: lint-std-fs tools/run-that-app@${RUN_THAT_APP_VERSION}  # checks formatting
-	tools/rta dprint@${DPRINT_VERSION} check
+	tools/rta dprint check
 	cargo clippy --all-targets --all-features -- --deny=warnings
 	cargo fmt -- --check
 # cargo udeps   # requires nightly
 	git diff --check
-	tools/rta actionlint@${ACTIONLINT_VERSION}
+	tools/rta actionlint
 
 lint-std-fs:  # checks for occurrences of "std::fs", should use "fs_err" instead
 	! grep -rn --include '*.rs' 'std::fs'
@@ -48,7 +46,7 @@ unit:  # runs the unit tests
 update-json-schema:  # updates the public JSON Schema for the config file
 	cargo run -- json-schema > /dev/null
 	mv tikibase.schema.json doc
-	tools/rta dprint@${DPRINT_VERSION} fmt > /dev/null
+	tools/rta dprint fmt > /dev/null
 
 setup: setup-ci  # prepares this codebase
 	cargo install cargo-edit cargo-upgrades --locked
@@ -64,8 +62,9 @@ setup: setup-ci  # prepares this codebase
 setup-ci:  # prepares the CI server
 # cargo install cargo-udeps --locked  # requires nightly
 
-update:  # updates the dependencies
+update: tools/run-that-app@${RUN_THAT_APP_VERSION}  # updates the dependencies
 	cargo upgrade
+	tools/rta --update
 
 # --- HELPER TARGETS --------------------------------------------------------------------------------------------------------------------------------
 
@@ -74,7 +73,6 @@ tools/run-that-app@${RUN_THAT_APP_VERSION}:
 	@(cd tools && curl https://raw.githubusercontent.com/kevgo/run-that-app/main/download.sh | sh)
 	@mv tools/run-that-app tools/run-that-app@${RUN_THAT_APP_VERSION}
 	@ln -s run-that-app@${RUN_THAT_APP_VERSION} tools/rta
-
 
 .SILENT:
 .DEFAULT_GOAL := help
