@@ -2,7 +2,7 @@
 RUN_THAT_APP_VERSION = 0.5.0
 
 build:  # builds the release binary
-	cargo build --release
+	cargo build --release --target x86_64-unknown-linux-musl
 
 build-release:  # builds a release version of the binary
 	docker run --rm --user "$(id -u)":"$(id -g)" -v "$(PWD)":/usr/src/myapp -w /usr/src/myapp rust cargo build --release
@@ -55,8 +55,8 @@ setup: setup-ci  # prepares this codebase
 	echo 1. install openssl-devel:
 	echo    - Fedora: sudo dnf install openssl-devel
 	echo    - Debian: sudo apt install libssl-dev pkg-config
-	echo 2. cargo install cargo-edit
-	echo 3. cargo install dprint
+	echo 2. `cargo install cargo-edit --locked`
+	echo 3. `cargo install dprint --locked`
 
 setup-ci:  # prepares the CI server
 # cargo install cargo-udeps --locked  # requires nightly
@@ -68,10 +68,10 @@ update: tools/run-that-app@${RUN_THAT_APP_VERSION}  # updates the dependencies
 # --- HELPER TARGETS --------------------------------------------------------------------------------------------------------------------------------
 
 tools/run-that-app@${RUN_THAT_APP_VERSION}:
-	@rm -f tools/run-that-app* tools/rta
+	@rm -f tools/rta* tools/rta
 	@(cd tools && curl https://raw.githubusercontent.com/kevgo/run-that-app/main/download.sh | sh)
-	@mv tools/run-that-app tools/run-that-app@${RUN_THAT_APP_VERSION}
-	@ln -s run-that-app@${RUN_THAT_APP_VERSION} tools/rta
+	@mv tools/rta tools/rta@${RUN_THAT_APP_VERSION}
+	@ln -s rta@${RUN_THAT_APP_VERSION} tools/rta
 
 .SILENT:
 .DEFAULT_GOAL := help
