@@ -17,8 +17,8 @@ cukethis:  # tests only the scenario named "this"
 
 fix: tools/run-that-app@${RUN_THAT_APP_VERSION}  # auto-corrects issues
 	tools/rta dprint fmt
-	cargo fmt
-	cargo fix
+	cargo +nightly fmt
+	cargo +nightly fix
 	cargo clippy --fix
 
 help:  # shows all available Make commands
@@ -30,7 +30,7 @@ install:  # installs the binary in the system
 lint: lint-std-fs tools/run-that-app@${RUN_THAT_APP_VERSION}  # checks formatting
 	tools/rta dprint check
 	cargo clippy --all-targets --all-features -- --deny=warnings
-	cargo fmt -- --check
+	cargo +nightly fmt -- --check
 # cargo udeps   # requires nightly
 	git diff --check
 	tools/rta actionlint
