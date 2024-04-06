@@ -15,7 +15,7 @@ cuke:  # runs the integration tests
 cukethis:  # tests only the scenario named "this"
 	cargo test --test cucumber -- -t @this
 
-fix: tools/run-that-app@${RUN_THAT_APP_VERSION}  # auto-corrects issues
+fix: tools/rta@${RUN_THAT_APP_VERSION}  # auto-corrects issues
 	tools/rta dprint fmt
 	cargo +nightly fmt
 	cargo +nightly fix
@@ -27,7 +27,7 @@ help:  # shows all available Make commands
 install:  # installs the binary in the system
 	cargo install --locked --path .
 
-lint: lint-std-fs tools/run-that-app@${RUN_THAT_APP_VERSION}  # checks formatting
+lint: lint-std-fs tools/rta@${RUN_THAT_APP_VERSION}  # checks formatting
 	tools/rta dprint check
 	cargo clippy --all-targets --all-features -- --deny=warnings
 	cargo +nightly fmt -- --check
@@ -61,13 +61,13 @@ setup-ci:  # prepares the CI server
 	rustup toolchain add nightly
 	rustup component add rustfmt --toolchain nightly
 
-update: tools/run-that-app@${RUN_THAT_APP_VERSION}  # updates the dependencies
+update: tools/rta@${RUN_THAT_APP_VERSION}  # updates the dependencies
 	cargo upgrade
 	tools/rta --update
 
 # --- HELPER TARGETS --------------------------------------------------------------------------------------------------------------------------------
 
-tools/run-that-app@${RUN_THAT_APP_VERSION}:
+tools/rta@${RUN_THAT_APP_VERSION}:
 	@rm -f tools/rta* tools/rta
 	@(cd tools && curl https://raw.githubusercontent.com/kevgo/run-that-app/main/download.sh | sh)
 	@mv tools/rta tools/rta@${RUN_THAT_APP_VERSION}
