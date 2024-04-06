@@ -2,7 +2,7 @@
 RUN_THAT_APP_VERSION = 0.5.0
 
 build:  # builds the release binary
-	cargo build --release --target x86_64-unknown-linux-musl
+	cargo build --release
 
 build-release:  # builds a release version of the binary
 	docker run --rm --user "$(id -u)":"$(id -g)" -v "$(PWD)":/usr/src/myapp -w /usr/src/myapp rust cargo build --release
