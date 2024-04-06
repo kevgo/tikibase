@@ -8,7 +8,7 @@
    - Debian: `sudo apt install libssl-dev pkg-config`
 
 2. run `make setup`
-3. run `cargo install dprint --locked`
+3. if needed run `cargo install dprint --locked`
 
 ### Run development scripts
 
