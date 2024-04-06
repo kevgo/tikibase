@@ -34,9 +34,7 @@ make fix
 Run a single Cucumber scenario:
 
 - add a `@this` tag to the scenario
-- run:
-
-  ```
+- ```
   make cukethis
   ```
 
