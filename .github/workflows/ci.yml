@@ -22,6 +22,7 @@ jobs:
           override: true
           components: rustfmt, clippy
       - uses: Swatinem/rust-cache@v1.2.0
+      - run: make setup-ci
       - run: make unit
       - run: make cuke
       - run: make lint
