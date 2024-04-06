@@ -60,7 +60,6 @@ setup: setup-ci  # install development dependencies on this computer
 setup-ci:  # prepares the CI server
 	rustup toolchain add nightly
 	rustup component add rustfmt --toolchain nightly
-# cargo install cargo-udeps --locked  # requires nightly
 
 update: tools/run-that-app@${RUN_THAT_APP_VERSION}  # updates the dependencies
 	cargo upgrade
