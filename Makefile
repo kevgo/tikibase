@@ -58,9 +58,9 @@ setup: setup-ci  # install development dependencies on this computer
 	echo 2. `cargo install dprint --locked`
 
 setup-ci:  # prepares the CI server
-	cargo install cargo-udeps --locked
 	rustup toolchain add nightly
 	rustup component add rustfmt --toolchain nightly
+	cargo install cargo-udeps --locked
 
 update: tools/rta@${RUN_THAT_APP_VERSION}  # updates the dependencies
 	cargo upgrade
