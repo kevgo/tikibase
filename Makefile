@@ -64,6 +64,8 @@ setup-ci:  # prepares the CI server
 # cargo install cargo-udeps --locked  # requires nightly
 
 update: tools/rta@${RUN_THAT_APP_VERSION}  # updates the dependencies
+	cargo install cargo-edit cargo-machete
+	cargo machete
 	cargo upgrade
 	tools/rta --update
 

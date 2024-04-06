@@ -1076,7 +1076,6 @@ dependencies = [
  "fs-err",
  "futures",
  "heck 0.4.1",
- "ignore",
  "indoc",
  "itertools",
  "merge",
