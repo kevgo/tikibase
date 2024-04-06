@@ -49,14 +49,13 @@ update-json-schema:  # updates the public JSON Schema for the config file
 	tools/rta dprint fmt > /dev/null
 
 setup: setup-ci  # install development dependencies on this computer
-	cargo install cargo-edit cargo-upgrades --locked
+	cargo install cargo-edit cargo-upgrades cargo-udeps --locked
 	echo
 	echo PLEASE DO THIS MANUALLY:
 	echo 1. install openssl-devel:
 	echo    - Fedora: sudo dnf install openssl-devel
 	echo    - Debian: sudo apt install libssl-dev pkg-config
-	echo 2. `cargo install cargo-edit --locked`
-	echo 3. `cargo install dprint --locked`
+	echo 2. `cargo install dprint --locked`
 
 setup-ci:  # prepares the CI server
 	rustup toolchain add nightly
