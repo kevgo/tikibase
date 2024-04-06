@@ -34,6 +34,7 @@ lint: lint-std-fs tools/rta@${RUN_THAT_APP_VERSION}  # checks formatting
 # cargo udeps   # requires nightly
 	git diff --check
 	tools/rta actionlint
+	cargo machete
 
 lint-std-fs:  # checks for occurrences of "std::fs", should use "fs_err" instead
 	! grep -rn --include '*.rs' 'std::fs'
@@ -49,7 +50,7 @@ update-json-schema:  # updates the public JSON Schema for the config file
 	tools/rta dprint fmt > /dev/null
 
 setup: setup-ci  # install development dependencies on this computer
-	cargo install cargo-edit cargo-upgrades --locked
+	cargo install cargo-edit cargo-upgrades cargo-machete --locked
 	echo
 	echo PLEASE DO THIS MANUALLY:
 	echo 1. install openssl-devel:
@@ -64,8 +65,7 @@ setup-ci:  # prepares the CI server
 # cargo install cargo-udeps --locked  # requires nightly
 
 update: tools/rta@${RUN_THAT_APP_VERSION}  # updates the dependencies
-	cargo install cargo-edit cargo-machete
-	cargo machete
+	cargo install cargo-edit
 	cargo upgrade
 	tools/rta --update
 
