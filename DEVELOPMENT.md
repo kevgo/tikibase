@@ -1,8 +1,26 @@
 # Tikibase developer documentation
 
-- see the [Makefile](Makefile) for available development commands
-- run a single Cucumber scenario: add a `@this` tag to the scenario and run
-  `make cukethis`
+### Setup your development machine
+
+1. Install openssl-devel:
+
+   - Fedora: `sudo dnf install openssl-devel`
+   - Debian: `sudo apt install libssl-dev pkg-config`
+
+2. run `make setup`
+3. run `cargo install dprint`
+4. if you have nightly:
+   - run `cargo install cargo-udeps --locked`
+   - run `cargo install cargo-edit --locked`
+
+### Run development scripts
+
+- run `make` to see available development scripts
+- run `make <script>` to execute a development script
+  - e.g. `make test` or `make fix`
+- run a single Cucumber scenario:
+  - add a `@this` tag to the scenario
+  - run `make cukethis`
 
 ### Debug the executable
 

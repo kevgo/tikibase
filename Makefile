@@ -48,19 +48,9 @@ update-json-schema:  # updates the public JSON Schema for the config file
 	mv tikibase.schema.json doc
 	tools/rta dprint fmt > /dev/null
 
-setup: setup-ci  # prepares this codebase
+setup:  # prepares this codebase
+	echo "See DEVELOPMENT.md" for all installation steps
 	cargo install cargo-edit cargo-upgrades --locked
-	echo
-	echo PLEASE DO THIS MANUALLY:
-	echo 1. install musl, e.g. "sudo apt install musl"
-	echo 2. install openssl-devel:
-	echo    - Fedora: sudo dnf install openssl-devel
-	echo    - Debian: sudo apt install libssl-dev pkg-config
-	echo 3. cargo install cargo-edit
-	echo 4. cargo install dprint
-
-setup-ci:  # prepares the CI server
-# cargo install cargo-udeps --locked  # requires nightly
 
 update: tools/run-that-app@${RUN_THAT_APP_VERSION}  # updates the dependencies
 	cargo upgrade
