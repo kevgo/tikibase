@@ -34,6 +34,7 @@ lint: lint-std-fs tools/rta@${RUN_THAT_APP_VERSION}  # checks formatting
 # cargo udeps   # requires nightly
 	git diff --check
 	tools/rta actionlint
+	cargo machete
 
 lint-std-fs:  # checks for occurrences of "std::fs", should use "fs_err" instead
 	! grep -rn --include '*.rs' 'std::fs'
@@ -61,11 +62,10 @@ setup: setup-ci  # install development dependencies on this computer
 setup-ci:  # prepares the CI server
 	rustup toolchain add nightly
 	rustup component add rustfmt --toolchain nightly
-# cargo install cargo-udeps --locked  # requires nightly
+	cargo install cargo-machete --locked
 
 update: tools/rta@${RUN_THAT_APP_VERSION}  # updates the dependencies
-	cargo install cargo-edit cargo-machete
-	cargo machete
+	cargo install cargo-edit
 	cargo upgrade
 	tools/rta --update
 
