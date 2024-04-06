@@ -48,7 +48,7 @@ update-json-schema:  # updates the public JSON Schema for the config file
 	mv tikibase.schema.json doc
 	tools/rta dprint fmt > /dev/null
 
-setup: setup-ci  # prepares this codebase
+setup: setup-ci  # install development dependencies on this computer
 	cargo install cargo-edit cargo-upgrades --locked
 	echo
 	echo PLEASE DO THIS MANUALLY:
@@ -60,6 +60,8 @@ setup: setup-ci  # prepares this codebase
 	echo 4. cargo install dprint
 
 setup-ci:  # prepares the CI server
+	rustup toolchain add nightly
+	rustup component add rustfmt --toolchain nightly
 # cargo install cargo-udeps --locked  # requires nightly
 
 update: tools/run-that-app@${RUN_THAT_APP_VERSION}  # updates the dependencies
