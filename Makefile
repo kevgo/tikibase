@@ -49,15 +49,16 @@ update-json-schema:  # updates the public JSON Schema for the config file
 	mv tikibase.schema.json doc
 	tools/rta dprint fmt > /dev/null
 
-setup: setup-ci  # install development dependencies on this computer
-	cargo install cargo-edit cargo-upgrades --locked
+setup:  # install development dependencies on this computer
 	echo
-	echo PLEASE DO THIS MANUALLY:
-	echo 1. install openssl-devel:
-	echo    - Fedora: sudo dnf install openssl-devel
-	echo    - Debian: sudo apt install libssl-dev pkg-config
-	echo 2. `cargo install cargo-edit --locked`
-	echo 3. `cargo install dprint --locked`
+	tput bold
+	echo =============================================
+	echo See DEVELOPMENT.md for all installation steps
+	echo =============================================
+	tput sgr0
+	echo
+	make --no-print-dir setup-ci
+	cargo install cargo-edit cargo-upgrades --locked
 
 setup-ci:  # prepares the CI server
 	rustup toolchain add nightly
