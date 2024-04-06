@@ -12,12 +12,33 @@
 
 ### Run development scripts
 
-- run `make` to see available development scripts
-- run `make <script>` to execute a development script
-  - e.g. `make test` or `make fix`
-- run a single Cucumber scenario:
-  - add a `@this` tag to the scenario
-  - run `make cukethis`
+See available development scripts:
+
+```
+make
+```
+
+Execute a development script:
+
+```
+make <script>
+```
+
+Examples:
+
+```
+make test
+make fix
+```
+
+Run a single Cucumber scenario:
+
+- add a `@this` tag to the scenario
+- run:
+
+  ```
+  make cukethis
+  ```
 
 ### Debug the executable
 
