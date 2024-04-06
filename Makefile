@@ -50,10 +50,9 @@ update-json-schema:  # updates the public JSON Schema for the config file
 	tools/rta dprint fmt > /dev/null
 
 setup: setup-ci  # install development dependencies on this computer
-	echo "See DEVELOPMENT.md" for all installation steps
+	echo See DEVELOPMENT.md for all installation steps
 	cargo install cargo-edit cargo-upgrades --locked
-	echo 2. `cargo install cargo-edit --locked`
-	echo 3. `cargo install dprint --locked`
+	echo See DEVELOPMENT.md for all installation steps
 
 setup-ci:  # prepares the CI server
 	rustup toolchain add nightly

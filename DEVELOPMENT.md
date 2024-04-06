@@ -9,9 +9,6 @@
 
 2. run `make setup`
 3. run `cargo install dprint`
-4. if you have nightly:
-   - run `cargo install cargo-udeps --locked`
-   - run `cargo install cargo-edit --locked`
 
 ### Run development scripts
 
