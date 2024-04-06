@@ -52,11 +52,11 @@ setup: setup-ci  # prepares this codebase
 	cargo install cargo-edit cargo-upgrades --locked
 	echo
 	echo PLEASE DO THIS MANUALLY:
-	echo 1. install musl, e.g. "sudo apt install musl"
-	echo 2. install openssl-devel:
+	echo 1. install openssl-devel:
 	echo    - Fedora: sudo dnf install openssl-devel
 	echo    - Debian: sudo apt install libssl-dev pkg-config
-	echo 3. cargo install cargo-edit
+	echo 2. `cargo install cargo-edit --locked`
+	echo 3. `cargo install dprint --locked`
 
 setup-ci:  # prepares the CI server
 # cargo install cargo-udeps --locked  # requires nightly
