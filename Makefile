@@ -57,7 +57,6 @@ setup: setup-ci  # prepares this codebase
 	echo    - Fedora: sudo dnf install openssl-devel
 	echo    - Debian: sudo apt install libssl-dev pkg-config
 	echo 3. cargo install cargo-edit
-	echo 4. cargo install dprint
 
 setup-ci:  # prepares the CI server
 # cargo install cargo-udeps --locked  # requires nightly
