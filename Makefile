@@ -51,7 +51,9 @@ update-json-schema:  # updates the public JSON Schema for the config file
 
 setup: setup-ci  # install development dependencies on this computer
 	echo See DEVELOPMENT.md for all installation steps
+	echo
 	cargo install cargo-edit cargo-upgrades --locked
+	echo
 	echo See DEVELOPMENT.md for all installation steps
 
 setup-ci:  # prepares the CI server
