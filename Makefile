@@ -31,7 +31,6 @@ lint: lint-std-fs tools/rta@${RUN_THAT_APP_VERSION}  # checks formatting
 	tools/rta dprint check
 	cargo clippy --all-targets --all-features -- --deny=warnings
 	cargo +nightly fmt -- --check
-# cargo udeps   # requires nightly
 	git diff --check
 	tools/rta actionlint
 	cargo machete
