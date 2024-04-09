@@ -1,7 +1,8 @@
 use ahash::AHashMap;
 use async_trait::async_trait;
 use big_s::S;
-use cucumber::{gherkin::Step, given, then, when, World, WorldInit};
+use cucumber::gherkin::Step;
+use cucumber::{given, then, when, World, WorldInit};
 use std::convert::Infallible;
 use tikibase::input::Command;
 use tikibase::{self, test, Messages};

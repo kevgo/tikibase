@@ -1,8 +1,7 @@
 use super::Fix::RemovedEmptySection;
 use crate::check::Location;
-use crate::fix;
 use crate::fix::Result::Fixed;
-use crate::Tikibase;
+use crate::{fix, Tikibase};
 
 pub fn remove_section(base: &mut Tikibase, title: String, location: Location) -> fix::Result {
   let base_dir = base.root.clone();
