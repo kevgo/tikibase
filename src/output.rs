@@ -9,97 +9,97 @@ use serde::Serialize;
 /// human-readable summary of running a single command
 #[derive(Debug, Default, PartialEq, Serialize)]
 pub struct Message {
-    pub text: String,
-    pub file: String,
-    pub line: Option<u32>,
-    pub start: Option<u32>,
-    pub end: Option<u32>,
-    pub fixable: bool,
+  pub text: String,
+  pub file: String,
+  pub line: Option<u32>,
+  pub start: Option<u32>,
+  pub end: Option<u32>,
+  pub fixable: bool,
 }
 
 impl Message {
-    /// provides the CLI text format for this Message
-    #[must_use]
-    pub fn to_text(&self) -> String {
-        if let Some(line) = self.line {
-            format!("{}:{}  {}", self.file, line + 1, self.text)
-        } else {
-            format!("{}  {}", self.file, self.text)
-        }
+  /// provides the CLI text format for this Message
+  #[must_use]
+  pub fn to_text(&self) -> String {
+    if let Some(line) = self.line {
+      format!("{}:{}  {}", self.file, line + 1, self.text)
+    } else {
+      format!("{}  {}", self.file, self.text)
     }
+  }
 
-    /// provides a Message instance summarizing the given Fix
-    #[must_use]
-    pub fn from_fix(fix: Fix) -> Message {
-        match fix {
-            Fix::RemovedEmptySection { title, location } => Message {
-                text: format!("removed empty section \"{title}\""),
-                file: location.file,
-                line: Some(location.line),
-                start: Some(location.start),
-                end: Some(location.end),
-                fixable: false,
-            },
-            Fix::AddedOccurrencesSection { location, target } => Message {
-                text: format!("added {target} to occurrences section"),
-                file: location.file,
-                line: Some(location.line),
-                start: Some(location.start),
-                end: Some(location.end),
-                fixable: false,
-            },
-            Fix::NormalizedSectionCapitalization {
-                location,
-                old_capitalization,
-                new_capitalization,
-            } => Message {
-                text: format!(
-                    r#"normalized capitalization of section "{old_capitalization}" to "{new_capitalization}""#
-                ),
-                file: location.file,
-                line: Some(location.line),
-                start: Some(location.start),
-                end: Some(location.end),
-                fixable: false,
-            },
-            Fix::NormalizedSectionLevel {
-                location,
-                section_human_title,
-                old_level,
-                new_level,
-            } => Message {
-                text: format!(
-                    r#"normalized section "{section_human_title}" from <h{old_level}> to <h{new_level}>"#
-                ),
-                file: location.file,
-                line: Some(location.line),
-                start: Some(location.start),
-                end: Some(location.end),
-                fixable: false,
-            },
-            Fix::RemovedObsoleteOccurrencesSection { location } => Message {
-                text: S("removed obsolete occurrences section"),
-                file: location.file,
-                line: Some(location.line),
-                start: Some(location.start),
-                end: Some(location.end),
-                fixable: false,
-            },
-            Fix::SortedSections { location } => Message {
-                text: S("fixed section order"),
-                file: location.file,
-                line: Some(location.line),
-                start: Some(location.start),
-                end: Some(location.end),
-                fixable: false,
-            },
-        }
+  /// provides a Message instance summarizing the given Fix
+  #[must_use]
+  pub fn from_fix(fix: Fix) -> Message {
+    match fix {
+      Fix::RemovedEmptySection { title, location } => Message {
+        text: format!("removed empty section \"{title}\""),
+        file: location.file,
+        line: Some(location.line),
+        start: Some(location.start),
+        end: Some(location.end),
+        fixable: false,
+      },
+      Fix::AddedOccurrencesSection { location, target } => Message {
+        text: format!("added {target} to occurrences section"),
+        file: location.file,
+        line: Some(location.line),
+        start: Some(location.start),
+        end: Some(location.end),
+        fixable: false,
+      },
+      Fix::NormalizedSectionCapitalization {
+        location,
+        old_capitalization,
+        new_capitalization,
+      } => Message {
+        text: format!(
+          r#"normalized capitalization of section "{old_capitalization}" to "{new_capitalization}""#
+        ),
+        file: location.file,
+        line: Some(location.line),
+        start: Some(location.start),
+        end: Some(location.end),
+        fixable: false,
+      },
+      Fix::NormalizedSectionLevel {
+        location,
+        section_human_title,
+        old_level,
+        new_level,
+      } => Message {
+        text: format!(
+          r#"normalized section "{section_human_title}" from <h{old_level}> to <h{new_level}>"#
+        ),
+        file: location.file,
+        line: Some(location.line),
+        start: Some(location.start),
+        end: Some(location.end),
+        fixable: false,
+      },
+      Fix::RemovedObsoleteOccurrencesSection { location } => Message {
+        text: S("removed obsolete occurrences section"),
+        file: location.file,
+        line: Some(location.line),
+        start: Some(location.start),
+        end: Some(location.end),
+        fixable: false,
+      },
+      Fix::SortedSections { location } => Message {
+        text: S("fixed section order"),
+        file: location.file,
+        line: Some(location.line),
+        start: Some(location.start),
+        end: Some(location.end),
+        fixable: false,
+      },
     }
+  }
 
-    /// provides a Message instance summarizing the given Issue
-    #[must_use]
-    pub fn from_issue(issue: Issue) -> Message {
-        match issue {
+  /// provides a Message instance summarizing the given Issue
+  #[must_use]
+  pub fn from_issue(issue: Issue) -> Message {
+    match issue {
             Issue::BrokenImage { location, target } => Message {
                 text: format!("image link to non-existing file \"{target}\""),
                 file: location.file,
@@ -445,190 +445,190 @@ impl Message {
                 fixable: false,
             },
         }
-    }
+  }
 }
 
 #[derive(Debug, Default, PartialEq)]
 pub struct Messages {
-    /// messages for identified issues
-    pub issues: Vec<Message>,
-    /// messages for fixed issues
-    pub fixes: Vec<Message>,
-    pub exit_code: u8,
+  /// messages for identified issues
+  pub issues: Vec<Message>,
+  /// messages for fixed issues
+  pub fixes: Vec<Message>,
+  pub exit_code: u8,
 }
 
 impl Messages {
-    /// provides the combined set of issues and fixes
-    #[must_use]
-    pub fn all(mut self) -> Vec<Message> {
-        let mut result = vec![];
-        result.append(&mut self.issues);
-        result.append(&mut self.fixes);
-        result
-    }
+  /// provides the combined set of issues and fixes
+  #[must_use]
+  pub fn all(mut self) -> Vec<Message> {
+    let mut result = vec![];
+    result.append(&mut self.issues);
+    result.append(&mut self.fixes);
+    result
+  }
 
-    /// indicates whether there are any messages
-    #[must_use]
-    pub fn is_empty(&self) -> bool {
-        self.issues.is_empty() && self.fixes.is_empty()
-    }
+  /// indicates whether there are any messages
+  #[must_use]
+  pub fn is_empty(&self) -> bool {
+    self.issues.is_empty() && self.fixes.is_empty()
+  }
 
-    #[must_use]
-    pub fn from_issue(issue: Issue) -> Messages {
-        Messages {
-            issues: vec![Message::from_issue(issue)],
-            fixes: vec![],
-            exit_code: 1,
-        }
+  #[must_use]
+  pub fn from_issue(issue: Issue) -> Messages {
+    Messages {
+      issues: vec![Message::from_issue(issue)],
+      fixes: vec![],
+      exit_code: 1,
     }
+  }
 
-    #[must_use]
-    pub fn from_issues(issues: Vec<Issue>) -> Messages {
-        let exit_code = issues.len() as u8;
-        Messages {
-            issues: issues.into_iter().map(Message::from_issue).collect(),
-            fixes: vec![],
-            exit_code,
-        }
+  #[must_use]
+  pub fn from_issues(issues: Vec<Issue>) -> Messages {
+    let exit_code = issues.len() as u8;
+    Messages {
+      issues: issues.into_iter().map(Message::from_issue).collect(),
+      fixes: vec![],
+      exit_code,
     }
+  }
 
-    pub fn from_outcome(outcome: Outcome) -> Messages {
-        Messages {
-            fixes: outcome.fixes.into_iter().map(Message::from_fix).collect(),
-            ..Messages::from_issues(outcome.issues)
-        }
+  pub fn from_outcome(outcome: Outcome) -> Messages {
+    Messages {
+      fixes: outcome.fixes.into_iter().map(Message::from_fix).collect(),
+      ..Messages::from_issues(outcome.issues)
     }
+  }
 
-    /// indicates whether there are both issues and fixes
-    #[must_use]
-    pub fn has_issues_and_fixes(&self) -> bool {
-        !self.issues.is_empty() && !self.fixes.is_empty()
-    }
+  /// indicates whether there are both issues and fixes
+  #[must_use]
+  pub fn has_issues_and_fixes(&self) -> bool {
+    !self.issues.is_empty() && !self.fixes.is_empty()
+  }
 }
 
 #[cfg(test)]
 mod tests {
 
-    mod all {
-        use crate::output::Message;
-        use crate::Messages;
-        use big_s::S;
+  mod all {
+    use crate::output::Message;
+    use crate::Messages;
+    use big_s::S;
 
-        #[test]
-        fn empty() {
-            let give = Messages::default();
-            let want: Vec<Message> = vec![];
-            let have = give.all();
-            assert_eq!(have, want);
-        }
-
-        #[test]
-        fn with_content() {
-            let give = Messages {
-                issues: vec![
-                    Message {
-                        text: S("issue 1"),
-                        ..Message::default()
-                    },
-                    Message {
-                        text: S("issue 2"),
-                        ..Message::default()
-                    },
-                ],
-                fixes: vec![
-                    Message {
-                        text: S("fix 1"),
-                        ..Message::default()
-                    },
-                    Message {
-                        text: S("fix 2"),
-                        ..Message::default()
-                    },
-                ],
-                ..Messages::default()
-            };
-            let result = give.all();
-            let have: Vec<String> = result.into_iter().map(|message| message.text).collect();
-            let want = vec!["issue 1", "issue 2", "fix 1", "fix 2"];
-            assert_eq!(have, want);
-        }
+    #[test]
+    fn empty() {
+      let give = Messages::default();
+      let want: Vec<Message> = vec![];
+      let have = give.all();
+      assert_eq!(have, want);
     }
 
-    mod is_empty {
-        use crate::output::Message;
-        use crate::Messages;
+    #[test]
+    fn with_content() {
+      let give = Messages {
+        issues: vec![
+          Message {
+            text: S("issue 1"),
+            ..Message::default()
+          },
+          Message {
+            text: S("issue 2"),
+            ..Message::default()
+          },
+        ],
+        fixes: vec![
+          Message {
+            text: S("fix 1"),
+            ..Message::default()
+          },
+          Message {
+            text: S("fix 2"),
+            ..Message::default()
+          },
+        ],
+        ..Messages::default()
+      };
+      let result = give.all();
+      let have: Vec<String> = result.into_iter().map(|message| message.text).collect();
+      let want = vec!["issue 1", "issue 2", "fix 1", "fix 2"];
+      assert_eq!(have, want);
+    }
+  }
 
-        #[test]
-        fn empty() {
-            let give = Messages::default();
-            assert!(give.is_empty());
-        }
+  mod is_empty {
+    use crate::output::Message;
+    use crate::Messages;
 
-        #[test]
-        fn with_issues() {
-            let give = Messages {
-                issues: vec![Message::default()],
-                ..Messages::default()
-            };
-            assert!(!give.is_empty());
-        }
-
-        #[test]
-        fn with_fixes() {
-            let give = Messages {
-                fixes: vec![Message::default()],
-                ..Messages::default()
-            };
-            assert!(!give.is_empty());
-        }
-
-        #[test]
-        fn with_issues_and_fixes() {
-            let give = Messages {
-                fixes: vec![Message::default()],
-                issues: vec![Message::default()],
-                ..Messages::default()
-            };
-            assert!(!give.is_empty());
-        }
+    #[test]
+    fn empty() {
+      let give = Messages::default();
+      assert!(give.is_empty());
     }
 
-    mod has_issues_and_fixes {
-        use crate::output::Message;
-        use crate::Messages;
-
-        #[test]
-        fn empty() {
-            let give = Messages::default();
-            assert!(!give.has_issues_and_fixes());
-        }
-
-        #[test]
-        fn issues_only() {
-            let give = Messages {
-                issues: vec![Message::default()],
-                ..Messages::default()
-            };
-            assert!(!give.has_issues_and_fixes());
-        }
-
-        #[test]
-        fn fixes_only() {
-            let give = Messages {
-                fixes: vec![Message::default()],
-                ..Messages::default()
-            };
-            assert!(!give.has_issues_and_fixes());
-        }
-
-        #[test]
-        fn issues_and_fixes() {
-            let give = Messages {
-                fixes: vec![Message::default()],
-                issues: vec![Message::default()],
-                ..Messages::default()
-            };
-            assert!(give.has_issues_and_fixes());
-        }
+    #[test]
+    fn with_issues() {
+      let give = Messages {
+        issues: vec![Message::default()],
+        ..Messages::default()
+      };
+      assert!(!give.is_empty());
     }
+
+    #[test]
+    fn with_fixes() {
+      let give = Messages {
+        fixes: vec![Message::default()],
+        ..Messages::default()
+      };
+      assert!(!give.is_empty());
+    }
+
+    #[test]
+    fn with_issues_and_fixes() {
+      let give = Messages {
+        fixes: vec![Message::default()],
+        issues: vec![Message::default()],
+        ..Messages::default()
+      };
+      assert!(!give.is_empty());
+    }
+  }
+
+  mod has_issues_and_fixes {
+    use crate::output::Message;
+    use crate::Messages;
+
+    #[test]
+    fn empty() {
+      let give = Messages::default();
+      assert!(!give.has_issues_and_fixes());
+    }
+
+    #[test]
+    fn issues_only() {
+      let give = Messages {
+        issues: vec![Message::default()],
+        ..Messages::default()
+      };
+      assert!(!give.has_issues_and_fixes());
+    }
+
+    #[test]
+    fn fixes_only() {
+      let give = Messages {
+        fixes: vec![Message::default()],
+        ..Messages::default()
+      };
+      assert!(!give.has_issues_and_fixes());
+    }
+
+    #[test]
+    fn issues_and_fixes() {
+      let give = Messages {
+        fixes: vec![Message::default()],
+        issues: vec![Message::default()],
+        ..Messages::default()
+      };
+      assert!(give.has_issues_and_fixes());
+    }
+  }
 }

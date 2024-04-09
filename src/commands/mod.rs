@@ -25,19 +25,19 @@ use crate::Fix;
 /// intended to be used programmatically.
 #[derive(Debug, Default, PartialEq)]
 pub struct Outcome {
-    /// the issues identified but not fixed
-    pub issues: Vec<Issue>,
-    /// the fixes applied
-    pub fixes: Vec<Fix>,
+  /// the issues identified but not fixed
+  pub issues: Vec<Issue>,
+  /// the fixes applied
+  pub fixes: Vec<Fix>,
 }
 
 impl Outcome {
-    /// provides an `Outcome` containing the given `Issue`
-    #[must_use]
-    pub fn from_issue(issue: Issue) -> Outcome {
-        Outcome {
-            issues: vec![issue],
-            fixes: vec![],
-        }
+  /// provides an `Outcome` containing the given `Issue`
+  #[must_use]
+  pub fn from_issue(issue: Issue) -> Outcome {
+    Outcome {
+      issues: vec![issue],
+      fixes: vec![],
     }
+  }
 }
