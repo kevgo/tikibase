@@ -7,12 +7,9 @@ pub mod input;
 mod output;
 pub mod test;
 
-// exports
 pub use config::Config;
-pub use fix::Fix;
-
-// used locally
 use database::Tikibase;
+pub use fix::Fix;
 use input::Command;
 pub use output::{Message, Messages};
 

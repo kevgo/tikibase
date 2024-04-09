@@ -7,17 +7,14 @@ mod json_schema;
 mod pitstop;
 mod stats;
 
-// re-exports
+use crate::check::Issue;
+use crate::Fix;
 pub use check::check;
 pub use fix::fix;
 pub use init::init;
 pub use json_schema::json_schema;
 pub use pitstop::pitstop;
 pub use stats::stats;
-
-// used locally
-use crate::check::Issue;
-use crate::Fix;
 
 /// The inner API of the check subsystem.
 /// This data structure is returned by the probes.
