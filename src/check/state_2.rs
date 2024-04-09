@@ -4,8 +4,8 @@ use ahash::AHashMap;
 
 /// state for phase 2
 pub struct State2 {
-    pub capitalization_outliers: AHashMap<String, section_capitalization::OutlierInfo>,
-    pub level_outliers: AHashMap<String, section_level::OutlierInfo>,
-    pub linked_resources: Vec<String>,
-    pub issues: Vec<Issue>,
+  pub capitalization_outliers: AHashMap<String, section_capitalization::OutlierInfo>,
+  pub level_outliers: AHashMap<String, section_level::OutlierInfo>,
+  pub linked_resources: Vec<String>,
+  pub issues: Vec<Issue>,
 }
