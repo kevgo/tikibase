@@ -1,9 +1,8 @@
 use super::Result::Fixed;
 use crate::check::Location;
 use crate::database::Section;
-use crate::fix;
 use crate::fix::Fix::SortedSections;
-use crate::Tikibase;
+use crate::{fix, Tikibase};
 
 pub fn sort_sections(base: &mut Tikibase, location: Location) -> fix::Result {
   let base_dir = base.root.clone();

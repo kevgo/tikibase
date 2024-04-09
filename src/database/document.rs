@@ -2,7 +2,8 @@ use super::{paths, section, Footnotes, Image, Line, Link, Section};
 use crate::check::{Issue, Location};
 use fs_err as fs;
 use fs_err::File;
-use std::io::{prelude::*, BufReader};
+use std::io::prelude::*;
+use std::io::BufReader;
 use std::path::Path;
 
 #[derive(Debug, Eq, Hash, PartialEq)]
