@@ -104,7 +104,7 @@ impl Section {
   }
 
   /// adds a new line with the given text to this section
-  pub fn push_line<IS: Into<String>>(&mut self, text: IS) {
+  pub fn push_line(&mut self, text: impl Into<String>) {
     self.body.push(Line::from(text));
   }
 
@@ -173,7 +173,7 @@ pub struct Builder {
 
 impl Builder {
   /// Provides a builder instance loaded with the given title line.
-  pub fn new<IS: Into<String>>(title: IS, line_number: u32) -> Builder {
+  pub fn new(title: impl Into<String>, line_number: u32) -> Builder {
     Builder {
       title_line: title.into(),
       line_number,
@@ -181,7 +181,7 @@ impl Builder {
     }
   }
 
-  pub fn add_line<IS: Into<String>>(&mut self, text: IS) {
+  pub fn add_line(&mut self, text: impl Into<String>) {
     self.body.push(text.into());
   }
 
