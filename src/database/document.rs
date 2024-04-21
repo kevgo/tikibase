@@ -145,7 +145,7 @@ impl Document {
 
   #[cfg(test)]
   /// provides Document instances in tests
-  pub fn from_str<P: Into<String>>(path: P, text: &str) -> Result<Document, Issue> {
+  pub fn from_str(path: impl Into<String>, text: &str) -> Result<Document, Issue> {
     Document::from_lines(text.lines().map(std::string::ToString::to_string), path)
   }
 
