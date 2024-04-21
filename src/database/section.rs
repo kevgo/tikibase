@@ -104,7 +104,7 @@ impl Section {
   }
 
   /// adds a new line with the given text to this section
-  pub fn push_line<IS: Into<String>>(&mut self, text: IS) {
+  pub fn push_line(&mut self, text: impl Into<String>) {
     self.body.push(Line::from(text));
   }
 
