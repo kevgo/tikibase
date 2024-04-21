@@ -59,7 +59,7 @@ impl Document {
   }
 
   /// provides a Document instance containing the given text
-  pub fn from_lines<T, P: Into<String>>(lines: T, relative_path: P) -> Result<Document, Issue>
+  pub fn from_lines<T>(lines: T, relative_path: impl Into<String>) -> Result<Document, Issue>
   where
     T: Iterator<Item = String>,
   {
