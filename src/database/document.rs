@@ -202,7 +202,7 @@ impl Document {
       .last_line_abs()
   }
 
-  pub fn load<P: AsRef<Path>>(absolute_path: P, relative_path: String) -> Result<Document, Issue> {
+  pub fn load(absolute_path: impl AsRef<Path>, relative_path: String) -> Result<Document, Issue> {
     let file = File::open(absolute_path.as_ref()).unwrap();
     Document::from_reader(BufReader::new(file), relative_path)
   }

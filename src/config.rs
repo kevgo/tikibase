@@ -97,7 +97,7 @@ impl Config {
 }
 
 /// reads the config file
-pub fn load<P: AsRef<Path>>(dir: P) -> LoadResult {
+pub fn load(dir: impl AsRef<Path>) -> LoadResult {
   let config_path = dir.as_ref().join("tikibase.json");
   let file = match File::open(config_path) {
     Ok(reader) => reader,
