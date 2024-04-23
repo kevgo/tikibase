@@ -54,4 +54,5 @@ too_many_lines = "allow" # TODO: refactor the long functions or add ignore this 
 use_self = "deny"
 
 [lints.clippy]
+impl_trait_in_params = "deny"
 str_to_string = "deny"
