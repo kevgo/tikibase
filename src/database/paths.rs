@@ -229,24 +229,26 @@ mod tests {
   }
 
   mod join {
+    use big_s::S;
+
     #[test]
     fn two_paths() {
       let have = super::super::join("one", "two");
-      let want = "one/two".to_string();
+      let want = S("one/two");
       assert_eq!(have, want);
     }
 
     #[test]
     fn first_path_empty() {
       let have = super::super::join("", "two");
-      let want = "two".to_string();
+      let want = S("two");
       assert_eq!(have, want);
     }
 
     #[test]
     fn second_path_empty() {
       let have = super::super::join("one", "");
-      let want = "one".to_string();
+      let want = S("one");
       assert_eq!(have, want);
     }
   }
