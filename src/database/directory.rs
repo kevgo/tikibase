@@ -16,7 +16,7 @@ pub struct Directory {
 
 impl Directory {
   /// provides the directory with the given relative filename
-  pub fn get_dir(&self, relative_path: &str) -> Option<&Directory> {
+  pub fn get_dir(&self, relative_path: &str) -> Option<&Self> {
     match lowest_subdir(relative_path) {
       ("", filename) => self.dirs.get(filename),
       (subdir, remaining_path) => match self.dirs.get(subdir) {
