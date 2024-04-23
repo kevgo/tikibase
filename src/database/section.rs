@@ -65,10 +65,10 @@ impl Section {
     }
   }
 
-  pub fn new<IS: Into<String>>(line_number: u32, title: IS, body: Vec<IS>) -> Section {
+  pub fn new<IS: Into<String>>(line_number: u32, title: IS, body: Vec<IS>) -> Self {
     let title: String = title.into();
-    let (level, start) = Section::parse_title(&title);
-    Section {
+    let (level, start) = Self::parse_title(&title);
+    Self {
       line_number,
       title_line: Line::from(title),
       title_text_start: start,
@@ -118,7 +118,7 @@ impl Section {
 
   #[cfg(test)]
   fn scaffold() -> Self {
-    Section::new(0, "### section", vec![])
+    Self::new(0, "### section", vec![])
   }
 
   /// provides the complete text of this section
@@ -134,14 +134,14 @@ impl Section {
 
   /// provides a section with the given title
   #[cfg(test)]
-  pub fn with_body(body: Vec<&str>) -> Section {
-    Section::new(0, "# title", body)
+  pub fn with_body(body: Vec<&str>) -> Self {
+    Self::new(0, "# title", body)
   }
 
   /// provides a section with the given title
   #[cfg(test)]
-  pub fn with_title(title: &str) -> Section {
-    Section::new(0, title, vec![])
+  pub fn with_title(title: &str) -> Self {
+    Self::new(0, title, vec![])
   }
 }
 
