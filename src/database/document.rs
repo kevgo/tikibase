@@ -202,7 +202,7 @@ impl Document {
       .last_line_abs()
   }
 
-  pub fn load<P: AsRef<Path>>(absolute_path: P, relative_path: String) -> Result<Document, Issue> {
+  pub fn load<P: AsRef<Path>>(absolute_path: P, relative_path: String) -> Result<Self, Issue> {
     let file = File::open(absolute_path.as_ref()).unwrap();
     Document::from_reader(BufReader::new(file), relative_path)
   }
@@ -212,9 +212,9 @@ impl Document {
     title_section: Section,
     content_sections: Vec<Section>,
     old_occurrences_section: Option<Section>,
-  ) -> Document {
+  ) -> Self {
     let (links, images) = Document::references(&title_section, &content_sections);
-    Document {
+    Self {
       relative_path: path,
       title_section,
       content_sections,

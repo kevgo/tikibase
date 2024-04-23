@@ -92,7 +92,7 @@ impl Line {
 
 impl<IS: Into<String>> From<IS> for Line {
   fn from(text: IS) -> Self {
-    Line { text: text.into() }
+    Self { text: text.into() }
   }
 }
 

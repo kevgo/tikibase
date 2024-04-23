@@ -173,8 +173,8 @@ pub struct Builder {
 
 impl Builder {
   /// Provides a builder instance loaded with the given title line.
-  pub fn new(title: impl Into<String>, line_number: u32) -> Builder {
-    Builder {
+  pub fn new(title: impl Into<String>, line_number: u32) -> Self {
+    Self {
       title_line: title.into(),
       line_number,
       body: Vec::new(),
