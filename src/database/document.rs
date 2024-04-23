@@ -59,7 +59,7 @@ impl Document {
   }
 
   /// provides a Document instance containing the given text
-  pub fn from_lines<T>(lines: T, relative_path: impl Into<String>) -> Result<Document, Issue>
+  pub fn from_lines<T>(lines: T, relative_path: impl Into<String>) -> Result<Self, Issue>
   where
     T: Iterator<Item = String>,
   {
@@ -126,7 +126,7 @@ impl Document {
       });
     }
     let mut sections = sections.into_iter();
-    Ok(Document::new(
+    Ok(Self::new(
       relative_path,
       sections.next().unwrap(),
       sections.collect(),
@@ -138,15 +138,15 @@ impl Document {
   pub fn from_reader(
     reader: impl BufRead,
     relative_path: impl Into<String>,
-  ) -> Result<Document, Issue> {
+  ) -> Result<Self, Issue> {
     let lines = reader.lines().map(Result::unwrap);
-    Document::from_lines(lines, relative_path)
+    Self::from_lines(lines, relative_path)
   }
 
   #[cfg(test)]
   /// provides Document instances in tests
-  pub fn from_str(path: impl Into<String>, text: &str) -> Result<Document, Issue> {
-    Document::from_lines(text.lines().map(std::string::ToString::to_string), path)
+  pub fn from_str(path: impl Into<String>, text: &str) -> Result<Self, Issue> {
+    Self::from_lines(text.lines().map(std::string::ToString::to_string), path)
   }
 
   /// indicates whether this document contains the given anchor
@@ -202,9 +202,9 @@ impl Document {
       .last_line_abs()
   }
 
-  pub fn load<P: AsRef<Path>>(absolute_path: P, relative_path: String) -> Result<Document, Issue> {
+  pub fn load<P: AsRef<Path>>(absolute_path: P, relative_path: String) -> Result<Self, Issue> {
     let file = File::open(absolute_path.as_ref()).unwrap();
-    Document::from_reader(BufReader::new(file), relative_path)
+    Self::from_reader(BufReader::new(file), relative_path)
   }
 
   pub fn new(
@@ -212,9 +212,9 @@ impl Document {
     title_section: Section,
     content_sections: Vec<Section>,
     old_occurrences_section: Option<Section>,
-  ) -> Document {
-    let (links, images) = Document::references(&title_section, &content_sections);
-    Document {
+  ) -> Self {
+    let (links, images) = Self::references(&title_section, &content_sections);
+    Self {
       relative_path: path,
       title_section,
       content_sections,

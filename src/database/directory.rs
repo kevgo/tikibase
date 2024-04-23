@@ -16,7 +16,7 @@ pub struct Directory {
 
 impl Directory {
   /// provides the directory with the given relative filename
-  pub fn get_dir(&self, relative_path: &str) -> Option<&Directory> {
+  pub fn get_dir(&self, relative_path: &str) -> Option<&Self> {
     match lowest_subdir(relative_path) {
       ("", filename) => self.dirs.get(filename),
       (subdir, remaining_path) => match self.dirs.get(subdir) {
@@ -75,7 +75,7 @@ impl Directory {
     root: &str,
     relative_path: String,
     mut parent_config: Config,
-  ) -> Result<Directory, Vec<Issue>> {
+  ) -> Result<Self, Vec<Issue>> {
     let abs_path = paths::join(root, &relative_path);
     let config = match config::load(&abs_path) {
       LoadResult::Loaded(config) => {
@@ -119,7 +119,7 @@ impl Directory {
         EntryType::Directory => {
           dirs.insert(
             entry_name.clone(),
-            Directory::load(
+            Self::load(
               root,
               paths::join(&relative_path, &entry_name),
               config.clone(),
@@ -129,7 +129,7 @@ impl Directory {
       }
     }
     if errors.is_empty() {
-      Ok(Directory {
+      Ok(Self {
         relative_path,
         config,
         dirs,
@@ -158,45 +158,45 @@ pub enum EntryType {
 }
 
 impl EntryType {
-  fn from_direntry(entry: &fs::DirEntry, config: &Config) -> EntryType {
+  fn from_direntry(entry: &fs::DirEntry, config: &Config) -> Self {
     let entry_type = entry.file_type().unwrap();
     let entry_filename_os = entry.file_name();
     let entry_filename = entry_filename_os.to_string_lossy();
     if entry_filename.starts_with('.') {
-      return EntryType::Ignored;
+      return Self::Ignored;
     }
     if entry_type.is_file() {
       if entry_filename == "tikibase.json" {
-        return EntryType::Configuration;
+        return Self::Configuration;
       }
       if config.ignore(&entry_filename) {
-        return EntryType::Ignored;
+        return Self::Ignored;
       }
       if has_extension(&entry_filename, "md") {
-        return EntryType::Document {};
+        return Self::Document {};
       }
-      return EntryType::Resource;
+      return Self::Resource;
     }
     if entry_type.is_dir() {
-      return EntryType::Directory;
+      return Self::Directory;
     }
-    EntryType::Ignored
+    Self::Ignored
   }
 
-  pub fn from_str(path: &str) -> EntryType {
+  pub fn from_str(path: &str) -> Self {
     if path == "tikibase.json" {
-      return EntryType::Configuration;
+      return Self::Configuration;
     }
     if path.starts_with('.') {
-      return EntryType::Ignored;
+      return Self::Ignored;
     }
     if has_extension(path, "md") {
-      return EntryType::Document;
+      return Self::Document;
     }
     if path.ends_with('/') {
-      return EntryType::Directory;
+      return Self::Directory;
     }
-    EntryType::Resource
+    Self::Resource
   }
 }
 
