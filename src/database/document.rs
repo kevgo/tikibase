@@ -59,7 +59,7 @@ impl Document {
   }
 
   /// provides a Document instance containing the given text
-  pub fn from_lines<T>(lines: T, relative_path: impl Into<String>) -> Result<Self, Issue>
+  pub fn from_lines<T, IS: Into<String>>(lines: T, relative_path: IS) -> Result<Self, Issue>
   where
     T: Iterator<Item = String>,
   {
@@ -135,9 +135,9 @@ impl Document {
   }
 
   /// provides the Document contained in the file with the given path
-  pub fn from_reader(
-    reader: impl BufRead,
-    relative_path: impl Into<String>,
+  pub fn from_reader<IS: Into<String>, BR: BufRead>(
+    reader: BR,
+    relative_path: IS,
   ) -> Result<Self, Issue> {
     let lines = reader.lines().map(Result::unwrap);
     Self::from_lines(lines, relative_path)
@@ -145,7 +145,7 @@ impl Document {
 
   #[cfg(test)]
   /// provides Document instances in tests
-  pub fn from_str(path: impl Into<String>, text: &str) -> Result<Self, Issue> {
+  pub fn from_str<IS: Into<String>>(path: IS, text: &str) -> Result<Self, Issue> {
     Self::from_lines(text.lines().map(std::string::ToString::to_string), path)
   }
 
