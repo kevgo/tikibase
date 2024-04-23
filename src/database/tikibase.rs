@@ -9,9 +9,9 @@ pub struct Tikibase {
 }
 
 impl Tikibase {
-  pub fn load(root: String) -> Result<Tikibase, Vec<Issue>> {
+  pub fn load(root: String) -> Result<Self, Vec<Issue>> {
     let dir = Directory::load(&root, S(""), Config::default())?;
-    Ok(Tikibase { root, dir })
+    Ok(Self { root, dir })
   }
 
   pub fn get_dir(&self, relative_path: &str) -> Option<&Directory> {

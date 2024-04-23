@@ -23,7 +23,7 @@ pub enum Format {
 /// the default output format of the CLI app
 impl Default for Format {
   fn default() -> Self {
-    Format::Text
+    Self::Text
   }
 }
 
