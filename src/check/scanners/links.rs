@@ -605,7 +605,7 @@ mod tests {
     let mut linked_resources = vec![];
     super::scan(doc, dir, &mut issues, &mut linked_resources, &base.dir);
     assert!(issues.is_empty());
-    assert_eq!(linked_resources, vec!["one/two/foo.png".to_string()]);
+    assert_eq!(linked_resources, vec![S("one/two/foo.png")]);
   }
 
   #[test]
@@ -625,7 +625,7 @@ mod tests {
       &base.dir,
     );
     assert!(issues.is_empty());
-    assert_eq!(linked_resources, vec!["foo.png".to_string()]);
+    assert_eq!(linked_resources, vec![S("foo.png")]);
   }
 
   #[test]
