@@ -20,7 +20,7 @@ pub use stats::stats;
 /// This data structure is returned by the probes.
 /// It contains highly structured, semantically meaningful data
 /// intended to be used programmatically.
-#[derive(Debug, Default, PartialEq)]
+#[derive(Debug, Default, Eq, PartialEq)]
 pub struct Outcome {
   /// the issues identified but not fixed
   pub issues: Vec<Issue>,

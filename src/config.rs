@@ -10,7 +10,7 @@ use std::io::ErrorKind;
 use std::path::Path;
 
 /// Tikibase configuration data
-#[derive(Clone, Deserialize, Debug, Default, JsonSchema, Merge, PartialEq)]
+#[derive(Clone, Deserialize, Debug, Default, Eq, JsonSchema, Merge, PartialEq)]
 #[serde(deny_unknown_fields)]
 #[serde(rename_all = "camelCase")]
 pub struct Config {
@@ -130,7 +130,7 @@ pub fn load<P: AsRef<Path>>(dir: P) -> LoadResult {
   }
 }
 
-#[derive(Debug, PartialEq)]
+#[derive(Debug, Eq, PartialEq)]
 pub enum LoadResult {
   Loaded(Config),
   NotFound,

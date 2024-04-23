@@ -7,7 +7,7 @@ use big_s::S;
 use serde::Serialize;
 
 /// human-readable summary of running a single command
-#[derive(Debug, Default, PartialEq, Serialize)]
+#[derive(Debug, Default, Eq, PartialEq, Serialize)]
 pub struct Message {
   pub text: String,
   pub file: String,
@@ -448,7 +448,7 @@ impl Message {
   }
 }
 
-#[derive(Debug, Default, PartialEq)]
+#[derive(Debug, Default, Eq, PartialEq)]
 pub struct Messages {
   /// messages for identified issues
   pub issues: Vec<Message>,
