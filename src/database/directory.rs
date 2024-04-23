@@ -158,45 +158,45 @@ pub enum EntryType {
 }
 
 impl EntryType {
-  fn from_direntry(entry: &fs::DirEntry, config: &Config) -> EntryType {
+  fn from_direntry(entry: &fs::DirEntry, config: &Config) -> Self {
     let entry_type = entry.file_type().unwrap();
     let entry_filename_os = entry.file_name();
     let entry_filename = entry_filename_os.to_string_lossy();
     if entry_filename.starts_with('.') {
-      return EntryType::Ignored;
+      return Self::Ignored;
     }
     if entry_type.is_file() {
       if entry_filename == "tikibase.json" {
-        return EntryType::Configuration;
+        return Self::Configuration;
       }
       if config.ignore(&entry_filename) {
-        return EntryType::Ignored;
+        return Self::Ignored;
       }
       if has_extension(&entry_filename, "md") {
-        return EntryType::Document {};
+        return Self::Document {};
       }
-      return EntryType::Resource;
+      return Self::Resource;
     }
     if entry_type.is_dir() {
-      return EntryType::Directory;
+      return Self::Directory;
     }
-    EntryType::Ignored
+    Self::Ignored
   }
 
-  pub fn from_str(path: &str) -> EntryType {
+  pub fn from_str(path: &str) -> Self {
     if path == "tikibase.json" {
-      return EntryType::Configuration;
+      return Self::Configuration;
     }
     if path.starts_with('.') {
-      return EntryType::Ignored;
+      return Self::Ignored;
     }
     if has_extension(path, "md") {
-      return EntryType::Document;
+      return Self::Document;
     }
     if path.ends_with('/') {
-      return EntryType::Directory;
+      return Self::Directory;
     }
-    EntryType::Resource
+    Self::Resource
   }
 }
 
