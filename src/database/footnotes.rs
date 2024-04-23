@@ -1,5 +1,5 @@
 /// footnote definitions and references contained in a document
-#[derive(Debug, Default, PartialEq)]
+#[derive(Debug, Default, Eq, PartialEq)]
 pub struct Footnotes {
   pub definitions: Vec<Footnote>,
   pub references: Vec<Footnote>,

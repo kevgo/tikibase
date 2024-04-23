@@ -164,7 +164,7 @@ pub fn fix(issue: Issue, base: &mut Tikibase) -> Result {
 }
 
 /// documents the fixes that this linter performs
-#[derive(Debug, PartialEq)]
+#[derive(Debug, Eq, PartialEq)]
 pub enum Fix {
   AddedOccurrencesSection {
     location: Location,
