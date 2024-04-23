@@ -298,7 +298,7 @@ impl Document {
 /// iterates all sections of a document
 pub struct SectionIterator<'a> {
   title_section: &'a Section,
-  body_iter: std::slice::Iter<'a, Section>,
+  body_iter: core::slice::Iter<'a, Section>,
   emitted_title: bool,
 }
 
