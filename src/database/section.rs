@@ -148,7 +148,7 @@ impl Section {
 /// an iterator for Lines
 pub struct LinesIterator<'a> {
   title_line: &'a Line,
-  body_iter: std::slice::Iter<'a, Line>,
+  body_iter: core::slice::Iter<'a, Line>,
   emitted_title: bool,
 }
 

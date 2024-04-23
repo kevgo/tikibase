@@ -1,7 +1,7 @@
 use crate::check::{Issue, Location};
 use crate::database::Section;
 use ahash::AHashMap;
-use std::cmp::Ordering::{Equal, Greater, Less};
+use core::cmp::Ordering::{Equal, Greater, Less};
 
 pub fn phase_1(section: &Section, title_variants: &mut AHashMap<String, u32>) {
   let entry = title_variants
