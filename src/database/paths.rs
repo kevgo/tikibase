@@ -252,11 +252,12 @@ mod tests {
   }
 
   mod normalize {
+    use big_s::S;
 
     #[test]
     fn parent_placeholders() {
       let give = "one/three/../two/three/../../new.md";
-      let want = Ok("one/new.md".to_string());
+      let want = Ok(S("one/new.md"));
       let have = super::super::normalize(give);
       assert_eq!(have, want);
     }
@@ -264,7 +265,7 @@ mod tests {
     #[test]
     fn trailing_parent_placeholder() {
       let give = "one/two/three/../..";
-      let want = Ok("one".to_string());
+      let want = Ok(S("one"));
       let have = super::super::normalize(give);
       assert_eq!(have, want);
     }
@@ -272,7 +273,7 @@ mod tests {
     #[test]
     fn current_placeholders() {
       let give = "./one/./././two/./three.md";
-      let want = Ok("one/two/three.md".to_string());
+      let want = Ok(S("one/two/three.md"));
       let have = super::super::normalize(give);
       assert_eq!(have, want);
     }
@@ -280,7 +281,7 @@ mod tests {
     #[test]
     fn single_segment() {
       let give = "2.md";
-      let want = Ok("2.md".to_string());
+      let want = Ok(S("2.md"));
       let have = super::super::normalize(give);
       assert_eq!(have, want);
     }
@@ -288,7 +289,7 @@ mod tests {
     #[test]
     fn no_placeholders() {
       let give = "one/two/2.md";
-      let want = Ok("one/two/2.md".to_string());
+      let want = Ok(S("one/two/2.md"));
       let have = super::super::normalize(give);
       assert_eq!(have, want);
     }
