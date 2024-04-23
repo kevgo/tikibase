@@ -28,7 +28,7 @@ impl Line {
     for captures in FOOTNOTE_RE.captures_iter(&sanitized) {
       let total_match = captures.get(0).unwrap();
       let footnote = Footnote {
-        identifier: captures.get(1).unwrap().as_str().to_string(),
+        identifier: captures.get(1).unwrap().as_str().to_owned(),
         line,
         start: total_match.start() as u32,
         end: total_match.end() as u32,

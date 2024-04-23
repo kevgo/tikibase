@@ -36,7 +36,7 @@ pub fn scan(
       continue;
     }
     let (target_file, target_anchor) = match link.target.split_once('#') {
-      Some((base, anchor)) => (base.to_string(), format!("#{anchor}")),
+      Some((base, anchor)) => (base.to_owned(), format!("#{anchor}")),
       None => (link.target.clone(), String::new()),
     };
     let target_relative_path = paths::join(&dir.relative_path, &target_file);

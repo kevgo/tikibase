@@ -52,3 +52,6 @@ missing_panics_doc = "allow" # all panics indicate programmer errors and should 
 missing_errors_doc = "allow" # all returned errors are UserError
 too_many_lines = "allow" # TODO: refactor the long functions or add ignore this problem in the code
 use_self = "deny"
+
+[lints.clippy]
+str_to_string = "deny"
