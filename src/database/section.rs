@@ -123,7 +123,7 @@ impl Section {
 
   /// provides the complete text of this section
   pub fn text(&self) -> String {
-    let mut result = self.title_line.text.to_string();
+    let mut result = self.title_line.text.clone();
     result.push('\n');
     for line in &self.body {
       result.push_str(&line.text);
