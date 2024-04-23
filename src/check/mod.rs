@@ -8,10 +8,10 @@ pub mod scanners;
 mod state_1;
 mod state_2;
 
-pub use dir_1::check_dir_1;
-pub use dir_2::check_dir_2;
-pub use doc_1::check_doc_1;
-pub use doc_2::check_doc_2;
+pub use dir_1::dir_phase_1;
+pub use dir_2::dir_phase_2;
+pub use doc_1::doc_phase_1;
+pub use doc_2::doc_phase_2;
 pub use issue::Issue;
 pub use location::Location;
 pub use state_1::State1;

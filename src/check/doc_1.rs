@@ -6,7 +6,7 @@ use super::State1;
 use crate::database::{Directory, Document};
 
 // phase 1 `Document` check
-pub fn check_doc_1(doc: &Document, dir: &Directory, state: &mut State1) {
+pub fn doc_phase_1(doc: &Document, dir: &Directory, state: &mut State1) {
   duplicate_sections::scan(doc, &mut state.issues);
   unordered_sections::scan(doc, &dir.config, &mut state.issues);
   footnotes::scan(doc, &mut state.issues);
