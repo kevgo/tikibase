@@ -3,7 +3,7 @@ use super::{check_doc_2, State2};
 use crate::database::{paths, Directory};
 
 // phase 2 `Directory` check
-pub(crate) fn check_dir_2(dir: &Directory, state: &mut State2) {
+pub fn check_dir_2(dir: &Directory, state: &mut State2) {
   for doc in dir.docs.values() {
     check_doc_2(doc, &dir.config, state);
   }

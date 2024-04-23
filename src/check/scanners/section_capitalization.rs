@@ -3,14 +3,14 @@ use crate::database::Section;
 use ahash::AHashMap;
 use std::cmp::Ordering::{Equal, Greater, Less};
 
-pub(crate) fn phase_1(section: &Section, title_variants: &mut AHashMap<String, u32>) {
+pub fn phase_1(section: &Section, title_variants: &mut AHashMap<String, u32>) {
   let entry = title_variants
     .entry(section.human_title().to_owned())
     .or_insert(0);
   *entry += 1;
 }
 
-pub(crate) fn find_outliers(mut input: AHashMap<String, u32>) -> AHashMap<String, OutlierInfo> {
+pub fn find_outliers(mut input: AHashMap<String, u32>) -> AHashMap<String, OutlierInfo> {
   // step 1: group related variants together
   // normalized variant --> variant --> count
   let mut grouped: AHashMap<String, AHashMap<String, u32>> = AHashMap::new();
@@ -55,7 +55,7 @@ pub(crate) fn find_outliers(mut input: AHashMap<String, u32>) -> AHashMap<String
   outliers
 }
 
-pub(crate) fn phase_2(
+pub fn phase_2(
   path: &str,
   section: &Section,
   issues: &mut Vec<Issue>,
