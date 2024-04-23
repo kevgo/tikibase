@@ -3,7 +3,7 @@ use crate::database::Document;
 use ahash::AHashMap;
 
 /// populates the given issues list with all duplicate sections in this document
-pub(crate) fn scan(doc: &Document, issues: &mut Vec<Issue>) {
+pub fn scan(doc: &Document, issues: &mut Vec<Issue>) {
   // section title -> locations of sections with this title
   let mut sections_lines: AHashMap<&str, Vec<LocationWithinFile>> = AHashMap::new();
   for section in doc.sections() {
