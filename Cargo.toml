@@ -54,8 +54,9 @@ too_many_lines = "allow" # TODO: refactor the long functions or add ignore this 
 use_self = "deny"
 
 [lints.clippy]
-impl_trait_in_params = "deny"
-redundant_pub_crate = "deny"
-str_to_string = "deny"
 derive_partial_eq_without_eq = "deny"
+impl_trait_in_params = "deny"
+module_name_repetitions = "deny"
+redundant_pub_crate = "deny"
 std_instead_of_core = "deny"
+str_to_string = "deny"

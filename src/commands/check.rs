@@ -1,19 +1,19 @@
 use super::Outcome;
 use crate::check::scanners::{section_capitalization, section_level};
-use crate::check::{check_dir_1, check_dir_2, State1, State2};
+use crate::check::{dir_phase_1, dir_phase_2, State1, State2};
 use crate::Tikibase;
 
 #[must_use]
 pub fn check(base: &Tikibase) -> Outcome {
   let mut state_1 = State1::empty(&base.dir);
-  check_dir_1(&base.dir, "", &mut state_1);
+  dir_phase_1(&base.dir, "", &mut state_1);
   let mut state_2 = State2 {
     capitalization_outliers: section_capitalization::find_outliers(state_1.capitalization_variants),
     level_outliers: section_level::find_outliers(state_1.level_variants),
     linked_resources: state_1.linked_resources,
     issues: state_1.issues,
   };
-  check_dir_2(&base.dir, &mut state_2);
+  dir_phase_2(&base.dir, &mut state_2);
   state_2.issues.sort();
   Outcome {
     issues: state_2.issues,
