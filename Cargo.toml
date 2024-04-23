@@ -51,6 +51,4 @@ cast_possible_truncation = "allow" # we cast lots of values, they are usually sm
 missing_panics_doc = "allow" # all panics indicate programmer errors and should be fixed
 missing_errors_doc = "allow" # all returned errors are UserError
 too_many_lines = "allow" # TODO: refactor the long functions or add ignore this problem in the code
-
-[lints.clippy]
 use_self = "deny"
