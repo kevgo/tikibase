@@ -75,7 +75,7 @@ impl Directory {
     root: &str,
     relative_path: String,
     mut parent_config: Config,
-  ) -> Result<Directory, Vec<Issue>> {
+  ) -> Result<Self, Vec<Issue>> {
     let abs_path = paths::join(root, &relative_path);
     let config = match config::load(&abs_path) {
       LoadResult::Loaded(config) => {
@@ -119,7 +119,7 @@ impl Directory {
         EntryType::Directory => {
           dirs.insert(
             entry_name.clone(),
-            Directory::load(
+            Self::load(
               root,
               paths::join(&relative_path, &entry_name),
               config.clone(),
@@ -129,7 +129,7 @@ impl Directory {
       }
     }
     if errors.is_empty() {
-      Ok(Directory {
+      Ok(Self {
         relative_path,
         config,
         dirs,
