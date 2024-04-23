@@ -94,7 +94,7 @@ fn strip_links(text: &str) -> Cow<str> {
   if matches.is_empty() {
     return Cow::Borrowed(text);
   }
-  let mut result = text.to_string();
+  let mut result = text.to_owned();
   for m in matches {
     result = result.replace(m.get(0).unwrap().as_str(), m.get(1).unwrap().as_str());
   }

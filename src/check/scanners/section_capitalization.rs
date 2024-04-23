@@ -5,7 +5,7 @@ use std::cmp::Ordering::{Equal, Greater, Less};
 
 pub(crate) fn phase_1(section: &Section, title_variants: &mut AHashMap<String, u32>) {
   let entry = title_variants
-    .entry(section.human_title().to_string())
+    .entry(section.human_title().to_owned())
     .or_insert(0);
   *entry += 1;
 }
