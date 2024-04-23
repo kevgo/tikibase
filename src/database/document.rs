@@ -862,7 +862,7 @@ mod tests {
             "};
     let doc = Document::from_str("test.md", content).unwrap();
     let have = doc.section_titles();
-    let want = vec!["Section 1".to_string(), "Section 2".to_string()];
+    let want = vec![S("Section 1"), S("Section 2")];
     assert_eq!(have, want);
   }
 

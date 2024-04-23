@@ -348,7 +348,7 @@ mod tests {
     #[test]
     fn with_code_blocks() {
       let give = "one `map[0]` two `more code` three";
-      let want = "one `      ` two `         ` three".to_string();
+      let want = S("one `      ` two `         ` three");
       assert_eq!(sanitize_code_segments(give, "", 0), Ok(want));
     }
 

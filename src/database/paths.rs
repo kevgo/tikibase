@@ -212,6 +212,7 @@ mod tests {
   }
 
   mod go_up {
+    use big_s::S;
 
     #[test]
     fn zero() {
@@ -223,7 +224,7 @@ mod tests {
     #[test]
     fn some() {
       let have = super::super::go_up(3);
-      let want = "../../../".to_string();
+      let want = S("../../../");
       assert_eq!(have, want);
     }
   }
