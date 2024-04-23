@@ -28,7 +28,7 @@ impl Line {
     for captures in FOOTNOTE_RE.captures_iter(&sanitized) {
       let total_match = captures.get(0).unwrap();
       let footnote = Footnote {
-        identifier: captures.get(1).unwrap().as_str().to_string(),
+        identifier: captures.get(1).unwrap().as_str().to_owned(),
         line,
         start: total_match.start() as u32,
         end: total_match.end() as u32,
@@ -348,7 +348,7 @@ mod tests {
     #[test]
     fn with_code_blocks() {
       let give = "one `map[0]` two `more code` three";
-      let want = "one `      ` two `         ` three".to_string();
+      let want = S("one `      ` two `         ` three");
       assert_eq!(sanitize_code_segments(give, "", 0), Ok(want));
     }
 

@@ -56,18 +56,19 @@ mod tests {
 
   mod title_at_level {
     use super::super::title_at_level;
+    use big_s::S;
 
     #[test]
     fn one() {
       let have = title_at_level("title", 1);
-      let want = "# title".to_string();
+      let want = S("# title");
       assert_eq!(have, want);
     }
 
     #[test]
     fn six() {
       let have = title_at_level("title", 6);
-      let want = "###### title".to_string();
+      let want = S("###### title");
       assert_eq!(have, want);
     }
   }

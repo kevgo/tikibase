@@ -212,6 +212,7 @@ mod tests {
   }
 
   mod go_up {
+    use big_s::S;
 
     #[test]
     fn zero() {
@@ -223,40 +224,43 @@ mod tests {
     #[test]
     fn some() {
       let have = super::super::go_up(3);
-      let want = "../../../".to_string();
+      let want = S("../../../");
       assert_eq!(have, want);
     }
   }
 
   mod join {
+    use big_s::S;
+
     #[test]
     fn two_paths() {
       let have = super::super::join("one", "two");
-      let want = "one/two".to_string();
+      let want = S("one/two");
       assert_eq!(have, want);
     }
 
     #[test]
     fn first_path_empty() {
       let have = super::super::join("", "two");
-      let want = "two".to_string();
+      let want = S("two");
       assert_eq!(have, want);
     }
 
     #[test]
     fn second_path_empty() {
       let have = super::super::join("one", "");
-      let want = "one".to_string();
+      let want = S("one");
       assert_eq!(have, want);
     }
   }
 
   mod normalize {
+    use big_s::S;
 
     #[test]
     fn parent_placeholders() {
       let give = "one/three/../two/three/../../new.md";
-      let want = Ok("one/new.md".to_string());
+      let want = Ok(S("one/new.md"));
       let have = super::super::normalize(give);
       assert_eq!(have, want);
     }
@@ -264,7 +268,7 @@ mod tests {
     #[test]
     fn trailing_parent_placeholder() {
       let give = "one/two/three/../..";
-      let want = Ok("one".to_string());
+      let want = Ok(S("one"));
       let have = super::super::normalize(give);
       assert_eq!(have, want);
     }
@@ -272,7 +276,7 @@ mod tests {
     #[test]
     fn current_placeholders() {
       let give = "./one/./././two/./three.md";
-      let want = Ok("one/two/three.md".to_string());
+      let want = Ok(S("one/two/three.md"));
       let have = super::super::normalize(give);
       assert_eq!(have, want);
     }
@@ -280,7 +284,7 @@ mod tests {
     #[test]
     fn single_segment() {
       let give = "2.md";
-      let want = Ok("2.md".to_string());
+      let want = Ok(S("2.md"));
       let have = super::super::normalize(give);
       assert_eq!(have, want);
     }
@@ -288,7 +292,7 @@ mod tests {
     #[test]
     fn no_placeholders() {
       let give = "one/two/2.md";
-      let want = Ok("one/two/2.md".to_string());
+      let want = Ok(S("one/two/2.md"));
       let have = super::super::normalize(give);
       assert_eq!(have, want);
     }

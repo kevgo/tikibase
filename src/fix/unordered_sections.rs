@@ -32,10 +32,11 @@ fn reorder(sections: &mut Vec<Section>, schema: &[String]) -> Vec<Section> {
 mod tests {
   use super::reorder;
   use crate::database::Section;
+  use big_s::S;
 
   #[test]
   fn perfect_match() {
-    let schema = vec!["### one".to_string(), "### two".to_string()];
+    let schema = vec![S("### one"), S("### two")];
     let mut give: Vec<Section> = vec![
       Section::with_title("### one"),
       Section::with_title("### two"),
@@ -50,11 +51,7 @@ mod tests {
 
   #[test]
   fn match_but_missing() {
-    let schema = vec![
-      "### one".to_string(),
-      "### two".to_string(),
-      "### three".to_string(),
-    ];
+    let schema = vec![S("### one"), S("### two"), S("### three")];
     let mut give: Vec<Section> = vec![
       Section::with_title("### one"),
       Section::with_title("### three"),
@@ -69,11 +66,7 @@ mod tests {
 
   #[test]
   fn wrong_order() {
-    let schema = vec![
-      "### one".to_string(),
-      "### two".to_string(),
-      "### three".to_string(),
-    ];
+    let schema = vec![S("### one"), S("### two"), S("### three")];
     let mut give: Vec<Section> = vec![
       Section::with_title("### three"),
       Section::with_title("### two"),
@@ -89,11 +82,7 @@ mod tests {
 
   #[test]
   fn single_section() {
-    let schema = vec![
-      "### one".to_string(),
-      "### two".to_string(),
-      "### three".to_string(),
-    ];
+    let schema = vec![S("### one"), S("### two"), S("### three")];
     let mut give: Vec<Section> = vec![Section::with_title("### three")];
     let have = reorder(&mut give, &schema);
     let have: Vec<&String> = have
