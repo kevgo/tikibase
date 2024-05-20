@@ -78,7 +78,7 @@ fn find_common_level(level_counts: &AHashMap<u8, u32>) -> Option<u8> {
     match count.cmp(&max) {
       Greater => {
         result = Some(variant);
-        max = count.to_owned();
+        count.clone_into(&mut max);
       }
       Equal => {
         result = None;
