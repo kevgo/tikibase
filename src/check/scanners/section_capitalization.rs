@@ -93,7 +93,7 @@ fn find_common_capitalization(variants: &AHashMap<String, u32>) -> Option<String
   for (variant, count) in variants {
     match count.cmp(&max_count) {
       Greater => {
-        max_count = count.to_owned();
+        count.clone_into(&mut max_count);
         max_variant = Some(variant);
       }
       Equal => {
