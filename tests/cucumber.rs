@@ -1,13 +1,12 @@
 use ahash::AHashMap;
-use async_trait::async_trait;
 use big_s::S;
 use cucumber::gherkin::Step;
-use cucumber::{given, then, when, World, WorldInit};
-use std::convert::Infallible;
+use cucumber::{given, then, when, World};
 use tikibase::input::Command;
 use tikibase::{self, test, Messages};
 
-#[derive(Debug, WorldInit)]
+#[derive(Debug, World)]
+#[world(init = Self::new)]
 pub struct MyWorld {
   /// the directory in which the Tikibase under test is located
   pub dir: String,
@@ -19,16 +18,13 @@ pub struct MyWorld {
   pub original_contents: AHashMap<String, String>,
 }
 
-#[async_trait(?Send)]
-impl World for MyWorld {
-  type Error = Infallible;
-
-  async fn new() -> Result<Self, Infallible> {
-    Ok(MyWorld {
+impl MyWorld {
+  fn new() -> Self {
+    Self {
       dir: test::tmp_dir(),
       output: Messages::default(),
       original_contents: AHashMap::new(),
-    })
+    }
   }
 }
 
