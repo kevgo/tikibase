@@ -1,18 +1,20 @@
 //! Read/write access to the Markdown files making up the database.
 
 mod directory;
-pub(crate) mod document;
+pub mod document;
 mod footnotes;
+mod image;
 mod line;
-pub(crate) mod paths;
-mod reference;
-pub(crate) mod section;
+mod link;
+pub mod paths;
+pub mod section;
 mod tikibase;
 
-pub(crate) use crate::database::tikibase::Tikibase;
-pub(crate) use directory::{Directory, EntryType};
-pub(crate) use document::Document;
-pub(crate) use footnotes::{Footnote, Footnotes};
-pub(crate) use line::Line;
-pub(crate) use reference::Reference;
-pub(crate) use section::Section;
+pub use crate::database::tikibase::Tikibase;
+pub use directory::{Directory, EntryType};
+pub use document::Document;
+pub use footnotes::{Footnote, Footnotes};
+pub use image::Image;
+pub use line::Line;
+pub use link::Link;
+pub use section::Section;

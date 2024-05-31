@@ -12,7 +12,6 @@ clap = { version = "3.1.18", features = ["derive"] }
 colored = "2.0.0"
 fs-err = "2.7.0"
 heck = "0.4.0"
-ignore = "0.4.18"
 indoc = "1.0.6"
 merge = "0.1.0"
 once_cell = "1.12.0"
@@ -52,3 +51,13 @@ cast_possible_truncation = "allow" # we cast lots of values, they are usually sm
 missing_panics_doc = "allow" # all panics indicate programmer errors and should be fixed
 missing_errors_doc = "allow" # all returned errors are UserError
 too_many_lines = "allow" # TODO: refactor the long functions or add ignore this problem in the code
+use_self = "deny"
+
+[lints.clippy]
+derive_partial_eq_without_eq = "deny"
+impl_trait_in_params = "deny"
+module_name_repetitions = "deny"
+redundant_pub_crate = "deny"
+std_instead_of_core = "deny"
+str_to_string = "deny"
+string_to_string = "deny"
