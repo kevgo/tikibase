@@ -38,9 +38,6 @@ jobs:
           - filename: tikibase_macos_intel64
             target: x86_64-apple-darwin
             os: macos-latest
-          - filename: tikibase_macos_universal
-            target: universal-apple-darwin
-            os: macos-latest
           - filename: tikibase_windows_intel64
             target: x86_64-pc-windows-msvc
             os: windows-latest
