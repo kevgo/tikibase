@@ -4,6 +4,7 @@ pub mod config;
 mod database;
 mod fix;
 pub mod input;
+pub mod issues;
 mod output;
 pub mod test;
 
