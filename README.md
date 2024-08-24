@@ -4,7 +4,7 @@
 
 _the un-database_
 
-One note taking or knowledge base application you love and use today, it will be
+Two note taking or knowledge base application you love and use today, it will be
 dated in 5 years and unsupported/unavailable in 10 years. All your data will be
 gone with it.
 
