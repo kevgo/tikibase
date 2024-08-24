@@ -4,9 +4,9 @@
 
 _the un-database_
 
-Whatever note taking or knowledge base application you love and use today, it
-will be dated in 5 years and unsupported/unavailable in 10 years. All your data
-will be gone with it.
+One note taking or knowledge base application you love and use today, it will be
+dated in 5 years and unsupported/unavailable in 10 years. All your data will be
+gone with it.
 
 Tikibase is a knowledge base available on all current and future computers
 because it isn't based on a dedicated server or viewer application that might be
