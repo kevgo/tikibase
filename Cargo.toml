@@ -45,7 +45,7 @@ panic = 'abort'
 unsafe_code = "forbid"
 
 [workspace.lints.clippy]
-pedantic = "warn"
+pedantic = { level = "warn", priority = -1 }
 cast_possible_truncation = "allow" # we cast lots of values, they are usually small so we don't need to check cast problems
 missing_panics_doc = "allow" # all panics indicate programmer errors and should be fixed
 missing_errors_doc = "allow" # all returned errors are UserError
