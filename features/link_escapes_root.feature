@@ -13,6 +13,7 @@ Feature: recognize links that escape the root directory
 
       [Alpha](../one/alpha.md)
       """
+    Then inspect the folder
 
   @this
   Scenario: check

@@ -87,6 +87,13 @@ fn file_should_contain(world: &mut MyWorld, step: &Step, filename: String) {
   pretty::assert_eq!(have.trim(), want.trim());
 }
 
+#[then("inspect the folder")]
+fn inspect(world: &mut MyWorld, step: &Step) {
+  print!("Press any key to continue ...");
+  let _ = stdout().flush();
+  stdin().read_line(&mut s).unwrap();
+}
+
 #[then("it prints:")]
 fn it_prints(world: &mut MyWorld, step: &Step) {
   let mut have = S("");
