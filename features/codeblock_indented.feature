@@ -18,7 +18,6 @@ Feature: indented codeblock
       [One](1.md)
       """
 
-  @this
   Scenario: check
     When checking
     Then it finds no issues
