@@ -1,6 +1,21 @@
 Feature: recognize links that escape the root directory
 
   Scenario: escape not allowed
+    Given file "one/alpha.md" with content:
+      """
+      # Alpha
 
+      [Beta](../two/beta.md)
+      """
+    And file "two/beta.md" with content:
+      """
+      # Beta
 
-  Scenario: escape allowed
+      [Alpha](../one/alpha.md)
+      """
+
+  @this
+  Scenario: check
+    When checking in the "alpha" directory
+    Then it finds no issues
+    And all files are unchanged
