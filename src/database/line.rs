@@ -8,11 +8,12 @@ pub struct Line {
   pub text: String,
 }
 
-static MD_RE: Lazy<Regex> = Lazy::new(|| Regex::new(r"(!?)\[[^\]]*\]\(([^)]*)\)").unwrap());
-static A_HTML_RE: Lazy<Regex> = Lazy::new(|| Regex::new(r#"<a href="(.*)">(.*)</a>"#).unwrap());
-static IMG_HTML_RE: Lazy<Regex> = Lazy::new(|| Regex::new(r#"<img src="([^"]*)"[^>]*>"#).unwrap());
-static FOOTNOTE_RE: Lazy<Regex> = Lazy::new(|| Regex::new(r"\[\^([\w-]+)\](:?)").unwrap());
-static CODEBLOCK_RE: Lazy<Regex> = Lazy::new(|| Regex::new(r"^\s*```").unwrap());
+static MD_REGEX: Lazy<Regex> = Lazy::new(|| Regex::new(r"(!?)\[[^\]]*\]\(([^)]*)\)").unwrap());
+static A_HTML_REGEX: Lazy<Regex> = Lazy::new(|| Regex::new(r#"<a href="(.*)">(.*)</a>"#).unwrap());
+static IMG_HTML_REGEX: Lazy<Regex> =
+  Lazy::new(|| Regex::new(r#"<img src="([^"]*)"[^>]*>"#).unwrap());
+static FOOTNOTE_REGEX: Lazy<Regex> = Lazy::new(|| Regex::new(r"\[\^([\w-]+)\](:?)").unwrap());
+static CODEBLOCK_REGEX: Lazy<Regex> = Lazy::new(|| Regex::new(r"^\s*```").unwrap());
 
 impl Line {
   /// appends all footnote definitions and references to the given result structure
@@ -26,7 +27,7 @@ impl Line {
     line: u32,
   ) -> Result<(), Issue> {
     let sanitized = sanitize_code_segments(&self.text, file, line)?;
-    for captures in FOOTNOTE_RE.captures_iter(&sanitized) {
+    for captures in FOOTNOTE_REGEX.captures_iter(&sanitized) {
       let total_match = captures.get(0).unwrap();
       let footnote = Footnote {
         identifier: captures.get(1).unwrap().as_str().to_owned(),
@@ -45,12 +46,12 @@ impl Line {
 
   /// indicates whether this line is the beginning or end of a code block
   pub fn is_code_block_boundary(&self) -> bool {
-    CODEBLOCK_RE.is_match(&self.text)
+    CODEBLOCK_REGEX.is_match(&self.text)
   }
 
   /// populates the given accumulator with all links and images in this line
   pub fn references(&self, line: u32, links: &mut Vec<Link>, images: &mut Vec<Image>) {
-    for cap in MD_RE.captures_iter(&self.text) {
+    for cap in MD_REGEX.captures_iter(&self.text) {
       let full_match = cap.get(0).unwrap();
       match &cap[1] {
         "!" => images.push(Image {
@@ -70,7 +71,7 @@ impl Line {
         _ => panic!("unexpected capture: '{}'", &cap[1]),
       }
     }
-    for cap in A_HTML_RE.captures_iter(&self.text) {
+    for cap in A_HTML_REGEX.captures_iter(&self.text) {
       let full_match = cap.get(0).unwrap();
       links.push(Link {
         target: cap[1].into(),
@@ -79,7 +80,7 @@ impl Line {
         end: full_match.end() as u32,
       });
     }
-    for cap in IMG_HTML_RE.captures_iter(&self.text) {
+    for cap in IMG_HTML_REGEX.captures_iter(&self.text) {
       let full_match = cap.get(0).unwrap();
       images.push(Image {
         src: cap[1].to_string(),
