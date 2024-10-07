@@ -90,7 +90,7 @@ enum ExtractShortcutResult<'a> {
 
 /// removes all links from the given string
 fn strip_links(text: &str) -> Cow<str> {
-  let matches: Vec<Captures> = SOURCE_RE.captures_iter(text).collect();
+  let matches: Vec<Captures> = SOURCE_REGEX.captures_iter(text).collect();
   if matches.is_empty() {
     return Cow::Borrowed(text);
   }
@@ -100,7 +100,7 @@ fn strip_links(text: &str) -> Cow<str> {
   }
   Cow::Owned(result)
 }
-static SOURCE_RE: Lazy<Regex> = Lazy::new(|| Regex::new(r"\[([^]]*)\]\([^)]*\)").unwrap());
+static SOURCE_REGEX: Lazy<Regex> = Lazy::new(|| Regex::new(r"\[([^]]*)\]\([^)]*\)").unwrap());
 
 #[cfg(test)]
 mod tests {
