@@ -1,6 +1,6 @@
 Feature: recognize links that escape the root directory
 
-  Scenario: escape not allowed
+  Background:
     Given file "one/alpha.md" with content:
       """
       # Alpha

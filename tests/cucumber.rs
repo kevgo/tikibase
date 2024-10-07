@@ -2,6 +2,7 @@ use ahash::AHashMap;
 use big_s::S;
 use cucumber::gherkin::Step;
 use cucumber::{given, then, when, World};
+use std::{thread, time};
 use tikibase::input::Command;
 use tikibase::{self, test, Messages};
 
@@ -88,10 +89,8 @@ fn file_should_contain(world: &mut MyWorld, step: &Step, filename: String) {
 }
 
 #[then("inspect the folder")]
-fn inspect(world: &mut MyWorld, step: &Step) {
-  print!("Press any key to continue ...");
-  let _ = stdout().flush();
-  stdin().read_line(&mut s).unwrap();
+fn inspect(_world: &mut MyWorld) {
+  thread::sleep(time::Duration::from_millis(1000));
 }
 
 #[then("it prints:")]
