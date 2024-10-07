@@ -12,6 +12,7 @@ static MD_RE: Lazy<Regex> = Lazy::new(|| Regex::new(r"(!?)\[[^\]]*\]\(([^)]*)\)"
 static A_HTML_RE: Lazy<Regex> = Lazy::new(|| Regex::new(r#"<a href="(.*)">(.*)</a>"#).unwrap());
 static IMG_HTML_RE: Lazy<Regex> = Lazy::new(|| Regex::new(r#"<img src="([^"]*)"[^>]*>"#).unwrap());
 static FOOTNOTE_RE: Lazy<Regex> = Lazy::new(|| Regex::new(r"\[\^([\w-]+)\](:?)").unwrap());
+static CODEBLOCK_RE: Lazy<Regex> = Lazy::new(|| Regex::new(r"^\s*```").unwrap());
 
 impl Line {
   /// appends all footnote definitions and references to the given result structure
@@ -44,7 +45,7 @@ impl Line {
 
   /// indicates whether this line is the beginning or end of a code block
   pub fn is_code_block_boundary(&self) -> bool {
-    self.text.starts_with("```")
+    CODEBLOCK_RE.is_match(&self.text)
   }
 
   /// populates the given accumulator with all links and images in this line
