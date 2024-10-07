@@ -2,7 +2,6 @@ use ahash::AHashMap;
 use big_s::S;
 use cucumber::gherkin::Step;
 use cucumber::{given, then, when, World};
-use std::{thread, time};
 use tikibase::input::Command;
 use tikibase::{self, test, Messages};
 
