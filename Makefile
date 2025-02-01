@@ -2,18 +2,18 @@
 RUN_THAT_APP_VERSION = 0.7.1
 
 build:  # builds the release binary
-	cargo build --release --target x86_64-unknown-linux-musl
+	cargo build --locked --release --target x86_64-unknown-linux-musl
 
 build-release:  # builds a release version of the binary
-	docker run --rm --user "$(id -u)":"$(id -g)" -v "$(PWD)":/usr/src/myapp -w /usr/src/myapp rust cargo build --release
+	docker run --rm --user "$(id -u)":"$(id -g)" -v "$(PWD)":/usr/src/myapp -w /usr/src/myapp rust cargo build --locked --release
 	(cd target/release && tar -czvf "../../tikibase_linux_64.tar.gz" tikibase)
 
 cuke:  # runs the integration tests
 	rm -rf ./tmp
-	cargo test --test cucumber
+	cargo test --locked --test cucumber
 
 cukethis:  # tests only the scenario named "this"
-	cargo test --test cucumber -- -t @this
+	cargo test --locked --test cucumber -- -t @this
 
 fix: tools/rta@${RUN_THAT_APP_VERSION}  # auto-corrects issues
 	tools/rta dprint fmt
@@ -41,7 +41,7 @@ lint-std-fs:  # checks for occurrences of "std::fs", should use "fs_err" instead
 test: unit cuke lint update-json-schema  # runs all tests
 
 unit:  # runs the unit tests
-	cargo test
+	cargo test --locked
 
 update-json-schema:  # updates the public JSON Schema for the config file
 	cargo run -- json-schema > /dev/null
