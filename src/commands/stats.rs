@@ -1,6 +1,6 @@
 use super::Outcome;
 use crate::Tikibase;
-use ahash::AHashMap;
+use ahash::HashMap;
 
 #[must_use]
 pub fn stats(base: &Tikibase) -> Outcome {
@@ -17,8 +17,8 @@ pub fn stats(base: &Tikibase) -> Outcome {
   Outcome::default()
 }
 
-fn collect_section_titles(tb: &Tikibase) -> AHashMap<&str, u32> {
-  let mut result: AHashMap<&str, u32> = AHashMap::new();
+fn collect_section_titles(tb: &Tikibase) -> HashMap<&str, u32> {
+  let mut result: HashMap<&str, u32> = HashMap::new();
   for (_path, doc) in &tb.dir.docs {
     for section in &doc.content_sections {
       let section_title = section.human_title();

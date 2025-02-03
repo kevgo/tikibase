@@ -2,16 +2,16 @@ use super::{paths, Document};
 use crate::check::Issue;
 use crate::config::LoadResult;
 use crate::{config, Config};
-use ahash::AHashMap;
+use ahash::HashMap;
 use fs_err as fs;
 use merge::Merge;
 
 pub struct Directory {
   pub relative_path: String,
   pub config: Config,
-  pub dirs: AHashMap<String, Directory>,
-  pub docs: AHashMap<String, Document>,
-  pub resources: AHashMap<String, ()>,
+  pub dirs: HashMap<String, Directory>,
+  pub docs: HashMap<String, Document>,
+  pub resources: HashMap<String, ()>,
 }
 
 impl Directory {
@@ -85,9 +85,9 @@ impl Directory {
       LoadResult::NotFound => parent_config,
       LoadResult::Error(issue) => return Err(vec![issue]),
     };
-    let mut docs = AHashMap::new();
-    let mut dirs = AHashMap::new();
-    let mut resources = AHashMap::new();
+    let mut docs = HashMap::new();
+    let mut dirs = HashMap::new();
+    let mut resources = HashMap::new();
     let mut errors = Vec::new();
     let entries = match fs::read_dir(&abs_path) {
       Ok(entries) => entries,

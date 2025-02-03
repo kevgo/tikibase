@@ -1,4 +1,4 @@
-use ahash::AHashMap;
+use ahash::HashMap;
 use big_s::S;
 use cucumber::gherkin::Step;
 use cucumber::{given, then, when, World};
@@ -15,7 +15,7 @@ pub struct MyWorld {
   pub output: Messages,
 
   /// content of the files before the Tikibase command ran
-  pub original_contents: AHashMap<String, String>,
+  pub original_contents: HashMap<String, String>,
 }
 
 impl MyWorld {
@@ -23,7 +23,7 @@ impl MyWorld {
     Self {
       dir: test::tmp_dir(),
       output: Messages::default(),
-      original_contents: AHashMap::new(),
+      original_contents: HashMap::new(),
     }
   }
 }

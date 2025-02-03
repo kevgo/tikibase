@@ -6,11 +6,11 @@ edition = "2021"
 rust-version = "1.81"
 
 [dependencies]
-ahash = "0.7.8"
 big_s = "1.0.2"
 clap = { version = "3.2.25", features = ["derive"] }
 colored = "2.1.0"
 fs-err = "2.11.0"
+gxhash = "3.4.1"
 heck = "0.4.1"
 indoc = "1.0.9"
 merge = "0.1.0"

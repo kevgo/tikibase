@@ -1,9 +1,9 @@
 use crate::check::{Issue, Location};
 use crate::database::Section;
-use ahash::AHashMap;
+use ahash::HashMap;
 use core::cmp::Ordering::{Equal, Greater, Less};
 
-pub fn phase_1(section: &Section, level_variants: &mut AHashMap<String, AHashMap<u8, u32>>) {
+pub fn phase_1(section: &Section, level_variants: &mut HashMap<String, HashMap<u8, u32>>) {
   let entry = level_variants
     .entry(section.human_title().to_owned())
     .or_default()
@@ -13,8 +13,8 @@ pub fn phase_1(section: &Section, level_variants: &mut AHashMap<String, AHashMap
 }
 
 /// converts the input to full tite --> `OutlierInfo`
-pub fn find_outliers(input: AHashMap<String, AHashMap<u8, u32>>) -> AHashMap<String, OutlierInfo> {
-  let mut result = AHashMap::new();
+pub fn find_outliers(input: HashMap<String, HashMap<u8, u32>>) -> HashMap<String, OutlierInfo> {
+  let mut result = HashMap::new();
   for (title, variants) in input {
     let mut all: Vec<u8> = variants.keys().map(ToOwned::to_owned).collect();
     all.sort_unstable();
@@ -52,7 +52,7 @@ pub fn phase_2(
   section: &Section,
   path: &str,
   issues: &mut Vec<Issue>,
-  level_variants: &AHashMap<String, OutlierInfo>,
+  level_variants: &HashMap<String, OutlierInfo>,
 ) {
   if let Some(outlier_info) = level_variants.get(&section.title_line.text) {
     issues.push(Issue::InconsistentHeadingLevel {
@@ -71,7 +71,7 @@ pub fn phase_2(
 }
 
 /// provides the most common variant
-fn find_common_level(level_counts: &AHashMap<u8, u32>) -> Option<u8> {
+fn find_common_level(level_counts: &HashMap<u8, u32>) -> Option<u8> {
   let mut result = None;
   let mut max = 0;
   for (variant, count) in level_counts {
@@ -104,7 +104,7 @@ mod tests {
   mod scan {
     use crate::check::{Issue, Location};
     use crate::{test, Tikibase};
-    use ahash::AHashMap;
+    use ahash::HashMap;
     use big_s::S;
     use indoc::indoc;
 
@@ -213,7 +213,7 @@ mod tests {
     fn run(dir: String) -> Vec<Issue> {
       let base = Tikibase::load(dir).unwrap();
       // stage 1
-      let mut title_variants = AHashMap::new();
+      let mut title_variants = HashMap::new();
       for (_filename, doc) in &base.dir.docs {
         for section in &doc.content_sections {
           super::super::phase_1(section, &mut title_variants);
@@ -235,11 +235,11 @@ mod tests {
 
   mod find_most_common_level {
     use super::super::find_common_level;
-    use ahash::AHashMap;
+    use ahash::HashMap;
 
     #[test]
     fn has_outlier() {
-      let mut give: AHashMap<u8, u32> = AHashMap::new();
+      let mut give: HashMap<u8, u32> = HashMap::new();
       give.entry(3).or_insert(2);
       give.entry(4).or_insert(1);
       give.entry(5).or_insert(1);
@@ -250,7 +250,7 @@ mod tests {
 
     #[test]
     fn no_outlier() {
-      let mut give: AHashMap<u8, u32> = AHashMap::new();
+      let mut give: HashMap<u8, u32> = HashMap::new();
       give.entry(3).or_insert(1);
       give.entry(4).or_insert(1);
       give.entry(5).or_insert(1);
@@ -261,7 +261,7 @@ mod tests {
 
     #[test]
     fn no_problems() {
-      let mut give: AHashMap<u8, u32> = AHashMap::new();
+      let mut give: HashMap<u8, u32> = HashMap::new();
       give.entry(3).or_insert(2);
       let have = find_common_level(&give);
       let want = Some(3);

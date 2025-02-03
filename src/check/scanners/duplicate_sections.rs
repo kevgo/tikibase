@@ -1,11 +1,11 @@
 use crate::check::{Issue, Location};
 use crate::database::Document;
-use ahash::AHashMap;
+use gxhash::{HashMap, HashMapExt};
 
 /// populates the given issues list with all duplicate sections in this document
 pub fn scan(doc: &Document, issues: &mut Vec<Issue>) {
   // section title -> locations of sections with this title
-  let mut sections_lines: AHashMap<&str, Vec<LocationWithinFile>> = AHashMap::new();
+  let mut sections_lines: HashMap<&str, Vec<LocationWithinFile>> = HashMap::new();
   for section in doc.sections() {
     sections_lines
       .entry(section.human_title())

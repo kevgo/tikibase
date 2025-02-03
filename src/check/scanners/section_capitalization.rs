@@ -1,19 +1,19 @@
 use crate::check::{Issue, Location};
 use crate::database::Section;
-use ahash::AHashMap;
 use core::cmp::Ordering::{Equal, Greater, Less};
+use gxhash::{HashMap, HashMapExt};
 
-pub fn phase_1(section: &Section, title_variants: &mut AHashMap<String, u32>) {
+pub fn phase_1(section: &Section, title_variants: &mut HashMap<String, u32>) {
   let entry = title_variants
     .entry(section.human_title().to_owned())
     .or_insert(0);
   *entry += 1;
 }
 
-pub fn find_outliers(mut input: AHashMap<String, u32>) -> AHashMap<String, OutlierInfo> {
+pub fn find_outliers(mut input: HashMap<String, u32>) -> HashMap<String, OutlierInfo> {
   // step 1: group related variants together
   // normalized variant --> variant --> count
-  let mut grouped: AHashMap<String, AHashMap<String, u32>> = AHashMap::new();
+  let mut grouped: HashMap<String, HashMap<String, u32>> = HashMap::new();
   for (variant, count) in input.drain() {
     grouped
       .entry(variant.to_lowercase())
@@ -21,7 +21,7 @@ pub fn find_outliers(mut input: AHashMap<String, u32>) -> AHashMap<String, Outli
       .insert(variant, count);
   }
   // step 2: find the outliers
-  let mut outliers = AHashMap::new();
+  let mut outliers = HashMap::new();
   for (_, variants) in grouped {
     let mut all: Vec<String> = variants.keys().map(ToString::to_string).collect();
     all.sort_unstable();
@@ -59,7 +59,7 @@ pub fn phase_2(
   path: &str,
   section: &Section,
   issues: &mut Vec<Issue>,
-  outliers: &AHashMap<String, OutlierInfo>,
+  outliers: &HashMap<String, OutlierInfo>,
 ) {
   let section_title = section.human_title();
   if let Some(outlier_info) = outliers.get(section_title) {
@@ -87,7 +87,7 @@ pub struct OutlierInfo {
 }
 
 /// provides the most common variant within the given capitalization variants
-fn find_common_capitalization(variants: &AHashMap<String, u32>) -> Option<String> {
+fn find_common_capitalization(variants: &HashMap<String, u32>) -> Option<String> {
   let mut max_count = 0;
   let mut max_variant = None;
   for (variant, count) in variants {
@@ -109,7 +109,7 @@ fn find_common_capitalization(variants: &AHashMap<String, u32>) -> Option<String
 mod tests {
   use crate::check::{Issue, Location};
   use crate::{test, Tikibase};
-  use ahash::AHashMap;
+  use ahash::HashMap;
   use big_s::S;
   use indoc::indoc;
 
@@ -219,7 +219,7 @@ mod tests {
   fn run(dir: String) -> Vec<Issue> {
     let base = Tikibase::load(dir).unwrap();
     // stage 1
-    let mut title_variants = AHashMap::new();
+    let mut title_variants = HashMap::new();
     for (_filename, doc) in &base.dir.docs {
       for section in &doc.content_sections {
         super::phase_1(section, &mut title_variants);
