@@ -19,7 +19,7 @@ pub fn stats(base: &Tikibase) -> Outcome {
 
 fn collect_section_titles(tb: &Tikibase) -> HashMap<&str, u32> {
   let mut result: HashMap<&str, u32> = HashMap::new();
-  for (_path, doc) in &tb.dir.docs {
+  for doc in tb.dir.docs.values() {
     for section in &doc.content_sections {
       let section_title = section.human_title();
       match result.get(section_title) {

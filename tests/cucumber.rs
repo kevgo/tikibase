@@ -1,7 +1,7 @@
-use ahash::HashMap;
 use big_s::S;
 use cucumber::gherkin::Step;
 use cucumber::{given, then, when, World};
+use gxhash::{HashMap, HashMapExt};
 use tikibase::input::Command;
 use tikibase::{self, test, Messages};
 
