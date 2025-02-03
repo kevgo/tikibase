@@ -109,8 +109,8 @@ fn find_common_capitalization(variants: &HashMap<String, u32>) -> Option<String>
 mod tests {
   use crate::check::{Issue, Location};
   use crate::{test, Tikibase};
-  use ahash::HashMap;
   use big_s::S;
+  use gxhash::{HashMap, HashMapExt};
   use indoc::indoc;
 
   #[test]

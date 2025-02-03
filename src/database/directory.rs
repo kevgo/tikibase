@@ -2,8 +2,8 @@ use super::{paths, Document};
 use crate::check::Issue;
 use crate::config::LoadResult;
 use crate::{config, Config};
-use ahash::HashMap;
 use fs_err as fs;
+use gxhash::{HashMap, HashMapExt};
 use merge::Merge;
 
 pub struct Directory {

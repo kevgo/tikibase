@@ -1,6 +1,6 @@
 use super::scanners::{section_capitalization, section_level};
 use super::Issue;
-use ahash::HashMap;
+use gxhash::HashMap;
 
 /// state for phase 2
 pub struct State2 {

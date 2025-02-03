@@ -1,6 +1,6 @@
 use super::Issue;
 use crate::database::Directory;
-use ahash::HashMap;
+use gxhash::{HashMap, HashMapExt};
 
 /// mutable state that gets accumulated in phase 1 of the check process
 pub struct State1<'a> {

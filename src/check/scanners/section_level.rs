@@ -1,7 +1,7 @@
 use crate::check::{Issue, Location};
 use crate::database::Section;
-use ahash::HashMap;
 use core::cmp::Ordering::{Equal, Greater, Less};
+use gxhash::{HashMap, HashMapExt};
 
 pub fn phase_1(section: &Section, level_variants: &mut HashMap<String, HashMap<u8, u32>>) {
   let entry = level_variants
@@ -104,8 +104,8 @@ mod tests {
   mod scan {
     use crate::check::{Issue, Location};
     use crate::{test, Tikibase};
-    use ahash::HashMap;
     use big_s::S;
+    use gxhash::{HashMap, HashMapExt};
     use indoc::indoc;
 
     #[test]
@@ -235,7 +235,7 @@ mod tests {
 
   mod find_most_common_level {
     use super::super::find_common_level;
-    use ahash::HashMap;
+    use gxhash::{HashMap, HashMapExt};
 
     #[test]
     fn has_outlier() {

@@ -1,6 +1,6 @@
 use super::Outcome;
 use crate::Tikibase;
-use ahash::HashMap;
+use gxhash::{HashMap, HashMapExt};
 
 #[must_use]
 pub fn stats(base: &Tikibase) -> Outcome {
