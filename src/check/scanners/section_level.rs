@@ -214,7 +214,7 @@ mod tests {
       let base = Tikibase::load(dir).unwrap();
       // stage 1
       let mut title_variants = HashMap::new();
-      for (_filename, doc) in &base.dir.docs {
+      for doc in base.dir.docs.values() {
         for section in &doc.content_sections {
           super::super::phase_1(section, &mut title_variants);
         }
