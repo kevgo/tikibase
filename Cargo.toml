@@ -36,7 +36,7 @@ pretty = { package = "pretty_assertions", version = "1.4.1" }
 codegen-units = 1
 debug = 0
 lto = true
-opt-level = "z"
+opt-level = "s"
 panic = "abort"
 strip = "symbols"
 
