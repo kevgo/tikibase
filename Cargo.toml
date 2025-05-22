@@ -33,9 +33,12 @@ itertools = "0.10.5"
 pretty = { package = "pretty_assertions", version = "1.4.1" }
 
 [profile.release]
-strip = "symbols"
+codegen-units = 1
+debug = 0
 lto = true
-panic = 'abort'
+opt-level = "z"
+panic = "abort"
+strip = "symbols"
 
 # We allow warnings here, the Makefile denies them.
 # This way warnings don't hold up compiling and running tests,
