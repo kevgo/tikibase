@@ -1,13 +1,13 @@
 use crate::check::{Issue, Location};
 use crate::database::Section;
 use big_s::S;
+use camino::Utf8Path;
 use fs_err::File;
 use merge::Merge;
 use regex::Regex;
 use schemars::JsonSchema;
 use serde::Deserialize;
 use std::io::ErrorKind;
-use std::path::Path;
 
 /// Tikibase configuration data
 #[derive(Clone, Deserialize, Debug, Default, Eq, JsonSchema, Merge, PartialEq)]
@@ -97,7 +97,7 @@ impl Config {
 }
 
 /// reads the config file
-pub fn load<P: AsRef<Path>>(dir: P) -> LoadResult {
+pub fn load<P: AsRef<Utf8Path>>(dir: P) -> LoadResult {
   let config_path = dir.as_ref().join("tikibase.json");
   let file = match File::open(config_path) {
     Ok(reader) => reader,
