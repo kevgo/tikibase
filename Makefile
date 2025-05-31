@@ -18,8 +18,8 @@ cukethis:  # tests only the scenario named "this"
 fix: tools/rta@${RUN_THAT_APP_VERSION}  # auto-corrects issues
 	tools/rta dprint fmt
 	cargo +nightly fmt
-	cargo +nightly fix
-	cargo clippy --fix
+	cargo +nightly fix --allow-dirty
+	cargo clippy --fix --allow-dirty
 
 help:  # shows all available Make commands
 	cat Makefile | grep '^[^ ]*:' | grep -v '.PHONY' | grep -v '.SILENT:' | grep '#' | grep -v help | sed 's/:.*#/#/' | column -s "#" -t
