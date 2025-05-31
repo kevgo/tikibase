@@ -1,0 +1,26 @@
+{
+  "$schema": "https://raw.githubusercontent.com/contest-framework/server/refs/heads/main/documentation/schema.json",
+  "actions": [
+    {
+      "type": "test-all",
+      "run": "cargo test"
+    },
+    {
+      "type": "test-file",
+      "files": "**/*.rs",
+      "run": "cargo test {{file}}"
+    }
+  ],
+  "options": {
+    "beforeRun": {
+      "clearScreen": false,
+      "newlines": 2
+    },
+    "afterRun": {
+      "newlines": 1,
+      "indicatorLines": 2,
+      "indicatorBackground": true,
+      "printResult": true
+    }
+  }
+}
