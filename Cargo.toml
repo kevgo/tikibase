@@ -8,6 +8,7 @@ rust-version = "1.81"
 [dependencies]
 ahash = "0.7.8"
 big_s = "1.0.2"
+camino = "1.1.9"
 clap = { version = "3.2.25", features = ["derive"] }
 colored = "2.1.0"
 fs-err = "2.11.0"

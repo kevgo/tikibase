@@ -1,9 +1,9 @@
+use camino::Utf8Path;
 use fs_err as fs;
 use fs_err::File;
 use std::io::prelude::*;
-use std::path::Path;
 
-pub fn create_file<P1: AsRef<Path>, P2: AsRef<Path>>(filename: P1, content: &str, dir: P2) {
+pub fn create_file<P1: AsRef<Utf8Path>, P2: AsRef<Utf8Path>>(filename: P1, content: &str, dir: P2) {
   let filename = filename.as_ref();
   let dir = dir.as_ref();
   if let Some(parent) = filename.parent() {

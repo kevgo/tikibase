@@ -3,7 +3,7 @@ use crate::check::Issue;
 use crate::config::LoadResult;
 use crate::{config, Config};
 use ahash::AHashMap;
-use fs_err as fs;
+use camino::{Utf8DirEntry, Utf8Path};
 use merge::Merge;
 
 pub struct Directory {
@@ -89,7 +89,7 @@ impl Directory {
     let mut dirs = AHashMap::new();
     let mut resources = AHashMap::new();
     let mut errors = Vec::new();
-    let entries = match fs::read_dir(&abs_path) {
+    let entries = match Utf8Path::read_dir_utf8(abs_path.as_ref()) {
       Ok(entries) => entries,
       Err(err) => {
         return Err(vec![Issue::CannotReadDirectory {
@@ -100,12 +100,11 @@ impl Directory {
     };
     for entry in entries {
       let entry = entry.unwrap();
-      let entry_name = entry.file_name().to_string_lossy().to_string();
-      let entry_abs_path = entry.path();
+      let entry_name = entry.file_name().to_owned(); // TODO: try using the &str directly here, instead of converting it to a String
       match EntryType::from_direntry(&entry, &config) {
         EntryType::Document => {
           let doc_relative_path = paths::join(&relative_path, &entry_name);
-          match Document::load(&entry_abs_path, doc_relative_path) {
+          match Document::load(entry.path(), doc_relative_path) {
             Ok(doc) => {
               docs.insert(entry_name, doc);
             }
@@ -158,10 +157,9 @@ pub enum EntryType {
 }
 
 impl EntryType {
-  fn from_direntry(entry: &fs::DirEntry, config: &Config) -> Self {
+  fn from_direntry(entry: &Utf8DirEntry, config: &Config) -> Self {
     let entry_type = entry.file_type().unwrap();
-    let entry_filename_os = entry.file_name();
-    let entry_filename = entry_filename_os.to_string_lossy();
+    let entry_filename = entry.file_name();
     if entry_filename.starts_with('.') {
       return Self::Ignored;
     }
@@ -169,10 +167,10 @@ impl EntryType {
       if entry_filename == "tikibase.json" {
         return Self::Configuration;
       }
-      if config.ignore(&entry_filename) {
+      if config.ignore(entry_filename) {
         return Self::Ignored;
       }
-      if has_extension(&entry_filename, "md") {
+      if has_extension(entry_filename, "md") {
         return Self::Document {};
       }
       return Self::Resource;

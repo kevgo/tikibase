@@ -1,10 +1,10 @@
 use super::{paths, section, Footnotes, Image, Line, Link, Section};
 use crate::check::{Issue, Location};
+use camino::Utf8Path;
 use fs_err as fs;
 use fs_err::File;
 use std::io::prelude::*;
 use std::io::BufReader;
-use std::path::Path;
 
 #[derive(Debug, Eq, Hash, PartialEq)]
 pub struct Document {
@@ -202,7 +202,7 @@ impl Document {
       .last_line_abs()
   }
 
-  pub fn load<P: AsRef<Path>>(absolute_path: P, relative_path: String) -> Result<Self, Issue> {
+  pub fn load<P: AsRef<Utf8Path>>(absolute_path: P, relative_path: String) -> Result<Self, Issue> {
     let file = File::open(absolute_path.as_ref()).unwrap();
     Self::from_reader(BufReader::new(file), relative_path)
   }
