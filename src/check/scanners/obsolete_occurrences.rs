@@ -3,9 +3,8 @@ use crate::check::{Issue, Location};
 use crate::database::Document;
 
 pub fn scan(doc: &Document, config: &Config, issues: &mut Vec<Issue>) {
-  if let Some(bidi_links) = config.bidi_links
+  if config.bidi_links == Some(true)
     && let Some(old_occurrences_section) = &doc.old_occurrences_section
-    && bidi_links
     && !has_missing_links_with_path(issues, &doc.relative_path)
   {
     issues.push(Issue::ObsoleteOccurrencesSection {
