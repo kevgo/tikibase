@@ -23,7 +23,7 @@ changes to your knowledge base using a version control system like Git,
 Mercurial, or whatever they use in the future.
 
 The open-source CLI application in this repository is an optional linter that
-helps keep a Tikibase consistent by finding and fixing:
+helps keep a Zettelkasten-like knowledge base consistent by finding and fixing:
 
 - missing backlinks: if a document links to another document, the other document
   must also link back to the first document
