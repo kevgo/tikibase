@@ -93,9 +93,7 @@ pub fn scan(
             });
           }
           // check for backlink from doc to us
-          if let Some(bidi_links) = dir.config.bidi_links
-            && bidi_links
-          {
+          if dir.config.bidi_links == Some(true) {
             let link_from_other_to_doc =
               paths::relative(&other_doc.relative_path, &doc.relative_path);
             if !other_doc.contains_reference_to(&link_from_other_to_doc) {
