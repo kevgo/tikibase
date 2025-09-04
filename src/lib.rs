@@ -27,12 +27,15 @@ pub fn run(command: &input::Command, dir: &str) -> Messages {
     Ok(base) => base,
     Err(issues) => return Messages::from_issues(issues),
   };
+  if let Command::Search { terms } = command {
+    return search::Search(terms);
+  }
   let outcome = match command {
     Command::Check => commands::check(&base),
     Command::Stats => commands::stats(&base),
     Command::Fix => commands::fix(&mut base),
     Command::P => commands::pitstop(&mut base),
-    Command::Init | Command::JsonSchema => panic!(), // handled above
+    Command::Init | Command::JsonSchema | Command::Search { terms: _ } => panic!(), // handled above
   };
   Messages::from_outcome(outcome)
 }

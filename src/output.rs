@@ -3,6 +3,7 @@
 use crate::Fix;
 use crate::check::Issue;
 use crate::commands::Outcome;
+use crate::search;
 use big_s::S;
 use serde::Serialize;
 
@@ -495,6 +496,7 @@ pub struct Messages {
   pub issues: Vec<Message>,
   /// messages for fixed issues
   pub fixes: Vec<Message>,
+  pub search_results: Vec<search::Result>,
   pub exit_code: u8,
 }
 
@@ -519,6 +521,7 @@ impl Messages {
     Self {
       issues: vec![Message::from_issue(issue)],
       fixes: vec![],
+      search_results: vec![],
       exit_code: 1,
     }
   }
@@ -529,6 +532,7 @@ impl Messages {
     Self {
       issues: issues.into_iter().map(Message::from_issue).collect(),
       fixes: vec![],
+      search_results: vec![],
       exit_code,
     }
   }
