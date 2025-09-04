@@ -1,8 +1,8 @@
 # Tikibase
 
-_the un-database_
-
 <img src="doc/logo.png" width="154" height="223" align="right">
+
+_the un-database_
 
 ![build status](https://github.com/kevgo/tikibase/actions/workflows/ci.yml/badge.svg)
 
