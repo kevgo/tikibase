@@ -28,7 +28,7 @@ impl Default for Format {
 }
 
 /// the subcommands of the CLI app
-#[derive(clap::Subcommand, Clone, Copy, Debug, Eq, PartialEq)]
+#[derive(clap::Subcommand, Clone, Debug, Eq, PartialEq)]
 pub enum Command {
   /// Prints all issues
   Check,
@@ -40,6 +40,8 @@ pub enum Command {
   JsonSchema,
   /// Corrects all auto-fixable issues and prints the remaining ("pitstop")
   P,
+  /// Searches for all documents that contain the given search terms
+  Search { terms: Vec<String> },
   /// Displays statistics about this Tikibase
   Stats,
 }

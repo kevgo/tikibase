@@ -5,6 +5,7 @@ mod database;
 mod fix;
 pub mod input;
 mod output;
+pub mod search;
 pub mod test;
 
 pub use config::Config;
