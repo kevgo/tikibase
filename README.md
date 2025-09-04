@@ -23,6 +23,13 @@ Git, Mercurial, or whatever they use in the future. The open-source CLI
 application in this repository is an optional linter that helps keep a Tikibase
 consistent by finding and fixing:
 
+- missing backlinks: if a document links to another document, the other document
+  must also link back to the first document
+- unknown or unordered headings: you can define the allowed headings and in
+  which order they should occur - this helps keep a knowledge base organized
+
+In addition, Tikibase provides the usual Markdown linting like:
+
 - broken links/images pointing to non-existing local files or anchors
 - unreferenced files
 - documents linking to themselves
@@ -30,7 +37,6 @@ consistent by finding and fixing:
 - duplicate headings
 - empty sections
 - missing footnote definitions and references
-- optional: missing backlinks, unknown headings, the order of headings
 
 ![build status](https://github.com/kevgo/tikibase/actions/workflows/ci.yml/badge.svg)
 
