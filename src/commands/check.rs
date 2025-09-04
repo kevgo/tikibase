@@ -1,7 +1,7 @@
 use super::Outcome;
-use crate::check::scanners::{section_capitalization, section_level};
-use crate::check::{dir_phase_1, dir_phase_2, State1, State2};
 use crate::Tikibase;
+use crate::check::scanners::{section_capitalization, section_level};
+use crate::check::{State1, State2, dir_phase_1, dir_phase_2};
 
 #[must_use]
 pub fn check(base: &Tikibase) -> Outcome {
@@ -25,7 +25,7 @@ pub fn check(base: &Tikibase) -> Outcome {
 mod tests {
   use crate::check::{Issue, Location};
   use crate::commands::Outcome;
-  use crate::{test, Tikibase};
+  use crate::{Tikibase, test};
   use big_s::S;
 
   #[test]

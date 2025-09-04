@@ -108,7 +108,7 @@ fn find_common_capitalization(variants: &AHashMap<String, u32>) -> Option<String
 #[cfg(test)]
 mod tests {
   use crate::check::{Issue, Location};
-  use crate::{test, Tikibase};
+  use crate::{Tikibase, test};
   use ahash::AHashMap;
   use big_s::S;
   use indoc::indoc;

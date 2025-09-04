@@ -1,21 +1,21 @@
+use crate::Config;
 use crate::check::{Issue, Location};
 use crate::database::Document;
-use crate::Config;
 
 pub fn scan(doc: &Document, config: &Config, issues: &mut Vec<Issue>) {
-  if let Some(bidi_links) = config.bidi_links {
-    if let Some(old_occurrences_section) = &doc.old_occurrences_section {
-      if bidi_links && !has_missing_links_with_path(issues, &doc.relative_path) {
-        issues.push(Issue::ObsoleteOccurrencesSection {
-          location: Location {
-            file: doc.relative_path.clone(),
-            line: old_occurrences_section.line_number,
-            start: old_occurrences_section.title_text_start as u32,
-            end: old_occurrences_section.title_text_end(),
-          },
-        });
-      }
-    }
+  if let Some(bidi_links) = config.bidi_links
+    && let Some(old_occurrences_section) = &doc.old_occurrences_section
+    && bidi_links
+    && !has_missing_links_with_path(issues, &doc.relative_path)
+  {
+    issues.push(Issue::ObsoleteOccurrencesSection {
+      location: Location {
+        file: doc.relative_path.clone(),
+        line: old_occurrences_section.line_number,
+        start: old_occurrences_section.title_text_start as u32,
+        end: old_occurrences_section.title_text_end(),
+      },
+    });
   }
 }
 

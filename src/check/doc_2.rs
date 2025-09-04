@@ -1,7 +1,7 @@
-use super::scanners::{obsolete_occurrences, section_capitalization, section_level};
 use super::State2;
-use crate::database::Document;
+use super::scanners::{obsolete_occurrences, section_capitalization, section_level};
 use crate::Config;
+use crate::database::Document;
 
 // phase 2 `Document` check
 pub fn doc_phase_2(doc: &Document, config: &Config, state: &mut State2) {

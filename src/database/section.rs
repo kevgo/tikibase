@@ -57,7 +57,7 @@ impl Section {
   }
 
   /// provides a non-consuming iterator for all lines in this section
-  pub fn lines(&self) -> LinesIterator {
+  pub fn lines(&self) -> LinesIterator<'_> {
     LinesIterator {
       title_line: &self.title_line,
       body_iter: self.body.iter(),

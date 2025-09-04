@@ -1,7 +1,7 @@
 use super::Outcome;
-use crate::fix::fix;
 use crate::fix::Result::{Failed, Fixed, Unfixable};
-use crate::{commands, Tikibase};
+use crate::fix::fix;
+use crate::{Tikibase, commands};
 
 pub fn pitstop(base: &mut Tikibase) -> Outcome {
   let check_result = commands::check(base);

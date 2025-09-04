@@ -7,8 +7,8 @@ mod json_schema;
 mod pitstop;
 mod stats;
 
-use crate::check::Issue;
 use crate::Fix;
+use crate::check::Issue;
 pub use check::check;
 pub use fix::fix;
 pub use init::init;

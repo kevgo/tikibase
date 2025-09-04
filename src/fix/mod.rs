@@ -7,8 +7,8 @@ mod mix_cap_section;
 mod obsolete_occurrences_section;
 mod unordered_sections;
 
-use crate::check::{Issue, Location};
 use crate::Tikibase;
+use crate::check::{Issue, Location};
 
 /// fixes the given Issue
 pub fn fix(issue: Issue, base: &mut Tikibase) -> Result {

@@ -112,7 +112,7 @@ pub fn load<P: AsRef<Utf8Path>>(dir: P) -> LoadResult {
             start: 0,
             end: 0,
           },
-        })
+        });
       }
     },
   };
@@ -204,7 +204,7 @@ mod tests {
   }
 
   mod load {
-    use super::super::{load, Config};
+    use super::super::{Config, load};
     use crate::check::{Issue, Location};
     use crate::config::LoadResult;
     use crate::test;
@@ -267,14 +267,16 @@ mod tests {
       test::create_file("tikibase.json", give, &dir);
       let have = load(&dir);
       let want = LoadResult::Error(Issue::InvalidConfigurationFile {
-                message: S("unknown field `foo`, expected one of `bidiLinks`, `ignore`, `sections`, `titleRegEx`, `$schema`, `standaloneDocs` at line 3 column 20"),
-                location: Location {
-                    file: S("tikibase.json"),
-                    line: 3,
-                    start: 20,
-                    end: 20,
-                },
-            });
+        message: S(
+          "unknown field `foo`, expected one of `bidiLinks`, `ignore`, `sections`, `titleRegEx`, `$schema`, `standaloneDocs` at line 3 column 20",
+        ),
+        location: Location {
+          file: S("tikibase.json"),
+          line: 3,
+          start: 20,
+          end: 20,
+        },
+      });
       pretty::assert_eq!(have, want);
     }
 
