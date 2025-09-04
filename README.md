@@ -1,4 +1,4 @@
-<img src="doc/tiki_head.jpg" width="154" height="223" align="right">
+<img src="doc/logo.png" width="154" height="223" align="right">
 
 # Tikibase
 
