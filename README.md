@@ -16,12 +16,12 @@ folder. You view, change, and organize these files using the text or Markdown
 editor of your choice. If your computer can display and edit text files, you can
 use your Tikibase on it. A powerful option for efficiently working on large
 Tikibases in the 2020s is
-[VSCode Markdown IDE](https://github.com/kevgo/vscode-markdown-ide).
+[VSCode Markdown IDE](https://github.com/kevgo/vscode-markdown-ide). You manage
+changes to your knowledge base using a version control system like Git,
+Mercurial, or whatever they use in the future.
 
-You manage changes to your knowledge base using a version control system like
-Git, Mercurial, or whatever they use in the future. The open-source CLI
-application in this repository is an optional linter that helps keep a Tikibase
-consistent by finding and fixing:
+The open-source CLI application in this repository is an optional linter that
+helps keep a Tikibase consistent by finding and fixing:
 
 - missing backlinks: if a document links to another document, the other document
   must also link back to the first document
