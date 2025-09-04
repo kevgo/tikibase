@@ -1,7 +1,7 @@
 use super::Fix::AddedOccurrencesSection;
 use crate::check::Issue::{self, TitleRegexNoCaptures, TitleRegexTooManyCaptures};
 use crate::check::Location;
-use crate::database::{section, Line, Tikibase};
+use crate::database::{Line, Tikibase, section};
 use crate::fix;
 use crate::fix::Result::{Failed, Fixed};
 use once_cell::sync::Lazy;
@@ -89,7 +89,7 @@ enum ExtractShortcutResult<'a> {
 }
 
 /// removes all links from the given string
-fn strip_links(text: &str) -> Cow<str> {
+fn strip_links(text: &str) -> Cow<'_, str> {
   let matches: Vec<Captures> = SOURCE_REGEX.captures_iter(text).collect();
   if matches.is_empty() {
     return Cow::Borrowed(text);
@@ -107,7 +107,7 @@ mod tests {
 
   mod extract_shortcut {
     use crate::check::Issue;
-    use crate::fix::missing_links::{extract_shortcut, ExtractShortcutResult};
+    use crate::fix::missing_links::{ExtractShortcutResult, extract_shortcut};
     use big_s::S;
     use regex::Regex;
 

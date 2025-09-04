@@ -1,8 +1,8 @@
+use super::State1;
 use super::scanners::{
   duplicate_sections, empty_section_content, empty_section_title, footnotes, illegal_sections,
   links, section_capitalization, section_level, unordered_sections,
 };
-use super::State1;
 use crate::database::{Directory, Document};
 
 // phase 1 `Document` check

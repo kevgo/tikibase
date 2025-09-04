@@ -1,7 +1,7 @@
 use super::Fix::RemovedObsoleteOccurrencesSection;
 use crate::check::Location;
 use crate::fix::Result::Fixed;
-use crate::{fix, Tikibase};
+use crate::{Tikibase, fix};
 
 pub fn remove_occurrences_section(base: &mut Tikibase, location: Location) -> fix::Result {
   let base_dir = base.root.clone();

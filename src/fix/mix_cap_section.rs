@@ -1,5 +1,5 @@
-use super::inconsistent_levels::title_at_level;
 use super::Fix::NormalizedSectionCapitalization;
+use super::inconsistent_levels::title_at_level;
 use crate::check::Location;
 use crate::database::Tikibase;
 use crate::fix;

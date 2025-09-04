@@ -1,6 +1,6 @@
+use crate::Config;
 use crate::check::{Issue, Location};
 use crate::database::Section;
-use crate::Config;
 
 /// populates the given issues list with all sections in this document that don't match the configured sections
 pub fn scan(section: &Section, path: &str, config: &Config, issues: &mut Vec<Issue>) {

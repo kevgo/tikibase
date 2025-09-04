@@ -5,7 +5,7 @@ use input::Format::{Json, Text};
 use std::io;
 use std::process::ExitCode;
 use tikibase::input::Command;
-use tikibase::{input, run, Message, Messages};
+use tikibase::{Message, Messages, input, run};
 
 fn main() -> ExitCode {
   let args = input::Arguments::parse();

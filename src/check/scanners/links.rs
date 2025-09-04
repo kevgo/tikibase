@@ -1,5 +1,5 @@
 use crate::check::{Issue, Location};
-use crate::database::{paths, Directory, Document, EntryType};
+use crate::database::{Directory, Document, EntryType, paths};
 
 /// populates the given issues list with all link issues in this document
 pub fn scan(
@@ -93,22 +93,20 @@ pub fn scan(
             });
           }
           // check for backlink from doc to us
-          if let Some(bidi_links) = dir.config.bidi_links {
-            if bidi_links {
-              let link_from_other_to_doc =
-                paths::relative(&other_doc.relative_path, &doc.relative_path);
-              if !other_doc.contains_reference_to(&link_from_other_to_doc) {
-                issues.push(Issue::MissingLink {
-                  location: Location {
-                    file: target_relative_path,
-                    line: other_doc.lines_count(),
-                    start: 0,
-                    end: 0,
-                  },
-                  path: link_from_other_to_doc,
-                  title: doc.human_title().into(),
-                });
-              }
+          if dir.config.bidi_links == Some(true) {
+            let link_from_other_to_doc =
+              paths::relative(&other_doc.relative_path, &doc.relative_path);
+            if !other_doc.contains_reference_to(&link_from_other_to_doc) {
+              issues.push(Issue::MissingLink {
+                location: Location {
+                  file: target_relative_path,
+                  line: other_doc.lines_count(),
+                  start: 0,
+                  end: 0,
+                },
+                path: link_from_other_to_doc,
+                title: doc.human_title().into(),
+              });
             }
           }
         } else {
@@ -192,7 +190,7 @@ pub fn scan(
 #[cfg(test)]
 mod tests {
   use crate::check::{Issue, Location};
-  use crate::{test, Tikibase};
+  use crate::{Tikibase, test};
   use big_s::S;
   use indoc::indoc;
 

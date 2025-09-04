@@ -103,7 +103,7 @@ mod tests {
 
   mod scan {
     use crate::check::{Issue, Location};
-    use crate::{test, Tikibase};
+    use crate::{Tikibase, test};
     use ahash::AHashMap;
     use big_s::S;
     use indoc::indoc;

@@ -1,10 +1,10 @@
-use super::{paths, section, Footnotes, Image, Line, Link, Section};
+use super::{Footnotes, Image, Line, Link, Section, paths, section};
 use crate::check::{Issue, Location};
 use camino::Utf8Path;
 use fs_err as fs;
 use fs_err::File;
-use std::io::prelude::*;
 use std::io::BufReader;
+use std::io::prelude::*;
 
 #[derive(Debug, Eq, Hash, PartialEq)]
 pub struct Document {
@@ -96,7 +96,7 @@ impl Document {
               start: 0,
               end: line.len() as u32,
             },
-          })
+          });
         }
       }
     }
@@ -112,7 +112,7 @@ impl Document {
       None => {
         return Err(Issue::EmptyDocument {
           path: relative_path,
-        })
+        });
       }
     }
     if inside_fence {
@@ -184,7 +184,7 @@ impl Document {
   }
 
   /// provides an iterator over all lines in this document
-  pub fn lines(&self) -> LinesIterator {
+  pub fn lines(&self) -> LinesIterator<'_> {
     let mut section_iter = self.sections();
     let section = section_iter.next().unwrap();
     LinesIterator {
@@ -244,7 +244,7 @@ impl Document {
   }
 
   /// provides a non-consuming iterator for all sections in this document
-  pub fn sections(&self) -> SectionIterator {
+  pub fn sections(&self) -> SectionIterator<'_> {
     SectionIterator {
       title_section: &self.title_section,
       body_iter: self.content_sections.iter(),

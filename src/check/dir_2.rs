@@ -1,6 +1,6 @@
 use super::scanners::orphaned_resource;
-use super::{doc_phase_2, State2};
-use crate::database::{paths, Directory};
+use super::{State2, doc_phase_2};
+use crate::database::{Directory, paths};
 
 // phase 2 `Directory` check
 pub fn dir_phase_2(dir: &Directory, state: &mut State2) {

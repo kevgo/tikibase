@@ -1,5 +1,5 @@
-use super::scanners::{section_capitalization, section_level};
 use super::Issue;
+use super::scanners::{section_capitalization, section_level};
 use ahash::AHashMap;
 
 /// state for phase 2
