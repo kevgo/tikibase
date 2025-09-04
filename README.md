@@ -12,10 +12,12 @@ Tikibase is a knowledge base available on all current and future computers
 because it isn't based on a dedicated server or viewer application that might be
 unavailable on future devices. A Tikibase is pure human readable and machine
 parsable data, a collection of 100% standards-compliant Markdown files in a
-folder. You view, change, and organize these files using the text or Markdown
-editor of your choice. If your computer can display and edit text files, you can
-use your Tikibase on it. A powerful option for efficiently working on large
-Tikibases in the 2020s is
+folder.
+
+You view, change, and organize these files using the text or Markdown editor of
+your choice. If your computer can display and edit text files, you can use your
+Tikibase on it. A powerful option for efficiently working on large Tikibases in
+the 2020s is
 [VSCode Markdown IDE](https://github.com/kevgo/vscode-markdown-ide). You manage
 changes to your knowledge base using a version control system like Git,
 Mercurial, or whatever they use in the future.
