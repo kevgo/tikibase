@@ -1,4 +1,4 @@
-# Tikibase
+# Tikibase ![build status](https://github.com/kevgo/tikibase/actions/workflows/ci.yml/badge.svg)
 
 _the un-database_
 
@@ -31,8 +31,6 @@ consistent by finding and fixing:
 - empty sections
 - missing footnote definitions and references
 - optional: missing backlinks, unknown headings, the order of headings
-
-![build status](https://github.com/kevgo/tikibase/actions/workflows/ci.yml/badge.svg)
 
 ### installation
 
