@@ -2,6 +2,8 @@
 
 <img src="doc/logo.png" width="154" height="223" align="right">
 
+
+
 ![build status](https://github.com/kevgo/tikibase/actions/workflows/ci.yml/badge.svg)
 
 Whatever note taking or knowledge base application you love and use today, it
