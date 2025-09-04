@@ -28,7 +28,7 @@ impl Default for Format {
 }
 
 /// the subcommands of the CLI app
-#[derive(clap::Subcommand, Clone, Copy, Debug, Eq, PartialEq)]
+#[derive(clap::Subcommand, Clone, Debug, Eq, PartialEq)]
 pub enum Command {
   /// Prints all issues
   Check,
