@@ -1,8 +1,8 @@
+# Tikibase: the un-database
+
 <img src="doc/logo.png" width="154" height="223" align="right">
 
-# Tikibase
-
-_the un-database_
+![build status](https://github.com/kevgo/tikibase/actions/workflows/ci.yml/badge.svg)
 
 Whatever note taking or knowledge base application you love and use today, it
 will be dated in 5 years and unsupported/unavailable in 10 years. All your data
@@ -37,8 +37,6 @@ In addition, Tikibase provides the usual Markdown linting like:
 - duplicate headings
 - empty sections
 - missing footnote definitions and references
-
-![build status](https://github.com/kevgo/tikibase/actions/workflows/ci.yml/badge.svg)
 
 ### installation
 
