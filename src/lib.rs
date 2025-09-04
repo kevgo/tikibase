@@ -31,6 +31,7 @@ pub fn run(command: input::Command, dir: &str) -> Messages {
     Command::Stats => commands::stats(&base),
     Command::Fix => commands::fix(&mut base),
     Command::P => commands::pitstop(&mut base),
+    Command::Search { terms } => commands::search(&base, &terms),
     Command::Init | Command::JsonSchema => panic!(), // handled above
   };
   Messages::from_outcome(outcome)

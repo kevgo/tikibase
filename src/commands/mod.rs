@@ -5,6 +5,7 @@ mod fix;
 mod init;
 mod json_schema;
 mod pitstop;
+mod search;
 mod stats;
 
 use crate::Fix;
@@ -14,6 +15,7 @@ pub use fix::fix;
 pub use init::init;
 pub use json_schema::json_schema;
 pub use pitstop::pitstop;
+pub use search::search;
 pub use stats::stats;
 
 /// The inner API of the check subsystem.
