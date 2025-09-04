@@ -29,11 +29,11 @@ helps keep a Zettelkasten-like knowledge base consistent by finding and fixing:
   must also link back to the first document
 - unknown or unordered headings: you can define the allowed headings and in
   which order they should occur - this helps keep a knowledge base organized
+- unreferenced files: all Markdown files must link to at least one other file
 
 In addition, Tikibase provides the usual Markdown linting like:
 
 - broken links/images pointing to non-existing local files or anchors
-- unreferenced files
 - documents linking to themselves
 - inconsistent heading capitalization and levels
 - duplicate headings
