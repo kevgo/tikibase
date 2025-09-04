@@ -1,8 +1,8 @@
-<img src="doc/logo.png" width="154" height="223" align="right">
-
 # Tikibase
 
 _the un-database_
+
+<img src="doc/logo.png" width="154" height="223" align="right">
 
 Whatever note taking or knowledge base application you love and use today, it
 will be dated in 5 years and unsupported/unavailable in 10 years. All your data
