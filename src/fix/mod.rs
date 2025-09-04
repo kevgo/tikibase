@@ -191,6 +191,9 @@ pub enum Fix {
   SortedSections {
     location: Location,
   },
+  SearchResult {
+    text: String,
+  },
 }
 
 /// result of a fix operation

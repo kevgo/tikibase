@@ -28,6 +28,7 @@ pub struct Outcome {
   pub issues: Vec<Issue>,
   /// the fixes applied
   pub fixes: Vec<Fix>,
+  pub search_results: Vec<search::Result>,
 }
 
 impl Outcome {

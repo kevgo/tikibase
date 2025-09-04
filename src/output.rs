@@ -23,6 +23,9 @@ impl Message {
   pub fn to_text(&self) -> String {
     if let Some(line) = self.line {
       format!("{}:{}  {}", self.file, line + 1, self.text)
+    } else if self.file.is_empty() {
+      // For search results and other messages without a file
+      self.text.clone()
     } else {
       format!("{}  {}", self.file, self.text)
     }
@@ -91,6 +94,14 @@ impl Message {
         line: Some(location.line),
         start: Some(location.start),
         end: Some(location.end),
+        fixable: false,
+      },
+      Fix::SearchResult { text } => Self {
+        text: text.clone(),
+        file: S(""),
+        line: None,
+        start: None,
+        end: None,
         fixable: false,
       },
     }

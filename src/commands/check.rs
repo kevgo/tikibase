@@ -18,6 +18,7 @@ pub fn check(base: &Tikibase) -> Outcome {
   Outcome {
     issues: state_2.issues,
     fixes: vec![],
+    search_results: vec![],
   }
 }
 
@@ -69,6 +70,7 @@ mod tests {
         },
       ],
       fixes: vec![],
+      search_results: vec![],
     };
     pretty::assert_eq!(have, want);
   }

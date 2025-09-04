@@ -60,6 +60,21 @@ fn initializing(world: &mut MyWorld) {
   world.output = tikibase::run(Command::Init, &world.dir);
 }
 
+#[when("searching for nothing")]
+fn searching_for_nothing(world: &mut MyWorld) {
+  world.output = tikibase::run(Command::Search { terms: vec![] }, &world.dir);
+}
+
+#[when(expr = "searching for {string}")]
+fn searching_for_single_term(world: &mut MyWorld, term: String) {
+  world.output = tikibase::run(Command::Search { terms: vec![term] }, &world.dir);
+}
+
+#[when(expr = "searching for {string} and {string}")]
+fn searching_for_two_terms(world: &mut MyWorld, term1: String, term2: String) {
+  world.output = tikibase::run(Command::Search { terms: vec![term1, term2] }, &world.dir);
+}
+
 #[then("all files are unchanged")]
 fn all_files_unchanged(world: &mut MyWorld) {
   for (filename, original_content) in &world.original_contents {

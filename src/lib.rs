@@ -5,6 +5,7 @@ mod database;
 mod fix;
 pub mod input;
 mod output;
+mod search;
 pub mod test;
 
 pub use config::Config;
@@ -22,6 +23,7 @@ pub fn run(command: input::Command, dir: &str) -> Messages {
   if command == Command::JsonSchema {
     return Messages::from_outcome(commands::json_schema());
   }
+  if let command == Command::Stat
   let mut base = match Tikibase::load(dir.into()) {
     Ok(base) => base,
     Err(issues) => return Messages::from_issues(issues),
