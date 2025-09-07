@@ -1,19 +1,15 @@
-use super::Outcome;
-use crate::check::Issue;
 use crate::database::paths;
+use crate::prelude::*;
 use big_s::S;
 use fs_err as fs;
 use indoc::indoc;
 
-#[must_use]
-pub fn init(dir: &str) -> Outcome {
-  match fs::write(paths::join(dir, "tikibase.json"), template()) {
-    Ok(()) => Outcome::default(),
-    Err(err) => Outcome::from_issue(Issue::CannotWriteConfigFile {
-      file: S("tikibase.json"),
-      message: err.to_string(),
-    }),
-  }
+pub fn init(dir: &str) -> Result<()> {
+  let path = paths::join(dir, "tikibase.json");
+  fs::write(path, template()).map_err(|err| UserError::CannotWriteFile {
+    filename: S("tikibase.json"),
+    reason: err.to_string(),
+  })
 }
 
 /// provides the content of the initial config file

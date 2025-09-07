@@ -8,14 +8,29 @@ use tikibase::input::Command;
 use tikibase::{Message, Messages, input, run};
 
 fn main() -> ExitCode {
+  match inner() {
+    Ok(_) => ExitCode::SUCCESS,
+    Err(err) => {
+      println!("{}", err);
+      ExitCode::FAILURE
+    }
+  }
+}
+
+fn inner() -> tikibase::Result<()> {
   let args = input::Arguments::parse();
+  if args.command == Command::Init {
+    return tikibase::commands::init(".");
+  }
+  if args.command == Command::JsonSchema {
+    return tikibase::commands::json_schema();
+  }
   let messages = run(args.command, ".");
-  let exit_code = messages.exit_code;
   match args.format {
     Text => print_text(&messages, args.command),
     Json => print_json(&messages.all()),
   };
-  ExitCode::from(exit_code)
+  Ok(())
 }
 
 fn print_text(messages: &Messages, command: Command) {
