@@ -218,8 +218,7 @@ mod tests {
   }
 
   fn run<P: Into<Utf8PathBuf>>(dir: P) -> Vec<Issue> {
-    let dir = dir.into();
-    let base = Tikibase::load(dir).unwrap();
+    let base = Tikibase::load(dir.into()).unwrap();
     // stage 1
     let mut title_variants = AHashMap::new();
     for (_filename, doc) in &base.dir.docs {
