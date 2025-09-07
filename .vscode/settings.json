@@ -4,8 +4,5 @@
   ],
   "cucumber.glue": [
     "tests/cucumber.rs"
-  ],
-  "files.associations": {
-    "*.feature": "cucumber"
-  }
+  ]
 }
