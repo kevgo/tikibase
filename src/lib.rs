@@ -20,6 +20,7 @@ pub use prelude::Result;
 // TODO
 // - replace Utf8Paths with Path
 // - use UserError everywhere
+// - extract string literals into consts
 
 /// runs the given Command in the given directory, returns structured data
 #[must_use]
