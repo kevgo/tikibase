@@ -11,6 +11,9 @@ pub struct MyWorld {
   /// the directory in which the Tikibase under test is located
   pub dir: String,
 
+  /// the error returned by the command
+  pub result: tikibase::Result<()>,
+
   /// the result of the Tikibase run
   pub output: Messages,
 
@@ -22,6 +25,7 @@ impl MyWorld {
   fn new() -> Self {
     Self {
       dir: test::tmp_dir(),
+      result: Ok(()),
       output: Messages::default(),
       original_contents: AHashMap::new(),
     }
@@ -57,7 +61,7 @@ fn fixing(world: &mut MyWorld) {
 
 #[when("initializing")]
 fn initializing(world: &mut MyWorld) {
-  world.output = tikibase::run(&Command::Init, &world.dir);
+  world.result = tikibase::commands::init(&world.dir);
 }
 
 #[then("all files are unchanged")]
@@ -105,6 +109,11 @@ fn it_prints_nothing(world: &mut MyWorld) {
 #[then("it finds no issues")]
 fn it_finds_no_issues(world: &mut MyWorld) {
   pretty::assert_eq!(world.output, Messages::default());
+}
+
+#[then(expr = "it succeeds")]
+fn it_succeeds(world: &mut MyWorld) {
+  assert_eq!(world.result, Ok(()));
 }
 
 #[then(expr = "the exit code is {int}")]
