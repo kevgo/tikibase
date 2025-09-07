@@ -11,23 +11,25 @@ pub struct MyWorld {
   /// the directory in which the Tikibase under test is located
   pub dir: String,
 
-  /// the error returned by the command
-  pub result: tikibase::Result<()>,
-
   /// the result of the Tikibase run
   pub output: Messages,
 
   /// content of the files before the Tikibase command ran
   pub original_contents: AHashMap<String, String>,
+
+  pub result: tikibase::Result<()>,
+
+  pub subshell_output: Option<std::process::Output>,
 }
 
 impl MyWorld {
   fn new() -> Self {
     Self {
       dir: test::tmp_dir(),
-      result: Ok(()),
       output: Messages::default(),
       original_contents: AHashMap::new(),
+      result: Ok(()),
+      subshell_output: None,
     }
   }
 }
@@ -59,6 +61,23 @@ fn fixing(world: &mut MyWorld) {
   world.output = tikibase::run(Command::Fix, &world.dir);
 }
 
+#[when(expr = "I run {string}")]
+fn i_run(world: &mut MyWorld, call: String) {
+  let mut args = call.split(" ").into_iter();
+  let executable = args.next().unwrap();
+  if executable != "tikibase" {
+    panic!("can only test tikibase");
+  }
+  let cwd = std::env::current_dir().unwrap();
+  world.subshell_output = Some(
+    std::process::Command::new(cwd.join("target/release/tikibase"))
+      .args(args)
+      .current_dir(&world.dir)
+      .output()
+      .unwrap(),
+  );
+}
+
 #[when("initializing")]
 fn initializing(world: &mut MyWorld) {
   world.result = tikibase::commands::init(&world.dir);
@@ -81,8 +100,8 @@ fn file_is_unchanged(world: &mut MyWorld, filename: String) {
 
 #[then(expr = "file {string} should contain:")]
 fn file_should_contain(world: &mut MyWorld, step: &Step, filename: String) {
-  let want = step.docstring.as_ref().unwrap();
   let have = test::load_file(&filename, &world.dir);
+  let want = step.docstring.as_ref().unwrap();
   pretty::assert_eq!(have.trim(), want.trim());
 }
 
@@ -114,6 +133,8 @@ fn it_finds_no_issues(world: &mut MyWorld) {
 #[then(expr = "it succeeds")]
 fn it_succeeds(world: &mut MyWorld) {
   assert_eq!(world.result, Ok(()));
+  let output = world.subshell_output.take().unwrap();
+  assert!(output.status.success())
 }
 
 #[then(expr = "the exit code is {int}")]

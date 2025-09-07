@@ -8,7 +8,7 @@ build-release:  # builds a release version of the binary
 	docker run --rm --user "$(id -u)":"$(id -g)" -v "$(PWD)":/usr/src/myapp -w /usr/src/myapp rust cargo build --locked --release
 	(cd target/release && tar -czvf "../../tikibase_linux_64.tar.gz" tikibase)
 
-cuke:  # runs the integration tests
+cuke: build  # runs the end-to-end tests
 	rm -rf ./tmp
 	cargo test --locked --test cucumber
 
