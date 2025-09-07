@@ -1,3 +1,5 @@
+use crate::domain::PathRelativeToRoot;
+
 use super::Location;
 
 /// the issues that this linter can find
@@ -125,7 +127,7 @@ pub enum Issue {
     // This is a String and not a Path because we need a String (to print it),
     // and we already converted the Path of this orphaned resource into a String
     // during processing it.
-    location: Location,
+    location: PathRelativeToRoot,
   },
   PathEscapesRoot {
     path: String,
