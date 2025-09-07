@@ -2,7 +2,7 @@ Feature: "init" command
 
   Scenario: no existing config file
     When initializing
-    Then it succeeds
+    Then the exit code is 0
     And file "tikibase.json" should contain:
       """
       {
@@ -18,7 +18,7 @@ Feature: "init" command
       }
       """
     When initializing
-    Then it succeeds
+    Then the exit code is 0
     And file "tikibase.json" should contain:
       """
       {
