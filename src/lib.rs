@@ -8,6 +8,7 @@ mod output;
 pub mod prelude;
 pub mod test;
 
+use camino::Utf8Path;
 pub use config::Config;
 use database::Tikibase;
 pub use fix::Fix;
@@ -22,8 +23,8 @@ pub use prelude::{Result, UserError};
 
 /// runs the given Command in the given directory, returns structured data
 #[must_use]
-pub fn run(command: input::Command, dir: &str) -> Messages {
-  let mut base = match Tikibase::load(dir) {
+pub fn run<P: AsRef<Utf8Path>>(command: input::Command, dir: P) -> Messages {
+  let mut base = match Tikibase::load(dir.as_ref()) {
     Ok(base) => base,
     Err(issues) => return Messages::from_issues(issues),
   };

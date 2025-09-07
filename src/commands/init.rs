@@ -1,11 +1,12 @@
-use crate::database::paths;
 use crate::prelude::*;
 use big_s::S;
+use camino::Utf8Path;
 use fs_err as fs;
 use indoc::indoc;
 
-pub fn init(dir: &str) -> Result<()> {
-  let path = paths::join(dir, "tikibase.json");
+pub fn init<P: AsRef<Utf8Path>>(dir: P) -> Result<()> {
+  let dir = dir.as_ref();
+  let path = dir.join("tikibase.json");
   fs::write(path, template()).map_err(|err| UserError::CannotWriteFile {
     filename: S("tikibase.json"),
     reason: err.to_string(),
