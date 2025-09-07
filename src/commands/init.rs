@@ -5,8 +5,7 @@ use fs_err as fs;
 use indoc::indoc;
 
 pub fn init<P: AsRef<Utf8Path>>(dir: P) -> Result<()> {
-  let dir = dir.as_ref();
-  let path = dir.join("tikibase.json");
+  let path = dir.as_ref().join("tikibase.json");
   fs::write(path, template()).map_err(|err| UserError::CannotWriteFile {
     filename: S("tikibase.json"),
     reason: err.to_string(),
