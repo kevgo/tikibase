@@ -2,7 +2,6 @@ mod check;
 pub mod commands;
 pub mod config;
 mod database;
-pub mod errors;
 mod fix;
 pub mod input;
 mod output;
@@ -11,11 +10,10 @@ pub mod test;
 
 pub use config::Config;
 use database::Tikibase;
-pub use errors::UserError;
 pub use fix::Fix;
 use input::Command;
 pub use output::{Message, Messages};
-pub use prelude::Result;
+pub use prelude::{Result, UserError};
 
 // TODO
 // - replace Utf8Paths with Path
