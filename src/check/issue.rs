@@ -14,7 +14,7 @@ pub enum Issue {
   },
   // TODO: make error
   CannotReadDirectory {
-    path: String,
+    path: String, // TODO: make either a Utf8PathBuf or a newtype that represents a relative path
     err: String,
   },
   // TODO: make error
