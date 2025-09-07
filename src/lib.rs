@@ -17,6 +17,10 @@ use input::Command;
 pub use output::{Message, Messages};
 pub use prelude::Result;
 
+// TODO
+// - replace Utf8Paths with Path
+// - use UserError everywhere
+
 /// runs the given Command in the given directory, returns structured data
 #[must_use]
 pub fn run(command: input::Command, dir: &str) -> Messages {
