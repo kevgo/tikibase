@@ -1,6 +1,6 @@
 use super::{Directory, Document};
-use crate::check::Issue;
 use crate::Config;
+use crate::check::Issue;
 use big_s::S;
 
 pub struct Tikibase {

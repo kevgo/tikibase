@@ -1,8 +1,8 @@
-<img src="doc/tiki_head.jpg" width="154" height="223" align="right">
+# Tikibase: the un-database
 
-# Tikibase
+<img src="doc/logo.png" width="154" height="223" align="right">
 
-_the un-database_
+![build status](https://github.com/kevgo/tikibase/actions/workflows/ci.yml/badge.svg)
 
 Whatever note taking or knowledge base application you love and use today, it
 will be dated in 5 years and unsupported/unavailable in 10 years. All your data
@@ -12,27 +12,33 @@ Tikibase is a knowledge base available on all current and future computers
 because it isn't based on a dedicated server or viewer application that might be
 unavailable on future devices. A Tikibase is pure human readable and machine
 parsable data, a collection of 100% standards-compliant Markdown files in a
-folder. You view, change, and organize these files using the text or Markdown
-editor of your choice. If your computer can display and edit text files, you can
-use your Tikibase on it. A powerful option for efficiently working on large
-Tikibases in the 2020s is
-[VSCode Markdown IDE](https://github.com/kevgo/vscode-markdown-ide).
+folder.
 
-You manage changes to your knowledge base using a version control system like
-Git, Mercurial, or whatever they use in the future. The open-source CLI
-application in this repository is an optional linter that helps keep a Tikibase
-consistent by finding and fixing:
+You view, change, and organize these files using the text or Markdown editor of
+your choice. If your computer can display and edit text files, you can use your
+Tikibase on it. A powerful option for efficiently working on large Tikibases in
+the 2020s is
+[VSCode Markdown IDE](https://github.com/kevgo/vscode-markdown-ide). You manage
+changes to your knowledge base using a version control system like Git,
+Mercurial, or whatever they use in the future.
+
+The open-source CLI application in this repository is an optional linter that
+helps keep a Zettelkasten-like knowledge base consistent by finding and fixing:
+
+- missing backlinks: if a document links to another document, the other document
+  must also link back to the first document
+- unknown or unordered headings: you can define the allowed headings and in
+  which order they should occur - this helps keep a knowledge base organized
+- unreferenced files: all Markdown files must link to at least one other file
+
+In addition, Tikibase provides the usual Markdown linting like:
 
 - broken links/images pointing to non-existing local files or anchors
-- unreferenced files
 - documents linking to themselves
 - inconsistent heading capitalization and levels
 - duplicate headings
 - empty sections
 - missing footnote definitions and references
-- optional: missing backlinks, unknown headings, the order of headings
-
-![build status](https://github.com/kevgo/tikibase/actions/workflows/ci.yml/badge.svg)
 
 ### installation
 

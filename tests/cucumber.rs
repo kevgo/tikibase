@@ -1,9 +1,9 @@
 use ahash::AHashMap;
 use big_s::S;
 use cucumber::gherkin::Step;
-use cucumber::{given, then, when, World};
+use cucumber::{World, given, then, when};
 use tikibase::input::Command;
-use tikibase::{self, test, Messages};
+use tikibase::{self, Messages, test};
 
 #[derive(Debug, World)]
 #[world(init = Self::new)]

@@ -1,7 +1,7 @@
-use super::{paths, Document};
+use super::{Document, paths};
 use crate::check::Issue;
 use crate::config::LoadResult;
-use crate::{config, Config};
+use crate::{Config, config};
 use ahash::AHashMap;
 use camino::{Utf8DirEntry, Utf8Path};
 use merge::Merge;
@@ -95,7 +95,7 @@ impl Directory {
         return Err(vec![Issue::CannotReadDirectory {
           path: abs_path,
           err: err.to_string(),
-        }])
+        }]);
       }
     };
     for entry in entries {
@@ -250,7 +250,7 @@ mod tests {
 
   mod get_dir {
     use crate::database::Directory;
-    use crate::{test, Config};
+    use crate::{Config, test};
     use big_s::S;
 
     #[test]
@@ -272,7 +272,7 @@ mod tests {
 
   mod get_doc {
     use crate::database::Directory;
-    use crate::{test, Config};
+    use crate::{Config, test};
     use big_s::S;
 
     #[test]
@@ -294,7 +294,7 @@ mod tests {
 
   mod get_doc_mut {
     use crate::database::Directory;
-    use crate::{test, Config};
+    use crate::{Config, test};
     use big_s::S;
 
     #[test]
@@ -330,7 +330,7 @@ mod tests {
 
   mod has_resource {
     use crate::database::Directory;
-    use crate::{test, Config};
+    use crate::{Config, test};
     use big_s::S;
 
     #[test]

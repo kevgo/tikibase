@@ -1,5 +1,5 @@
-use super::{doc_phase_1, State1};
-use crate::database::{paths, Directory};
+use super::{State1, doc_phase_1};
+use crate::database::{Directory, paths};
 
 // phase 1 `Directory` check
 pub fn dir_phase_1(dir: &Directory, parent: &str, state: &mut State1) {

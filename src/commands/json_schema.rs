@@ -16,7 +16,7 @@ pub fn json_schema() -> Outcome {
       return Outcome::from_issue(Issue::CannotWriteJsonSchemaFile {
         file: filename.into(),
         message: err.to_string(),
-      })
+      });
     }
   };
   let schema = schema_for!(config::Config);

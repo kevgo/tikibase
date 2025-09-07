@@ -1,6 +1,6 @@
+use crate::Config;
 use crate::check::{Issue, Location};
 use crate::database::Document;
-use crate::Config;
 
 /// populates the given issues list with all sections in this document that don't match the configured order
 pub fn scan(doc: &Document, config: &Config, issues: &mut Vec<Issue>) {
@@ -53,9 +53,9 @@ pub fn scan(doc: &Document, config: &Config, issues: &mut Vec<Issue>) {
 
 #[cfg(test)]
 mod tests {
+  use crate::Config;
   use crate::check::{Issue, Location};
   use crate::database::Document;
-  use crate::Config;
   use big_s::S;
   use indoc::indoc;
 
