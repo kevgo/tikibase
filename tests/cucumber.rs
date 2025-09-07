@@ -16,6 +16,8 @@ pub struct MyWorld {
 
   /// content of the files before the Tikibase command ran
   pub original_contents: AHashMap<String, String>,
+
+  pub result: tikibase::Result<()>,
 }
 
 impl MyWorld {
@@ -24,6 +26,7 @@ impl MyWorld {
       dir: test::tmp_dir(),
       output: Messages::default(),
       original_contents: AHashMap::new(),
+      result: None,
     }
   }
 }
@@ -55,6 +58,17 @@ fn fixing(world: &mut MyWorld) {
   world.output = tikibase::run(Command::Fix, &world.dir);
 }
 
+#[when("I run")]
+fn i_run(world: &mut MyWorld, step: &Step) {
+  let mut args = step.docstring().unwrap().split(" ").into_iter();
+  let _ = args.next().unwrap();
+  let cmd = std::process::Command::new("./target/release/tikibase")
+    .args(args)
+    .output()
+    .unwrap();
+  world.result = tikibase::commands::init(&world.dir);
+}
+
 #[when("initializing")]
 fn initializing(world: &mut MyWorld) {
   world.output = tikibase::run(Command::Init, &world.dir);
@@ -80,6 +94,11 @@ fn file_should_contain(world: &mut MyWorld, step: &Step, filename: String) {
   let want = step.docstring.as_ref().unwrap();
   let have = test::load_file(&filename, &world.dir);
   pretty::assert_eq!(have.trim(), want.trim());
+}
+
+#[then("it succeeds")]
+fn it_succeeds(world: &mut MyWorld) {
+  assert_eq!(world.result, Ok(()))
 }
 
 #[then("it prints:")]

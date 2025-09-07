@@ -1,8 +1,11 @@
 Feature: "init" command
 
   Scenario: no existing config file
-    When initializing
-    Then the exit code is 0
+    When I run
+      """
+      tikibase init
+      """
+    Then it succeeds
     And file "tikibase.json" should contain:
       """
       {
