@@ -1,7 +1,7 @@
 //! stuff that is used in pretty much every file of this crate
 
 /// errors that are the user's fault and should be displayed to them
-use std::fmt::Display;
+use core::fmt::Display;
 
 #[derive(Eq, Debug, PartialEq)]
 pub enum UserError {
