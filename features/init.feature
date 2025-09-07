@@ -1,5 +1,6 @@
 Feature: "init" command
 
+  @this
   Scenario: no existing config file
     When I run
       """

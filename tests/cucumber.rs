@@ -18,6 +18,8 @@ pub struct MyWorld {
   pub original_contents: AHashMap<String, String>,
 
   pub result: tikibase::Result<()>,
+
+  pub subshell_output: Option<std::process::Output>,
 }
 
 impl MyWorld {
@@ -26,7 +28,8 @@ impl MyWorld {
       dir: test::tmp_dir(),
       output: Messages::default(),
       original_contents: AHashMap::new(),
-      result: None,
+      result: Ok(()),
+      subshell_output: None,
     }
   }
 }
@@ -60,18 +63,24 @@ fn fixing(world: &mut MyWorld) {
 
 #[when("I run")]
 fn i_run(world: &mut MyWorld, step: &Step) {
-  let mut args = step.docstring().unwrap().split(" ").into_iter();
-  let _ = args.next().unwrap();
-  let cmd = std::process::Command::new("./target/release/tikibase")
-    .args(args)
-    .output()
-    .unwrap();
-  world.result = tikibase::commands::init(&world.dir);
+  let mut args = step.docstring().unwrap().trim().split(" ").into_iter();
+  let executable = args.next().unwrap();
+  if executable != "tikibase" {
+    panic!("can only test tikibase");
+  }
+  let cwd = std::env::current_dir().unwrap();
+  world.subshell_output = Some(
+    std::process::Command::new(cwd.join("target/release/tikibase"))
+      .args(args)
+      .current_dir(&world.dir)
+      .output()
+      .unwrap(),
+  );
 }
 
 #[when("initializing")]
 fn initializing(world: &mut MyWorld) {
-  world.output = tikibase::run(Command::Init, &world.dir);
+  world.result = tikibase::commands::init(&world.dir);
 }
 
 #[then("all files are unchanged")]
@@ -91,14 +100,9 @@ fn file_is_unchanged(world: &mut MyWorld, filename: String) {
 
 #[then(expr = "file {string} should contain:")]
 fn file_should_contain(world: &mut MyWorld, step: &Step, filename: String) {
-  let want = step.docstring.as_ref().unwrap();
   let have = test::load_file(&filename, &world.dir);
+  let want = step.docstring.as_ref().unwrap();
   pretty::assert_eq!(have.trim(), want.trim());
-}
-
-#[then("it succeeds")]
-fn it_succeeds(world: &mut MyWorld) {
-  assert_eq!(world.result, Ok(()))
 }
 
 #[then("it prints:")]
@@ -124,6 +128,13 @@ fn it_prints_nothing(world: &mut MyWorld) {
 #[then("it finds no issues")]
 fn it_finds_no_issues(world: &mut MyWorld) {
   pretty::assert_eq!(world.output, Messages::default());
+}
+
+#[then(expr = "it succeeds")]
+fn it_succeeds(world: &mut MyWorld) {
+  assert_eq!(world.result, Ok(()));
+  let output = world.subshell_output.take().unwrap();
+  assert!(output.status.success())
 }
 
 #[then(expr = "the exit code is {int}")]
