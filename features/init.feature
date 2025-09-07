@@ -1,11 +1,7 @@
 Feature: "init" command
 
-  @this
   Scenario: no existing config file
-    When I run
-      """
-      tikibase init
-      """
+    When I run "tikibase init"
     Then it succeeds
     And file "tikibase.json" should contain:
       """
@@ -21,8 +17,8 @@ Feature: "init" command
         foo: 1
       }
       """
-    When initializing
-    Then the exit code is 0
+    When I run "tikibase init"
+    Then it succeeds
     And file "tikibase.json" should contain:
       """
       {

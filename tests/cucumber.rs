@@ -61,9 +61,9 @@ fn fixing(world: &mut MyWorld) {
   world.output = tikibase::run(Command::Fix, &world.dir);
 }
 
-#[when("I run")]
-fn i_run(world: &mut MyWorld, step: &Step) {
-  let mut args = step.docstring().unwrap().trim().split(" ").into_iter();
+#[when(expr = "I run {string}")]
+fn i_run(world: &mut MyWorld, call: String) {
+  let mut args = call.split(" ").into_iter();
   let executable = args.next().unwrap();
   if executable != "tikibase" {
     panic!("can only test tikibase");
