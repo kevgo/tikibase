@@ -1,10 +1,9 @@
-use super::Outcome;
 use crate::Tikibase;
 use crate::check::scanners::{section_capitalization, section_level};
-use crate::check::{State1, State2, dir_phase_1, dir_phase_2};
+use crate::check::{Issue, State1, State2, dir_phase_1, dir_phase_2};
 
 #[must_use]
-pub fn check(base: &Tikibase) -> Outcome {
+pub fn check(base: &Tikibase) -> Vec<Issue> {
   let mut state_1 = State1::empty(&base.dir);
   dir_phase_1(&base.dir, "", &mut state_1);
   let mut state_2 = State2 {
@@ -15,16 +14,12 @@ pub fn check(base: &Tikibase) -> Outcome {
   };
   dir_phase_2(&base.dir, &mut state_2);
   state_2.issues.sort();
-  Outcome {
-    issues: state_2.issues,
-    fixes: vec![],
-  }
+  state_2.issues
 }
 
 #[cfg(test)]
 mod tests {
   use crate::check::{Issue, Location};
-  use crate::commands::Outcome;
   use crate::{Tikibase, test};
   use big_s::S;
 
@@ -37,39 +32,36 @@ mod tests {
     test::create_file("tikibase.json", r#"{ "bidiLinks": true }"#, &dir);
     let base = Tikibase::load(dir).unwrap();
     let have = super::check(&base);
-    let want = Outcome {
-      issues: vec![
-        Issue::DocumentWithoutLinks {
-          location: Location {
-            file: S("1.md"),
-            line: 0,
-            start: 0,
-            end: 0,
-          },
+    let want = vec![
+      Issue::DocumentWithoutLinks {
+        location: Location {
+          file: S("1.md"),
+          line: 0,
+          start: 0,
+          end: 0,
         },
-        Issue::MissingLink {
-          location: Location {
-            file: S("1.md"),
-            line: 2,
-            start: 0,
-            end: 0,
-          },
-          path: S("2.md"),
-          title: S("Two"),
+      },
+      Issue::MissingLink {
+        location: Location {
+          file: S("1.md"),
+          line: 2,
+          start: 0,
+          end: 0,
         },
-        Issue::MissingLink {
-          location: Location {
-            file: S("1.md"),
-            line: 2,
-            start: 0,
-            end: 0,
-          },
-          path: S("3.md"),
-          title: S("Three"),
+        path: S("2.md"),
+        title: S("Two"),
+      },
+      Issue::MissingLink {
+        location: Location {
+          file: S("1.md"),
+          line: 2,
+          start: 0,
+          end: 0,
         },
-      ],
-      fixes: vec![],
-    };
+        path: S("3.md"),
+        title: S("Three"),
+      },
+    ];
     pretty::assert_eq!(have, want);
   }
 
@@ -80,27 +72,24 @@ mod tests {
     test::create_file("tikibase.json", r#"{ "bidiLinks": true }"#, &dir);
     let base = Tikibase::load(dir).unwrap();
     let have = super::check(&base);
-    let want = Outcome {
-      issues: vec![
-        Issue::DocumentWithoutLinks {
-          location: Location {
-            file: S("1.md"),
-            line: 0,
-            start: 0,
-            end: 0,
-          },
+    let want = vec![
+      Issue::DocumentWithoutLinks {
+        location: Location {
+          file: S("1.md"),
+          line: 0,
+          start: 0,
+          end: 0,
         },
-        Issue::ObsoleteOccurrencesSection {
-          location: Location {
-            file: S("1.md"),
-            line: 3,
-            start: 4,
-            end: 15,
-          },
+      },
+      Issue::ObsoleteOccurrencesSection {
+        location: Location {
+          file: S("1.md"),
+          line: 3,
+          start: 4,
+          end: 15,
         },
-      ],
-      fixes: vec![],
-    };
+      },
+    ];
     pretty::assert_eq!(have, want);
   }
 }
