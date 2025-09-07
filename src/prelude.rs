@@ -1,11 +1,15 @@
 //! stuff that is used in pretty much every file of this crate
 
+use camino::Utf8PathBuf;
 /// errors that are the user's fault and should be displayed to them
 use core::fmt::Display;
 
 #[derive(Eq, Debug, PartialEq)]
 pub enum UserError {
-  CannotWriteFile { filename: String, reason: String },
+  CannotWriteFile {
+    filename: Utf8PathBuf,
+    reason: String,
+  },
 }
 
 impl Display for UserError {
