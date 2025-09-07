@@ -7,18 +7,22 @@ pub enum Issue {
     location: Location,
     target: String,
   },
+  // TODO: make error
   CannotReadConfigurationFile {
     location: Location,
     message: String,
   },
+  // TODO: make error
   CannotReadDirectory {
     path: String,
     err: String,
   },
+  // TODO: make error
   CannotWriteConfigFile {
     message: String,
     file: String,
   },
+  // TODO: make error
   CannotWriteJsonSchemaFile {
     file: String,
     message: String,
