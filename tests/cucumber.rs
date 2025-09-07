@@ -9,25 +9,27 @@ use tikibase::{self, Messages, test};
 #[world(init = Self::new)]
 pub struct MyWorld {
   /// the directory in which the Tikibase under test is located
-  pub dir: String,
-
-  /// the error returned by the command
-  pub result: tikibase::Result<()>,
+  pub dir: camino_tempfile::Utf8TempDir,
 
   /// the result of the Tikibase run
   pub output: Messages,
 
   /// content of the files before the Tikibase command ran
   pub original_contents: AHashMap<String, String>,
+
+  pub result: tikibase::Result<()>,
+
+  pub subshell_output: Option<std::process::Output>,
 }
 
 impl MyWorld {
   fn new() -> Self {
     Self {
-      dir: test::tmp_dir(),
-      result: Ok(()),
+      dir: camino_tempfile::tempdir().unwrap(),
       output: Messages::default(),
       original_contents: AHashMap::new(),
+      result: Ok(()),
+      subshell_output: None,
     }
   }
 }
@@ -35,54 +37,71 @@ impl MyWorld {
 #[given(expr = "file {string} with content:")]
 fn file_with_content(world: &mut MyWorld, step: &Step, filename: String) {
   let content = step.docstring.as_ref().unwrap().trim();
-  test::create_file(&filename, &content, &world.dir);
+  test::create_file(&filename, &content, world.dir.path());
   world.original_contents.insert(filename, content.into());
 }
 
 #[given(expr = "file {string}")]
 fn file(world: &mut MyWorld, filename: String) {
-  test::create_file(&filename, "content", &world.dir);
+  test::create_file(&filename, "content", world.dir.path());
 }
 
 #[when("checking")]
 fn checking(world: &mut MyWorld) {
-  world.output = tikibase::run(&Command::Check, &world.dir);
+  world.output = tikibase::run(Command::Check, world.dir.path());
 }
 
 #[when("doing a pitstop")]
 fn doing_a_pitstop(world: &mut MyWorld) {
-  world.output = tikibase::run(&Command::P, &world.dir);
+  world.output = tikibase::run(Command::P, world.dir.path());
 }
 
 #[when("fixing")]
 fn fixing(world: &mut MyWorld) {
-  world.output = tikibase::run(&Command::Fix, &world.dir);
+  world.output = tikibase::run(Command::Fix, world.dir.path());
+}
+
+#[when(expr = "I run {string}")]
+fn i_run(world: &mut MyWorld, call: String) {
+  let mut args = call.split(" ").into_iter();
+  let executable = args.next().unwrap();
+  if executable != "tikibase" {
+    panic!("can only test tikibase");
+  }
+  let cwd = std::env::current_dir().unwrap();
+  world.subshell_output = Some(
+    std::process::Command::new(cwd.join("target/release/tikibase"))
+      .args(args)
+      .current_dir(&world.dir.path())
+      .output()
+      .unwrap(),
+  );
 }
 
 #[when("initializing")]
 fn initializing(world: &mut MyWorld) {
-  world.result = tikibase::commands::init(&world.dir);
+  world.result = tikibase::commands::init(&world.dir.path());
 }
 
 #[then("all files are unchanged")]
 fn all_files_unchanged(world: &mut MyWorld) {
   for (filename, original_content) in &world.original_contents {
-    let current_content = test::load_file(filename, &world.dir);
+    let current_content = test::load_file(filename, &world.dir.path());
     pretty::assert_eq!(&current_content.trim(), original_content);
   }
 }
 
 #[then(expr = "file {string} is unchanged")]
 fn file_is_unchanged(world: &mut MyWorld, filename: String) {
-  let have = test::load_file(&filename, &world.dir);
+  let have = test::load_file(&filename, &world.dir.path());
   let want = world.original_contents.get(&filename).unwrap();
   pretty::assert_eq!(have.trim(), want);
 }
 
 #[then(expr = "file {string} should contain:")]
 fn file_should_contain(world: &mut MyWorld, step: &Step, filename: String) {
+  let have = test::load_file(&filename, &world.dir.path());
   let want = step.docstring.as_ref().unwrap();
-  let have = test::load_file(&filename, &world.dir);
   pretty::assert_eq!(have.trim(), want.trim());
 }
 
@@ -114,6 +133,8 @@ fn it_finds_no_issues(world: &mut MyWorld) {
 #[then(expr = "it succeeds")]
 fn it_succeeds(world: &mut MyWorld) {
   assert_eq!(world.result, Ok(()));
+  let output = world.subshell_output.take().unwrap();
+  assert!(output.status.success())
 }
 
 #[then(expr = "the exit code is {int}")]
