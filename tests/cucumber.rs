@@ -9,7 +9,7 @@ use tikibase::{self, Messages, test};
 #[world(init = Self::new)]
 pub struct MyWorld {
   /// the directory in which the Tikibase under test is located
-  pub dir: String,
+  pub dir: camino_tempfile::Utf8TempDir,
 
   /// the result of the Tikibase run
   pub output: Messages,
@@ -25,7 +25,7 @@ pub struct MyWorld {
 impl MyWorld {
   fn new() -> Self {
     Self {
-      dir: test::tmp_dir(),
+      dir: camino_tempfile::tempdir().unwrap(),
       output: Messages::default(),
       original_contents: AHashMap::new(),
       result: Ok(()),
@@ -37,28 +37,28 @@ impl MyWorld {
 #[given(expr = "file {string} with content:")]
 fn file_with_content(world: &mut MyWorld, step: &Step, filename: String) {
   let content = step.docstring.as_ref().unwrap().trim();
-  test::create_file(&filename, &content, &world.dir);
+  test::create_file(&filename, &content, world.dir.path());
   world.original_contents.insert(filename, content.into());
 }
 
 #[given(expr = "file {string}")]
 fn file(world: &mut MyWorld, filename: String) {
-  test::create_file(&filename, "content", &world.dir);
+  test::create_file(&filename, "content", world.dir.path());
 }
 
 #[when("checking")]
 fn checking(world: &mut MyWorld) {
-  world.output = tikibase::run(Command::Check, &world.dir);
+  world.output = tikibase::run(Command::Check, world.dir.path());
 }
 
 #[when("doing a pitstop")]
 fn doing_a_pitstop(world: &mut MyWorld) {
-  world.output = tikibase::run(Command::P, &world.dir);
+  world.output = tikibase::run(Command::P, world.dir.path());
 }
 
 #[when("fixing")]
 fn fixing(world: &mut MyWorld) {
-  world.output = tikibase::run(Command::Fix, &world.dir);
+  world.output = tikibase::run(Command::Fix, world.dir.path());
 }
 
 #[when(expr = "I run {string}")]
@@ -72,7 +72,7 @@ fn i_run(world: &mut MyWorld, call: String) {
   world.subshell_output = Some(
     std::process::Command::new(cwd.join("target/release/tikibase"))
       .args(args)
-      .current_dir(&world.dir)
+      .current_dir(&world.dir.path())
       .output()
       .unwrap(),
   );
@@ -80,27 +80,27 @@ fn i_run(world: &mut MyWorld, call: String) {
 
 #[when("initializing")]
 fn initializing(world: &mut MyWorld) {
-  world.result = tikibase::commands::init(&world.dir);
+  world.result = tikibase::commands::init(&world.dir.path());
 }
 
 #[then("all files are unchanged")]
 fn all_files_unchanged(world: &mut MyWorld) {
   for (filename, original_content) in &world.original_contents {
-    let current_content = test::load_file(filename, &world.dir);
+    let current_content = test::load_file(filename, &world.dir.path());
     pretty::assert_eq!(&current_content.trim(), original_content);
   }
 }
 
 #[then(expr = "file {string} is unchanged")]
 fn file_is_unchanged(world: &mut MyWorld, filename: String) {
-  let have = test::load_file(&filename, &world.dir);
+  let have = test::load_file(&filename, &world.dir.path());
   let want = world.original_contents.get(&filename).unwrap();
   pretty::assert_eq!(have.trim(), want);
 }
 
 #[then(expr = "file {string} should contain:")]
 fn file_should_contain(world: &mut MyWorld, step: &Step, filename: String) {
-  let have = test::load_file(&filename, &world.dir);
+  let have = test::load_file(&filename, &world.dir.path());
   let want = step.docstring.as_ref().unwrap();
   pretty::assert_eq!(have.trim(), want.trim());
 }
