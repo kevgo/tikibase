@@ -22,6 +22,9 @@ fn inner() -> tikibase::Result<()> {
   if args.command == Command::Init {
     return tikibase::commands::init(".");
   }
+  if args.command == Command::JsonSchema {
+    return tikibase::commands::json_schema();
+  }
   let messages = run(args.command, ".");
   match args.format {
     Text => print_text(&messages, args.command),

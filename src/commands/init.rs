@@ -4,10 +4,9 @@ use big_s::S;
 use fs_err as fs;
 use indoc::indoc;
 
-#[must_use]
 pub fn init(dir: &str) -> Result<()> {
   let path = paths::join(dir, "tikibase.json");
-  fs::write(path, template()).map_err(|err| UserError::CannotWriteConfigFile {
+  fs::write(path, template()).map_err(|err| UserError::CannotWriteFile {
     filename: S("tikibase.json"),
     reason: err.to_string(),
   })

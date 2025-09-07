@@ -11,6 +11,7 @@ pub mod test;
 
 pub use config::Config;
 use database::Tikibase;
+pub use errors::UserError;
 pub use fix::Fix;
 use input::Command;
 pub use output::{Message, Messages};
