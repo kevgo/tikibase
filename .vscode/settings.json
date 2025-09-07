@@ -1,6 +1,6 @@
 {
   "cucumber.features": [
-    "features/*.feature"
+    "features/**/*.feature"
   ],
   "cucumber.glue": [
     "tests/cucumber.rs"
