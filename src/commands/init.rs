@@ -6,7 +6,6 @@ use indoc::indoc;
 
 pub fn init(dir: &str) -> Result<()> {
   let path = paths::join(dir, "tikibase.json");
-  println!("INITIALIZE");
   fs::write(path, template()).map_err(|err| UserError::CannotWriteFile {
     filename: S("tikibase.json"),
     reason: err.to_string(),
