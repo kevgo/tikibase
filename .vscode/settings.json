@@ -1,0 +1,12 @@
+{
+  "cucumber.features": [
+    "features/**/*.feature"
+  ],
+  "cucumber.glue": [
+    "tests/cucumber.rs"
+  ],
+  "cucumber.parameterTypes": [],
+  "files.associations": {
+    "*.feature": "cucumber"
+  }
+}
