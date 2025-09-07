@@ -1,5 +1,5 @@
 # dev tooling and versions
-RUN_THAT_APP_VERSION = 0.7.1
+RUN_THAT_APP_VERSION = 0.18.0
 
 build:  # builds the release binary
 	cargo build --locked --release
