@@ -111,6 +111,11 @@ fn it_finds_no_issues(world: &mut MyWorld) {
   pretty::assert_eq!(world.output, Messages::default());
 }
 
+#[then(expr = "it succeeds")]
+fn it_succeeds(world: &mut MyWorld) {
+  assert_eq!(world.result, Ok(()));
+}
+
 #[then(expr = "the exit code is {int}")]
 fn the_exit_code_is(world: &mut MyWorld, exit_code: u8) {
   assert_eq!(world.output.exit_code, exit_code);

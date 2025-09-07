@@ -1,7 +1,7 @@
 use core::fmt::Display;
 
 /// errors that are the user's fault and should be displayed to them
-#[derive(Debug)]
+#[derive(Eq, Debug, PartialEq)]
 pub enum UserError {
   CannotWriteFile { filename: String, reason: String },
 }
