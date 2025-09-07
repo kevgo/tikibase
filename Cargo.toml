@@ -28,6 +28,7 @@ harness = false # Allows Cucumber to print output instead of libtest
 test = false
 
 [dev-dependencies]
+camino-tempfile = "1.4.1"
 cucumber = "0.21.1"
 futures = "0.3.31"
 itertools = "0.10.5"

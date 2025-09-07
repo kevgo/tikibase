@@ -23,7 +23,7 @@ pub use prelude::{Result, UserError};
 /// runs the given Command in the given directory, returns structured data
 #[must_use]
 pub fn run(command: input::Command, dir: &str) -> Messages {
-  let mut base = match Tikibase::load(dir.into()) {
+  let mut base = match Tikibase::load(dir) {
     Ok(base) => base,
     Err(issues) => return Messages::from_issues(issues),
   };

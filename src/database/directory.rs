@@ -72,11 +72,11 @@ impl Directory {
 
   /// provides a Directory instance for the given directory
   pub fn load(
-    root: &str,
+    root: &Utf8Path,
     relative_path: String,
     mut parent_config: Config,
   ) -> Result<Self, Vec<Issue>> {
-    let abs_path = paths::join(root, &relative_path);
+    let abs_path = root.join(&relative_path);
     let config = match config::load(&abs_path) {
       LoadResult::Loaded(config) => {
         parent_config.merge(config);
@@ -93,7 +93,7 @@ impl Directory {
       Ok(entries) => entries,
       Err(err) => {
         return Err(vec![Issue::CannotReadDirectory {
-          path: abs_path,
+          path: abs_path.to_string(),
           err: err.to_string(),
         }]);
       }
@@ -222,8 +222,8 @@ mod tests {
 
   #[test]
   fn empty() {
-    let dir = test::tmp_dir();
-    let dir = Directory::load(&dir, S(""), Config::default()).unwrap();
+    let dir = camino_tempfile::tempdir().unwrap();
+    let dir = Directory::load(dir.path(), S(""), Config::default()).unwrap();
     assert_eq!(dir.docs.len(), 0);
     assert_eq!(dir.resources.len(), 0);
   }
@@ -255,17 +255,17 @@ mod tests {
 
     #[test]
     fn exists() {
-      let dir = test::tmp_dir();
-      test::create_file("one/two/one.md", "# test doc", &dir);
-      let root = Directory::load(&dir, S(""), Config::default()).unwrap();
+      let dir = camino_tempfile::tempdir().unwrap();
+      test::create_file("one/two/one.md", "# test doc", dir.path());
+      let root = Directory::load(dir.path(), S(""), Config::default()).unwrap();
       let have = root.get_dir("one/two").unwrap();
       assert_eq!(have.relative_path, "one/two");
     }
 
     #[test]
     fn missing() {
-      let dir = test::tmp_dir();
-      let dir = Directory::load(&dir, S(""), Config::default()).unwrap();
+      let dir = camino_tempfile::tempdir().unwrap();
+      let dir = Directory::load(dir.path(), S(""), Config::default()).unwrap();
       assert!(dir.get_dir("zonk").is_none());
     }
   }
@@ -277,17 +277,17 @@ mod tests {
 
     #[test]
     fn exists() {
-      let dir = test::tmp_dir();
-      test::create_file("one.md", "# test doc", &dir);
-      let dir = Directory::load(&dir, S(""), Config::default()).unwrap();
+      let dir = camino_tempfile::tempdir().unwrap();
+      test::create_file("one.md", "# test doc", dir.path());
+      let dir = Directory::load(dir.path(), S(""), Config::default()).unwrap();
       let doc = dir.get_doc("one.md").unwrap();
       assert_eq!(doc.title_section.title_line.text, "# test doc");
     }
 
     #[test]
     fn missing() {
-      let dir = test::tmp_dir();
-      let dir = Directory::load(&dir, S(""), Config::default()).unwrap();
+      let dir = camino_tempfile::tempdir().unwrap();
+      let dir = Directory::load(dir.path(), S(""), Config::default()).unwrap();
       assert!(dir.get_doc("zonk.md").is_none());
     }
   }
@@ -299,17 +299,17 @@ mod tests {
 
     #[test]
     fn exists() {
-      let dir = test::tmp_dir();
-      test::create_file("one.md", "# test doc", &dir);
-      let mut dir = Directory::load(&dir, S(""), Config::default()).unwrap();
+      let dir = camino_tempfile::tempdir().unwrap();
+      test::create_file("one.md", "# test doc", dir.path());
+      let mut dir = Directory::load(dir.path(), S(""), Config::default()).unwrap();
       let doc = dir.get_doc_mut("one.md").unwrap();
       assert_eq!(doc.title_section.title_line.text, "# test doc");
     }
 
     #[test]
     fn missing() {
-      let dir = test::tmp_dir();
-      let mut dir = Directory::load(&dir, S(""), Config::default()).unwrap();
+      let dir = camino_tempfile::tempdir().unwrap();
+      let mut dir = Directory::load(dir.path(), S(""), Config::default()).unwrap();
       assert!(dir.get_doc_mut("zonk.md").is_none());
     }
   }
@@ -335,23 +335,23 @@ mod tests {
 
     #[test]
     fn mismatch() {
-      let dir = test::tmp_dir();
-      let dir = Directory::load(&dir, S(""), Config::default()).unwrap();
+      let dir = camino_tempfile::tempdir().unwrap();
+      let dir = Directory::load(dir.path(), S(""), Config::default()).unwrap();
       assert!(!dir.has_resource("zonk.png"));
     }
 
     #[test]
     fn matching() {
-      let root = test::tmp_dir();
-      test::create_file("one/two/foo.png", "content", &root);
-      let dir = Directory::load(&root, S(""), Config::default()).unwrap();
+      let root = camino_tempfile::tempdir().unwrap();
+      test::create_file("one/two/foo.png", "content", root.path());
+      let dir = Directory::load(root.path(), S(""), Config::default()).unwrap();
       assert!(dir.has_resource("one/two/foo.png"));
     }
   }
 
   #[test]
   fn load() {
-    let dir = test::tmp_dir();
+    let dir = camino_tempfile::tempdir().unwrap();
     let content = indoc! {"
             # Title
             title text
@@ -361,17 +361,17 @@ mod tests {
             ### Section 2
             foo
             "};
-    test::create_file("file.md", content, &dir);
-    let dir = Directory::load(&dir, S(""), Config::default()).unwrap();
+    test::create_file("file.md", content, dir.path());
+    let dir = Directory::load(dir.path(), S(""), Config::default()).unwrap();
     // make sure we can load existing documents
     let _doc = &dir.get_doc("file.md").unwrap();
   }
 
   #[test]
   fn load_hidden_file() {
-    let dir = test::tmp_dir();
-    test::create_file(".hidden", "content", &dir);
-    let dir = Directory::load(&dir, S(""), Config::default()).unwrap();
+    let dir = camino_tempfile::tempdir().unwrap();
+    test::create_file(".hidden", "content", dir.path());
+    let dir = Directory::load(dir.path(), S(""), Config::default()).unwrap();
     assert_eq!(dir.resources.len(), 0);
   }
 
