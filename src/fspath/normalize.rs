@@ -1,5 +1,5 @@
 /// resolves elements like "../" and "./" in the given string
-pub fn normalize(path: &str) -> Result<String, ()> {
+pub fn normalize(path: &str) -> String {
   let mut segments: Vec<&str> = vec![];
   let mut parents: u16 = 0;
   let mut segment_start: usize = 0;
@@ -25,7 +25,7 @@ pub fn normalize(path: &str) -> Result<String, ()> {
     }
   }
   pop_segments(&mut segments, &mut parents)?;
-  Ok(segments.join("/"))
+  segments.join("/")
 }
 
 /// part of normalize
@@ -58,7 +58,7 @@ mod tests {
     #[test]
     fn parent_placeholders() {
       let give = "one/three/../two/three/../../new.md";
-      let want = Ok(S("one/new.md"));
+      let want = S("one/new.md");
       let have = super::super::normalize(give);
       assert_eq!(have, want);
     }
@@ -66,7 +66,7 @@ mod tests {
     #[test]
     fn trailing_parent_placeholder() {
       let give = "one/two/three/../..";
-      let want = Ok(S("one"));
+      let want = S("one");
       let have = super::super::normalize(give);
       assert_eq!(have, want);
     }
@@ -74,7 +74,7 @@ mod tests {
     #[test]
     fn current_placeholders() {
       let give = "./one/./././two/./three.md";
-      let want = Ok(S("one/two/three.md"));
+      let want = S("one/two/three.md");
       let have = super::super::normalize(give);
       assert_eq!(have, want);
     }
@@ -82,7 +82,7 @@ mod tests {
     #[test]
     fn single_segment() {
       let give = "2.md";
-      let want = Ok(S("2.md"));
+      let want = S("2.md");
       let have = super::super::normalize(give);
       assert_eq!(have, want);
     }
@@ -90,7 +90,7 @@ mod tests {
     #[test]
     fn no_placeholders() {
       let give = "one/two/2.md";
-      let want = Ok(S("one/two/2.md"));
+      let want = S("one/two/2.md");
       let have = super::super::normalize(give);
       assert_eq!(have, want);
     }
@@ -99,7 +99,7 @@ mod tests {
     fn go_below_root() {
       let give = "../1.md";
       let have = super::super::normalize(give);
-      let want = Err(());
+      let want = S("../1.md");
       assert_eq!(have, want);
     }
 
@@ -107,7 +107,7 @@ mod tests {
     fn go_up_and_then_down_below_root() {
       let give = "one/../../1.md";
       let have = super::super::normalize(give);
-      let want = Err(());
+      let want = S("../1.md");
       assert_eq!(have, want);
     }
   }
