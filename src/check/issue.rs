@@ -127,10 +127,6 @@ pub enum Issue {
     // during processing it.
     location: Location,
   },
-  PathEscapesRoot {
-    path: String,
-    location: Location,
-  },
   SectionWithoutHeader {
     location: Location,
   },
