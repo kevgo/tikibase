@@ -1,5 +1,6 @@
 use crate::check::{Issue, Location};
-use crate::database::{Directory, Document, EntryType, paths};
+use crate::database::{Directory, Document, EntryType};
+use crate::filesystem;
 
 /// populates the given issues list with all link issues in this document
 pub fn scan(
@@ -39,8 +40,8 @@ pub fn scan(
       Some((base, anchor)) => (base.to_owned(), format!("#{anchor}")),
       None => (link.target.clone(), String::new()),
     };
-    let target_relative_path = paths::join(&dir.relative_path, &target_file);
-    let Ok(target_relative_path) = paths::normalize(&target_relative_path) else {
+    let target_relative_path = filesystem::join(&dir.relative_path, &target_file);
+    let Ok(target_relative_path) = filesystem::normalize(&target_relative_path) else {
       issues.push(Issue::PathEscapesRoot {
         path: target_relative_path,
         location: Location {
@@ -95,7 +96,7 @@ pub fn scan(
           // check for backlink from doc to us
           if dir.config.bidi_links == Some(true) {
             let link_from_other_to_doc =
-              paths::relative(&other_doc.relative_path, &doc.relative_path);
+              filesystem::relative(&other_doc.relative_path, &doc.relative_path);
             if !other_doc.contains_reference_to(&link_from_other_to_doc) {
               issues.push(Issue::MissingLink {
                 location: Location {
@@ -158,8 +159,8 @@ pub fn scan(
     if image.src.starts_with("http") {
       continue;
     }
-    let target_relative_path = paths::join(&dir.relative_path, &image.src);
-    let Ok(target_relative_path) = paths::normalize(&target_relative_path) else {
+    let target_relative_path = filesystem::join(&dir.relative_path, &image.src);
+    let Ok(target_relative_path) = filesystem::normalize(&target_relative_path) else {
       issues.push(Issue::PathEscapesRoot {
         path: target_relative_path,
         location: Location {
