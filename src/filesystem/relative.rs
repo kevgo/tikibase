@@ -35,6 +35,10 @@ pub fn dirs_between(path: &str, start: usize) -> usize {
   path[start..].matches('/').count()
 }
 
+fn go_up(count: usize) -> String {
+  "../".repeat(count)
+}
+
 /// provides the part of the given path after the given prefix
 fn path_after(path: &str, pos: usize) -> &str {
   match pos {
