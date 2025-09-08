@@ -1,7 +1,6 @@
 /// resolves elements like "../" and "./" in the given string
 pub fn normalize(path: &str) -> String {
   let mut segments: Vec<&str> = path.split("/").filter(|segment| *segment != ".").collect();
-
   let mut changed: bool;
   loop {
     (segments, changed) = simplify(segments);
@@ -9,7 +8,6 @@ pub fn normalize(path: &str) -> String {
       break;
     }
   }
-
   segments.join("/")
 }
 
