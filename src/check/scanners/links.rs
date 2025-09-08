@@ -1,5 +1,6 @@
 use crate::check::{Issue, Location};
-use crate::database::{Directory, Document, EntryType, paths};
+use crate::database::{Directory, Document, EntryType};
+use crate::fspath;
 
 /// populates the given issues list with all link issues in this document
 pub fn scan(
@@ -39,8 +40,8 @@ pub fn scan(
       Some((base, anchor)) => (base.to_owned(), format!("#{anchor}")),
       None => (link.target.clone(), String::new()),
     };
-    let target_relative_path = paths::join(&dir.relative_path, &target_file);
-    let Ok(target_relative_path) = paths::normalize(&target_relative_path) else {
+    let target_relative_path = fspath::join(&dir.relative_path, &target_file);
+    let Ok(target_relative_path) = fspath::normalize(&target_relative_path) else {
       issues.push(Issue::PathEscapesRoot {
         path: target_relative_path,
         location: Location {
@@ -95,7 +96,7 @@ pub fn scan(
           // check for backlink from doc to us
           if dir.config.bidi_links == Some(true) {
             let link_from_other_to_doc =
-              paths::relative(&other_doc.relative_path, &doc.relative_path);
+              fspath::relative(&other_doc.relative_path, &doc.relative_path);
             if !other_doc.contains_reference_to(&link_from_other_to_doc) {
               issues.push(Issue::MissingLink {
                 location: Location {
@@ -158,8 +159,8 @@ pub fn scan(
     if image.src.starts_with("http") {
       continue;
     }
-    let target_relative_path = paths::join(&dir.relative_path, &image.src);
-    let Ok(target_relative_path) = paths::normalize(&target_relative_path) else {
+    let target_relative_path = fspath::join(&dir.relative_path, &image.src);
+    let Ok(target_relative_path) = fspath::normalize(&target_relative_path) else {
       issues.push(Issue::PathEscapesRoot {
         path: target_relative_path,
         location: Location {
@@ -196,9 +197,13 @@ mod tests {
 
   #[test]
   fn link_to_non_existing_file() {
-    let dir = test::tmp_dir();
-    test::create_file("one.md", "# One\n\n[invalid](non-existing.md)\n", &dir);
-    let base = Tikibase::load(dir).unwrap();
+    let dir = camino_tempfile::tempdir().unwrap();
+    test::create_file(
+      "one.md",
+      "# One\n\n[invalid](non-existing.md)\n",
+      dir.path(),
+    );
+    let base = Tikibase::load(dir.path()).unwrap();
     let doc = base.get_doc("one.md").unwrap();
     let mut issues = vec![];
     let mut linked_resources = vec![];
@@ -224,10 +229,14 @@ mod tests {
 
   #[test]
   fn link_to_non_existing_anchor_in_existing_file() {
-    let dir = test::tmp_dir();
-    test::create_file("1.md", "# One\n[non-existing anchor](2.md#zonk)\n", &dir);
-    test::create_file("2.md", "# Two\n[One](1.md)", &dir);
-    let base = Tikibase::load(dir).unwrap();
+    let dir = camino_tempfile::tempdir().unwrap();
+    test::create_file(
+      "1.md",
+      "# One\n[non-existing anchor](2.md#zonk)\n",
+      dir.path(),
+    );
+    test::create_file("2.md", "# Two\n[One](1.md)", dir.path());
+    let base = Tikibase::load(dir.path()).unwrap();
     let doc = base.get_doc("1.md").unwrap();
     let mut issues = vec![];
     let mut linked_resources = vec![];
@@ -254,9 +263,9 @@ mod tests {
 
   #[test]
   fn link_to_non_existing_anchor_in_current_file() {
-    let dir = test::tmp_dir();
-    test::create_file("1.md", "# One\n[non-existing anchor](#zonk)\n", &dir);
-    let base = Tikibase::load(dir).unwrap();
+    let dir = camino_tempfile::tempdir().unwrap();
+    test::create_file("1.md", "# One\n[non-existing anchor](#zonk)\n", dir.path());
+    let base = Tikibase::load(dir.path()).unwrap();
     let doc = base.get_doc("1.md").unwrap();
     let mut issues = vec![];
     let mut linked_resources = vec![];
@@ -282,13 +291,13 @@ mod tests {
 
   #[test]
   fn link_to_existing_anchor_in_current_file() {
-    let dir = test::tmp_dir();
+    let dir = camino_tempfile::tempdir().unwrap();
     test::create_file(
       "1.md",
       "# One\n[existing anchor](#section)\n### section\ntext",
-      &dir,
+      dir.path(),
     );
-    let base = Tikibase::load(dir).unwrap();
+    let base = Tikibase::load(dir.path()).unwrap();
     let doc = base.get_doc("1.md").unwrap();
     let mut issues = vec![];
     let mut linked_resources = vec![];
@@ -306,13 +315,13 @@ mod tests {
 
   #[test]
   fn link_to_anchor_in_nonexisting_file() {
-    let dir = test::tmp_dir();
+    let dir = camino_tempfile::tempdir().unwrap();
     test::create_file(
       "1.md",
       "# One\n[anchor in non-existing file](2.md#foo)\n",
-      &dir,
+      dir.path(),
     );
-    let base = Tikibase::load(dir).unwrap();
+    let base = Tikibase::load(dir.path()).unwrap();
     let doc = base.get_doc("1.md").unwrap();
     let mut issues = vec![];
     let mut linked_resources = vec![];
@@ -338,18 +347,18 @@ mod tests {
 
   #[test]
   fn link_to_existing_file_bidi() {
-    let dir = test::tmp_dir();
-    test::create_file("tikibase.json", "{ \"bidiLinks\": true }", &dir);
+    let dir = camino_tempfile::tempdir().unwrap();
+    test::create_file("tikibase.json", "{ \"bidiLinks\": true }", dir.path());
     let content = indoc! {"
                 # One
                 working link to [Two](two/2.md)
                 ### section
                 working link to [Three](three/3.md)
                 "};
-    test::create_file("1.md", content, &dir);
-    test::create_file("two/2.md", "# Two\n[One](../1.md)", &dir);
-    test::create_file("three/3.md", "# Three\n[One](../1.md)", &dir);
-    let base = Tikibase::load(dir).unwrap();
+    test::create_file("1.md", content, dir.path());
+    test::create_file("two/2.md", "# Two\n[One](../1.md)", dir.path());
+    test::create_file("three/3.md", "# Three\n[One](../1.md)", dir.path());
+    let base = Tikibase::load(dir.path()).unwrap();
     let doc = base.get_doc("1.md").unwrap();
     let mut issues = vec![];
     let mut linked_resources = vec![];
@@ -366,14 +375,14 @@ mod tests {
 
   #[test]
   fn link_to_existing_file_no_bidi() {
-    let dir = test::tmp_dir();
+    let dir = camino_tempfile::tempdir().unwrap();
     let content = indoc! {"
                 # One
                 working link to [Two](two/2.md)
                 "};
-    test::create_file("1.md", content, &dir);
-    test::create_file("two/2.md", "# Two\n[One](../1.md)", &dir);
-    let base = Tikibase::load(dir).unwrap();
+    test::create_file("1.md", content, dir.path());
+    test::create_file("two/2.md", "# Two\n[One](../1.md)", dir.path());
+    let base = Tikibase::load(dir.path()).unwrap();
     let doc = base.get_doc("1.md").unwrap();
     let mut issues = vec![];
     let mut linked_resources = vec![];
@@ -390,18 +399,18 @@ mod tests {
 
   #[test]
   fn missing_backlink() {
-    let dir = test::tmp_dir();
-    test::create_file("tikibase.json", "{ \"bidiLinks\": true }", &dir);
+    let dir = camino_tempfile::tempdir().unwrap();
+    test::create_file("tikibase.json", "{ \"bidiLinks\": true }", dir.path());
     let content = indoc! {"
                 # One
                 working link to [Two](two/2.md)
                 ### section
                 working link to [Three](three/3.md)
                 "};
-    test::create_file("1.md", content, &dir);
-    test::create_file("two/2.md", "# Two\n[One](../1.md)", &dir);
-    test::create_file("three/3.md", "# Three", &dir);
-    let base = Tikibase::load(dir).unwrap();
+    test::create_file("1.md", content, dir.path());
+    test::create_file("two/2.md", "# Two\n[One](../1.md)", dir.path());
+    test::create_file("three/3.md", "# Three", dir.path());
+    let base = Tikibase::load(dir.path()).unwrap();
     let doc = base.get_doc("1.md").unwrap();
     let mut issues = vec![];
     let mut linked_resources = vec![];
@@ -430,10 +439,10 @@ mod tests {
 
   #[test]
   fn link_within_subdir() {
-    let dir = test::tmp_dir();
-    test::create_file("sub/1.md", "# One\n[two](2.md)", &dir);
-    test::create_file("sub/2.md", "# Two\n[one](1.md)", &dir);
-    let base = Tikibase::load(dir).unwrap();
+    let dir = camino_tempfile::tempdir().unwrap();
+    test::create_file("sub/1.md", "# One\n[two](2.md)", dir.path());
+    test::create_file("sub/2.md", "# Two\n[one](1.md)", dir.path());
+    let base = Tikibase::load(dir.path()).unwrap();
     let doc = base.get_doc("sub/1.md").unwrap();
     let mut issues = vec![];
     let mut linked_resources = vec![];
@@ -450,9 +459,9 @@ mod tests {
 
   #[test]
   fn link_to_doc_in_parent_dir() {
-    let dir = test::tmp_dir();
-    test::create_file("sub/1.md", "# One\n[two](../zonk.md)", &dir);
-    let base = Tikibase::load(dir).unwrap();
+    let dir = camino_tempfile::tempdir().unwrap();
+    test::create_file("sub/1.md", "# One\n[two](../zonk.md)", dir.path());
+    let base = Tikibase::load(dir.path()).unwrap();
     let doc = base.get_doc("sub/1.md").unwrap();
     let mut issues = vec![];
     let mut linked_resources = vec![];
@@ -480,14 +489,14 @@ mod tests {
 
   #[test]
   fn link_to_existing_dir() {
-    let dir = test::tmp_dir();
+    let dir = camino_tempfile::tempdir().unwrap();
     let content = indoc! {"
                 # One
                 working link to [dir](dir/)
                 "};
-    test::create_file("1.md", content, &dir);
-    test::create_file("dir/2.md", "# Two", &dir);
-    let base = Tikibase::load(dir).unwrap();
+    test::create_file("1.md", content, dir.path());
+    test::create_file("dir/2.md", "# Two", dir.path());
+    let base = Tikibase::load(dir.path()).unwrap();
     let doc = base.get_doc("1.md").unwrap();
     let mut issues = vec![];
     let mut linked_resources = vec![];
@@ -504,13 +513,13 @@ mod tests {
 
   #[test]
   fn link_to_non_existing_dir() {
-    let dir = test::tmp_dir();
+    let dir = camino_tempfile::tempdir().unwrap();
     let content = indoc! {"
                 # One
                 link to non-existing dir [zonk](zonk/)
                 "};
-    test::create_file("1.md", content, &dir);
-    let base = Tikibase::load(dir).unwrap();
+    test::create_file("1.md", content, dir.path());
+    let base = Tikibase::load(dir.path()).unwrap();
     let doc = base.get_doc("1.md").unwrap();
     let mut issues = vec![];
     let mut linked_resources = vec![];
@@ -538,9 +547,9 @@ mod tests {
 
   #[test]
   fn link_without_target() {
-    let dir = test::tmp_dir();
-    test::create_file("one.md", "# One\n\n[invalid]()\n", &dir);
-    let base = Tikibase::load(dir).unwrap();
+    let dir = camino_tempfile::tempdir().unwrap();
+    test::create_file("one.md", "# One\n\n[invalid]()\n", dir.path());
+    let base = Tikibase::load(dir.path()).unwrap();
     let doc = base.get_doc("one.md").unwrap();
     let mut issues = vec![];
     let mut linked_resources = vec![];
@@ -567,16 +576,16 @@ mod tests {
 
   #[test]
   fn link_to_external_url() {
-    let dir = test::tmp_dir();
+    let dir = camino_tempfile::tempdir().unwrap();
     let content = indoc! {"
                 # One
 
                 [external site](https://google.com)
                 ![external image](https://google.com/foo.png)
                 "};
-    test::create_file("one.md", content, &dir);
-    test::create_file("two.md", "# Two\n[one](one.md)", &dir);
-    let base = Tikibase::load(dir).unwrap();
+    test::create_file("one.md", content, dir.path());
+    test::create_file("two.md", "# Two\n[one](one.md)", dir.path());
+    let base = Tikibase::load(dir.path()).unwrap();
     let doc = base.get_doc("one.md").unwrap();
     let mut issues = vec![];
     let mut linked_resources = vec![];
@@ -593,10 +602,10 @@ mod tests {
 
   #[test]
   fn imagelink_to_existing_image_in_subdir() {
-    let dir = test::tmp_dir();
-    test::create_file("one/two/1.md", "# One\n\n![image](foo.png)\n", &dir);
-    test::create_file("one/two/foo.png", "image content", &dir);
-    let base = Tikibase::load(dir).unwrap();
+    let dir = camino_tempfile::tempdir().unwrap();
+    test::create_file("one/two/1.md", "# One\n\n![image](foo.png)\n", dir.path());
+    test::create_file("one/two/foo.png", "image content", dir.path());
+    let base = Tikibase::load(dir.path()).unwrap();
     let doc = base.get_doc("one/two/1.md").unwrap();
     let dir = base.get_dir("one/two").unwrap();
     let mut issues = vec![];
@@ -608,10 +617,10 @@ mod tests {
 
   #[test]
   fn imagelink_to_existing_image() {
-    let dir = test::tmp_dir();
-    test::create_file("1.md", "# One\n\n![image](foo.png)\n", &dir);
-    test::create_file("foo.png", "image content", &dir);
-    let base = Tikibase::load(dir).unwrap();
+    let dir = camino_tempfile::tempdir().unwrap();
+    test::create_file("1.md", "# One\n\n![image](foo.png)\n", dir.path());
+    test::create_file("foo.png", "image content", dir.path());
+    let base = Tikibase::load(dir.path()).unwrap();
     let doc = base.get_doc("1.md").unwrap();
     let mut issues = vec![];
     let mut linked_resources = vec![];
@@ -628,9 +637,9 @@ mod tests {
 
   #[test]
   fn imagelink_to_non_existing_image() {
-    let dir = test::tmp_dir();
-    test::create_file("1.md", "# One\n\n![image](zonk.png)\n", &dir);
-    let base = Tikibase::load(dir).unwrap();
+    let dir = camino_tempfile::tempdir().unwrap();
+    test::create_file("1.md", "# One\n\n![image](zonk.png)\n", dir.path());
+    let base = Tikibase::load(dir.path()).unwrap();
     let doc = base.get_doc("1.md").unwrap();
     let mut issues = vec![];
     let mut linked_resources = vec![];
@@ -656,10 +665,10 @@ mod tests {
 
   #[test]
   fn link_to_existing_resource() {
-    let dir = test::tmp_dir();
-    test::create_file("1.md", "# One\n\n[doc](doc.pdf)\n", &dir);
-    test::create_file("doc.pdf", "PDF content", &dir);
-    let base = Tikibase::load(dir).unwrap();
+    let dir = camino_tempfile::tempdir().unwrap();
+    test::create_file("1.md", "# One\n\n[doc](doc.pdf)\n", dir.path());
+    test::create_file("doc.pdf", "PDF content", dir.path());
+    let base = Tikibase::load(dir.path()).unwrap();
     let doc = base.get_doc("1.md").unwrap();
     let mut issues = vec![];
     let mut linked_resources = vec![];
@@ -676,10 +685,10 @@ mod tests {
 
   #[test]
   fn link_to_existing_resource_in_subfolder() {
-    let dir = test::tmp_dir();
-    test::create_file("sub/1.md", "# One\n\n[doc](doc.pdf)\n", &dir);
-    test::create_file("sub/doc.pdf", "PDF content", &dir);
-    let base = Tikibase::load(dir).unwrap();
+    let dir = camino_tempfile::tempdir().unwrap();
+    test::create_file("sub/1.md", "# One\n\n[doc](doc.pdf)\n", dir.path());
+    test::create_file("sub/doc.pdf", "PDF content", dir.path());
+    let base = Tikibase::load(dir.path()).unwrap();
     let doc = base.get_doc("sub/1.md").unwrap();
     let mut issues = vec![];
     let mut linked_resources = vec![];

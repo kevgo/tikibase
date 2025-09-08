@@ -30,12 +30,12 @@ mod tests {
 
   #[test]
   fn missing_links() {
-    let dir = test::tmp_dir();
-    test::create_file("1.md", "# One\n\ntext\n", &dir);
-    test::create_file("2.md", "# Two\n\n[one](1.md)\n", &dir);
-    test::create_file("3.md", "# Three\n\n[one](1.md)\n", &dir);
-    test::create_file("tikibase.json", r#"{ "bidiLinks": true }"#, &dir);
-    let base = Tikibase::load(dir).unwrap();
+    let dir = camino_tempfile::tempdir().unwrap();
+    test::create_file("1.md", "# One\n\ntext\n", dir.path());
+    test::create_file("2.md", "# Two\n\n[one](1.md)\n", dir.path());
+    test::create_file("3.md", "# Three\n\n[one](1.md)\n", dir.path());
+    test::create_file("tikibase.json", r#"{ "bidiLinks": true }"#, dir.path());
+    let base = Tikibase::load(dir.path()).unwrap();
     let have = super::check(&base);
     let want = Outcome {
       issues: vec![
@@ -75,10 +75,14 @@ mod tests {
 
   #[test]
   fn obsolete_occurrences() {
-    let dir = test::tmp_dir();
-    test::create_file("1.md", "# One\n\ntext\n### occurrences\n\n- foo", &dir);
-    test::create_file("tikibase.json", r#"{ "bidiLinks": true }"#, &dir);
-    let base = Tikibase::load(dir).unwrap();
+    let dir = camino_tempfile::tempdir().unwrap();
+    test::create_file(
+      "1.md",
+      "# One\n\ntext\n### occurrences\n\n- foo",
+      dir.path(),
+    );
+    test::create_file("tikibase.json", r#"{ "bidiLinks": true }"#, dir.path());
+    let base = Tikibase::load(dir.path()).unwrap();
     let have = super::check(&base);
     let want = Outcome {
       issues: vec![

@@ -2,14 +2,16 @@ use super::{Directory, Document};
 use crate::Config;
 use crate::check::Issue;
 use big_s::S;
+use camino::Utf8PathBuf;
 
 pub struct Tikibase {
-  pub root: String,
+  pub root: Utf8PathBuf,
   pub dir: Directory,
 }
 
 impl Tikibase {
-  pub fn load(root: String) -> Result<Self, Vec<Issue>> {
+  pub fn load<P: Into<Utf8PathBuf>>(root: P) -> Result<Self, Vec<Issue>> {
+    let root = root.into();
     let dir = Directory::load(&root, S(""), Config::default())?;
     Ok(Self { root, dir })
   }
@@ -37,9 +39,9 @@ mod tests {
 
     #[test]
     fn subdirectory() {
-      let dir = test::tmp_dir();
-      test::create_file("sub1/one.md", "# test doc", &dir);
-      let base = Tikibase::load(dir).unwrap();
+      let dir = camino_tempfile::tempdir().unwrap();
+      test::create_file("sub1/one.md", "# test doc", dir.path());
+      let base = Tikibase::load(dir.path()).unwrap();
       base.get_doc("sub1/one.md").unwrap();
     }
   }

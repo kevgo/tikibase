@@ -111,31 +111,32 @@ mod tests {
   use crate::{Tikibase, test};
   use ahash::AHashMap;
   use big_s::S;
+  use camino::Utf8PathBuf;
   use indoc::indoc;
 
   #[test]
   fn has_common_capitalization() {
     // create files
-    let dir = test::tmp_dir();
+    let dir = camino_tempfile::tempdir().unwrap();
     let content1 = indoc! {"
             # One
 
             ### alpha
             [2](2.md)"};
-    test::create_file("1.md", content1, &dir);
+    test::create_file("1.md", content1, dir.path());
     let content2 = indoc! {"
             # Two
 
             ### Alpha
             [3](3.md)"};
-    test::create_file("2.md", content2, &dir);
+    test::create_file("2.md", content2, dir.path());
     let content3 = indoc! {"
             # Three
 
             ### alpha
             [1](1.md)"};
-    test::create_file("3.md", content3, &dir);
-    let have = run(dir);
+    test::create_file("3.md", content3, dir.path());
+    let have = run(dir.path());
     let want = vec![Issue::MixCapSection {
       location: Location {
         file: S("2.md"),
@@ -153,20 +154,20 @@ mod tests {
 
   #[test]
   fn mixed_capitalization_same_counts() {
-    let dir = test::tmp_dir();
+    let dir = camino_tempfile::tempdir().unwrap();
     let content1 = indoc! {"
             # One
 
             ### alpha
             [2](2.md)"};
-    test::create_file("1.md", content1, &dir);
+    test::create_file("1.md", content1, dir.path());
     let content2 = indoc! {"
             # Two
 
             ### Alpha
             [1](1.md)"};
-    test::create_file("2.md", content2, &dir);
-    let have = run(dir);
+    test::create_file("2.md", content2, dir.path());
+    let have = run(dir.path());
     let want = vec![
       Issue::MixCapSection {
         location: Location {
@@ -198,26 +199,26 @@ mod tests {
 
   #[test]
   fn same_capitalization() {
-    let dir = test::tmp_dir();
+    let dir = camino_tempfile::tempdir().unwrap();
     let content1 = indoc! {"
             # One
 
             ### alpha
             [2](2.md)"};
-    test::create_file("1.md", content1, &dir);
+    test::create_file("1.md", content1, dir.path());
     let content2 = indoc! {"
             # Two
 
             ### alpha
             [1](1.md)"};
-    test::create_file("2.md", content2, &dir);
-    let have = run(dir);
+    test::create_file("2.md", content2, dir.path());
+    let have = run(dir.path());
     let want = vec![];
     pretty::assert_eq!(have, want);
   }
 
-  fn run(dir: String) -> Vec<Issue> {
-    let base = Tikibase::load(dir).unwrap();
+  fn run<P: Into<Utf8PathBuf>>(dir: P) -> Vec<Issue> {
+    let base = Tikibase::load(dir.into()).unwrap();
     // stage 1
     let mut title_variants = AHashMap::new();
     for (_filename, doc) in &base.dir.docs {

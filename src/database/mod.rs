@@ -6,7 +6,6 @@ mod footnotes;
 mod image;
 mod line;
 mod link;
-pub mod paths;
 pub mod section;
 mod tikibase;
 

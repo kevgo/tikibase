@@ -1,4 +1,4 @@
-use super::{Footnotes, Image, Line, Link, Section, paths, section};
+use super::{Footnotes, Image, Line, Link, Section, section};
 use crate::check::{Issue, Location};
 use camino::Utf8Path;
 use fs_err as fs;
@@ -238,8 +238,8 @@ impl Document {
   }
 
   /// persists the changes made to this document to disk
-  pub fn save(&self, root: &str) {
-    let mut file = fs::File::create(paths::join(root, &self.relative_path)).unwrap();
+  pub fn save(&self, root: &Utf8Path) {
+    let mut file = fs::File::create(root.join(&self.relative_path)).unwrap();
     file.write_all(self.text().as_bytes()).unwrap();
   }
 
@@ -361,30 +361,30 @@ mod tests {
 
     #[test]
     fn to_subdir() {
-      let dir = test::tmp_dir();
-      test::create_file("one.md", "# One\n[two](sub/two.md)", &dir);
-      test::create_file("sub/two.md", "# Two\n[one](../one.md)", &dir);
-      let base = Tikibase::load(dir).unwrap();
+      let dir = camino_tempfile::tempdir().unwrap();
+      test::create_file("one.md", "# One\n[two](sub/two.md)", dir.path());
+      test::create_file("sub/two.md", "# Two\n[one](../one.md)", dir.path());
+      let base = Tikibase::load(dir.path()).unwrap();
       let doc = base.get_doc("one.md").unwrap();
       assert!(doc.contains_reference_to("sub/two.md"));
     }
 
     #[test]
     fn to_parent_dir() {
-      let dir = test::tmp_dir();
-      test::create_file("one.md", "# One\n[two](sub/two.md)", &dir);
-      test::create_file("sub/two.md", "# Two\n[one](../one.md)", &dir);
-      let base = Tikibase::load(dir).unwrap();
+      let dir = camino_tempfile::tempdir().unwrap();
+      test::create_file("one.md", "# One\n[two](sub/two.md)", dir.path());
+      test::create_file("sub/two.md", "# Two\n[one](../one.md)", dir.path());
+      let base = Tikibase::load(dir.path()).unwrap();
       let doc = base.get_doc("sub/two.md").unwrap();
       assert!(doc.contains_reference_to("../one.md"));
     }
 
     #[test]
     fn with_anchor() {
-      let dir = test::tmp_dir();
-      test::create_file("one.md", "# One\n###section\n[two](sub/two.md)", &dir);
-      test::create_file("sub/two.md", "# Two\n[one](../one.md#section)", &dir);
-      let base = Tikibase::load(dir).unwrap();
+      let dir = camino_tempfile::tempdir().unwrap();
+      test::create_file("one.md", "# One\n###section\n[two](sub/two.md)", dir.path());
+      test::create_file("sub/two.md", "# Two\n[one](../one.md#section)", dir.path());
+      let base = Tikibase::load(dir.path()).unwrap();
       let doc = base.get_doc("one.md").unwrap();
       assert!(doc.contains_reference_to("sub/two.md"));
     }
