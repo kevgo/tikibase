@@ -34,7 +34,7 @@ itertools = "0.10.5"
 pretty = { package = "pretty_assertions", version = "1.4.1" }
 
 [profile.dev]
-# debug = "line-tables-only" # make compiling in debug mode faster
+debug = "line-tables-only" # make compiling in debug mode faster
 
 [profile.release]
 codegen-units = 1
