@@ -190,6 +190,7 @@ pub fn scan(
 #[cfg(test)]
 mod tests {
   use crate::check::{Issue, Location};
+  use crate::domain::PathRelativeToRoot;
   use crate::{Tikibase, test};
   use big_s::S;
   use indoc::indoc;
@@ -215,7 +216,7 @@ mod tests {
     );
     let want = vec![Issue::LinkToNonExistingFile {
       location: Location {
-        file: S("one.md"),
+        file: PathRelativeToRoot::from("one.md"),
         line: 2,
         start: 0,
         end: 26,
@@ -248,7 +249,7 @@ mod tests {
     );
     let want = vec![Issue::LinkToNonExistingAnchorInExistingDocument {
       location: Location {
-        file: S("1.md"),
+        file: PathRelativeToRoot::from("1.md"),
         line: 1,
         start: 0,
         end: 32,
@@ -333,7 +334,7 @@ mod tests {
     );
     let want = vec![Issue::LinkToNonExistingFile {
       location: Location {
-        file: S("1.md"),
+        file: PathRelativeToRoot::from("1.md"),
         line: 1,
         start: 0,
         end: 39,

@@ -16,17 +16,17 @@ pub enum Issue {
   },
   // TODO: make error
   CannotReadDirectory {
-    path: String, // TODO: make either a Utf8PathBuf or a newtype that represents a relative path
+    path: PathRelativeToRoot,
     err: String,
   },
   // TODO: make error
   CannotWriteConfigFile {
     message: String,
-    file: String,
+    file: PathRelativeToRoot,
   },
   // TODO: make error
   CannotWriteJsonSchemaFile {
-    file: String,
+    file: PathRelativeToRoot,
     message: String,
   },
   DocumentWithoutLinks {
@@ -37,7 +37,7 @@ pub enum Issue {
     title: String,
   },
   EmptyDocument {
-    path: String,
+    path: PathRelativeToRoot,
   },
   EmptySection {
     location: Location,
@@ -73,7 +73,7 @@ pub enum Issue {
   InvalidTitleRegex {
     regex: String,
     problem: String,
-    file: String,
+    file: PathRelativeToRoot,
   },
   LinkToNonExistingAnchorInCurrentDocument {
     location: Location,
@@ -107,7 +107,7 @@ pub enum Issue {
   },
   MissingLink {
     location: Location,
-    path: String,
+    path: PathRelativeToRoot,
     title: String,
   },
   MixCapSection {
@@ -124,13 +124,10 @@ pub enum Issue {
     location: Location,
   },
   OrphanedResource {
-    // This is a String and not a Path because we need a String (to print it),
-    // and we already converted the Path of this orphaned resource into a String
-    // during processing it.
-    location: PathRelativeToRoot,
+    location: Location,
   },
   PathEscapesRoot {
-    path: String,
+    path: PathRelativeToRoot,
     location: Location,
   },
   SectionWithoutHeader {

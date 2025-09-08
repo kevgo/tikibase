@@ -3,6 +3,7 @@
 use crate::Fix;
 use crate::check::Issue;
 use crate::commands::Outcome;
+use crate::domain::PathRelativeToRoot;
 use big_s::S;
 use serde::Serialize;
 
@@ -10,7 +11,7 @@ use serde::Serialize;
 #[derive(Debug, Default, Eq, PartialEq, Serialize)]
 pub struct Message {
   pub text: String,
-  pub file: String,
+  pub file: PathRelativeToRoot,
   pub line: Option<u32>,
   pub start: Option<u32>,
   pub end: Option<u32>,
@@ -412,7 +413,7 @@ impl Message {
         text: format!(
           "The regular expression in the \"titleRegEx\" entry ({regex}) doesn't contain a capture group"
         ),
-        file: S("tikibase.json"),
+        file: PathRelativeToRoot::from("tikibase.json"),
         line: None,
         start: None,
         end: None,
@@ -422,7 +423,7 @@ impl Message {
         text: format!(
           "The regular expression in the \"titleRegEx\" entry ({regex}) should have only one capture group but has {captures}"
         ),
-        file: S("tikibase.json"),
+        file: PathRelativeToRoot::from("tikibase.json"),
         line: None,
         start: None,
         end: None,

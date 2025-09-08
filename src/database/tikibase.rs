@@ -1,6 +1,7 @@
 use super::{Directory, Document};
 use crate::Config;
 use crate::check::Issue;
+use crate::domain::PathRelativeToRoot;
 use big_s::S;
 use camino::Utf8PathBuf;
 
@@ -25,7 +26,7 @@ impl Tikibase {
   }
 
   /// provides the document with the given relative filename as a mutable reference
-  pub fn get_doc_mut(&mut self, path: &str) -> Option<&mut Document> {
+  pub fn get_doc_mut(&mut self, path: &PathRelativeToRoot) -> Option<&mut Document> {
     self.dir.get_doc_mut(path)
   }
 }

@@ -1,5 +1,6 @@
 use super::{Footnotes, Image, Line, Link, Section, section};
 use crate::check::{Issue, Location};
+use crate::domain::PathRelativeToRoot;
 use camino::Utf8Path;
 use fs_err as fs;
 use fs_err::File;
@@ -9,7 +10,7 @@ use std::io::prelude::*;
 #[derive(Debug, Eq, Hash, PartialEq)]
 pub struct Document {
   /// the path relative to the Tikibase root directory
-  pub relative_path: String,
+  pub relative_path: PathRelativeToRoot,
   pub title_section: Section,
   pub content_sections: Vec<Section>,
   /// The old "occurrences" section that was filtered out when loading the document.
@@ -59,11 +60,13 @@ impl Document {
   }
 
   /// provides a Document instance containing the given text
-  pub fn from_lines<T, IS: Into<String>>(lines: T, relative_path: IS) -> Result<Self, Issue>
+  pub fn from_lines<T, IS: Into<String>>(
+    lines: T,
+    relative_path: &PathRelativeToRoot,
+  ) -> Result<Self, Issue>
   where
     T: Iterator<Item = String>,
   {
-    let relative_path = relative_path.into();
     let mut sections: Vec<Section> = Vec::new();
     let mut section_builder: Option<section::Builder> = None;
     let mut inside_fence = false;
@@ -91,7 +94,7 @@ impl Document {
         None => {
           return Err(Issue::NoTitleSection {
             location: Location {
-              file: relative_path,
+              file: relative_path.to_owned(),
               line: line_number as u32,
               start: 0,
               end: line.len() as u32,
@@ -111,14 +114,14 @@ impl Document {
       }
       None => {
         return Err(Issue::EmptyDocument {
-          path: relative_path,
+          path: relative_path.to_owned(),
         });
       }
     }
     if inside_fence {
       return Err(Issue::UnclosedFence {
         location: Location {
-          file: relative_path,
+          file: relative_path.to_owned(),
           line: (fence_line as u32),
           start: 0,
           end: 0,
@@ -208,7 +211,7 @@ impl Document {
   }
 
   pub fn new(
-    path: String,
+    path: PathRelativeToRoot,
     title_section: Section,
     content_sections: Vec<Section>,
     old_occurrences_section: Option<Section>,

@@ -1,5 +1,6 @@
 use crate::check::{Issue, Location};
 use crate::database::{Footnote, Footnotes, Image, Link};
+use crate::domain::PathRelativeToRoot;
 use once_cell::sync::Lazy;
 use regex::Regex;
 
@@ -23,7 +24,7 @@ impl Line {
   pub fn add_footnotes_to(
     &self,
     result: &mut Footnotes,
-    file: &str,
+    file: impl Into<PathRelativeToRoot>,
     line: u32,
   ) -> Result<(), Issue> {
     let sanitized = sanitize_code_segments(&self.text, file, line)?;
@@ -99,7 +100,11 @@ impl<IS: Into<String>> From<IS> for Line {
 }
 
 /// non-destructively overwrites areas inside backticks in the given string with spaces
-fn sanitize_code_segments(text: &str, file: &str, line: u32) -> Result<String, Issue> {
+fn sanitize_code_segments(
+  text: &str,
+  file: impl Into<PathRelativeToRoot>,
+  line: u32,
+) -> Result<String, Issue> {
   let mut result = String::with_capacity(text.len());
   let mut code_block_start: Option<u32> = None;
   for (i, c) in text.char_indices() {
@@ -140,7 +145,7 @@ mod tests {
     fn no_footnotes() {
       let line = Line::from("text");
       let mut have = Footnotes::default();
-      line.add_footnotes_to(&mut have, "", 0).unwrap();
+      line.add_footnotes_to(&mut have, "foo.md", 0).unwrap();
       let want = Footnotes::default();
       pretty::assert_eq!(have, want);
     }
@@ -345,6 +350,7 @@ mod tests {
   mod sanitize_code_segments {
     use super::super::sanitize_code_segments;
     use crate::check::{Issue, Location};
+    use crate::domain::PathRelativeToRoot;
     use big_s::S;
 
     #[test]
@@ -366,7 +372,7 @@ mod tests {
       let give = "one `unclosed";
       let want = Err(Issue::UnclosedBacktick {
         location: Location {
-          file: S(""),
+          file: PathRelativeToRoot::from("foo.md"),
           line: 12,
           start: 4,
           end: 13,

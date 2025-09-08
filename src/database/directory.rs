@@ -1,23 +1,24 @@
 use super::{Document, paths};
 use crate::check::Issue;
 use crate::config::LoadResult;
+use crate::domain::PathRelativeToRoot;
 use crate::{Config, config};
 use ahash::AHashMap;
 use camino::{Utf8DirEntry, Utf8Path};
 use merge::Merge;
 
 pub struct Directory {
-  pub relative_path: String,
+  pub relative_path: PathRelativeToRoot,
   pub config: Config,
-  pub dirs: AHashMap<String, Directory>,
+  pub dirs: AHashMap<String, Directory>, // TODO: change type from String to PathRelativeToDir
   pub docs: AHashMap<String, Document>,
-  pub resources: AHashMap<String, ()>,
+  pub resources: AHashMap<PathRelativeToRoot, ()>,
 }
 
 impl Directory {
   /// provides the directory with the given relative filename
-  pub fn get_dir(&self, relative_path: &str) -> Option<&Self> {
-    match lowest_subdir(relative_path) {
+  pub fn get_dir(&self, relative_path: &PathRelativeToRoot) -> Option<&Self> {
+    match relative_path.lowest_subdir() {
       ("", filename) => self.dirs.get(filename),
       (subdir, remaining_path) => match self.dirs.get(subdir) {
         Some(dir) => dir.get_dir(remaining_path),
@@ -38,7 +39,7 @@ impl Directory {
   }
 
   /// provides the document with the given relative filename as a mutable reference
-  pub fn get_doc_mut(&mut self, relative_path: &str) -> Option<&mut Document> {
+  pub fn get_doc_mut(&mut self, relative_path: &PathRelativeToRoot) -> Option<&mut Document> {
     match lowest_subdir(relative_path) {
       ("", filename) => self.docs.get_mut(filename),
       (subdir, remaining_path) => match self.dirs.get_mut(subdir) {
@@ -202,15 +203,6 @@ impl EntryType {
 fn has_extension(path: &str, given_ext: &str) -> bool {
   let path_ext = path.rsplit('.').next().unwrap();
   path_ext.eq_ignore_ascii_case(given_ext)
-}
-
-/// provides the lowest subdirectory portion of the given path
-/// If a subdir was found, removes it from the given path.
-fn lowest_subdir(path: &str) -> (&str, &str) {
-  match path.find('/') {
-    Some(idx) => (&path[..idx], &path[idx + 1..]),
-    None => ("", path),
-  }
 }
 
 #[cfg(test)]

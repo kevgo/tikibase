@@ -1,3 +1,3 @@
-mod relative_path;
+mod path_relative_to_root;
 
-pub use relative_path::PathRelativeToRoot;
+pub use path_relative_to_root::PathRelativeToRoot;
