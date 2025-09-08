@@ -1,47 +1,34 @@
 /// resolves elements like "../" and "./" in the given string
 pub fn normalize(path: &str) -> String {
-  let mut segments: Vec<&str> = vec![];
+  let segments = path.split(std::path::MAIN_SEPARATOR_STR);
+  let mut result: Vec<&str> = vec![];
   let mut parents: u16 = 0;
-  let mut segment_start: usize = 0;
-  for (i, current_char) in path.chars().enumerate() {
-    if current_char == '/' {
-      match segment(path, segment_start, i) {
-        "." => {}
-        ".." => parents += 1,
-        segment => {
-          pop_segments(&mut segments, &mut parents);
-          segments.push(segment);
-        }
+  for segment in segments {
+    match segment {
+      "." => {}
+      ".." => {
+        parents += 1;
       }
-      segment_start = i;
+      segment => {
+        pop_segments(&mut result, &mut parents);
+        result.push(segment);
+      }
     }
   }
-  match segment(path, segment_start, path.len()) {
-    "." => {}
-    ".." => parents += 1,
-    segment => {
-      pop_segments(&mut segments, &mut parents);
-      segments.push(segment);
-    }
-  }
-  pop_segments(&mut segments, &mut parents);
-  segments.join("/")
+  pop_segments(&mut result, &mut parents);
+  result.join(std::path::MAIN_SEPARATOR_STR)
 }
 
 /// part of normalize
 fn pop_segments(segments: &mut Vec<&str>, parents: &mut u16) {
-  while *parents > 0 && segments.len() > 0 {
+  while *parents > 0 {
+    if segments.is_empty() {
+      *parents -= 1;
+      segments.push("..");
+      return;
+    }
     segments.pop();
     *parents -= 1;
-  }
-}
-
-/// part of `normalize`
-fn segment(path: &str, start: usize, end: usize) -> &str {
-  if start > 0 {
-    &path[start + 1..end]
-  } else {
-    &path[..end]
   }
 }
 
@@ -95,7 +82,7 @@ mod tests {
     fn go_below_root() {
       let give = "../1.md";
       let have = super::super::normalize(give);
-      let want = Err(());
+      let want = S("../1.md");
       assert_eq!(have, want);
     }
 
