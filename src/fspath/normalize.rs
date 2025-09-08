@@ -30,7 +30,7 @@ pub fn normalize(path: &str) -> String {
 
 /// part of normalize
 fn pop_segments(segments: &mut Vec<&str>, parents: &mut u16) {
-  while *parents > 0 && !segments.is_empty() {
+  while *parents > 0 && segments.len() > 0 {
     segments.pop();
     *parents -= 1;
   }
