@@ -1,7 +1,6 @@
-use cucumber::WriterExt;
-
 use crate::check::{Issue, Location};
 use crate::database::{Directory, Document, EntryType};
+use crate::domain::PathRelativeToRoot;
 use crate::fspath;
 
 /// populates the given issues list with all link issues in this document
@@ -9,7 +8,7 @@ pub fn scan(
   doc: &Document,
   dir: &Directory,
   issues: &mut Vec<Issue>,
-  linked_resources: &mut Vec<String>,
+  linked_resources: &mut Vec<PathRelativeToRoot>,
   root: &Directory,
 ) {
   if dir.config.check_standalone_docs() && doc.links.is_empty() && doc.images.is_empty() {
@@ -42,8 +41,8 @@ pub fn scan(
       Some((base, anchor)) => (base.to_owned(), format!("#{anchor}")),
       None => (link.target.clone(), String::new()),
     };
-    let target_relative_path = fspath::join(&dir.relative_path, &target_file);
-    let target_relative_path = fspath::normalize(&target_relative_path);
+    let target_relative_path = dir.relative_path.join(target_file);
+    let target_relative_path = target_relative_path.normalize();
     if target_relative_path == doc.relative_path {
       issues.push(Issue::LinkToSameDocument {
         location: Location {

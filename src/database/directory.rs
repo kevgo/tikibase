@@ -74,7 +74,7 @@ impl Directory {
   /// provides a Directory instance for the given directory
   pub fn load(
     root: &Utf8Path,
-    relative_path: String,
+    relative_path: PathRelativeToRoot,
     mut parent_config: Config,
   ) -> Result<Self, Vec<Issue>> {
     let abs_path = root.join(&relative_path);
@@ -104,7 +104,7 @@ impl Directory {
       let entry_name = entry.file_name().to_owned(); // TODO: try using the &str directly here, instead of converting it to a String
       match EntryType::from_direntry(&entry, &config) {
         EntryType::Document => {
-          let doc_relative_path = fspath::join(&relative_path, &entry_name);
+          let doc_relative_path = relative_path.join(&entry_name);
           match Document::load(entry.path(), doc_relative_path) {
             Ok(doc) => {
               docs.insert(entry_name, doc);
@@ -171,7 +171,7 @@ impl EntryType {
       if config.ignore(entry_filename) {
         return Self::Ignored;
       }
-      if has_extension(entry_filename, "md") {
+      if fspath::has_extension(entry_filename, "md") {
         return Self::Document {};
       }
       return Self::Resource;
@@ -182,27 +182,22 @@ impl EntryType {
     Self::Ignored
   }
 
-  pub fn from_str(path: &str) -> Self {
-    if path == "tikibase.json" {
+  // TODO: convert to implementing FROM trait
+  pub fn from_path(path: &PathRelativeToRoot) -> Self {
+    if path.as_str() == "tikibase.json" {
       return Self::Configuration;
     }
-    if path.starts_with('.') {
+    if path.as_str().starts_with('.') {
       return Self::Ignored;
     }
-    if has_extension(path, "md") {
+    if fspath::has_extension(path.as_str(), "md") {
       return Self::Document;
     }
-    if path.ends_with('/') {
+    if path.as_str().ends_with('/') {
       return Self::Directory;
     }
     Self::Resource
   }
-}
-
-/// case-insensitive comparison of file extensions
-fn has_extension(path: &str, given_ext: &str) -> bool {
-  let path_ext = path.rsplit('.').next().unwrap();
-  path_ext.eq_ignore_ascii_case(given_ext)
 }
 
 #[cfg(test)]

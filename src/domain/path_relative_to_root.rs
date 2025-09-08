@@ -1,9 +1,8 @@
-use std::fmt::Display;
-
 use camino::{Utf8Path, Utf8PathBuf};
 use serde::Serialize;
+use std::fmt::Display;
 
-use crate::database::paths;
+use crate::fspath;
 
 /// a path relative to the root of the document base,
 /// i.e. "foo.md"
@@ -13,6 +12,12 @@ pub struct PathRelativeToRoot(Utf8PathBuf);
 impl PathRelativeToRoot {
   pub fn as_str(&self) -> &str {
     self.0.as_str()
+  }
+
+  /// case-insensitive comparison of file extensions
+  pub fn has_extension(self, given_ext: &str) -> bool {
+    let path_ext = self.as_str().rsplit('.').next().unwrap();
+    path_ext.eq_ignore_ascii_case(given_ext)
   }
 
   pub fn join(&self, fragment: impl AsRef<Utf8Path>) -> PathRelativeToRoot {
@@ -30,7 +35,7 @@ impl PathRelativeToRoot {
   }
 
   pub fn normalize(&self) -> PathRelativeToRoot {
-    PathRelativeToRoot::from(paths::normalize(self.0.as_str()))
+    PathRelativeToRoot::from(fspath::normalize(self.0.as_str()))
   }
 }
 
@@ -55,6 +60,13 @@ impl From<&PathRelativeToRoot> for PathRelativeToRoot {
 impl From<&str> for PathRelativeToRoot {
   fn from(value: &str) -> Self {
     verify(value);
+    PathRelativeToRoot(Utf8PathBuf::from(value))
+  }
+}
+
+impl From<String> for PathRelativeToRoot {
+  fn from(value: String) -> Self {
+    verify(&value);
     PathRelativeToRoot(Utf8PathBuf::from(value))
   }
 }
