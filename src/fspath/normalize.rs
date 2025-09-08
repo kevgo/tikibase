@@ -25,8 +25,6 @@ fn simplify(segments: Vec<&str>) -> (Vec<&str>, bool) {
     }
     if let Some(last_seg) = last {
       result.push(last_seg);
-      last = Some(segment);
-      continue;
     }
     last = Some(segment);
   }
