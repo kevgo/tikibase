@@ -3,6 +3,7 @@ pub mod commands;
 pub mod config;
 mod database;
 mod fix;
+mod fspath;
 pub mod input;
 mod output;
 pub mod prelude;
