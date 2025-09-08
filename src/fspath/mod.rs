@@ -1,3 +1,5 @@
+//! Functions to handle filesystem paths
+
 mod join;
 mod normalize;
 mod relative;
