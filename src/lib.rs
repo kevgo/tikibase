@@ -4,6 +4,7 @@ pub mod config;
 mod database;
 pub mod domain;
 mod fix;
+mod fspath;
 pub mod input;
 mod output;
 pub mod prelude;
