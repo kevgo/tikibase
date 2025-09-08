@@ -139,10 +139,6 @@ pub fn fix(issue: Issue, base: &mut Tikibase) -> Result {
     | Issue::LinkWithoutTarget { location: _ }
     | Issue::NoTitleSection { location: _ }
     | Issue::OrphanedResource { location: _ }
-    | Issue::PathEscapesRoot {
-      path: _,
-      location: _,
-    }
     | Issue::SectionWithoutHeader { location: _ }
     | Issue::TitleRegexNoCaptures { regex: _ }
     | Issue::TitleRegexTooManyCaptures {
