@@ -15,9 +15,9 @@ jobs:
   test:
     runs-on: ubuntu-latest
     steps:
-      - uses: actions/checkout@v4
+      - uses: actions/checkout@v5
       - uses: dtolnay/rust-toolchain@stable
-      - uses: Swatinem/rust-cache@v1.2.0
+      - uses: Swatinem/rust-cache@v2.8.0
       - run: make setup-ci
       - run: make unit
       - run: make cuke
