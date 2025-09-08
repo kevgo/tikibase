@@ -6,6 +6,24 @@ pub fn relative(source: &str, target: &str) -> String {
   format!("{}{}", go_up(source_ups), target_part)
 }
 
+/// provides the largest common ancestor for the two given paths
+fn common_anchestor<'a>(path1: &'a str, path2: &str) -> &'a str {
+  let mut path1_chars = path1.char_indices();
+  let mut path2_chars = path2.chars();
+  let mut slash_pos: usize = 0;
+  loop {
+    match (path1_chars.next(), path2_chars.next()) {
+      (Some((pos, seg1)), Some(seg2)) if seg1 == seg2 => {
+        if seg1 == '/' {
+          slash_pos = pos;
+        }
+      }
+      (None, None) => return path1,
+      _ => return &path1[..slash_pos],
+    }
+  }
+}
+
 /// provides the number of path segments between the given position in the given path and its end
 pub fn dirs_between(path: &str, start: usize) -> usize {
   if start == 0 {
