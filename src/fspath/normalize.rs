@@ -92,7 +92,15 @@ mod tests {
     }
 
     #[test]
-    fn go_above_root() {
+    fn go_below_root() {
+      let give = "../1.md";
+      let have = super::super::normalize(give);
+      let want = Err(());
+      assert_eq!(have, want);
+    }
+
+    #[test]
+    fn go_up_and_then_down_below_root() {
       let give = "one/../../1.md";
       let have = super::super::normalize(give);
       let want = S("../1.md");
