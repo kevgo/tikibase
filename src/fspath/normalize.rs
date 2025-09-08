@@ -1,52 +1,42 @@
 /// resolves elements like "../" and "./" in the given string
 pub fn normalize(path: &str) -> String {
-  let mut segments: Vec<&str> = vec![];
-  let mut parents: u16 = 0;
-  let mut segment_start: usize = 0;
-  for (i, current_char) in path.chars().enumerate() {
-    if current_char == '/' {
-      match segment(path, segment_start, i) {
-        "." => {}
-        ".." => parents += 1,
-        segment => {
-          pop_segments(&mut segments, &mut parents)?;
-          segments.push(segment);
-        }
-      }
-      segment_start = i;
+  let mut segments: Vec<&str> = path
+    .split("/")
+    .filter(|segment| *segment != "" && *segment != ".")
+    .collect();
+
+  let mut changed: bool;
+  loop {
+    (segments, changed) = simplify(segments);
+    if !changed {
+      break;
     }
   }
-  match segment(path, segment_start, path.len()) {
-    "." => {}
-    ".." => parents += 1,
-    segment => {
-      pop_segments(&mut segments, &mut parents)?;
-      segments.push(segment);
-    }
-  }
-  pop_segments(&mut segments, &mut parents)?;
+
   segments.join("/")
 }
 
-/// part of normalize
-fn pop_segments(segments: &mut Vec<&str>, parents: &mut u16) -> Result<(), ()> {
-  while *parents > 0 {
-    if segments.is_empty() {
-      return Err(());
+fn simplify(segments: Vec<&str>) -> (Vec<&str>, bool) {
+  let mut result = vec![];
+  let mut last = None;
+  let mut changed = false;
+  for segment in segments {
+    if segment == ".." && last.is_some() {
+      last = None;
+      changed = true;
+      continue;
     }
-    segments.pop();
-    *parents -= 1;
+    if let Some(last_seg) = last {
+      result.push(last_seg);
+      last = Some(segment);
+      continue;
+    }
+    last = Some(segment);
   }
-  Ok(())
-}
-
-/// part of `normalize`
-fn segment(path: &str, start: usize, end: usize) -> &str {
-  if start > 0 {
-    &path[start + 1..end]
-  } else {
-    &path[..end]
+  if let Some(last_seg) = last {
+    result.push(last_seg);
   }
+  (result, changed)
 }
 
 #[cfg(test)]
