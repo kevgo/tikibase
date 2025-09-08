@@ -2,7 +2,7 @@ mod check;
 pub mod commands;
 pub mod config;
 mod database;
-mod filesystem;
+mod filepath;
 mod fix;
 pub mod input;
 mod output;
