@@ -1,9 +1,6 @@
 /// resolves elements like "../" and "./" in the given string
 pub fn normalize(path: &str) -> String {
-  let mut segments: Vec<&str> = path
-    .split("/")
-    .filter(|segment| *segment != "" && *segment != ".")
-    .collect();
+  let mut segments: Vec<&str> = path.split("/").filter(|segment| *segment != ".").collect();
 
   let mut changed: bool;
   loop {
@@ -73,6 +70,14 @@ mod tests {
     fn single_segment() {
       let give = "2.md";
       let want = S("2.md");
+      let have = super::super::normalize(give);
+      assert_eq!(have, want);
+    }
+
+    #[test]
+    fn directory() {
+      let give = "dir";
+      let want = S("dir");
       let have = super::super::normalize(give);
       assert_eq!(have, want);
     }

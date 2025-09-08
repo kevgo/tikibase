@@ -67,6 +67,7 @@ pub fn scan(
       }
       continue;
     }
+    println!("1111111111111111111111111111111111111111 {target_relative_path}");
     match EntryType::from_str(&target_relative_path) {
       EntryType::Document => {
         if let Some(other_doc) = root.get_doc(&target_relative_path) {
