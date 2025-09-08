@@ -3,6 +3,8 @@ use std::fmt::Display;
 use camino::{Utf8Path, Utf8PathBuf};
 use serde::Serialize;
 
+use crate::database::paths;
+
 /// a path relative to the root of the document base,
 /// i.e. "foo.md"
 #[derive(Clone, Debug, Default, Eq, Hash, Ord, PartialEq, PartialOrd, Serialize)]
@@ -27,8 +29,8 @@ impl PathRelativeToRoot {
     }
   }
 
-  pub fn canonicalize(&self) -> PathRelativeToRoot {
-    PathRelativeToRoot(self.0.canonicalize_utf8().unwrap())
+  pub fn normalize(&self) -> PathRelativeToRoot {
+    PathRelativeToRoot::from(paths::normalize(self.0.as_str()))
   }
 }
 
