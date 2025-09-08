@@ -24,6 +24,13 @@ fn common_anchestor<'a>(path1: &'a str, path2: &str) -> &'a str {
   }
 }
 
+pub fn dirname(path: &str) -> &str {
+  match path.rfind('/') {
+    Some(pos) => &path[..pos],
+    None => "",
+  }
+}
+
 /// provides the number of path segments between the given position in the given path and its end
 pub fn dirs_between(path: &str, start: usize) -> usize {
   if start == 0 {
@@ -50,6 +57,63 @@ fn path_after(path: &str, pos: usize) -> &str {
 
 #[cfg(test)]
 mod tests {
+
+  mod common_anchestor {
+
+    #[test]
+    fn has_common_ancestors() {
+      let path1 = "one/two/three/file.md";
+      let path2 = "one/two/throw/file.md";
+      let want = "one/two";
+      let have = super::super::common_anchestor(path1, path2);
+      assert_eq!(have, want);
+    }
+
+    #[test]
+    fn no_common_ancestors() {
+      let path1 = "one/two/three/file.md";
+      let path2 = "alpha/beta/file.md";
+      let want = "";
+      let have = super::super::common_anchestor(path1, path2);
+      assert_eq!(have, want);
+    }
+
+    #[test]
+    fn identical() {
+      let path1 = "one/two/three/file.md";
+      let path2 = "one/two/three/file.md";
+      let want = "one/two/three/file.md";
+      let have = super::super::common_anchestor(path1, path2);
+      assert_eq!(have, want);
+    }
+  }
+
+  mod dirname {
+
+    #[test]
+    fn normal() {
+      let give = "one/two/file.md";
+      let want = "one/two";
+      let have = super::super::dirname(give);
+      assert_eq!(have, want);
+    }
+
+    #[test]
+    fn file_only() {
+      let give = "file.md";
+      let want = "";
+      let have = super::super::dirname(give);
+      assert_eq!(have, want);
+    }
+
+    #[test]
+    fn dir_already() {
+      let give = "one/two/";
+      let want = "one/two";
+      let have = super::super::dirname(give);
+      assert_eq!(have, want);
+    }
+  }
 
   mod dirs_between {
 
