@@ -40,18 +40,7 @@ pub fn scan(
       None => (link.target.clone(), String::new()),
     };
     let target_relative_path = paths::join(&dir.relative_path, &target_file);
-    let Ok(target_relative_path) = paths::normalize(&target_relative_path) else {
-      issues.push(Issue::PathEscapesRoot {
-        path: target_relative_path,
-        location: Location {
-          file: doc.relative_path.clone(),
-          line: link.line.to_owned(),
-          start: link.start.to_owned(),
-          end: link.end.to_owned(),
-        },
-      });
-      continue;
-    };
+    let target_relative_path = paths::normalize(&target_relative_path);
     if target_relative_path == doc.relative_path {
       issues.push(Issue::LinkToSameDocument {
         location: Location {
@@ -159,18 +148,7 @@ pub fn scan(
       continue;
     }
     let target_relative_path = paths::join(&dir.relative_path, &image.src);
-    let Ok(target_relative_path) = paths::normalize(&target_relative_path) else {
-      issues.push(Issue::PathEscapesRoot {
-        path: target_relative_path,
-        location: Location {
-          file: doc.relative_path.clone(),
-          line: image.line.to_owned(),
-          start: image.start.to_owned(),
-          end: image.end.to_owned(),
-        },
-      });
-      continue;
-    };
+    let target_relative_path = paths::normalize(&target_relative_path);
     if root.has_resource(&target_relative_path) {
       linked_resources.push(target_relative_path);
     } else {
