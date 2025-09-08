@@ -1,3 +1,11 @@
+/// provides the relative path from within given source file to the given target file
+pub fn relative(source: &str, target: &str) -> String {
+  let common_ancestor = common_anchestor(source, target);
+  let source_ups = dirs_between(dirname(source), common_ancestor.len());
+  let target_part = path_after(target, common_ancestor.len());
+  format!("{}{}", go_up(source_ups), target_part)
+}
+
 /// provides the largest common ancestor for the two given paths
 fn common_anchestor<'a>(path1: &'a str, path2: &str) -> &'a str {
   let mut path1_chars = path1.char_indices();
@@ -16,7 +24,6 @@ fn common_anchestor<'a>(path1: &'a str, path2: &str) -> &'a str {
   }
 }
 
-/// provides the directory of the given file path
 pub fn dirname(path: &str) -> &str {
   match path.rfind('/') {
     Some(pos) => &path[..pos],
@@ -35,75 +42,10 @@ pub fn dirs_between(path: &str, start: usize) -> usize {
   path[start..].matches('/').count()
 }
 
-pub fn join(path1: &str, path2: &str) -> String {
-  if path1.is_empty() || path2.is_empty() {
-    format!("{path1}{path2}")
-  } else {
-    format!("{path1}/{path2}")
-  }
-}
-
-/// resolves elements like "../" and "./" in the given string
-pub fn normalize(path: &str) -> String {
-  let mut segments: Vec<&str> = vec![];
-  let mut parents: u16 = 0;
-  let mut segment_start: usize = 0;
-  for (i, current_char) in path.chars().enumerate() {
-    if current_char == '/' {
-      match segment(path, segment_start, i) {
-        "." => {}
-        ".." => parents += 1,
-        segment => {
-          pop_segments(&mut segments, &mut parents);
-          segments.push(segment);
-        }
-      }
-      segment_start = i;
-    }
-  }
-  match segment(path, segment_start, path.len()) {
-    "." => {}
-    ".." => parents += 1,
-    segment => {
-      pop_segments(&mut segments, &mut parents);
-      segments.push(segment);
-    }
-  }
-  pop_segments(&mut segments, &mut parents);
-  segments.join("/")
-}
-
-/// part of normalize
-fn pop_segments(segments: &mut Vec<&str>, parents: &mut u16) {
-  while *parents > 0 && !segments.is_empty() {
-    segments.pop();
-    *parents -= 1;
-  }
-}
-
-/// provides the relative path from within given source file to the given target file
-pub fn relative(source: &str, target: &str) -> String {
-  let common_ancestor = common_anchestor(source, target);
-  let source_ups = dirs_between(dirname(source), common_ancestor.len());
-  let target_part = path_after(target, common_ancestor.len());
-  format!("{}{}", go_up(source_ups), target_part)
-}
-
-/// part of `normalize`
 fn go_up(count: usize) -> String {
   "../".repeat(count)
 }
 
-/// part of `normalize`
-fn segment(path: &str, start: usize, end: usize) -> &str {
-  if start > 0 {
-    &path[start + 1..end]
-  } else {
-    &path[..end]
-  }
-}
-
-/// part of `relative`
 /// provides the part of the given path after the given prefix
 fn path_after(path: &str, pos: usize) -> &str {
   match pos {
@@ -225,79 +167,32 @@ mod tests {
     }
   }
 
-  mod join {
-    use big_s::S;
+  mod path_after {
 
     #[test]
-    fn two_paths() {
-      let have = super::super::join("one", "two");
-      let want = S("one/two");
+    fn none() {
+      let path = "one/two/three/four/five";
+      let ancestor = "";
+      let have = super::super::path_after(path, ancestor.len());
+      let want = "one/two/three/four/five";
       assert_eq!(have, want);
     }
 
     #[test]
-    fn first_path_empty() {
-      let have = super::super::join("", "two");
-      let want = S("two");
+    fn some() {
+      let path = "one/two/three/four/five";
+      let ancestor = "one/two";
+      let have = super::super::path_after(path, ancestor.len());
+      let want = "three/four/five";
       assert_eq!(have, want);
     }
 
     #[test]
-    fn second_path_empty() {
-      let have = super::super::join("one", "");
-      let want = S("one");
-      assert_eq!(have, want);
-    }
-  }
-
-  mod normalize {
-    use big_s::S;
-
-    #[test]
-    fn parent_placeholders() {
-      let give = "one/three/../two/three/../../new.md";
-      let want = S("one/new.md");
-      let have = super::super::normalize(give);
-      assert_eq!(have, want);
-    }
-
-    #[test]
-    fn trailing_parent_placeholder() {
-      let give = "one/two/three/../..";
-      let want = S("one");
-      let have = super::super::normalize(give);
-      assert_eq!(have, want);
-    }
-
-    #[test]
-    fn current_placeholders() {
-      let give = "./one/./././two/./three.md";
-      let want = S("one/two/three.md");
-      let have = super::super::normalize(give);
-      assert_eq!(have, want);
-    }
-
-    #[test]
-    fn single_segment() {
-      let give = "2.md";
-      let want = S("2.md");
-      let have = super::super::normalize(give);
-      assert_eq!(have, want);
-    }
-
-    #[test]
-    fn no_placeholders() {
-      let give = "one/two/2.md";
-      let want = S("one/two/2.md");
-      let have = super::super::normalize(give);
-      assert_eq!(have, want);
-    }
-
-    #[test]
-    fn go_above_root() {
-      let give = "one/../../1.md";
-      let have = super::super::normalize(give);
-      let want = S("../1.md");
+    fn full() {
+      let path = "one/two/three/four/five";
+      let ancestor = "one/two/three/four/five";
+      let have = super::super::path_after(path, ancestor.len());
+      let want = "";
       assert_eq!(have, want);
     }
   }
@@ -355,36 +250,6 @@ mod tests {
       let path2 = "sub/other.md";
       let have = super::super::relative(path1, path2);
       let want = "sub/other.md";
-      assert_eq!(have, want);
-    }
-  }
-
-  mod segments_after {
-
-    #[test]
-    fn none() {
-      let path = "one/two/three/four/five";
-      let ancestor = "";
-      let have = super::super::path_after(path, ancestor.len());
-      let want = "one/two/three/four/five";
-      assert_eq!(have, want);
-    }
-
-    #[test]
-    fn some() {
-      let path = "one/two/three/four/five";
-      let ancestor = "one/two";
-      let have = super::super::path_after(path, ancestor.len());
-      let want = "three/four/five";
-      assert_eq!(have, want);
-    }
-
-    #[test]
-    fn full() {
-      let path = "one/two/three/four/five";
-      let ancestor = "one/two/three/four/five";
-      let have = super::super::path_after(path, ancestor.len());
-      let want = "";
       assert_eq!(have, want);
     }
   }
