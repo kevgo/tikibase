@@ -96,7 +96,7 @@ mod tests {
     }
 
     #[test]
-    fn go_belog_root() {
+    fn go_below_root() {
       let give = "../1.md";
       let have = super::super::normalize(give);
       let want = Err(());
