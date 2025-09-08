@@ -1,5 +1,5 @@
 /// resolves elements like "../" and "./" in the given string
-pub fn normalize(path: &str) -> Result<String, ()> {
+pub fn normalize(path: &str) -> String {
   let mut segments: Vec<&str> = vec![];
   let mut parents: u16 = 0;
   let mut segment_start: usize = 0;
@@ -9,7 +9,7 @@ pub fn normalize(path: &str) -> Result<String, ()> {
         "." => {}
         ".." => parents += 1,
         segment => {
-          pop_segments(&mut segments, &mut parents)?;
+          pop_segments(&mut segments, &mut parents);
           segments.push(segment);
         }
       }
@@ -20,24 +20,20 @@ pub fn normalize(path: &str) -> Result<String, ()> {
     "." => {}
     ".." => parents += 1,
     segment => {
-      pop_segments(&mut segments, &mut parents)?;
+      pop_segments(&mut segments, &mut parents);
       segments.push(segment);
     }
   }
-  pop_segments(&mut segments, &mut parents)?;
-  Ok(segments.join("/"))
+  pop_segments(&mut segments, &mut parents);
+  segments.join("/")
 }
 
 /// part of normalize
-fn pop_segments(segments: &mut Vec<&str>, parents: &mut u16) -> Result<(), ()> {
-  while *parents > 0 {
-    if segments.is_empty() {
-      return Err(());
-    }
+fn pop_segments(segments: &mut Vec<&str>, parents: &mut u16) {
+  while *parents > 0 && !segments.is_empty() {
     segments.pop();
     *parents -= 1;
   }
-  Ok(())
 }
 
 /// part of `normalize`
@@ -58,7 +54,7 @@ mod tests {
     #[test]
     fn parent_placeholders() {
       let give = "one/three/../two/three/../../new.md";
-      let want = Ok(S("one/new.md"));
+      let want = S("one/new.md");
       let have = super::super::normalize(give);
       assert_eq!(have, want);
     }
@@ -66,7 +62,7 @@ mod tests {
     #[test]
     fn trailing_parent_placeholder() {
       let give = "one/two/three/../..";
-      let want = Ok(S("one"));
+      let want = S("one");
       let have = super::super::normalize(give);
       assert_eq!(have, want);
     }
@@ -74,7 +70,7 @@ mod tests {
     #[test]
     fn current_placeholders() {
       let give = "./one/./././two/./three.md";
-      let want = Ok(S("one/two/three.md"));
+      let want = S("one/two/three.md");
       let have = super::super::normalize(give);
       assert_eq!(have, want);
     }
@@ -82,7 +78,7 @@ mod tests {
     #[test]
     fn single_segment() {
       let give = "2.md";
-      let want = Ok(S("2.md"));
+      let want = S("2.md");
       let have = super::super::normalize(give);
       assert_eq!(have, want);
     }
@@ -90,7 +86,7 @@ mod tests {
     #[test]
     fn no_placeholders() {
       let give = "one/two/2.md";
-      let want = Ok(S("one/two/2.md"));
+      let want = S("one/two/2.md");
       let have = super::super::normalize(give);
       assert_eq!(have, want);
     }
@@ -99,7 +95,7 @@ mod tests {
     fn go_above_root() {
       let give = "one/../../1.md";
       let have = super::super::normalize(give);
-      let want = Err(());
+      let want = S("../1.md");
       assert_eq!(have, want);
     }
   }
