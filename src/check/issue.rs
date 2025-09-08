@@ -126,10 +126,6 @@ pub enum Issue {
   OrphanedResource {
     location: Location,
   },
-  PathEscapesRoot {
-    path: PathRelativeToRoot,
-    location: Location,
-  },
   SectionWithoutHeader {
     location: Location,
   },
