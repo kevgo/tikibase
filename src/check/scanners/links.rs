@@ -1,3 +1,5 @@
+use cucumber::WriterExt;
+
 use crate::check::{Issue, Location};
 use crate::database::{Directory, Document, EntryType, paths};
 
@@ -158,8 +160,8 @@ pub fn scan(
     if image.src.starts_with("http") {
       continue;
     }
-    let target_relative_path = paths::join(&dir.relative_path, &image.src);
-    let Ok(target_relative_path) = paths::normalize(&target_relative_path) else {
+    let target_relative_path = dir.relative_path.join(&image.src);
+    let k(target_relative_path) = target_relative_path.0.normalized() else {
       issues.push(Issue::PathEscapesRoot {
         path: target_relative_path,
         location: Location {

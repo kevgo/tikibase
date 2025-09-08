@@ -1,5 +1,6 @@
 use crate::check::{Issue, Location};
 use crate::database::Section;
+use crate::domain::PathRelativeToRoot;
 use ahash::AHashMap;
 use core::cmp::Ordering::{Equal, Greater, Less};
 
@@ -56,7 +57,7 @@ pub fn find_outliers(mut input: AHashMap<String, u32>) -> AHashMap<String, Outli
 }
 
 pub fn phase_2(
-  path: &str,
+  path: &PathRelativeToRoot,
   section: &Section,
   issues: &mut Vec<Issue>,
   outliers: &AHashMap<String, OutlierInfo>,
@@ -108,6 +109,7 @@ fn find_common_capitalization(variants: &AHashMap<String, u32>) -> Option<String
 #[cfg(test)]
 mod tests {
   use crate::check::{Issue, Location};
+  use crate::domain::PathRelativeToRoot;
   use crate::{Tikibase, test};
   use ahash::AHashMap;
   use big_s::S;
@@ -139,7 +141,7 @@ mod tests {
     let have = run(dir.path());
     let want = vec![Issue::MixCapSection {
       location: Location {
-        file: S("2.md"),
+        file: PathRelativeToRoot::from("2.md"),
         line: 2,
         start: 4,
         end: 9,
@@ -171,7 +173,7 @@ mod tests {
     let want = vec![
       Issue::MixCapSection {
         location: Location {
-          file: S("1.md"),
+          file: PathRelativeToRoot::from("1.md"),
           line: 2,
           start: 4,
           end: 9,
@@ -183,7 +185,7 @@ mod tests {
       },
       Issue::MixCapSection {
         location: Location {
-          file: S("2.md"),
+          file: PathRelativeToRoot::from("2.md"),
           line: 2,
           start: 4,
           end: 9,

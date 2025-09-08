@@ -11,7 +11,7 @@ pub struct Directory {
   pub relative_path: PathRelativeToRoot,
   pub config: Config,
   pub dirs: AHashMap<String, Directory>, // TODO: change type from String to PathRelativeToDir
-  pub docs: AHashMap<String, Document>,
+  pub docs: AHashMap<String, Document>,  // same here
   pub resources: AHashMap<PathRelativeToRoot, ()>,
 }
 

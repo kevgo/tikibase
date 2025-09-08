@@ -25,6 +25,7 @@ pub fn check(base: &Tikibase) -> Outcome {
 mod tests {
   use crate::check::{Issue, Location};
   use crate::commands::Outcome;
+  use crate::domain::PathRelativeToRoot;
   use crate::{Tikibase, test};
   use big_s::S;
 
@@ -41,7 +42,7 @@ mod tests {
       issues: vec![
         Issue::DocumentWithoutLinks {
           location: Location {
-            file: S("1.md"),
+            file: PathRelativeToRoot::from("1.md"),
             line: 0,
             start: 0,
             end: 0,
@@ -49,22 +50,22 @@ mod tests {
         },
         Issue::MissingLink {
           location: Location {
-            file: S("1.md"),
+            file: PathRelativeToRoot::from("1.md"),
             line: 2,
             start: 0,
             end: 0,
           },
-          path: S("2.md"),
+          path: PathRelativeToRoot::from("2.md"),
           title: S("Two"),
         },
         Issue::MissingLink {
           location: Location {
-            file: S("1.md"),
+            file: PathRelativeToRoot::from("1.md"),
             line: 2,
             start: 0,
             end: 0,
           },
-          path: S("3.md"),
+          path: PathRelativeToRoot::from("3.md"),
           title: S("Three"),
         },
       ],
@@ -88,7 +89,7 @@ mod tests {
       issues: vec![
         Issue::DocumentWithoutLinks {
           location: Location {
-            file: S("1.md"),
+            file: PathRelativeToRoot::from("1.md"),
             line: 0,
             start: 0,
             end: 0,
@@ -96,7 +97,7 @@ mod tests {
         },
         Issue::ObsoleteOccurrencesSection {
           location: Location {
-            file: S("1.md"),
+            file: PathRelativeToRoot::from("1.md"),
             line: 3,
             start: 4,
             end: 15,

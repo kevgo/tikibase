@@ -26,6 +26,10 @@ impl PathRelativeToRoot {
       None => ("", self_str),
     }
   }
+
+  pub fn canonicalize(&self) -> PathRelativeToRoot {
+    PathRelativeToRoot(self.0.canonicalize_utf8().unwrap())
+  }
 }
 
 impl AsRef<Utf8Path> for PathRelativeToRoot {
