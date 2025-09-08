@@ -20,7 +20,7 @@ make
 Execute a development script:
 
 ```
-make <script>
+make <name>
 ```
 
 Examples:
@@ -39,6 +39,8 @@ Run a single Cucumber scenario:
 
 ### Debug the executable
 
+- check `Cargo.toml` and make sure the `profile.dev` section doesn't strip debug
+  symbols
 - open file [.vscode/launch.json](.vscode/launch.json)
 - check the entry `Debug executable 'tikibase'`
   - `args`
