@@ -1,7 +1,7 @@
-use super::{Document, paths};
+use super::Document;
 use crate::check::Issue;
 use crate::config::LoadResult;
-use crate::{Config, config};
+use crate::{Config, config, fspath};
 use ahash::AHashMap;
 use camino::{Utf8DirEntry, Utf8Path};
 use merge::Merge;
@@ -103,7 +103,7 @@ impl Directory {
       let entry_name = entry.file_name().to_owned(); // TODO: try using the &str directly here, instead of converting it to a String
       match EntryType::from_direntry(&entry, &config) {
         EntryType::Document => {
-          let doc_relative_path = paths::join(&relative_path, &entry_name);
+          let doc_relative_path = fspath::join(&relative_path, &entry_name);
           match Document::load(entry.path(), doc_relative_path) {
             Ok(doc) => {
               docs.insert(entry_name, doc);
@@ -120,7 +120,7 @@ impl Directory {
             entry_name.clone(),
             Self::load(
               root,
-              paths::join(&relative_path, &entry_name),
+              fspath::join(&relative_path, &entry_name),
               config.clone(),
             )?,
           );
