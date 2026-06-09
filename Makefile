@@ -23,7 +23,6 @@ fix: ${RTA}  # auto-corrects issues
 	cargo +nightly fmt
 	cargo +nightly fix --allow-dirty
 	cargo clippy --fix --allow-dirty
-	cargo clippy --test=cucumber --all-features -- --deny=warnings
 
 help:  # shows all available Make commands
 	cat Makefile | grep '^[^ ]*:' | grep -v '.PHONY' | grep -v '.SILENT:' | grep '#' | grep -v help | sed 's/:.*#/#/' | column -s "#" -t
@@ -34,6 +33,7 @@ install:  # installs the binary in the system
 lint: lint-std-fs ${RTA}  # checks formatting
 	$(DPRINT) check
 	cargo clippy --all-targets --all-features -- --deny=warnings
+	cargo clippy --test=cucumber --all-features -- --deny=warnings
 	cargo +nightly fmt -- --check
 	git diff --check
 	$(ACTIONLINT)
