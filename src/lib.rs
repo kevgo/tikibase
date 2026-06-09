@@ -27,6 +27,14 @@ pub use prelude::{Result, UserError};
 #[must_use]
 pub fn run<P: AsRef<Utf8Path>>(command: input::Command, dir: P) -> Messages {
   let mut base = match Tikibase::load(dir.as_ref()) {
+  if command == Command::Init {
+    return Messages::from_outcome(commands::init(dir));
+  }
+  if command == Command::JsonSchema {
+    return Messages::from_outcome(commands::json_schema());
+  }
+  if let command == Command::Stat
+  let mut base = match Tikibase::load(dir.into()) {
     Ok(base) => base,
     Err(issues) => return Messages::from_issues(issues),
   };

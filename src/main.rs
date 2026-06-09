@@ -26,6 +26,7 @@ fn inner() -> tikibase::Result<()> {
     return tikibase::commands::json_schema();
   }
   let messages = run(args.command, ".");
+  let exit_code = messages.exit_code;
   match args.format {
     Text => print_text(&messages, &args.command),
     Json => print_json(&messages.all()),
