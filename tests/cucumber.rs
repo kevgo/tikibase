@@ -100,7 +100,7 @@ fn file_is_unchanged(world: &mut MyWorld, filename: String) {
 
 #[then(expr = "file {string} should contain:")]
 fn file_should_contain(world: &mut MyWorld, step: &Step, filename: String) {
-  let have = test::load_file(&filename, &world.dir.path());
+  let have = test::load_file(&filename, world.dir.path());
   let want = step.docstring.as_ref().unwrap();
   pretty::assert_eq!(have.trim(), want.trim());
 }
@@ -110,11 +110,11 @@ fn it_prints(world: &mut MyWorld, step: &Step) {
   let mut have = S("");
   for message in &world.output.issues {
     have.push_str(message.to_text().trim());
-    have.push_str("\n");
+    have.push('\n');
   }
   for message in &world.output.fixes {
     have.push_str(message.to_text().trim());
-    have.push_str("\n");
+    have.push('\n');
   }
   let want = step.docstring.as_ref().unwrap();
   pretty::assert_eq!(have.trim(), want.trim());
