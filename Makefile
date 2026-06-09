@@ -1,5 +1,8 @@
-# dev tooling and versions
-RUN_THAT_APP_VERSION = 0.18.0
+RUN_THAT_APP_VERSION = 0.37.0
+
+RTA      = tools/rta@$(RUN_THAT_APP_VERSION)
+ACTIONLINT = $(RTA) actionlint
+DPRINT = $(RTA) dprint
 
 build:  # builds the release binary
 	cargo build --locked --release
@@ -15,8 +18,8 @@ cuke: build  # runs the end-to-end tests
 cukethis:  # tests only the scenario named "this"
 	cargo test --locked --test cucumber -- -t @this
 
-fix: tools/rta@${RUN_THAT_APP_VERSION}  # auto-corrects issues
-	tools/rta dprint fmt
+fix: ${RTA}  # auto-corrects issues
+	$(DPRINT) fmt
 	cargo +nightly fmt
 	cargo +nightly fix --allow-dirty
 	cargo clippy --fix --allow-dirty
@@ -27,12 +30,12 @@ help:  # shows all available Make commands
 install:  # installs the binary in the system
 	cargo install --locked --path .
 
-lint: lint-std-fs tools/rta@${RUN_THAT_APP_VERSION}  # checks formatting
-	tools/rta dprint check
+lint: lint-std-fs ${RTA}  # checks formatting
+	$(DPRINT) check
 	cargo clippy --all-targets --all-features -- --deny=warnings
 	cargo +nightly fmt -- --check
 	git diff --check
-	tools/rta actionlint
+	$(ACTIONLINT)
 	cargo machete
 
 lint-std-fs:  # checks for occurrences of "std::fs", should use "fs_err" instead
@@ -46,7 +49,7 @@ unit:  # runs the unit tests
 update-json-schema:  # updates the public JSON Schema for the config file
 	cargo run -- json-schema > /dev/null
 	mv tikibase.schema.json doc
-	tools/rta dprint fmt > /dev/null
+	$(DPRINT) fmt > /dev/null
 
 setup:  # install development dependencies on this computer
 	echo
@@ -64,18 +67,16 @@ setup-ci:  # prepares the CI server
 	rustup component add rustfmt --toolchain nightly
 	cargo install cargo-machete --locked
 
-update: tools/rta@${RUN_THAT_APP_VERSION}  # updates the dependencies
+update: ${RTA}  # updates the dependencies
 	cargo install cargo-edit
 	cargo upgrade
-	tools/rta --update
+	$(RTA) --update
 
 # --- HELPER TARGETS --------------------------------------------------------------------------------------------------------------------------------
 
-tools/rta@${RUN_THAT_APP_VERSION}:
-	@rm -f tools/rta* tools/rta
-	@(cd tools && curl https://raw.githubusercontent.com/kevgo/run-that-app/main/download.sh | sh)
-	@mv tools/rta tools/rta@${RUN_THAT_APP_VERSION}
-	@ln -s rta@${RUN_THAT_APP_VERSION} tools/rta
+${RTA}:
+	@rm -f tools/rta*
+	@(cd tools && curl https://raw.githubusercontent.com/kevgo/run-that-app/main/download.sh | sh -s -- --version ${RUN_THAT_APP_VERSION} --name rta@${RUN_THAT_APP_VERSION})
 
 .SILENT:
 .DEFAULT_GOAL := help

@@ -149,7 +149,7 @@ impl Document {
   #[cfg(test)]
   /// provides Document instances in tests
   pub fn from_str<IS: Into<String>>(path: IS, text: &str) -> Result<Self, Issue> {
-    Self::from_lines(text.lines().map(std::string::ToString::to_string), path)
+    Self::from_lines(text.lines().map(str::to_owned), path)
   }
 
   /// indicates whether this document contains the given anchor
