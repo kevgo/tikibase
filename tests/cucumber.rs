@@ -37,7 +37,7 @@ impl MyWorld {
 #[given(expr = "file {string} with content:")]
 fn file_with_content(world: &mut MyWorld, step: &Step, filename: String) {
   let content = step.docstring.as_ref().unwrap().trim();
-  test::create_file(&filename, &content, world.dir.path());
+  test::create_file(&filename, content, world.dir.path());
   world.original_contents.insert(filename, content.into());
 }
 
@@ -63,7 +63,7 @@ fn fixing(world: &mut MyWorld) {
 
 #[when(expr = "I run {string}")]
 fn i_run(world: &mut MyWorld, call: String) {
-  let mut args = call.split(" ").into_iter();
+  let mut args = call.split(" ");
   let executable = args.next().unwrap();
   if executable != "tikibase" {
     panic!("can only test tikibase");
@@ -72,7 +72,7 @@ fn i_run(world: &mut MyWorld, call: String) {
   world.subshell_output = Some(
     std::process::Command::new(cwd.join("target/release/tikibase"))
       .args(args)
-      .current_dir(&world.dir.path())
+      .current_dir(world.dir.path())
       .output()
       .unwrap(),
   );
@@ -80,7 +80,7 @@ fn i_run(world: &mut MyWorld, call: String) {
 
 #[when("initializing")]
 fn initializing(world: &mut MyWorld) {
-  world.result = tikibase::commands::init(&world.dir.path());
+  world.result = tikibase::commands::init(world.dir.path());
 }
 
 #[when("searching for nothing")]
@@ -101,21 +101,21 @@ fn searching_for_two_terms(world: &mut MyWorld, term1: String, term2: String) {
 #[then("all files are unchanged")]
 fn all_files_unchanged(world: &mut MyWorld) {
   for (filename, original_content) in &world.original_contents {
-    let current_content = test::load_file(filename, &world.dir.path());
+    let current_content = test::load_file(filename, world.dir.path());
     pretty::assert_eq!(&current_content.trim(), original_content);
   }
 }
 
 #[then(expr = "file {string} is unchanged")]
 fn file_is_unchanged(world: &mut MyWorld, filename: String) {
-  let have = test::load_file(&filename, &world.dir.path());
+  let have = test::load_file(&filename, world.dir.path());
   let want = world.original_contents.get(&filename).unwrap();
   pretty::assert_eq!(have.trim(), want);
 }
 
 #[then(expr = "file {string} should contain:")]
 fn file_should_contain(world: &mut MyWorld, step: &Step, filename: String) {
-  let have = test::load_file(&filename, &world.dir.path());
+  let have = test::load_file(&filename, world.dir.path());
   let want = step.docstring.as_ref().unwrap();
   pretty::assert_eq!(have.trim(), want.trim());
 }
@@ -125,11 +125,11 @@ fn it_prints(world: &mut MyWorld, step: &Step) {
   let mut have = S("");
   for message in &world.output.issues {
     have.push_str(message.to_text().trim());
-    have.push_str("\n");
+    have.push('\n');
   }
   for message in &world.output.fixes {
     have.push_str(message.to_text().trim());
-    have.push_str("\n");
+    have.push('\n');
   }
   let want = step.docstring.as_ref().unwrap();
   pretty::assert_eq!(have.trim(), want.trim());
