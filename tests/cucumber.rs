@@ -86,14 +86,14 @@ fn initializing(world: &mut MyWorld) {
 #[then("all files are unchanged")]
 fn all_files_unchanged(world: &mut MyWorld) {
   for (filename, original_content) in &world.original_contents {
-    let current_content = test::load_file(filename, &world.dir.path());
+    let current_content = test::load_file(filename, world.dir.path());
     pretty::assert_eq!(&current_content.trim(), original_content);
   }
 }
 
 #[then(expr = "file {string} is unchanged")]
 fn file_is_unchanged(world: &mut MyWorld, filename: String) {
-  let have = test::load_file(&filename, &world.dir.path());
+  let have = test::load_file(&filename, world.dir.path());
   let want = world.original_contents.get(&filename).unwrap();
   pretty::assert_eq!(have.trim(), want);
 }
