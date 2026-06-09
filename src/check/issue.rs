@@ -7,18 +7,22 @@ pub enum Issue {
     location: Location,
     target: String,
   },
+  // TODO: make error
   CannotReadConfigurationFile {
     location: Location,
     message: String,
   },
+  // TODO: make error
   CannotReadDirectory {
-    path: String,
+    path: String, // TODO: make either a Utf8PathBuf or a newtype that represents a relative path
     err: String,
   },
+  // TODO: make error
   CannotWriteConfigFile {
     message: String,
     file: String,
   },
+  // TODO: make error
   CannotWriteJsonSchemaFile {
     file: String,
     message: String,
@@ -121,10 +125,6 @@ pub enum Issue {
     // This is a String and not a Path because we need a String (to print it),
     // and we already converted the Path of this orphaned resource into a String
     // during processing it.
-    location: Location,
-  },
-  PathEscapesRoot {
-    path: String,
     location: Location,
   },
   SectionWithoutHeader {

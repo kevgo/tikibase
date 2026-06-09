@@ -97,8 +97,8 @@ impl Config {
 }
 
 /// reads the config file
-pub fn load<P: AsRef<Utf8Path>>(dir: P) -> LoadResult {
-  let config_path = dir.as_ref().join("tikibase.json");
+pub fn load(dir: &Utf8Path) -> LoadResult {
+  let config_path = dir.join("tikibase.json");
   let file = match File::open(config_path) {
     Ok(reader) => reader,
     Err(e) => match e.kind() {
@@ -212,16 +212,17 @@ mod tests {
 
     #[test]
     fn no_config_file() {
-      let have = load(test::tmp_dir());
+      let dir = camino_tempfile::tempdir().unwrap();
+      let have = load(dir.path());
       let want = LoadResult::NotFound;
       pretty::assert_eq!(have, want);
     }
 
     #[test]
     fn empty_config_file() {
-      let dir = test::tmp_dir();
-      test::create_file("tikibase.json", "{}", &dir);
-      let have = load(&dir);
+      let dir = camino_tempfile::tempdir().unwrap();
+      test::create_file("tikibase.json", "{}", dir.path());
+      let have = load(dir.path());
       let want = LoadResult::Loaded(Config {
         bidi_links: None,
         sections: None,
@@ -235,7 +236,7 @@ mod tests {
 
     #[test]
     fn valid_config_file() {
-      let dir = test::tmp_dir();
+      let dir = camino_tempfile::tempdir().unwrap();
       let give = r#"
             {
               "bidiLinks": true,
@@ -243,8 +244,8 @@ mod tests {
               "ignore": [ "foo" ]
             }
             "#;
-      test::create_file("tikibase.json", give, &dir);
-      let have = load(&dir);
+      test::create_file("tikibase.json", give, dir.path());
+      let have = load(dir.path());
       let want = LoadResult::Loaded(Config {
         bidi_links: Some(true),
         sections: Some(vec![S("one"), S("two")]),
@@ -258,14 +259,14 @@ mod tests {
 
     #[test]
     fn unknown_field() {
-      let dir = test::tmp_dir();
+      let dir = camino_tempfile::tempdir().unwrap();
       let give = r#"
             {
               "foo": true,
             }
             "#;
-      test::create_file("tikibase.json", give, &dir);
-      let have = load(&dir);
+      test::create_file("tikibase.json", give, dir.path());
+      let have = load(dir.path());
       let want = LoadResult::Error(Issue::InvalidConfigurationFile {
         message: S(
           "unknown field `foo`, expected one of `bidiLinks`, `ignore`, `sections`, `titleRegEx`, `$schema`, `standaloneDocs` at line 3 column 20",
@@ -282,13 +283,13 @@ mod tests {
 
     #[test]
     fn invalid_config_file() {
-      let dir = test::tmp_dir();
+      let dir = camino_tempfile::tempdir().unwrap();
       let give = r#"{
     "sections": [
 }
 "#;
-      test::create_file("tikibase.json", give, &dir);
-      let have = load(&dir);
+      test::create_file("tikibase.json", give, dir.path());
+      let have = load(dir.path());
       let want = LoadResult::Error(Issue::InvalidConfigurationFile {
         message: S("expected value at line 3 column 1"),
         location: Location {

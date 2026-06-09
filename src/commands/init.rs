@@ -1,19 +1,14 @@
-use super::Outcome;
-use crate::check::Issue;
-use crate::database::paths;
-use big_s::S;
+use crate::prelude::*;
+use camino::Utf8Path;
 use fs_err as fs;
 use indoc::indoc;
 
-#[must_use]
-pub fn init(dir: &str) -> Outcome {
-  match fs::write(paths::join(dir, "tikibase.json"), template()) {
-    Ok(()) => Outcome::default(),
-    Err(err) => Outcome::from_issue(Issue::CannotWriteConfigFile {
-      file: S("tikibase.json"),
-      message: err.to_string(),
-    }),
-  }
+pub fn init<P: AsRef<Utf8Path>>(dir: P) -> Result<()> {
+  let path = dir.as_ref().join("tikibase.json");
+  fs::write(&path, template()).map_err(|err| UserError::CannotWriteFile {
+    filename: path,
+    reason: err.to_string(),
+  })
 }
 
 /// provides the content of the initial config file

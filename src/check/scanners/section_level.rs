@@ -106,30 +106,31 @@ mod tests {
     use crate::{Tikibase, test};
     use ahash::AHashMap;
     use big_s::S;
+    use camino::Utf8PathBuf;
     use indoc::indoc;
 
     #[test]
     fn has_outlier() {
-      let dir = test::tmp_dir();
+      let dir = camino_tempfile::tempdir().unwrap();
       let content1 = indoc! {"
                 # one
 
                 ### section
                 content"};
-      test::create_file("1.md", content1, &dir);
+      test::create_file("1.md", content1, dir.path());
       let content2 = indoc! {"
                 # two
 
                 ##### section
                 content"};
-      test::create_file("2.md", content2, &dir);
+      test::create_file("2.md", content2, dir.path());
       let content3 = indoc! {"
                 # three
 
                 ### section
                 content"};
-      test::create_file("3.md", content3, &dir);
-      let have = run(dir);
+      test::create_file("3.md", content3, dir.path());
+      let have = run(dir.path().into());
       let want = vec![Issue::InconsistentHeadingLevel {
         location: Location {
           file: S("2.md"),
@@ -147,20 +148,20 @@ mod tests {
 
     #[test]
     fn no_outlier() {
-      let dir = test::tmp_dir();
+      let dir = camino_tempfile::tempdir().unwrap();
       let content1 = indoc! {"
                 # one
 
                 ### section
                 content"};
-      test::create_file("1.md", content1, &dir);
+      test::create_file("1.md", content1, dir.path());
       let content2 = indoc! {"
                 # two
 
                 ##### section
                 content"};
-      test::create_file("2.md", content2, &dir);
-      let have = run(dir);
+      test::create_file("2.md", content2, dir.path());
+      let have = run(dir.path().into());
       let want = vec![
         Issue::InconsistentHeadingLevel {
           location: Location {
@@ -192,25 +193,25 @@ mod tests {
 
     #[test]
     fn no_problems() {
-      let dir = test::tmp_dir();
+      let dir = camino_tempfile::tempdir().unwrap();
       let content1 = indoc! {"
                 # one
 
                 ### section
                 content"};
-      test::create_file("1.md", content1, &dir);
+      test::create_file("1.md", content1, dir.path());
       let content2 = indoc! {"
                 # two
 
                 ### section
                 content"};
-      test::create_file("2.md", content2, &dir);
-      let have = run(dir);
+      test::create_file("2.md", content2, dir.path());
+      let have = run(dir.path().into());
       let want = vec![];
       pretty::assert_eq!(have, want);
     }
 
-    fn run(dir: String) -> Vec<Issue> {
+    fn run(dir: Utf8PathBuf) -> Vec<Issue> {
       let base = Tikibase::load(dir).unwrap();
       // stage 1
       let mut title_variants = AHashMap::new();
