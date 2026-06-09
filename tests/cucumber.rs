@@ -80,7 +80,7 @@ fn i_run(world: &mut MyWorld, call: String) {
 
 #[when("initializing")]
 fn initializing(world: &mut MyWorld) {
-  world.result = tikibase::commands::init(&world.dir.path());
+  world.result = tikibase::commands::init(world.dir.path());
 }
 
 #[then("all files are unchanged")]
