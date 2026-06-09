@@ -33,6 +33,7 @@ install:  # installs the binary in the system
 lint: lint-std-fs ${RTA}  # checks formatting
 	$(DPRINT) check
 	cargo clippy --all-targets --all-features -- --deny=warnings
+	cargo clippy --test=cucumber --all-features -- --deny=warnings
 	cargo +nightly fmt -- --check
 	git diff --check
 	$(ACTIONLINT)
