@@ -63,7 +63,7 @@ fn fixing(world: &mut MyWorld) {
 
 #[when(expr = "I run {string}")]
 fn i_run(world: &mut MyWorld, call: String) {
-  let mut args = call.split(" ").into_iter();
+  let mut args = call.split(" ");
   let executable = args.next().unwrap();
   if executable != "tikibase" {
     panic!("can only test tikibase");
