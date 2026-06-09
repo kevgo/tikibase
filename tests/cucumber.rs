@@ -72,7 +72,7 @@ fn i_run(world: &mut MyWorld, call: String) {
   world.subshell_output = Some(
     std::process::Command::new(cwd.join("target/release/tikibase"))
       .args(args)
-      .current_dir(&world.dir.path())
+      .current_dir(world.dir.path())
       .output()
       .unwrap(),
   );
