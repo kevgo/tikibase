@@ -18,7 +18,7 @@ cuke: build  # runs the end-to-end tests
 cukethis:  # tests only the scenario named "this"
 	cargo test --locked --test cucumber -- -t @this
 
-fix: tools/rta@${RUN_THAT_APP_VERSION}  # auto-corrects issues
+fix: ${RTA}  # auto-corrects issues
 	$(DPRINT) fmt
 	cargo +nightly fmt
 	cargo +nightly fix --allow-dirty
@@ -30,7 +30,7 @@ help:  # shows all available Make commands
 install:  # installs the binary in the system
 	cargo install --locked --path .
 
-lint: lint-std-fs tools/rta@${RUN_THAT_APP_VERSION}  # checks formatting
+lint: lint-std-fs ${RTA}  # checks formatting
 	$(DPRINT) check
 	cargo clippy --all-targets --all-features -- --deny=warnings
 	cargo +nightly fmt -- --check
@@ -67,10 +67,10 @@ setup-ci:  # prepares the CI server
 	rustup component add rustfmt --toolchain nightly
 	cargo install cargo-machete --locked
 
-update: tools/rta@${RUN_THAT_APP_VERSION}  # updates the dependencies
+update: ${RTA}  # updates the dependencies
 	cargo install cargo-edit
 	cargo upgrade
-	tools/rta --update
+	$(RTA) --update
 
 # --- HELPER TARGETS --------------------------------------------------------------------------------------------------------------------------------
 
